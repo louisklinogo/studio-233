@@ -50,6 +50,15 @@ import { ZoomControls } from "@/components/canvas/ZoomControls";
 import { GenerationsIndicator } from "@/components/generations-indicator";
 import { Logo, SpinnerIcon } from "@/components/icons";
 import { AssistantPanel } from "@/components/studio/AssistantPanel";
+import {
+	BottomToolbar,
+	type ToolType,
+} from "@/components/studio/BottomToolbar";
+import { ChatInterface } from "@/components/studio/ChatInterface";
+import {
+	CreativeToolbar,
+	type ToolType as CreativeToolType,
+} from "@/components/studio/CreativeToolbar";
 import { Button } from "@/components/ui/button";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import {
@@ -77,6 +86,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { useCanvasElements } from "@/hooks/useCanvasElements";
 // Import additional extracted components
 import { useFalClient } from "@/hooks/useFalClient";
 import { handleRemoveBackground as handleRemoveBackgroundHandler } from "@/lib/handlers/background-handler";
@@ -114,6 +124,15 @@ export default function OverlayPage() {
 	const [images, setImages] = useState<PlacedImage[]>([]);
 	const [videos, setVideos] = useState<PlacedVideo[]>([]);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	const [activeTool, setActiveTool] = useState<ToolType>("select");
+	const [isChatOpen, setIsChatOpen] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const {
+		// Future use for text/shapes
+		elements: canvasElements,
+		addElement: addCanvasElement,
+	} = useCanvasElements();
+
 	const [isStorageLoaded, setIsStorageLoaded] = useState(false);
 	const [visibleIndicators, setVisibleIndicators] = useState<Set<string>>(
 		new Set(),
@@ -1572,8 +1591,8 @@ export default function OverlayPage() {
 		const stage = e.target.getStage();
 		const mouseButton = e.evt.button; // 0 = left, 1 = middle, 2 = right
 
-		// If middle mouse button, start panning
-		if (mouseButton === 1) {
+		// If middle mouse button, start panning. Or if left click + pan tool
+		if (mouseButton === 1 || (mouseButton === 0 && activeTool === "pan")) {
 			e.evt.preventDefault();
 			setIsPanningCanvas(true);
 			setLastPanPosition({ x: e.evt.clientX, y: e.evt.clientY });
@@ -1594,7 +1613,13 @@ export default function OverlayPage() {
 		}
 
 		// Start selection box when left-clicking on empty space
-		if (clickedOnEmpty && !croppingImageId && mouseButton === 0) {
+		// Only if Select tool is active
+		if (
+			clickedOnEmpty &&
+			!croppingImageId &&
+			mouseButton === 0 &&
+			activeTool === "select"
+		) {
 			const pos = stage?.getPointerPosition();
 			if (pos) {
 				// Convert screen coordinates to canvas coordinates
@@ -2605,6 +2630,57 @@ export default function OverlayPage() {
 			onDragEnter={(e) => e.preventDefault()}
 			onDragLeave={(e) => e.preventDefault()}
 		>
+			{/* Hidden file input for toolbar */}
+			<input
+				type="file"
+				ref={fileInputRef}
+				className="hidden"
+				multiple
+				accept="image/*,video/*"
+				onChange={(e) => handleFileUpload(e.target.files)}
+			/>
+
+			{/* Creative Toolbar (Area A) - Left Side */}
+			<CreativeToolbar
+				setActiveTool={() => {}} // Placeholder, as tools are currently disabled or future-proofed
+				onAddClick={() => fileInputRef.current?.click()}
+			/>
+
+			{/* Bottom Toolbar - Navigation & Selection */}
+			<BottomToolbar
+				activeTool={activeTool}
+				setActiveTool={setActiveTool}
+				isChatOpen={isChatOpen}
+				onChatToggle={() => setIsChatOpen(!isChatOpen)}
+				chatCount={0} // Placeholder for queue system
+				imagesCount={selectedIds.length}
+				onRunAll={() => {
+					if (generationSettings.prompt.trim()) {
+						handleRun();
+					}
+				}}
+			/>
+
+			{/* Contextual Chat Interface */}
+			<ChatInterface
+				isOpen={isChatOpen}
+				onClose={() => setIsChatOpen(false)}
+				selectedCount={selectedIds.length}
+				onRun={(prompt) => {
+					setGenerationSettings((prev) => ({ ...prev, prompt }));
+					handleRun();
+					setIsChatOpen(false);
+				}}
+				onChat={(prompt) => {
+					// Queue functionality placeholder
+					toast({
+						title: "Added to Queue",
+						description: "Your request has been added to the generation queue.",
+					});
+					setIsChatOpen(false);
+				}}
+			/>
+
 			{/* Render streaming components for active generations */}
 			{Array.from(activeGenerations.entries()).map(([imageId, generation]) => (
 				<StreamingImage
