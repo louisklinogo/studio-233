@@ -21,7 +21,9 @@ export function useCanvasElements() {
 	const updateElement = useCallback(
 		(id: string, updates: Partial<CanvasElement>) => {
 			setElements((prev) =>
-				prev.map((el) => (el.id === id ? { ...el, ...updates } : el)),
+				prev.map((el) =>
+					el.id === id ? ({ ...el, ...updates } as CanvasElement) : el,
+				),
 			);
 		},
 		[],

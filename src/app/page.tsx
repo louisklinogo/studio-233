@@ -87,8 +87,13 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useCanvasElements } from "@/hooks/useCanvasElements";
+import { useCanvasState } from "@/hooks/useCanvasState";
 // Import additional extracted components
 import { useFalClient } from "@/hooks/useFalClient";
+import { useInteractionState } from "@/hooks/useInteractionState";
+import { useUIState } from "@/hooks/useUIState";
+import { useVideoGeneration } from "@/hooks/useVideoGeneration";
+import { useViewportState } from "@/hooks/useViewportState";
 import { handleRemoveBackground as handleRemoveBackgroundHandler } from "@/lib/handlers/background-handler";
 // Import handlers
 import {
@@ -116,11 +121,12 @@ import {
 	imageToCanvasElement,
 	videoToCanvasElement,
 } from "@/utils/canvas-utils";
+import {
+	createCroppedImage,
+	resizeImageIfNeeded,
+} from "@/utils/image-processing";
 import { checkOS } from "@/utils/os-utils";
 import { convertImageToVideo } from "@/utils/video-utils";
-import { createCroppedImage, resizeImageIfNeeded } from "@/utils/image-processing";
-import { useCanvasState } from "@/hooks/useCanvasState";
-import { useVideoGeneration } from "@/hooks/useVideoGeneration";
 
 export default function OverlayPage() {
 	const { theme, setTheme } = useTheme();
@@ -150,9 +156,46 @@ export default function OverlayPage() {
 		sendBackward,
 	} = useCanvasState();
 
-	const [activeTool, setActiveTool] = useState<ToolType>("select");
-	const [isChatOpen, setIsChatOpen] = useState(false);
+	const {
+		activeTool,
+		setActiveTool,
+		dragStartPositions,
+		setDragStartPositions,
+		isDraggingImage,
+		setIsDraggingImage,
+		hiddenVideoControlsIds,
+		setHiddenVideoControlsIds,
+		croppingImageId,
+		setCroppingImageId,
+		isolateTarget,
+		setIsolateTarget,
+		isolateInputValue,
+		setIsolateInputValue,
+		isIsolating,
+		setIsIsolating,
+	} = useInteractionState();
+
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const {
+		isChatOpen,
+		setIsChatOpen,
+		isSettingsDialogOpen,
+		setIsSettingsDialogOpen,
+		showGrid,
+		setShowGrid,
+		showMinimap,
+		setShowMinimap,
+		isStyleDialogOpen,
+		setIsStyleDialogOpen,
+		isApiKeyDialogOpen,
+		setIsApiKeyDialogOpen,
+		customApiKey,
+		setCustomApiKey,
+		tempApiKey,
+		setTempApiKey,
+	} = useUIState();
+
 	const {
 		// Future use for text/shapes
 		elements: canvasElements,
@@ -179,51 +222,36 @@ export default function OverlayPage() {
 	const [activeGenerations, setActiveGenerations] = useState<
 		Map<string, ActiveGeneration>
 	>(new Map());
-	const [dragStartPositions, setDragStartPositions] = useState<
-		Map<string, { x: number; y: number }>
-	>(new Map());
-	const [isDraggingImage, setIsDraggingImage] = useState(false);
-	const [hiddenVideoControlsIds, setHiddenVideoControlsIds] = useState<
-		Set<string>
-	>(new Set());
-	// Use a consistent initial value for server and client to avoid hydration errors
-	const [canvasSize, setCanvasSize] = useState({
-		width: 1200,
-		height: 800,
-	});
-	const containerRef = useRef<HTMLElement>(null);
-	const [isCanvasReady, setIsCanvasReady] = useState(false);
-	const [isPanningCanvas, setIsPanningCanvas] = useState(false);
-	const [lastPanPosition, setLastPanPosition] = useState({ x: 0, y: 0 });
-	const [croppingImageId, setCroppingImageId] = useState<string | null>(null);
-	const [viewport, setViewport] = useState({
-		x: 0,
-		y: 0,
-		scale: 1,
-	});
-	const stageRef = useRef<Konva.Stage>(null);
-	const [isolateTarget, setIsolateTarget] = useState<string | null>(null);
-	const [isolateInputValue, setIsolateInputValue] = useState("");
-	const [isIsolating, setIsIsolating] = useState(false);
-	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
-	const [showGrid, setShowGrid] = useState(true);
-	const [showMinimap, setShowMinimap] = useState(true);
-	const [isStyleDialogOpen, setIsStyleDialogOpen] = useState(false);
-	const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
-	const [customApiKey, setCustomApiKey] = useState<string>("");
-	const [tempApiKey, setTempApiKey] = useState<string>("");
+
 	const [_, setIsSaving] = useState(false);
 	const [showSuccess, setShowSuccess] = useState(false);
 
-	// Touch event states for mobile
-	const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(
-		null,
-	);
-	const [lastTouchCenter, setLastTouchCenter] = useState<{
-		x: number;
-		y: number;
-	} | null>(null);
-	const [isTouchingImage, setIsTouchingImage] = useState(false);
+	// Viewport hook
+	const {
+		viewport,
+		setViewport,
+		canvasSize,
+		setCanvasSize,
+		isCanvasReady,
+		setIsCanvasReady,
+		isPanningCanvas,
+		setIsPanningCanvas,
+		lastPanPosition,
+		setLastPanPosition,
+		lastTouchDistance,
+		lastTouchCenter,
+		isTouchingImage,
+		containerRef,
+		stageRef,
+		updateCanvasSize,
+		handleWheel,
+		handleTouchStart,
+		handleTouchMove,
+		handleTouchEnd,
+		zoomIn,
+		zoomOut,
+		resetZoom,
+	} = useViewportState(images, isSelecting, isDraggingImage);
 
 	// Track when generation completes
 	const [previousGenerationCount, setPreviousGenerationCount] = useState(0);
@@ -321,7 +349,6 @@ export default function OverlayPage() {
 		// You could update a progress indicator here if needed
 		console.log(`Video generation progress: ${progress}% - ${status}`);
 	};
-
 
 	const { mutateAsync: isolateObject } = useMutation(
 		trpc.isolateObject.mutationOptions(),
@@ -478,41 +505,6 @@ export default function OverlayPage() {
 		}
 	}, [toast]);
 
-	// Load API key from localStorage on mount
-	useEffect(() => {
-		const savedKey = localStorage.getItem("fal-api-key");
-		if (savedKey) {
-			setCustomApiKey(savedKey);
-			setTempApiKey(savedKey);
-		}
-	}, []);
-
-	// Load grid setting from localStorage on mount
-	useEffect(() => {
-		const savedShowGrid = localStorage.getItem("showGrid");
-		if (savedShowGrid !== null) {
-			setShowGrid(savedShowGrid === "true");
-		}
-	}, []);
-
-	// Load minimap setting from localStorage on mount
-	useEffect(() => {
-		const savedShowMinimap = localStorage.getItem("showMinimap");
-		if (savedShowMinimap !== null) {
-			setShowMinimap(savedShowMinimap === "true");
-		}
-	}, []);
-
-	// Save grid setting to localStorage when it changes
-	useEffect(() => {
-		localStorage.setItem("showGrid", showGrid.toString());
-	}, [showGrid]);
-
-	// Save minimap setting to localStorage when it changes
-	useEffect(() => {
-		localStorage.setItem("showMinimap", showMinimap.toString());
-	}, [showMinimap]);
-
 	// Track previous style when changing styles (but not when reverting from custom)
 	useEffect(() => {
 		const currentStyleId = generationSettings.styleId;
@@ -525,19 +517,6 @@ export default function OverlayPage() {
 		}
 	}, [generationSettings.styleId, previousStyleId]);
 
-	// Save API key to localStorage when it changes
-	useEffect(() => {
-		if (customApiKey) {
-			localStorage.setItem("fal-api-key", customApiKey);
-		} else {
-			localStorage.removeItem("fal-api-key");
-		}
-	}, [customApiKey]);
-
-
-
-
-
 	// Set canvas ready state after mount
 	useEffect(() => {
 		// Only set canvas ready after we have valid dimensions
@@ -548,15 +527,6 @@ export default function OverlayPage() {
 
 	// Update canvas size on window resize
 	useEffect(() => {
-		const updateCanvasSize = () => {
-			if (containerRef.current) {
-				setCanvasSize({
-					width: containerRef.current.offsetWidth,
-					height: containerRef.current.offsetHeight,
-				});
-			}
-		};
-
 		// Set initial size
 		updateCanvasSize();
 
@@ -685,8 +655,6 @@ export default function OverlayPage() {
 		loadDefaultImages();
 	}, [isStorageLoaded, images.length]);
 
-
-
 	// Handle file upload
 	const handleFileUpload = (
 		files: FileList | null,
@@ -770,191 +738,6 @@ export default function OverlayPage() {
 		} else {
 			handleFileUpload(e.dataTransfer.files);
 		}
-	};
-
-	// Handle wheel for zoom
-	const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
-		e.evt.preventDefault();
-
-		const stage = stageRef.current;
-		if (!stage) return;
-
-		// Check if this is a pinch gesture (ctrl key is pressed on trackpad pinch)
-		if (e.evt.ctrlKey) {
-			// This is a pinch-to-zoom gesture
-			const oldScale = viewport.scale;
-			const pointer = stage.getPointerPosition();
-			if (!pointer) return;
-
-			const mousePointTo = {
-				x: (pointer.x - viewport.x) / oldScale,
-				y: (pointer.y - viewport.y) / oldScale,
-			};
-
-			// Zoom based on deltaY (negative = zoom in, positive = zoom out)
-			const scaleBy = 1.01;
-			const direction = e.evt.deltaY > 0 ? -1 : 1;
-			const steps = Math.min(Math.abs(e.evt.deltaY), 10);
-			let newScale = oldScale;
-
-			for (let i = 0; i < steps; i++) {
-				newScale = direction > 0 ? newScale * scaleBy : newScale / scaleBy;
-			}
-
-			// Limit zoom (10% to 500%)
-			const scale = Math.max(0.1, Math.min(5, newScale));
-
-			const newPos = {
-				x: pointer.x - mousePointTo.x * scale,
-				y: pointer.y - mousePointTo.y * scale,
-			};
-
-			setViewport({ x: newPos.x, y: newPos.y, scale });
-		} else {
-			// This is a pan gesture (two-finger swipe on trackpad or mouse wheel)
-			const deltaX = e.evt.shiftKey ? e.evt.deltaY : e.evt.deltaX;
-			const deltaY = e.evt.shiftKey ? 0 : e.evt.deltaY;
-
-			// Invert the direction to match natural scrolling
-			setViewport((prev) => ({
-				...prev,
-				x: prev.x - deltaX,
-				y: prev.y - deltaY,
-			}));
-		}
-	};
-
-	// Touch event handlers for mobile
-	const handleTouchStart = (e: Konva.KonvaEventObject<TouchEvent>) => {
-		const touches = e.evt.touches;
-		const stage = stageRef.current;
-
-		if (touches.length === 2) {
-			// Two fingers - prepare for pinch-to-zoom
-			const touch1 = { x: touches[0].clientX, y: touches[0].clientY };
-			const touch2 = { x: touches[1].clientX, y: touches[1].clientY };
-
-			const distance = Math.sqrt(
-				Math.pow(touch2.x - touch1.x, 2) + Math.pow(touch2.y - touch1.y, 2),
-			);
-
-			const center = {
-				x: (touch1.x + touch2.x) / 2,
-				y: (touch1.y + touch2.y) / 2,
-			};
-
-			setLastTouchDistance(distance);
-			setLastTouchCenter(center);
-		} else if (touches.length === 1) {
-			// Single finger - check if touching an image
-			const touch = { x: touches[0].clientX, y: touches[0].clientY };
-
-			// Check if we're touching an image
-			if (stage) {
-				const pos = stage.getPointerPosition();
-				if (pos) {
-					const canvasPos = {
-						x: (pos.x - viewport.x) / viewport.scale,
-						y: (pos.y - viewport.y) / viewport.scale,
-					};
-
-					// Check if touch is on any image
-					const touchedImage = images.some((img) => {
-						return (
-							canvasPos.x >= img.x &&
-							canvasPos.x <= img.x + img.width &&
-							canvasPos.y >= img.y &&
-							canvasPos.y <= img.y + img.height
-						);
-					});
-
-					setIsTouchingImage(touchedImage);
-				}
-			}
-
-			setLastTouchCenter(touch);
-		}
-	};
-
-	const handleTouchMove = (e: Konva.KonvaEventObject<TouchEvent>) => {
-		const touches = e.evt.touches;
-
-		if (touches.length === 2 && lastTouchDistance && lastTouchCenter) {
-			// Two fingers - handle pinch-to-zoom
-			e.evt.preventDefault();
-
-			const touch1 = { x: touches[0].clientX, y: touches[0].clientY };
-			const touch2 = { x: touches[1].clientX, y: touches[1].clientY };
-
-			const distance = Math.sqrt(
-				Math.pow(touch2.x - touch1.x, 2) + Math.pow(touch2.y - touch1.y, 2),
-			);
-
-			const center = {
-				x: (touch1.x + touch2.x) / 2,
-				y: (touch1.y + touch2.y) / 2,
-			};
-
-			// Calculate scale change
-			const scaleFactor = distance / lastTouchDistance;
-			const newScale = Math.max(0.1, Math.min(5, viewport.scale * scaleFactor));
-
-			// Calculate new position to zoom towards pinch center
-			const stage = stageRef.current;
-			if (stage) {
-				const stageBox = stage.container().getBoundingClientRect();
-				const stageCenter = {
-					x: center.x - stageBox.left,
-					y: center.y - stageBox.top,
-				};
-
-				const mousePointTo = {
-					x: (stageCenter.x - viewport.x) / viewport.scale,
-					y: (stageCenter.y - viewport.y) / viewport.scale,
-				};
-
-				const newPos = {
-					x: stageCenter.x - mousePointTo.x * newScale,
-					y: stageCenter.y - mousePointTo.y * newScale,
-				};
-
-				setViewport({ x: newPos.x, y: newPos.y, scale: newScale });
-			}
-
-			setLastTouchDistance(distance);
-			setLastTouchCenter(center);
-		} else if (
-			touches.length === 1 &&
-			lastTouchCenter &&
-			!isSelecting &&
-			!isDraggingImage &&
-			!isTouchingImage
-		) {
-			// Single finger - handle pan (only if not selecting, dragging, or touching an image)
-			// Don't prevent default if there might be system dialogs open
-			const hasActiveFileInput = document.querySelector('input[type="file"]');
-			if (!hasActiveFileInput) {
-				e.evt.preventDefault();
-			}
-
-			const touch = { x: touches[0].clientX, y: touches[0].clientY };
-			const deltaX = touch.x - lastTouchCenter.x;
-			const deltaY = touch.y - lastTouchCenter.y;
-
-			setViewport((prev) => ({
-				...prev,
-				x: prev.x + deltaX,
-				y: prev.y + deltaY,
-			}));
-
-			setLastTouchCenter(touch);
-		}
-	};
-
-	const handleTouchEnd = (e: Konva.KonvaEventObject<TouchEvent>) => {
-		setLastTouchDistance(null);
-		setLastTouchCenter(null);
-		setIsTouchingImage(false);
 	};
 
 	// Handle selection
@@ -1140,10 +923,6 @@ export default function OverlayPage() {
 		});
 	};
 
-
-
-
-
 	const handleRemoveBackground = async () => {
 		await handleRemoveBackgroundHandler({
 			images,
@@ -1214,128 +993,6 @@ export default function OverlayPage() {
 			});
 		}
 	};
-
-	// Function to handle the "Remove Background from Video" option in the context menu
-	const handleRemoveVideoBackground = (videoId: string) => {
-		const video = videos.find((vid) => vid.id === videoId);
-		if (!video) return;
-
-		setSelectedVideoForBackgroundRemoval(videoId);
-		setIsRemoveVideoBackgroundDialogOpen(true);
-	};
-
-	// Function to handle the video background removal
-	const handleVideoBackgroundRemoval = async (backgroundColor: string) => {
-		if (!selectedVideoForBackgroundRemoval) return;
-
-		const video = videos.find(
-			(vid) => vid.id === selectedVideoForBackgroundRemoval,
-		);
-		if (!video) return;
-
-		try {
-			setIsRemovingVideoBackground(true);
-
-			// Close the dialog
-			setIsRemoveVideoBackgroundDialogOpen(false);
-
-			// Don't show a toast here - the StreamingVideo component will handle progress
-
-			// Upload video if it's a data URL or blob URL
-			let videoUrl = video.src;
-			if (videoUrl.startsWith("data:") || videoUrl.startsWith("blob:")) {
-				const uploadResult = await falClient.storage.upload(
-					await (await fetch(videoUrl)).blob(),
-				);
-				videoUrl = uploadResult;
-			}
-
-			// Create a unique ID for this generation
-			const generationId = `bg_removal_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
-			// Map the background color to the API's expected format
-			const colorMap: Record<string, string> = {
-				transparent: "Transparent",
-				black: "Black",
-				white: "White",
-				gray: "Gray",
-				red: "Red",
-				green: "Green",
-				blue: "Blue",
-				yellow: "Yellow",
-				cyan: "Cyan",
-				magenta: "Magenta",
-				orange: "Orange",
-			};
-
-			// Map to API format
-			const apiBackgroundColor = colorMap[backgroundColor] || "Black";
-
-			// Add to active generations
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				newMap.set(generationId, {
-					imageUrl: videoUrl,
-					prompt: `Removing background from video`,
-					duration: video.duration || 5,
-					modelId: "bria-video-background-removal",
-					modelConfig: getVideoModelById("bria-video-background-removal"),
-					sourceVideoId: video.id,
-					backgroundColor: apiBackgroundColor,
-				});
-				return newMap;
-			});
-
-			// Create a persistent toast that will stay visible until the conversion completes
-			const toastId = toast({
-				title: "Removing background from video",
-				description: "This may take several minutes...",
-				duration: Infinity, // Make the toast stay until manually dismissed
-			}).id;
-
-			// Store the toast ID with the generation for later reference
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				const generation = newMap.get(generationId);
-				if (generation) {
-					newMap.set(generationId, {
-						...generation,
-						toastId,
-					});
-				}
-				return newMap;
-			});
-
-			// Remove the direct API call since StreamingVideo will handle it
-			// The StreamingVideo component will handle the actual API call and progress updates
-		} catch (error) {
-			console.error("Error removing video background:", error);
-			toast({
-				title: "Error processing video",
-				description:
-					error instanceof Error ? error.message : "An error occurred",
-				variant: "destructive",
-			});
-
-			// Remove from active generations
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				const generationId = Array.from(prev.keys()).find(
-					(key) =>
-						prev.get(key)?.sourceVideoId === selectedVideoForBackgroundRemoval,
-				);
-				if (generationId) {
-					newMap.delete(generationId);
-				}
-				return newMap;
-			});
-		} finally {
-			// Don't set isRemovingVideoBackground to false here - let the completion/error handlers do it
-			setSelectedVideoForBackgroundRemoval(null);
-		}
-	};
-
-
 
 	const handleIsolate = async () => {
 		if (!isolateTarget || !isolateInputValue.trim() || isIsolating) {
@@ -1902,7 +1559,7 @@ export default function OverlayPage() {
 
 			{/* Creative Toolbar (Area A) - Left Side */}
 			<CreativeToolbar
-				setActiveTool={() => { }} // Placeholder, as tools are currently disabled or future-proofed
+				setActiveTool={() => {}} // Placeholder, as tools are currently disabled or future-proofed
 				onAddClick={() => fileInputRef.current?.click()}
 			/>
 
@@ -2153,7 +1810,7 @@ export default function OverlayPage() {
 															buffer,
 														bottom:
 															(canvasSize.height - viewport.y) /
-															viewport.scale +
+																viewport.scale +
 															buffer,
 													};
 
@@ -2232,7 +1889,7 @@ export default function OverlayPage() {
 															buffer,
 														bottom:
 															(canvasSize.height - viewport.y) /
-															viewport.scale +
+																viewport.scale +
 															buffer,
 													};
 
@@ -2363,21 +2020,21 @@ export default function OverlayPage() {
 																			prev.map((img) =>
 																				img.id === croppingImageId
 																					? {
-																						...img,
-																						// Replace with cropped image
-																						src: croppedImageSrc,
-																						// Update position to the crop area's top-left
-																						x: img.x + cropX * img.width,
-																						y: img.y + cropY * img.height,
-																						// Update dimensions to match crop size
-																						width: cropWidth * img.width,
-																						height: cropHeight * img.height,
-																						// Remove crop values completely
-																						cropX: undefined,
-																						cropY: undefined,
-																						cropWidth: undefined,
-																						cropHeight: undefined,
-																					}
+																							...img,
+																							// Replace with cropped image
+																							src: croppedImageSrc,
+																							// Update position to the crop area's top-left
+																							x: img.x + cropX * img.width,
+																							y: img.y + cropY * img.height,
+																							// Update dimensions to match crop size
+																							width: cropWidth * img.width,
+																							height: cropHeight * img.height,
+																							// Remove crop values completely
+																							cropX: undefined,
+																							cropY: undefined,
+																							cropWidth: undefined,
+																							cropHeight: undefined,
+																						}
 																					: img,
 																			),
 																		);
@@ -2846,13 +2503,13 @@ export default function OverlayPage() {
 				videoUrl={
 					selectedVideoForBackgroundRemoval
 						? videos.find((vid) => vid.id === selectedVideoForBackgroundRemoval)
-							?.src || ""
+								?.src || ""
 						: ""
 				}
 				videoDuration={
 					selectedVideoForBackgroundRemoval
 						? videos.find((vid) => vid.id === selectedVideoForBackgroundRemoval)
-							?.duration || 0
+								?.duration || 0
 						: 0
 				}
 				isProcessing={isRemovingVideoBackground}

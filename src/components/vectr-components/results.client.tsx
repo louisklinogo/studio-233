@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
-import { search } from "@/app/actions/search";
+// import { search } from "@/app/actions/search";
 import { Preview } from "./preview";
 import { Button } from "./ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "./ui/empty";
@@ -27,7 +27,10 @@ const PRIORITY_COUNT = 12;
 
 export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
 	const { images } = useUploadedImages();
-	const [state, formAction, isPending] = useActionState(search, { data: [] });
+	// const [state, formAction, isPending] = useActionState(search, { data: [] });
+	const state: any = { data: [] };
+	const formAction = () => {};
+	const isPending = false;
 
 	useEffect(() => {
 		if ("error" in state) {
@@ -56,7 +59,7 @@ export const ResultsClient = ({ defaultData }: ResultsClientProps) => {
 						/>
 					))}
 					{"data" in state && state.data?.length
-						? state.data.map((blob, index) => (
+						? state.data.map((blob: any, index: number) => (
 								<Preview
 									key={blob.url}
 									priority={index < PRIORITY_COUNT}
