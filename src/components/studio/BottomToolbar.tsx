@@ -39,7 +39,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 					<DropdownMenuTrigger asChild>
 						<Button
 							variant="ghost"
-							className="h-10 rounded-l-full rounded-r-none px-4 hover:bg-accent/50 gap-2 min-w-[120px] justify-between"
+							className="h-10 rounded-l-full rounded-r-none px-3 hover:bg-accent/50"
 						>
 							<div className="flex items-center gap-2">
 								{activeTool === "select" ? (
@@ -47,11 +47,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 								) : (
 									<Hand className="h-4 w-4" />
 								)}
-								<span>{activeTool === "select" ? "Select" : "Hand tool"}</span>
 							</div>
-							<span className="text-xs text-muted-foreground ml-1">
-								{activeTool === "select" ? "V" : "H"}
-							</span>
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent
