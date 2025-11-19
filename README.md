@@ -1,14 +1,14 @@
-# Infinite Kanvas
+# studio+233
 
-![Infinite Kanvas](./public/og-img-compress.png)
+![studio+233](./public/og-img-compress.png)
 
-An infinite canvas image editor with AI transformations using fal.ai. Built with Next.js, React Konva, and tRPC.
+studio+233 is an infinite canvas image editor with AI transformations. Built with Next.js, React Konva, and tRPC.
 
 ## Features
 
 - Infinite canvas with pan/zoom
 - Drag & drop image upload
-- AI style transfer via Flux Kontext LoRA
+- AI generation via Flux Kontext LoRA
 - Background removal and object isolation
 - Real-time streaming of AI results
 - Multi-selection and image manipulation
@@ -90,9 +90,9 @@ Built with tRPC for type-safe API calls:
 
 ## How AI Features Work
 
-### Style Transfer
+### Image Generation
 
-Uses fal.ai's Flux Kontext LoRA model to apply artistic styles:
+Uses fal.ai's Flux Kontext LoRA model to generate and transform images:
 
 1. User selects an image and a style (or provides custom LoRA URL)
 2. Image is uploaded to fal.ai storage via proxy

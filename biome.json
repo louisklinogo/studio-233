@@ -1,0 +1,27 @@
+{
+	"$schema": "https://biomejs.dev/schemas/latest/schema.json",
+	"formatter": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": false,
+			"style": {
+				"useImportType": "off"
+			},
+			"complexity": {
+				"noUselessUndefinedInitialization": "off",
+				"noImportantStyles": "off"
+			},
+			"suspicious": {
+				"noUnknownAtRules": "off"
+			}
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	}
+}
