@@ -120,6 +120,7 @@ import { checkOS } from "@/utils/os-utils";
 import { convertImageToVideo } from "@/utils/video-utils";
 import { createCroppedImage, resizeImageIfNeeded } from "@/utils/image-processing";
 import { useCanvasState } from "@/hooks/useCanvasState";
+import { useVideoGeneration } from "@/hooks/useVideoGeneration";
 
 export default function OverlayPage() {
 	const { theme, setTheme } = useTheme();
@@ -178,10 +179,6 @@ export default function OverlayPage() {
 	const [activeGenerations, setActiveGenerations] = useState<
 		Map<string, ActiveGeneration>
 	>(new Map());
-	const [activeVideoGenerations, setActiveVideoGenerations] = useState<
-		Map<string, ActiveVideoGeneration>
-	>(new Map());
-
 	const [dragStartPositions, setDragStartPositions] = useState<
 		Map<string, { x: number; y: number }>
 	>(new Map());
@@ -213,33 +210,6 @@ export default function OverlayPage() {
 	const [showMinimap, setShowMinimap] = useState(true);
 	const [isStyleDialogOpen, setIsStyleDialogOpen] = useState(false);
 	const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
-	const [isImageToVideoDialogOpen, setIsImageToVideoDialogOpen] =
-		useState(false);
-	const [selectedImageForVideo, setSelectedImageForVideo] = useState<
-		string | null
-	>(null);
-	const [isConvertingToVideo, setIsConvertingToVideo] = useState(false);
-	const [isVideoToVideoDialogOpen, setIsVideoToVideoDialogOpen] =
-		useState(false);
-	const [selectedVideoForVideo, setSelectedVideoForVideo] = useState<
-		string | null
-	>(null);
-	const [isTransformingVideo, setIsTransformingVideo] = useState(false);
-	const [isExtendVideoDialogOpen, setIsExtendVideoDialogOpen] = useState(false);
-	const [selectedVideoForExtend, setSelectedVideoForExtend] = useState<
-		string | null
-	>(null);
-	const [isExtendingVideo, setIsExtendingVideo] = useState(false);
-	const [
-		isRemoveVideoBackgroundDialogOpen,
-		setIsRemoveVideoBackgroundDialogOpen,
-	] = useState(false);
-	const [
-		selectedVideoForBackgroundRemoval,
-		setSelectedVideoForBackgroundRemoval,
-	] = useState<string | null>(null);
-	const [isRemovingVideoBackground, setIsRemovingVideoBackground] =
-		useState(false);
 	const [customApiKey, setCustomApiKey] = useState<string>("");
 	const [tempApiKey, setTempApiKey] = useState<string>("");
 	const [_, setIsSaving] = useState(false);
@@ -257,6 +227,58 @@ export default function OverlayPage() {
 
 	// Track when generation completes
 	const [previousGenerationCount, setPreviousGenerationCount] = useState(0);
+
+	// Create FAL client instance with proxy
+	const falClient = useFalClient(customApiKey);
+
+	const trpc = useTRPC();
+
+	const { mutateAsync: removeBackground } = useMutation(
+		trpc.removeBackground.mutationOptions(),
+	);
+
+	// Video generation hook
+	const {
+		activeVideoGenerations,
+		setActiveVideoGenerations,
+		isImageToVideoDialogOpen,
+		setIsImageToVideoDialogOpen,
+		selectedImageForVideo,
+		setSelectedImageForVideo,
+		isConvertingToVideo,
+		isVideoToVideoDialogOpen,
+		setIsVideoToVideoDialogOpen,
+		selectedVideoForVideo,
+		setSelectedVideoForVideo,
+		isTransformingVideo,
+		isExtendVideoDialogOpen,
+		setIsExtendVideoDialogOpen,
+		selectedVideoForExtend,
+		setSelectedVideoForExtend,
+		isExtendingVideo,
+		isRemoveVideoBackgroundDialogOpen,
+		setIsRemoveVideoBackgroundDialogOpen,
+		selectedVideoForBackgroundRemoval,
+		setSelectedVideoForBackgroundRemoval,
+		isRemovingVideoBackground,
+		handleConvertToVideo,
+		handleImageToVideoConversion,
+		handleVideoToVideo,
+		handleVideoToVideoTransformation,
+		handleExtendVideo,
+		handleVideoExtension,
+		handleRemoveVideoBackgroundTrigger: handleRemoveVideoBackground,
+		handleVideoBackgroundRemoval,
+		handleVideoGenerationComplete,
+		handleVideoGenerationError,
+	} = useVideoGeneration(
+		customApiKey,
+		images,
+		videos,
+		setImages,
+		setVideos,
+		saveToHistory,
+	);
 
 	useEffect(() => {
 		const currentCount =
@@ -290,510 +312,6 @@ export default function OverlayPage() {
 		previousGenerationCount,
 	]);
 
-	// Create FAL client instance with proxy
-	const falClient = useFalClient(customApiKey);
-
-	const trpc = useTRPC();
-
-	// Direct FAL upload function using proxy
-
-	const { mutateAsync: removeBackground } = useMutation(
-		trpc.removeBackground.mutationOptions(),
-	);
-
-	// Function to handle the "Convert to Video" option in the context menu
-	const handleConvertToVideo = (imageId: string) => {
-		const image = images.find((img) => img.id === imageId);
-		if (!image) return;
-
-		setSelectedImageForVideo(imageId);
-		setIsImageToVideoDialogOpen(true);
-	};
-
-	// Function to handle the image-to-video conversion
-	const handleImageToVideoConversion = async (
-		settings: VideoGenerationSettings,
-	) => {
-		if (!selectedImageForVideo) return;
-
-		const image = images.find((img) => img.id === selectedImageForVideo);
-		if (!image) return;
-
-		try {
-			setIsConvertingToVideo(true);
-
-			// Upload image if it's a data URL
-			let imageUrl = image.src;
-			if (imageUrl.startsWith("data:")) {
-				const uploadResult = await falClient.storage.upload(
-					await (await fetch(imageUrl)).blob(),
-				);
-				imageUrl = uploadResult;
-			}
-
-			// Create a unique ID for this generation
-			const generationId = `img2vid_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
-			// Add to active generations
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				newMap.set(generationId, {
-					imageUrl,
-					prompt: settings.prompt || "",
-					duration: settings.duration || 5,
-					modelId: settings.modelId, // Add video modelId
-					resolution: settings.resolution || "720p",
-					cameraFixed: settings.cameraFixed,
-					seed: settings.seed,
-					sourceImageId: selectedImageForVideo, // Store the source image ID
-				});
-				return newMap;
-			});
-
-			// Clear the converting flag since it's now tracked in activeVideoGenerations
-			setIsConvertingToVideo(false);
-
-			// Close the dialog
-			setIsImageToVideoDialogOpen(false);
-
-			// Get video model name for toast display
-			let modelName = "Video Model";
-			const modelId = settings.modelId || "ltx-video"; // Default to ltx-video
-			const { getVideoModelById } = await import("@/lib/video-models");
-			const model = getVideoModelById(modelId);
-			if (model) {
-				modelName = model.name;
-			}
-
-			// Store the toast ID with the generation for later reference
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				const generation = newMap.get(generationId);
-				if (generation) {
-					newMap.set(generationId, generation);
-				}
-				return newMap;
-			});
-		} catch (error) {
-			console.error("Error starting image-to-video conversion:", error);
-			toast({
-				title: "Conversion failed",
-				description:
-					error instanceof Error ? error.message : "Failed to start conversion",
-				variant: "destructive",
-			});
-			setIsConvertingToVideo(false);
-		}
-	};
-
-	// Function to handle the "Video to Video" option in the context menu
-	const handleVideoToVideo = (videoId: string) => {
-		const video = videos.find((vid) => vid.id === videoId);
-		if (!video) return;
-
-		setSelectedVideoForVideo(videoId);
-		setIsVideoToVideoDialogOpen(true);
-	};
-
-	// Function to handle the video-to-video transformation
-	const handleVideoToVideoTransformation = async (
-		settings: VideoGenerationSettings,
-	) => {
-		if (!selectedVideoForVideo) return;
-
-		const video = videos.find((vid) => vid.id === selectedVideoForVideo);
-		if (!video) return;
-
-		try {
-			setIsTransformingVideo(true);
-
-			// Upload video if it's a data URL or local file
-			let videoUrl = video.src;
-			if (videoUrl.startsWith("data:") || videoUrl.startsWith("blob:")) {
-				const uploadResult = await falClient.storage.upload(
-					await (await fetch(videoUrl)).blob(),
-				);
-				videoUrl = uploadResult;
-			}
-
-			// Create a unique ID for this generation
-			const generationId = `vid2vid_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
-			// Add to active generations
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				newMap.set(generationId, {
-					...settings, // Include all settings first
-					imageUrl: videoUrl, // Using imageUrl field for video URL
-					duration: video.duration || settings.duration || 5,
-					modelId: settings.modelId || "seedance-pro",
-					resolution: settings.resolution || "720p",
-					isVideoToVideo: true,
-					sourceVideoId: selectedVideoForVideo,
-				});
-				return newMap;
-			});
-
-			// Close the dialog
-			setIsVideoToVideoDialogOpen(false);
-
-			// Get video model name for toast display
-			let modelName = "Video Model";
-			const modelId = settings.modelId || "seedance-pro";
-			const { getVideoModelById } = await import("@/lib/video-models");
-			const model = getVideoModelById(modelId);
-			if (model) {
-				modelName = model.name;
-			}
-
-			// Create a persistent toast
-			const toastId = toast({
-				title: `Transforming video (${modelName} - ${settings.resolution || "Default"})`,
-				description: "This may take a minute...",
-				duration: Infinity,
-			}).id;
-
-			// Store the toast ID with the generation
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				const generation = newMap.get(generationId);
-				if (generation) {
-					newMap.set(generationId, {
-						...generation,
-						toastId,
-					});
-				}
-				return newMap;
-			});
-		} catch (error) {
-			console.error("Error starting video-to-video transformation:", error);
-			toast({
-				title: "Transformation failed",
-				description:
-					error instanceof Error
-						? error.message
-						: "Failed to start transformation",
-				variant: "destructive",
-			});
-			setIsTransformingVideo(false);
-		}
-	};
-
-	// Function to handle the "Extend Video" option in the context menu
-	const handleExtendVideo = (videoId: string) => {
-		const video = videos.find((vid) => vid.id === videoId);
-		if (!video) return;
-
-		setSelectedVideoForExtend(videoId);
-		setIsExtendVideoDialogOpen(true);
-	};
-
-	// Function to handle the video extension
-	const handleVideoExtension = async (settings: VideoGenerationSettings) => {
-		if (!selectedVideoForExtend) return;
-
-		const video = videos.find((vid) => vid.id === selectedVideoForExtend);
-		if (!video) return;
-
-		try {
-			setIsExtendingVideo(true);
-
-			// Upload video if it's a data URL or local file
-			let videoUrl = video.src;
-			if (videoUrl.startsWith("data:") || videoUrl.startsWith("blob:")) {
-				const uploadResult = await falClient.storage.upload(
-					await (await fetch(videoUrl)).blob(),
-				);
-				videoUrl = uploadResult;
-			}
-
-			// Create a unique ID for this generation
-			const generationId = `vid_ext_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
-			// Add to active generations
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				newMap.set(generationId, {
-					...settings, // Include all settings first
-					imageUrl: videoUrl, // Using imageUrl field for video URL
-					duration: video.duration || settings.duration || 5,
-					modelId: settings.modelId || "seedance-pro",
-					resolution: settings.resolution || "720p",
-					isVideoToVideo: true,
-					isVideoExtension: true,
-					sourceVideoId: selectedVideoForExtend,
-				});
-				return newMap;
-			});
-
-			// Close the dialog
-			setIsExtendVideoDialogOpen(false);
-
-			// Get video model name for toast display
-			let modelName = "Video Model";
-			const modelId = settings.modelId || "seedance-pro";
-			const { getVideoModelById } = await import("@/lib/video-models");
-			const model = getVideoModelById(modelId);
-			if (model) {
-				modelName = model.name;
-			}
-
-			// Create a persistent toast
-			const toastId = toast({
-				title: `Extending video (${modelName} - ${settings.resolution || "Default"})`,
-				description: "This may take a minute...",
-				duration: Infinity,
-			}).id;
-
-			// Store the toast ID with the generation
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				const generation = newMap.get(generationId);
-				if (generation) {
-					newMap.set(generationId, {
-						...generation,
-						toastId,
-					});
-				}
-				return newMap;
-			});
-		} catch (error) {
-			console.error("Error starting video extension:", error);
-			toast({
-				title: "Extension failed",
-				description:
-					error instanceof Error
-						? error.message
-						: "Failed to start video extension",
-				variant: "destructive",
-			});
-			setIsExtendingVideo(false);
-		}
-	};
-
-	// Function to handle video generation completion
-	const handleVideoGenerationComplete = async (
-		videoId: string,
-		videoUrl: string,
-		duration: number,
-	) => {
-		try {
-			console.log("Video generation complete:", {
-				videoId,
-				videoUrl,
-				duration,
-			});
-
-			// Get the generation data to check for source image ID
-			const generation = activeVideoGenerations.get(videoId);
-			const sourceImageId = generation?.sourceImageId || selectedImageForVideo;
-			const isBackgroundRemoval =
-				generation?.modelId === "bria-video-background-removal";
-
-			// Dismiss progress toast if it exists
-			if (generation?.toastId) {
-				const toastElement = document.querySelector(
-					`[data-toast-id="${generation.toastId}"]`,
-				);
-				if (toastElement) {
-					// Trigger dismiss by clicking the close button
-					const closeButton = toastElement.querySelector(
-						"[data-radix-toast-close]",
-					);
-					if (closeButton instanceof HTMLElement) {
-						closeButton.click();
-					}
-				}
-			}
-
-			// Find the original image if this was an image-to-video conversion
-			if (sourceImageId) {
-				const image = images.find((img) => img.id === sourceImageId);
-				if (image) {
-					// Create a video element based on the original image
-					const video = convertImageToVideo(
-						image,
-						videoUrl,
-						duration,
-						false, // Don't replace the original image
-					);
-
-					// Position the video to the right of the source image
-					// Add a small gap between the image and video (20px)
-					video.x = image.x + image.width + 20;
-					video.y = image.y; // Keep the same vertical position
-
-					// Add the video to the videos state
-					setVideos((prev) => [...prev, { ...video, isVideo: true as const }]);
-
-					// Save to history
-					saveToHistory();
-
-					// Show success toast
-					toast({
-						title: "Video created successfully",
-						description:
-							"The video has been added to the right of the source image.",
-					});
-				} else {
-					console.error("Source image not found:", sourceImageId);
-					toast({
-						title: "Error creating video",
-						description: "The source image could not be found.",
-						variant: "destructive",
-					});
-				}
-			} else if (generation?.sourceVideoId || generation?.isVideoToVideo) {
-				// This was a video-to-video transformation or extension
-				const sourceVideoId =
-					generation?.sourceVideoId ||
-					selectedVideoForVideo ||
-					selectedVideoForExtend;
-				const isExtension = generation?.isVideoExtension;
-
-				if (sourceVideoId) {
-					const sourceVideo = videos.find((vid) => vid.id === sourceVideoId);
-					if (sourceVideo) {
-						// Create a new video based on the source video
-						const newVideo: PlacedVideo = {
-							id: `video_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-							src: videoUrl,
-							x: sourceVideo.x + sourceVideo.width + 20, // Position to the right
-							y: sourceVideo.y,
-							width: sourceVideo.width,
-							height: sourceVideo.height,
-							rotation: 0,
-							isPlaying: false,
-							currentTime: 0,
-							duration: duration,
-							volume: 1,
-							muted: false,
-							isLooping: false,
-							isVideo: true as const,
-						};
-
-						// Add the transformed video to the canvas
-						setVideos((prev) => [...prev, newVideo]);
-
-						// Save to history
-						saveToHistory();
-
-						if (isExtension) {
-							toast({
-								title: "Video extended successfully",
-								description:
-									"The extended video has been added to the right of the source video.",
-							});
-						} else if (
-							generation?.modelId === "bria-video-background-removal"
-						) {
-							toast({
-								title: "Background removed successfully",
-								description:
-									"The video with removed background has been added to the right of the source video.",
-							});
-						} else {
-							toast({
-								title: "Video transformed successfully",
-								description:
-									"The transformed video has been added to the right of the source video.",
-							});
-						}
-					} else {
-						console.error("Source video not found:", sourceVideoId);
-						toast({
-							title: "Error creating video",
-							description: "The source video could not be found.",
-							variant: "destructive",
-						});
-					}
-				}
-
-				// Reset the transformation/extension state
-				setIsTransformingVideo(false);
-				setSelectedVideoForVideo(null);
-				setIsExtendingVideo(false);
-				setSelectedVideoForExtend(null);
-			} else {
-				// This was a text-to-video generation
-				// For now, just log it as the placement function is missing
-				console.log("Generated video URL:", videoUrl);
-				toast({
-					title: "Video generated",
-					description: "Video is ready but cannot be placed on canvas yet.",
-				});
-			}
-
-			// Remove from active generations
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				newMap.delete(videoId);
-				return newMap;
-			});
-
-			// Reset appropriate flags based on generation type
-			if (isBackgroundRemoval) {
-				setIsRemovingVideoBackground(false);
-			} else {
-				setIsConvertingToVideo(false);
-				setSelectedImageForVideo(null);
-			}
-		} catch (error) {
-			console.error("Error completing video generation:", error);
-
-			toast({
-				title: "Error creating video",
-				description:
-					error instanceof Error ? error.message : "Failed to create video",
-				variant: "destructive",
-			});
-
-			// Remove from active generations even on error
-			setActiveVideoGenerations((prev) => {
-				const newMap = new Map(prev);
-				newMap.delete(videoId);
-				return newMap;
-			});
-
-			setIsConvertingToVideo(false);
-			setSelectedImageForVideo(null);
-		}
-	};
-
-	// Function to handle video generation errors
-	const handleVideoGenerationError = (videoId: string, error: string) => {
-		console.error("Video generation error:", error);
-
-		// Check if this was a background removal
-		const generation = activeVideoGenerations.get(videoId);
-		const isBackgroundRemoval =
-			generation?.modelId === "bria-video-background-removal";
-
-		toast({
-			title: isBackgroundRemoval
-				? "Background removal failed"
-				: "Video generation failed",
-			description: error,
-			variant: "destructive",
-		});
-
-		// Remove from active generations
-		setActiveVideoGenerations((prev) => {
-			const newMap = new Map(prev);
-			newMap.delete(videoId);
-			return newMap;
-		});
-
-		// Reset appropriate flags
-		if (isBackgroundRemoval) {
-			setIsRemovingVideoBackground(false);
-		} else {
-			setIsConvertingToVideo(false);
-			setIsTransformingVideo(false);
-			setIsExtendingVideo(false);
-		}
-	};
-
 	// Function to handle video generation progress
 	const handleVideoGenerationProgress = (
 		videoId: string,
@@ -803,6 +321,7 @@ export default function OverlayPage() {
 		// You could update a progress indicator here if needed
 		console.log(`Video generation progress: ${progress}% - ${status}`);
 	};
+
 
 	const { mutateAsync: isolateObject } = useMutation(
 		trpc.isolateObject.mutationOptions(),
