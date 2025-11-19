@@ -118,12 +118,37 @@ import {
 } from "@/utils/canvas-utils";
 import { checkOS } from "@/utils/os-utils";
 import { convertImageToVideo } from "@/utils/video-utils";
+import { createCroppedImage, resizeImageIfNeeded } from "@/utils/image-processing";
+import { useCanvasState } from "@/hooks/useCanvasState";
 
 export default function OverlayPage() {
 	const { theme, setTheme } = useTheme();
-	const [images, setImages] = useState<PlacedImage[]>([]);
-	const [videos, setVideos] = useState<PlacedVideo[]>([]);
-	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	const {
+		images,
+		setImages,
+		videos,
+		setVideos,
+		selectedIds,
+		setSelectedIds,
+		selectionBox,
+		setSelectionBox,
+		isSelecting,
+		setIsSelecting,
+		history,
+		setHistory,
+		historyIndex,
+		setHistoryIndex,
+		saveToHistory,
+		undo,
+		redo,
+		deleteSelected: handleDelete,
+		duplicateSelected: handleDuplicate,
+		sendToFront,
+		sendToBack,
+		bringForward,
+		sendBackward,
+	} = useCanvasState();
+
 	const [activeTool, setActiveTool] = useState<ToolType>("select");
 	const [isChatOpen, setIsChatOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -156,16 +181,7 @@ export default function OverlayPage() {
 	const [activeVideoGenerations, setActiveVideoGenerations] = useState<
 		Map<string, ActiveVideoGeneration>
 	>(new Map());
-	const [selectionBox, setSelectionBox] = useState<SelectionBox>({
-		startX: 0,
-		startY: 0,
-		endX: 0,
-		endY: 0,
-		visible: false,
-	});
-	const [isSelecting, setIsSelecting] = useState(false);
-	const [history, setHistory] = useState<HistoryState[]>([]);
-	const [historyIndex, setHistoryIndex] = useState(-1);
+
 	const [dragStartPositions, setDragStartPositions] = useState<
 		Map<string, { x: number; y: number }>
 	>(new Map());
@@ -999,47 +1015,9 @@ export default function OverlayPage() {
 		}
 	}, [customApiKey]);
 
-	// Save state to history
-	const saveToHistory = useCallback(() => {
-		const newState = {
-			images: [...images],
-			videos: [...videos],
-			selectedIds: [...selectedIds],
-		};
-		const newHistory = history.slice(0, historyIndex + 1);
-		newHistory.push(newState);
-		setHistory(newHistory);
-		setHistoryIndex(newHistory.length - 1);
-	}, [images, videos, selectedIds, history, historyIndex]);
 
-	// Undo
-	const undo = useCallback(() => {
-		if (historyIndex > 0) {
-			const prevState = history[historyIndex - 1];
-			setImages(prevState.images);
-			setVideos(prevState.videos || []);
-			setSelectedIds(prevState.selectedIds);
-			setHistoryIndex(historyIndex - 1);
-		}
-	}, [history, historyIndex]);
 
-	// Redo
-	const redo = useCallback(() => {
-		if (historyIndex < history.length - 1) {
-			const nextState = history[historyIndex + 1];
-			setImages(nextState.images);
-			setVideos(nextState.videos || []);
-			setSelectedIds(nextState.selectedIds);
-			setHistoryIndex(historyIndex + 1);
-		}
-	}, [history, historyIndex]);
 
-	// Save initial state
-	useEffect(() => {
-		if (history.length === 0) {
-			saveToHistory();
-		}
-	}, []);
 
 	// Set canvas ready state after mount
 	useEffect(() => {
@@ -1188,121 +1166,7 @@ export default function OverlayPage() {
 		loadDefaultImages();
 	}, [isStorageLoaded, images.length]);
 
-	// Helper function to resize image if too large
-	const resizeImageIfNeeded = async (
-		dataUrl: string,
-		maxWidth: number = 2048,
-		maxHeight: number = 2048,
-	): Promise<string> => {
-		return new Promise((resolve, reject) => {
-			const img = new window.Image();
-			img.crossOrigin = "anonymous";
-			img.onload = () => {
-				// Check if resize is needed
-				if (img.width <= maxWidth && img.height <= maxHeight) {
-					resolve(dataUrl);
-					return;
-				}
 
-				// Calculate new dimensions
-				let newWidth = img.width;
-				let newHeight = img.height;
-				const aspectRatio = img.width / img.height;
-
-				if (newWidth > maxWidth) {
-					newWidth = maxWidth;
-					newHeight = newWidth / aspectRatio;
-				}
-				if (newHeight > maxHeight) {
-					newHeight = maxHeight;
-					newWidth = newHeight * aspectRatio;
-				}
-
-				// Create canvas and resize
-				const canvas = document.createElement("canvas");
-				canvas.width = newWidth;
-				canvas.height = newHeight;
-				const ctx = canvas.getContext("2d");
-				if (!ctx) {
-					reject(new Error("Failed to get canvas context"));
-					return;
-				}
-
-				ctx.drawImage(img, 0, 0, newWidth, newHeight);
-
-				// Convert to data URL with compression
-				canvas.toBlob(
-					(blob) => {
-						if (!blob) {
-							reject(new Error("Failed to create blob"));
-							return;
-						}
-						const reader = new FileReader();
-						reader.onload = () => resolve(reader.result as string);
-						reader.onerror = reject;
-						reader.readAsDataURL(blob);
-					},
-					"image/jpeg",
-					0.9, // 90% quality
-				);
-			};
-			img.onerror = () => reject(new Error("Failed to load image"));
-			img.src = dataUrl;
-		});
-	};
-
-	// Helper function to create a cropped image
-	const createCroppedImage = async (
-		imageSrc: string,
-		cropX: number,
-		cropY: number,
-		cropWidth: number,
-		cropHeight: number,
-	): Promise<string> => {
-		return new Promise((resolve, reject) => {
-			const img = new window.Image();
-			img.crossOrigin = "anonymous"; // Enable CORS
-			img.onload = () => {
-				const canvas = document.createElement("canvas");
-				const ctx = canvas.getContext("2d");
-				if (!ctx) {
-					reject(new Error("Failed to get canvas context"));
-					return;
-				}
-
-				// Set canvas size to the natural cropped dimensions
-				canvas.width = cropWidth * img.naturalWidth;
-				canvas.height = cropHeight * img.naturalHeight;
-
-				// Draw the cropped portion at full resolution
-				ctx.drawImage(
-					img,
-					cropX * img.naturalWidth,
-					cropY * img.naturalHeight,
-					cropWidth * img.naturalWidth,
-					cropHeight * img.naturalHeight,
-					0,
-					0,
-					canvas.width,
-					canvas.height,
-				);
-
-				// Convert to data URL
-				canvas.toBlob((blob) => {
-					if (!blob) {
-						reject(new Error("Failed to create blob"));
-						return;
-					}
-					const reader = new FileReader();
-					reader.onload = () => resolve(reader.result as string);
-					reader.onerror = reject;
-					reader.readAsDataURL(blob);
-				}, "image/png");
-			};
-			img.onerror = () => reject(new Error("Failed to load image"));
-			img.src = imageSrc;
-		});
-	};
 
 	// Handle file upload
 	const handleFileUpload = (
@@ -1757,50 +1621,9 @@ export default function OverlayPage() {
 		});
 	};
 
-	const handleDelete = () => {
-		// Save to history before deleting
-		saveToHistory();
-		setImages((prev) => prev.filter((img) => !selectedIds.includes(img.id)));
-		setVideos((prev) => prev.filter((vid) => !selectedIds.includes(vid.id)));
-		setSelectedIds([]);
-	};
 
-	const handleDuplicate = () => {
-		// Save to history before duplicating
-		saveToHistory();
 
-		// Duplicate selected images
-		const selectedImages = images.filter((img) => selectedIds.includes(img.id));
-		const newImages = selectedImages.map((img) => ({
-			...img,
-			id: `img-${Date.now()}-${Math.random()}`,
-			x: img.x + 20,
-			y: img.y + 20,
-		}));
 
-		// Duplicate selected videos
-		const selectedVideos = videos.filter((vid) => selectedIds.includes(vid.id));
-		const newVideos = selectedVideos.map((vid) => ({
-			...vid,
-			id: `vid-${Date.now()}-${Math.random()}`,
-			x: vid.x + 20,
-			y: vid.y + 20,
-			// Reset playback state for duplicated videos
-			currentTime: 0,
-			isPlaying: false,
-		}));
-
-		// Update both arrays
-		setImages((prev) => [...prev, ...newImages]);
-		setVideos((prev) => [...prev, ...newVideos]);
-
-		// Select all duplicated items
-		const newIds = [
-			...newImages.map((img) => img.id),
-			...newVideos.map((vid) => vid.id),
-		];
-		setSelectedIds(newIds);
-	};
 
 	const handleRemoveBackground = async () => {
 		await handleRemoveBackgroundHandler({
@@ -1993,89 +1816,7 @@ export default function OverlayPage() {
 		}
 	};
 
-	const sendToFront = useCallback(() => {
-		if (selectedIds.length === 0) return;
 
-		saveToHistory();
-		setImages((prev) => {
-			// Get selected images in their current order
-			const selectedImages = selectedIds
-				.map((id) => prev.find((img) => img.id === id))
-				.filter(Boolean) as PlacedImage[];
-
-			// Get remaining images
-			const remainingImages = prev.filter(
-				(img) => !selectedIds.includes(img.id),
-			);
-
-			// Place selected images at the end (top layer)
-			return [...remainingImages, ...selectedImages];
-		});
-	}, [selectedIds, saveToHistory]);
-
-	const sendToBack = useCallback(() => {
-		if (selectedIds.length === 0) return;
-
-		saveToHistory();
-		setImages((prev) => {
-			// Get selected images in their current order
-			const selectedImages = selectedIds
-				.map((id) => prev.find((img) => img.id === id))
-				.filter(Boolean) as PlacedImage[];
-
-			// Get remaining images
-			const remainingImages = prev.filter(
-				(img) => !selectedIds.includes(img.id),
-			);
-
-			// Place selected images at the beginning (bottom layer)
-			return [...selectedImages, ...remainingImages];
-		});
-	}, [selectedIds, saveToHistory]);
-
-	const bringForward = useCallback(() => {
-		if (selectedIds.length === 0) return;
-
-		saveToHistory();
-		setImages((prev) => {
-			const result = [...prev];
-
-			// Process selected images from back to front to maintain relative order
-			for (let i = result.length - 2; i >= 0; i--) {
-				if (
-					selectedIds.includes(result[i].id) &&
-					!selectedIds.includes(result[i + 1].id)
-				) {
-					// Swap with the next image if it's not also selected
-					[result[i], result[i + 1]] = [result[i + 1], result[i]];
-				}
-			}
-
-			return result;
-		});
-	}, [selectedIds, saveToHistory]);
-
-	const sendBackward = useCallback(() => {
-		if (selectedIds.length === 0) return;
-
-		saveToHistory();
-		setImages((prev) => {
-			const result = [...prev];
-
-			// Process selected images from front to back to maintain relative order
-			for (let i = 1; i < result.length; i++) {
-				if (
-					selectedIds.includes(result[i].id) &&
-					!selectedIds.includes(result[i - 1].id)
-				) {
-					// Swap with the previous image if it's not also selected
-					[result[i], result[i - 1]] = [result[i - 1], result[i]];
-				}
-			}
-
-			return result;
-		});
-	}, [selectedIds, saveToHistory]);
 
 	const handleIsolate = async () => {
 		if (!isolateTarget || !isolateInputValue.trim() || isIsolating) {
@@ -2642,7 +2383,7 @@ export default function OverlayPage() {
 
 			{/* Creative Toolbar (Area A) - Left Side */}
 			<CreativeToolbar
-				setActiveTool={() => {}} // Placeholder, as tools are currently disabled or future-proofed
+				setActiveTool={() => { }} // Placeholder, as tools are currently disabled or future-proofed
 				onAddClick={() => fileInputRef.current?.click()}
 			/>
 
@@ -2893,7 +2634,7 @@ export default function OverlayPage() {
 															buffer,
 														bottom:
 															(canvasSize.height - viewport.y) /
-																viewport.scale +
+															viewport.scale +
 															buffer,
 													};
 
@@ -2972,7 +2713,7 @@ export default function OverlayPage() {
 															buffer,
 														bottom:
 															(canvasSize.height - viewport.y) /
-																viewport.scale +
+															viewport.scale +
 															buffer,
 													};
 
@@ -3103,21 +2844,21 @@ export default function OverlayPage() {
 																			prev.map((img) =>
 																				img.id === croppingImageId
 																					? {
-																							...img,
-																							// Replace with cropped image
-																							src: croppedImageSrc,
-																							// Update position to the crop area's top-left
-																							x: img.x + cropX * img.width,
-																							y: img.y + cropY * img.height,
-																							// Update dimensions to match crop size
-																							width: cropWidth * img.width,
-																							height: cropHeight * img.height,
-																							// Remove crop values completely
-																							cropX: undefined,
-																							cropY: undefined,
-																							cropWidth: undefined,
-																							cropHeight: undefined,
-																						}
+																						...img,
+																						// Replace with cropped image
+																						src: croppedImageSrc,
+																						// Update position to the crop area's top-left
+																						x: img.x + cropX * img.width,
+																						y: img.y + cropY * img.height,
+																						// Update dimensions to match crop size
+																						width: cropWidth * img.width,
+																						height: cropHeight * img.height,
+																						// Remove crop values completely
+																						cropX: undefined,
+																						cropY: undefined,
+																						cropWidth: undefined,
+																						cropHeight: undefined,
+																					}
 																					: img,
 																			),
 																		);
@@ -3586,13 +3327,13 @@ export default function OverlayPage() {
 				videoUrl={
 					selectedVideoForBackgroundRemoval
 						? videos.find((vid) => vid.id === selectedVideoForBackgroundRemoval)
-								?.src || ""
+							?.src || ""
 						: ""
 				}
 				videoDuration={
 					selectedVideoForBackgroundRemoval
 						? videos.find((vid) => vid.id === selectedVideoForBackgroundRemoval)
-								?.duration || 0
+							?.duration || 0
 						: 0
 				}
 				isProcessing={isRemovingVideoBackground}
