@@ -182,7 +182,7 @@
 		@apply border-border;
 	}
 	body {
-		@apply bg-background text-foreground font-medium;
+		@apply bg-background text-foreground;
 	}
 }
 

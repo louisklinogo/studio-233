@@ -34,17 +34,20 @@ import { VideoOverlays } from "@/components/canvas/VideoOverlays";
 import { ZoomControls } from "@/components/canvas/ZoomControls";
 import { GenerationsIndicator } from "@/components/generations-indicator";
 import { Logo, SpinnerIcon } from "@/components/icons";
-import { AssistantPanel } from "@/components/studio/AssistantPanel";
 import {
 	BottomToolbar,
 	type ToolType,
 } from "@/components/studio/BottomToolbar";
-import { ChatInterface } from "@/components/studio/ChatInterface";
 import {
 	CreativeToolbar,
 	type ToolType as CreativeToolType,
 } from "@/components/studio/CreativeToolbar";
+import { ChatPanel } from "@/components/studio/chat/ChatPanel";
 import { DialogManager } from "@/components/studio/DialogManager";
+import {
+	ImageGeneratorPanel,
+	ImageGeneratorSettings,
+} from "@/components/studio/ImageGeneratorPanel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -162,6 +165,8 @@ export default function OverlayPage() {
 		setCustomApiKey,
 		tempApiKey,
 		setTempApiKey,
+		themeColor,
+		setThemeColor,
 	} = useUIState();
 
 	const {
@@ -187,6 +192,7 @@ export default function OverlayPage() {
 		simpsonsStyle?.id || "simpsons",
 	);
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [isImageGeneratorOpen, setIsImageGeneratorOpen] = useState(false);
 	const [activeGenerations, setActiveGenerations] = useState<
 		Map<string, ActiveGeneration>
 	>(new Map());
@@ -281,6 +287,8 @@ export default function OverlayPage() {
 		setVideos,
 		saveToHistory,
 	);
+
+	const [isIsolateDialogOpen, setIsIsolateDialogOpen] = useState(false);
 
 	useEffect(() => {
 		const currentCount =
@@ -878,11 +886,27 @@ export default function OverlayPage() {
 	// Users can now manually combine images via the context menu before running generation
 
 	// Handle context menu actions
-	const handleRun = async () => {
+	const handleRun = async (settings?: ImageGeneratorSettings) => {
+		// If settings are provided from the panel, update the generation settings
+		if (settings) {
+			setGenerationSettings((prev) => ({
+				...prev,
+				prompt: settings.prompt,
+				modelId: settings.modelId,
+				// Assuming loraUrl and styleId might need handling if model is not custom
+			}));
+		}
+
 		await handleRunHandler({
 			images,
 			selectedIds,
-			generationSettings,
+			generationSettings: settings
+				? {
+						...generationSettings,
+						...settings,
+						loraUrl: generationSettings.loraUrl,
+					}
+				: generationSettings,
 			customApiKey,
 			canvasSize,
 			viewport,
@@ -894,6 +918,7 @@ export default function OverlayPage() {
 			setIsApiKeyDialogOpen,
 			toast,
 			generateTextToImage,
+			editWithGemini,
 		});
 	};
 
@@ -908,6 +933,16 @@ export default function OverlayPage() {
 			customApiKey,
 			falClient,
 			setIsApiKeyDialogOpen,
+		});
+	};
+
+	const handleChat = (prompt: string) => {
+		// For now, just update the prompt and show a toast
+		// In the future, this will handle actual agent interactions
+		setGenerationSettings((prev) => ({ ...prev, prompt }));
+		toast({
+			title: "Message received",
+			description: "Agent functionality coming soon!",
 		});
 	};
 
@@ -969,6 +1004,9 @@ export default function OverlayPage() {
 	};
 
 	const handleIsolate = async () => {
+		// Close the dialog first
+		setIsIsolateDialogOpen(false);
+
 		if (!isolateTarget || !isolateInputValue.trim() || isIsolating) {
 			return;
 		}
@@ -1533,28 +1571,38 @@ export default function OverlayPage() {
 
 			{/* Creative Toolbar (Area A) - Left Side */}
 			<CreativeToolbar
-				setActiveTool={() => {}} // Placeholder, as tools are currently disabled or future-proofed
-				onAddClick={() => fileInputRef.current?.click()}
+				setActiveTool={() => {}} // Placeholder
+				onAddClick={() => fileInputRef.current?.click()} // Fallback
+				onUploadImage={() => fileInputRef.current?.click()}
+				onUploadVideo={() => fileInputRef.current?.click()} // Can separate if needed
+				onOpenImageGenerator={() => setIsImageGeneratorOpen(true)}
+				onOpenVideoGenerator={() => setIsImageToVideoDialogOpen(true)} // Reuse existing for now or create new
+				onAddFrame={() => {
+					toast({
+						title: "Frame added",
+						description: "Frame tool coming soon",
+					});
+				}}
 			/>
 
-			{/* Contextual Chat Interface */}
-			<ChatInterface
-				isOpen={isChatOpen}
-				onClose={() => setIsChatOpen(false)}
-				selectedCount={selectedIds.length}
-				onRun={(prompt) => {
-					setGenerationSettings((prev) => ({ ...prev, prompt }));
-					handleRun();
-					setIsChatOpen(false);
+			{/* Image Generator Panel */}
+			<ImageGeneratorPanel
+				isOpen={isImageGeneratorOpen}
+				onClose={() => setIsImageGeneratorOpen(false)}
+				onRun={async (settings) => {
+					// We need to handle the reference image specifically if provided
+					if (settings.referenceImage) {
+						// For now, we can upload it using the existing upload handler logic or pass it down
+						// Since settings.referenceImage is a Data URL, it needs to be uploaded or used directly
+						// The handleRun function processes the generation logic.
+						// We might need to modify handleRun to accept the reference image directly.
+					}
+
+					await handleRun(settings);
+					setIsImageGeneratorOpen(false);
 				}}
-				onChat={(prompt) => {
-					// Queue functionality placeholder
-					toast({
-						title: "Added to Queue",
-						description: "Your request has been added to the generation queue.",
-					});
-					setIsChatOpen(false);
-				}}
+				isGenerating={isGenerating}
+				initialPrompt={generationSettings.prompt}
 			/>
 
 			{/* Render streaming components for active generations */}
@@ -1775,6 +1823,16 @@ export default function OverlayPage() {
 						handleRemoveBackground={handleRemoveBackground}
 						handleCombineImages={handleCombineImages}
 						handleDelete={handleDelete}
+						handleOpenIsolateDialog={() => {
+							if (
+								selectedIds.length === 1 &&
+								!videos.some((v) => v.id === selectedIds[0])
+							) {
+								setIsolateTarget(selectedIds[0]);
+								setIsolateInputValue("");
+								setIsIsolateDialogOpen(true);
+							}
+						}}
 						handleIsolate={handleIsolate}
 						handleConvertToVideo={handleConvertToVideo}
 						handleVideoToVideo={handleVideoToVideo}
@@ -1870,12 +1928,8 @@ export default function OverlayPage() {
 						viewport={viewport}
 					/>
 
-					{/* Bottom Toolbar - Navigation & Selection */}
+					{/* Bottom Toolbar - Queue Status (Only visible when items queued) */}
 					<BottomToolbar
-						activeTool={activeTool}
-						setActiveTool={setActiveTool}
-						isChatOpen={isChatOpen}
-						onChatToggle={() => setIsChatOpen(!isChatOpen)}
 						chatCount={0} // Placeholder for queue system
 						imagesCount={selectedIds.length}
 						onRunAll={() => {
@@ -1887,29 +1941,20 @@ export default function OverlayPage() {
 				</div>
 			</main>
 
-			{/* Assistant Panel */}
-			<AnimatePresence mode="wait">
+			{/* Chat Panel - slide in from right */}
+			<AnimatePresence>
 				{isChatOpen && (
 					<motion.div
-						initial={{ width: 0, opacity: 0 }}
-						animate={{ width: 420, opacity: 1 }}
-						exit={{ width: 0, opacity: 0 }}
+						initial={{ width: 0, opacity: 0, marginRight: 0 }}
+						animate={{ width: 450, opacity: 1, marginRight: 16 }}
+						exit={{ width: 0, opacity: 0, marginRight: 0 }}
 						transition={{ duration: 0.3, ease: "easeInOut" }}
-						className="h-full border-l border-border z-[9999] relative flex-shrink-0 bg-background shadow-xl overflow-hidden"
+						className="h-[calc(100%-2rem)] my-4 rounded-2xl border border-border z-[9999] relative flex-shrink-0 bg-background shadow-2xl overflow-hidden"
 					>
-						<AssistantPanel
-							prompt={generationSettings.prompt}
-							setPrompt={(p) =>
-								setGenerationSettings((prev) => ({ ...prev, prompt: p }))
-							}
-							generationSettings={generationSettings}
-							setGenerationSettings={setGenerationSettings}
-							isGenerating={isGenerating}
-							isGeminiEditing={isGeminiEditing}
-							handleRun={handleRun}
-							handleGeminiEdit={handleGeminiEdit}
-							handleUpload={(files) => handleFileUpload(files)}
-							selectedIds={selectedIds}
+						<ChatPanel
+							isOpen={isChatOpen}
+							onClose={() => setIsChatOpen(false)}
+							onChat={handleChat}
 							className="h-full w-full"
 						/>
 					</motion.div>
@@ -1935,6 +1980,8 @@ export default function OverlayPage() {
 				setTempApiKey={setTempApiKey}
 				theme={theme}
 				setTheme={setTheme}
+				themeColor={themeColor}
+				setThemeColor={setThemeColor}
 				isImageToVideoDialogOpen={isImageToVideoDialogOpen}
 				setIsImageToVideoDialogOpen={setIsImageToVideoDialogOpen}
 				selectedImageForVideo={selectedImageForVideo}
@@ -1966,6 +2013,12 @@ export default function OverlayPage() {
 				images={images}
 				videos={videos}
 				toast={toast}
+				isolateInputValue={isolateInputValue}
+				setIsolateInputValue={setIsolateInputValue}
+				isIsolating={isIsolating}
+				handleIsolate={handleIsolate}
+				isIsolateDialogOpen={isIsolateDialogOpen}
+				setIsIsolateDialogOpen={setIsIsolateDialogOpen}
 			/>
 
 			{/* Video Generation Streaming Components */}

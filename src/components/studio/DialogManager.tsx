@@ -32,6 +32,8 @@ import type {
 	PlacedVideo,
 } from "@/types/canvas";
 
+import { ThemeSwitcher } from "./ThemeSwitcher";
+
 interface DialogManagerProps {
 	// UI State
 	isStyleDialogOpen: boolean;
@@ -56,6 +58,8 @@ interface DialogManagerProps {
 	setTempApiKey: React.Dispatch<React.SetStateAction<string>>;
 	theme: string | undefined;
 	setTheme: (theme: string) => void;
+	themeColor?: "obsidian" | "sage" | "stone";
+	setThemeColor?: (color: "obsidian" | "sage" | "stone") => void;
 
 	// Video Dialogs State
 	isImageToVideoDialogOpen: boolean;
@@ -111,6 +115,8 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 	setTempApiKey,
 	theme,
 	setTheme,
+	themeColor = "obsidian",
+	setThemeColor,
 	isImageToVideoDialogOpen,
 	setIsImageToVideoDialogOpen,
 	selectedImageForVideo,
@@ -330,9 +336,9 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 						{/* Appearance */}
 						<div className="flex justify-between">
 							<div className="flex flex-col gap-2">
-								<Label htmlFor="appearance">Appearance</Label>
+								<Label htmlFor="appearance">Mode</Label>
 								<p className="text-sm text-muted-foreground">
-									Customize how studio+233 looks on your device.
+									Switch between light and dark mode.
 								</p>
 							</div>
 							<Select
@@ -375,6 +381,16 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 								</SelectContent>
 							</Select>
 						</div>
+
+						{/* Theme Color Switcher */}
+						{setThemeColor && (
+							<div className="flex flex-col gap-4 pt-2">
+								<ThemeSwitcher
+									currentTheme={themeColor}
+									onThemeChange={setThemeColor}
+								/>
+							</div>
+						)}
 
 						{/* Grid */}
 						<div className="flex justify-between">

@@ -1,332 +1,448 @@
-import type {
-  PlacedImage,
-  GenerationSettings,
-  ActiveGeneration,
-} from "@/types/canvas";
 import type { FalClient } from "@fal-ai/client";
+import type {
+	ActiveGeneration,
+	GenerationSettings,
+	PlacedImage,
+} from "@/types/canvas";
 
 interface GenerationHandlerDeps {
-  images: PlacedImage[];
-  selectedIds: string[];
-  generationSettings: GenerationSettings;
-  customApiKey?: string;
-  canvasSize: { width: number; height: number };
-  viewport: { x: number; y: number; scale: number };
-  falClient: FalClient;
-  setImages: React.Dispatch<React.SetStateAction<PlacedImage[]>>;
-  setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
-  setActiveGenerations: React.Dispatch<
-    React.SetStateAction<Map<string, ActiveGeneration>>
-  >;
-  setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsApiKeyDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  toast: (props: {
-    title: string;
-    description?: string;
-    variant?: "default" | "destructive";
-  }) => void;
-  generateTextToImage: (params: any) => Promise<any>;
+	images: PlacedImage[];
+	selectedIds: string[];
+	generationSettings: GenerationSettings;
+	customApiKey?: string;
+	canvasSize: { width: number; height: number };
+	viewport: { x: number; y: number; scale: number };
+	falClient: FalClient;
+	setImages: React.Dispatch<React.SetStateAction<PlacedImage[]>>;
+	setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
+	setActiveGenerations: React.Dispatch<
+		React.SetStateAction<Map<string, ActiveGeneration>>
+	>;
+	setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>;
+	setIsApiKeyDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	toast: (props: {
+		title: string;
+		description?: string;
+		variant?: "default" | "destructive";
+	}) => void;
+	generateTextToImage: (params: any) => Promise<any>;
+	editWithGemini?: (params: any) => Promise<any>;
 }
 
 export const uploadImageDirect = async (
-  dataUrl: string,
-  falClient: FalClient,
-  toast: GenerationHandlerDeps["toast"],
-  setIsApiKeyDialogOpen: GenerationHandlerDeps["setIsApiKeyDialogOpen"],
+	dataUrl: string,
+	falClient: FalClient,
+	toast: GenerationHandlerDeps["toast"],
+	setIsApiKeyDialogOpen: GenerationHandlerDeps["setIsApiKeyDialogOpen"],
 ) => {
-  // Convert data URL to blob first
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
+	// Convert data URL to blob first
+	const response = await fetch(dataUrl);
+	const blob = await response.blob();
 
-  try {
-    // Check size before attempting upload
-    if (blob.size > 10 * 1024 * 1024) {
-      // 10MB warning
-      console.warn(
-        "Large image detected:",
-        (blob.size / 1024 / 1024).toFixed(2) + "MB",
-      );
-    }
+	try {
+		// Check size before attempting upload
+		if (blob.size > 10 * 1024 * 1024) {
+			// 10MB warning
+			console.warn(
+				"Large image detected:",
+				(blob.size / 1024 / 1024).toFixed(2) + "MB",
+			);
+		}
 
-    // Upload directly to FAL through proxy (using the client instance)
-    const uploadResult = await falClient.storage.upload(blob);
+		// Upload directly to FAL through proxy (using the client instance)
+		const uploadResult = await falClient.storage.upload(blob);
 
-    return { url: uploadResult };
-  } catch (error: any) {
-    // Check for rate limit error
-    const isRateLimit =
-      error.status === 429 ||
-      error.message?.includes("429") ||
-      error.message?.includes("rate limit") ||
-      error.message?.includes("Rate limit");
+		return { url: uploadResult };
+	} catch (error: any) {
+		// Check for rate limit error
+		const isRateLimit =
+			error.status === 429 ||
+			error.message?.includes("429") ||
+			error.message?.includes("rate limit") ||
+			error.message?.includes("Rate limit");
 
-    if (isRateLimit) {
-      toast({
-        title: "Rate limit exceeded",
-        description:
-          "Add your FAL API key to bypass rate limits. Without an API key, uploads are limited.",
-        variant: "destructive",
-      });
-      // Open API key dialog automatically
-      setIsApiKeyDialogOpen(true);
-    } else {
-      toast({
-        title: "Failed to upload image",
-        description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive",
-      });
-    }
+		if (isRateLimit) {
+			toast({
+				title: "Rate limit exceeded",
+				description:
+					"Add your FAL API key to bypass rate limits. Without an API key, uploads are limited.",
+				variant: "destructive",
+			});
+			// Open API key dialog automatically
+			setIsApiKeyDialogOpen(true);
+		} else {
+			toast({
+				title: "Failed to upload image",
+				description: error instanceof Error ? error.message : "Unknown error",
+				variant: "destructive",
+			});
+		}
 
-    // Re-throw the error so calling code knows upload failed
-    throw error;
-  }
+		// Re-throw the error so calling code knows upload failed
+		throw error;
+	}
 };
 
 export const generateImage = (
-  imageUrl: string,
-  x: number,
-  y: number,
-  groupId: string,
-  generationSettings: GenerationSettings,
-  setImages: GenerationHandlerDeps["setImages"],
-  setActiveGenerations: GenerationHandlerDeps["setActiveGenerations"],
-  width: number = 300,
-  height: number = 300,
+	imageUrl: string,
+	x: number,
+	y: number,
+	groupId: string,
+	generationSettings: GenerationSettings,
+	setImages: GenerationHandlerDeps["setImages"],
+	setActiveGenerations: GenerationHandlerDeps["setActiveGenerations"],
+	width: number = 300,
+	height: number = 300,
 ) => {
-  const placeholderId = `generated-${Date.now()}`;
-  setImages((prev) => [
-    ...prev,
-    {
-      id: placeholderId,
-      src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-      x,
-      y,
-      width,
-      height,
-      rotation: 0,
-      isGenerated: true,
-      parentGroupId: groupId,
-    },
-  ]);
+	const placeholderId = `generated-${Date.now()}`;
+	setImages((prev) => [
+		...prev,
+		{
+			id: placeholderId,
+			src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+			x,
+			y,
+			width,
+			height,
+			rotation: 0,
+			isGenerated: true,
+			parentGroupId: groupId,
+		},
+	]);
 
-  // Store generation params
-  setActiveGenerations((prev) =>
-    new Map(prev).set(placeholderId, {
-      imageUrl,
-      prompt: generationSettings.prompt,
-      loraUrl: generationSettings.loraUrl,
-    }),
-  );
+	// Store generation params
+	setActiveGenerations((prev) =>
+		new Map(prev).set(placeholderId, {
+			imageUrl,
+			prompt: generationSettings.prompt,
+			loraUrl: generationSettings.loraUrl,
+		}),
+	);
 };
 
 export const handleRun = async (deps: GenerationHandlerDeps) => {
-  const {
-    images,
-    selectedIds,
-    generationSettings,
-    customApiKey,
-    canvasSize,
-    viewport,
-    falClient,
-    setImages,
-    setSelectedIds,
-    setActiveGenerations,
-    setIsGenerating,
-    setIsApiKeyDialogOpen,
-    toast,
-    generateTextToImage,
-  } = deps;
+	const {
+		images,
+		selectedIds,
+		generationSettings,
+		customApiKey,
+		canvasSize,
+		viewport,
+		falClient,
+		setImages,
+		setSelectedIds,
+		setActiveGenerations,
+		setIsGenerating,
+		setIsApiKeyDialogOpen,
+		toast,
+		generateTextToImage,
+		editWithGemini,
+	} = deps;
 
-  if (!generationSettings.prompt) {
-    toast({
-      title: "No Prompt",
-      description: "Please enter a prompt to generate an image",
-      variant: "destructive",
-    });
-    return;
-  }
+	if (!generationSettings.prompt) {
+		toast({
+			title: "No Prompt",
+			description: "Please enter a prompt to generate an image",
+			variant: "destructive",
+		});
+		return;
+	}
 
-  setIsGenerating(true);
-  const selectedImages = images.filter((img) => selectedIds.includes(img.id));
+	setIsGenerating(true);
 
-  // If no images are selected, do text-to-image generation
-  if (selectedImages.length === 0) {
-    try {
-      const result = await generateTextToImage({
-        prompt: generationSettings.prompt,
-        loraUrl: generationSettings.loraUrl || undefined,
-        imageSize: "square",
-        apiKey: customApiKey || undefined,
-      });
+	// Determine images to process:
+	// 1. Selected images on canvas
+	// 2. OR reference image from settings (newly uploaded in panel)
+	let imagesToProcess: {
+		src: string;
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	}[] = [];
 
-      // Add the generated image to the canvas
-      const id = `generated-${Date.now()}-${Math.random()}`;
+	// Use selected images from canvas if any
+	const selectedImages = images.filter((img) => selectedIds.includes(img.id));
 
-      // Place at center of viewport
-      const viewportCenterX =
-        (canvasSize.width / 2 - viewport.x) / viewport.scale;
-      const viewportCenterY =
-        (canvasSize.height / 2 - viewport.y) / viewport.scale;
+	if (selectedImages.length > 0) {
+		imagesToProcess = selectedImages.map((img) => ({
+			src: img.src,
+			x: img.x,
+			y: img.y,
+			width: img.width,
+			height: img.height,
+		}));
+	} else if ((generationSettings as any).referenceImage) {
+		// Use the reference image uploaded in the panel
+		// Calculate center position
+		const viewportCenterX =
+			(canvasSize.width / 2 - viewport.x) / viewport.scale;
+		const viewportCenterY =
+			(canvasSize.height / 2 - viewport.y) / viewport.scale;
 
-      // Use the actual dimensions from the result
-      const width = Math.min(result.width, 512); // Limit display size
-      const height = Math.min(result.height, 512);
+		imagesToProcess = [
+			{
+				src: (generationSettings as any).referenceImage,
+				x: viewportCenterX - 150, // Center - half default width
+				y: viewportCenterY - 150,
+				width: 300, // Default width
+				height: 300,
+			},
+		];
+	}
 
-      setImages((prev) => [
-        ...prev,
-        {
-          id,
-          src: result.url,
-          x: viewportCenterX - width / 2,
-          y: viewportCenterY - height / 2,
-          width,
-          height,
-          rotation: 0,
-          isGenerated: true,
-        },
-      ]);
+	// If no images to process, do text-to-image generation
+	if (imagesToProcess.length === 0) {
+		try {
+			const result = await generateTextToImage({
+				prompt: generationSettings.prompt,
+				modelId: generationSettings.modelId,
+				loraUrl: generationSettings.loraUrl || undefined,
+				imageSize: "square",
+				apiKey: customApiKey || undefined,
+			});
 
-      // Select the new image
-      setSelectedIds([id]);
-    } catch (error) {
-      console.error("Error generating image:", error);
-      toast({
-        title: "Generation failed",
-        description:
-          error instanceof Error ? error.message : "Failed to generate image",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-    return;
-  }
+			// Add the generated image to the canvas
+			const id = `generated-${Date.now()}-${Math.random()}`;
 
-  // Process each selected image individually for image-to-image
-  let successCount = 0;
-  let failureCount = 0;
+			// Place at center of viewport
+			const viewportCenterX =
+				(canvasSize.width / 2 - viewport.x) / viewport.scale;
+			const viewportCenterY =
+				(canvasSize.height / 2 - viewport.y) / viewport.scale;
 
-  for (const img of selectedImages) {
-    try {
-      // Get crop values
-      const cropX = img.cropX || 0;
-      const cropY = img.cropY || 0;
-      const cropWidth = img.cropWidth || 1;
-      const cropHeight = img.cropHeight || 1;
+			// Use the actual dimensions from the result
+			const width = Math.min(result.width, 512); // Limit display size
+			const height = Math.min(result.height, 512);
 
-      // Load the image
-      const imgElement = new window.Image();
-      imgElement.crossOrigin = "anonymous"; // Enable CORS
-      imgElement.src = img.src;
-      await new Promise((resolve) => {
-        imgElement.onload = resolve;
-      });
+			setImages((prev) => [
+				...prev,
+				{
+					id,
+					src: result.url,
+					x: viewportCenterX - width / 2,
+					y: viewportCenterY - height / 2,
+					width,
+					height,
+					rotation: 0,
+					isGenerated: true,
+				},
+			]);
 
-      // Create a canvas for the image at original resolution
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Failed to get canvas context");
+			// Select the new image
+			setSelectedIds([id]);
+		} catch (error) {
+			console.error("Error generating image:", error);
+			toast({
+				title: "Generation failed",
+				description:
+					error instanceof Error ? error.message : "Failed to generate image",
+				variant: "destructive",
+			});
+		} finally {
+			setIsGenerating(false);
+		}
+		return;
+	}
 
-      // Calculate the effective original dimensions accounting for crops
-      let effectiveWidth = imgElement.naturalWidth;
-      let effectiveHeight = imgElement.naturalHeight;
+	// Process each image individually
+	let successCount = 0;
+	let failureCount = 0;
 
-      if (cropWidth !== 1 || cropHeight !== 1) {
-        effectiveWidth = cropWidth * imgElement.naturalWidth;
-        effectiveHeight = cropHeight * imgElement.naturalHeight;
-      }
+	for (const img of imagesToProcess) {
+		try {
+			// Check for Gemini Model
+			if (generationSettings.modelId === "gemini-2.5-flash-image-preview") {
+				if (!editWithGemini) {
+					console.warn("Gemini edit function not provided");
+					failureCount++;
+					continue;
+				}
 
-      // Set canvas size to the original resolution (not display size)
-      canvas.width = effectiveWidth;
-      canvas.height = effectiveHeight;
+				// We need the original image URL to pass to Gemini
+				// The 'img.src' is likely a blob URL or data URL if local, or a remote URL if previously uploaded.
+				// Gemini router handles data URLs and remote URLs.
 
-      console.log(
-        `Processing image at ${canvas.width}x${canvas.height} (original res, display: ${img.width}x${img.height})`,
-      );
+				// However, if the image has crop/rotation, we might want to process it first?
+				// The existing logic below processes the image into a canvas to handle crops.
+				// We should reuse that logic.
 
-      // Always use the crop values (default to full image if not set)
-      ctx.drawImage(
-        imgElement,
-        cropX * imgElement.naturalWidth,
-        cropY * imgElement.naturalHeight,
-        cropWidth * imgElement.naturalWidth,
-        cropHeight * imgElement.naturalHeight,
-        0,
-        0,
-        canvas.width,
-        canvas.height,
-      );
+				// Let's continue to the canvas processing part below, and then branch off at the upload/generation step.
+				// But wait, the current structure is a bit tangled.
+				// Let's restructure slightly.
 
-      // Convert to blob and upload
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob!), "image/png");
-      });
+				// Actually, we can just let it fall through to the canvas processing,
+				// get the `dataUrl` from the canvas, and then decide what to do with it.
+			}
 
-      const reader = new FileReader();
-      const dataUrl = await new Promise<string>((resolve) => {
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.readAsDataURL(blob);
-      });
+			// Get crop values (only applicable if it was a placed image, otherwise default)
+			const cropX = (img as any).cropX || 0;
+			const cropY = (img as any).cropY || 0;
+			const cropWidth = (img as any).cropWidth || 1;
+			const cropHeight = (img as any).cropHeight || 1;
 
-      let uploadResult;
-      try {
-        uploadResult = await uploadImageDirect(
-          dataUrl,
-          falClient,
-          toast,
-          setIsApiKeyDialogOpen,
-        );
-      } catch (uploadError) {
-        console.error("Failed to upload image:", uploadError);
-        failureCount++;
-        // Skip this image if upload fails
-        continue;
-      }
+			// Load the image
+			const imgElement = new window.Image();
+			imgElement.crossOrigin = "anonymous"; // Enable CORS
+			imgElement.src = img.src;
+			await new Promise((resolve) => {
+				imgElement.onload = resolve;
+			});
 
-      // Only proceed with generation if upload succeeded
-      if (!uploadResult?.url) {
-        console.error("Upload succeeded but no URL returned");
-        failureCount++;
-        continue;
-      }
+			// Create a canvas for the image at original resolution
+			const canvas = document.createElement("canvas");
+			const ctx = canvas.getContext("2d");
+			if (!ctx) throw new Error("Failed to get canvas context");
 
-      // Calculate output size maintaining aspect ratio
-      const aspectRatio = canvas.width / canvas.height;
-      const baseSize = 512;
-      let outputWidth = baseSize;
-      let outputHeight = baseSize;
+			// Calculate the effective original dimensions accounting for crops
+			let effectiveWidth = imgElement.naturalWidth;
+			let effectiveHeight = imgElement.naturalHeight;
 
-      if (aspectRatio > 1) {
-        outputHeight = Math.round(baseSize / aspectRatio);
-      } else {
-        outputWidth = Math.round(baseSize * aspectRatio);
-      }
+			if (cropWidth !== 1 || cropHeight !== 1) {
+				effectiveWidth = cropWidth * imgElement.naturalWidth;
+				effectiveHeight = cropHeight * imgElement.naturalHeight;
+			}
 
-      const groupId = `single-${Date.now()}-${Math.random()}`;
-      generateImage(
-        uploadResult.url,
-        img.x + img.width + 20,
-        img.y,
-        groupId,
-        generationSettings,
-        setImages,
-        setActiveGenerations,
-        img.width,
-        img.height,
-      );
-      successCount++;
-    } catch (error) {
-      console.error("Error processing image:", error);
-      failureCount++;
-      toast({
-        title: "Failed to process image",
-        description:
-          error instanceof Error ? error.message : "Failed to process image",
-        variant: "destructive",
-      });
-    }
-  }
+			// Set canvas size to the original resolution (not display size)
+			canvas.width = effectiveWidth;
+			canvas.height = effectiveHeight;
 
-  // Done processing all images
-  setIsGenerating(false);
+			console.log(
+				`Processing image at ${canvas.width}x${canvas.height} (original res)`,
+			);
+
+			// Always use the crop values (default to full image if not set)
+			ctx.drawImage(
+				imgElement,
+				cropX * imgElement.naturalWidth,
+				cropY * imgElement.naturalHeight,
+				cropWidth * imgElement.naturalWidth,
+				cropHeight * imgElement.naturalHeight,
+				0,
+				0,
+				canvas.width,
+				canvas.height,
+			);
+
+			// Convert to blob and upload
+			const blob = await new Promise<Blob>((resolve) => {
+				canvas.toBlob((blob) => resolve(blob!), "image/png");
+			});
+
+			const reader = new FileReader();
+			const dataUrl = await new Promise<string>((resolve) => {
+				reader.onload = (e) => resolve(e.target?.result as string);
+				reader.readAsDataURL(blob);
+			});
+
+			// BRANCH: If Gemini, call editWithGemini directly with the dataUrl
+			if (
+				generationSettings.modelId === "gemini-2.5-flash-image-preview" &&
+				editWithGemini
+			) {
+				try {
+					const result = await editWithGemini({
+						imageUrl: dataUrl, // Pass the processed canvas data URL
+						prompt: generationSettings.prompt,
+					});
+
+					// Gemini returns { image: dataUrl }
+					// We can add this directly to canvas
+					const id = `gemini-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+					// Calculate dimensions (Gemini might return different size, or same?)
+					// The returned image is a base64 string.
+					// We can create an Image object to get dimensions if needed, or just use the input dimensions?
+					// Let's assume input dimensions for placement, but the image itself might be different.
+
+					setImages((prev) => [
+						...prev,
+						{
+							id,
+							src: result.image,
+							x: img.x + img.width + 20, // Place next to original
+							y: img.y,
+							width: img.width, // Preserve display size
+							height: img.height,
+							rotation: 0,
+							isGenerated: true,
+							// parentGroupId: groupId // Optional
+						},
+					]);
+
+					successCount++;
+					continue; // Skip the rest of the loop (upload -> fal generation)
+				} catch (geminiError: any) {
+					console.error("Gemini generation failed:", geminiError);
+					failureCount++;
+					toast({
+						title: "Gemini Generation Failed",
+						description: geminiError.message || "Unknown error",
+						variant: "destructive",
+					});
+					continue;
+				}
+			}
+
+			let uploadResult;
+			try {
+				uploadResult = await uploadImageDirect(
+					dataUrl,
+					falClient,
+					toast,
+					setIsApiKeyDialogOpen,
+				);
+			} catch (uploadError) {
+				console.error("Failed to upload image:", uploadError);
+				failureCount++;
+				// Skip this image if upload fails
+				continue;
+			}
+
+			// Only proceed with generation if upload succeeded
+			if (!uploadResult?.url) {
+				console.error("Upload succeeded but no URL returned");
+				failureCount++;
+				continue;
+			}
+
+			// Calculate output size maintaining aspect ratio
+			const aspectRatio = canvas.width / canvas.height;
+			const baseSize = 512;
+			let outputWidth = baseSize;
+			let outputHeight = baseSize;
+
+			if (aspectRatio > 1) {
+				outputHeight = Math.round(baseSize / aspectRatio);
+			} else {
+				outputWidth = Math.round(baseSize * aspectRatio);
+			}
+
+			const groupId = `single-${Date.now()}-${Math.random()}`;
+			generateImage(
+				uploadResult.url,
+				img.x + img.width + 20,
+				img.y,
+				groupId,
+				generationSettings,
+				setImages,
+				setActiveGenerations,
+				img.width,
+				img.height,
+			);
+			successCount++;
+		} catch (error) {
+			console.error("Error processing image:", error);
+			failureCount++;
+			toast({
+				title: "Failed to process image",
+				description:
+					error instanceof Error ? error.message : "Failed to process image",
+				variant: "destructive",
+			});
+		}
+	}
+
+	// Done processing all images
+	setIsGenerating(false);
 };

@@ -15,6 +15,7 @@ interface ToolButtonProps {
 	onClick: () => void;
 	shortcut?: string;
 	disabled?: boolean;
+	showTooltip?: boolean;
 }
 
 export const ToolButton: React.FC<ToolButtonProps> = ({
@@ -24,26 +25,33 @@ export const ToolButton: React.FC<ToolButtonProps> = ({
 	onClick,
 	shortcut,
 	disabled,
+	showTooltip = true,
 }) => {
+	const button = (
+		<Button
+			variant="ghost"
+			size="icon"
+			className={cn(
+				"w-10 h-10 rounded-xl transition-all duration-200",
+				isActive
+					? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+					: "text-muted-foreground hover:bg-muted hover:text-foreground",
+				disabled && "opacity-50 cursor-not-allowed",
+			)}
+			onClick={onClick}
+			disabled={disabled}
+		>
+			<Icon className="w-5 h-5" />
+		</Button>
+	);
+
+	if (!showTooltip) {
+		return button;
+	}
+
 	return (
 		<Tooltip>
-			<TooltipTrigger asChild>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"w-10 h-10 rounded-xl transition-all duration-200",
-						isActive
-							? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-							: "text-muted-foreground hover:bg-muted hover:text-foreground",
-						disabled && "opacity-50 cursor-not-allowed",
-					)}
-					onClick={onClick}
-					disabled={disabled}
-				>
-					<Icon className="w-5 h-5" />
-				</Button>
-			</TooltipTrigger>
+			<TooltipTrigger asChild>{button}</TooltipTrigger>
 			<TooltipContent side="right" className="flex items-center gap-2">
 				<span>{label}</span>
 				{shortcut && (

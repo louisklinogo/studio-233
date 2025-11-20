@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 export function useUIState() {
 	const [isChatOpen, setIsChatOpen] = useState(false);
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
-	const [showGrid, setShowGrid] = useState(true);
+	const [showGrid, setShowGrid] = useState(false);
 	const [showMinimap, setShowMinimap] = useState(true);
 	const [isStyleDialogOpen, setIsStyleDialogOpen] = useState(false);
 	const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
 	const [customApiKey, setCustomApiKey] = useState<string>("");
 	const [tempApiKey, setTempApiKey] = useState<string>("");
+	const [themeColor, setThemeColor] = useState<"obsidian" | "sage" | "stone">(
+		"obsidian",
+	);
 
 	// Load API key from localStorage on mount
 	useEffect(() => {
@@ -18,6 +21,28 @@ export function useUIState() {
 			setTempApiKey(savedKey);
 		}
 	}, []);
+
+	// Load theme color from localStorage on mount
+	useEffect(() => {
+		const savedTheme = localStorage.getItem("themeColor");
+		if (savedTheme && ["obsidian", "sage", "stone"].includes(savedTheme)) {
+			setThemeColor(savedTheme as "obsidian" | "sage" | "stone");
+		}
+	}, []);
+
+	// Apply theme color class to body
+	useEffect(() => {
+		// Remove old theme classes
+		document.body.classList.remove(
+			"theme-obsidian",
+			"theme-sage",
+			"theme-stone",
+		);
+		// Add new theme class
+		document.body.classList.add(`theme-${themeColor}`);
+		// Save to storage
+		localStorage.setItem("themeColor", themeColor);
+	}, [themeColor]);
 
 	// Load grid setting from localStorage on mount
 	useEffect(() => {
@@ -71,5 +96,7 @@ export function useUIState() {
 		setCustomApiKey,
 		tempApiKey,
 		setTempApiKey,
+		themeColor,
+		setThemeColor,
 	};
 }

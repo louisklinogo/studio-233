@@ -63,7 +63,66 @@ function parseImageInput(imageUrl: string): {
 	throw new Error("Unsupported image source. Use a data URL or HTTPS URL.");
 }
 
+// Helper function for text-to-image generation
+export async function generateImageFromText(
+	prompt: string,
+	apiKey?: string,
+	ctx?: any,
+) {
+	await checkRateLimit(apiKey, ctx);
+
+	const key =
+		apiKey ||
+		process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+		process.env.GEMINI_API_KEY;
+
+	if (!key) {
+		throw new Error(
+			"Google Gemini API key is required. Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY.",
+		);
+	}
+
+	const google = createGoogleGenerativeAI({ apiKey: key });
+
+	const result = await generateText({
+		model: google("gemini-2.5-flash-image-preview"),
+		prompt: prompt,
+	});
+
+	const file = result.files?.find((f) => f.mediaType.startsWith("image/"));
+
+	if (!file) {
+		throw new Error("Gemini did not return an image");
+	}
+
+	const base64 = Buffer.from(file.uint8Array).toString("base64");
+	const dataUrl = `data:${file.mediaType};base64,${base64}`;
+
+	return {
+		url: dataUrl,
+		width: 1024, // Gemini Flash Image defaults (usually square)
+		height: 1024,
+		seed: undefined, // Seed not returned by default API
+	};
+}
+
 export const geminiRouter = router({
+	generateImage: rateLimitedProcedure
+		.input(
+			z.object({
+				prompt: z.string().min(1),
+				apiKey: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ input, ctx }) => {
+			const result = await generateImageFromText(
+				input.prompt,
+				input.apiKey,
+				ctx,
+			);
+			return { image: result.url };
+		}),
+
 	editImage: rateLimitedProcedure
 		.input(
 			z.object({

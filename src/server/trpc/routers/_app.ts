@@ -3,7 +3,7 @@ import { tracked } from "@trpc/server";
 import sharp from "sharp";
 import { z } from "zod";
 import { publicProcedure, rateLimitedProcedure, router } from "../init";
-import { geminiRouter } from "./gemini";
+import { geminiRouter, generateImageFromText } from "./gemini";
 
 const fal = createFalClient({
 	credentials: () => process.env.FAL_KEY as string,
@@ -844,6 +844,7 @@ export const appRouter = router({
 		.input(
 			z.object({
 				prompt: z.string(),
+				modelId: z.string().optional(),
 				loraUrl: z.string().url().optional(),
 				seed: z.number().optional(),
 				imageSize: z
@@ -860,6 +861,10 @@ export const appRouter = router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			try {
+				if (input.modelId === "gemini-2.5-flash-image-preview") {
+					return await generateImageFromText(input.prompt, input.apiKey, ctx);
+				}
+
 				const falClient = await getFalClient(input.apiKey, ctx);
 
 				const loras = input.loraUrl ? [{ path: input.loraUrl, scale: 1 }] : [];
