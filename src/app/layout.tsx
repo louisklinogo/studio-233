@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { BotIdClient } from "botid/client";
-import { commitMono, focal, hal, halMono, inconsolata } from "@/lib/fonts";
+import { carlito, outfit, poppins } from "@/lib/fonts";
 import { CoreProviders } from "./core-providers";
 
 const defaultAppUrl =
@@ -100,17 +100,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html
-			lang="en"
-			className={[
-				hal.variable,
-				halMono.variable,
-				focal.variable,
-				inconsolata.variable,
-				commitMono.variable,
-			].join(" ")}
-			suppressHydrationWarning
-		>
+		<html lang="en" className="antialiased" suppressHydrationWarning>
 			<head>
 				<meta name="color-scheme" content="dark" />
 				<BotIdClient
@@ -126,7 +116,9 @@ export default function RootLayout({
 					]}
 				/>
 			</head>
-			<body className={`font-sans bg-background text-foreground min-h-screen`}>
+			<body
+				className={`${carlito.variable} ${poppins.variable} ${outfit.variable} font-sans bg-background text-foreground min-h-screen`}
+			>
 				<CoreProviders>{children}</CoreProviders>
 			</body>
 			<Analytics />
