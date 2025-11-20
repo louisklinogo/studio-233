@@ -48,6 +48,7 @@ import {
 	ImageGeneratorPanel,
 	ImageGeneratorSettings,
 } from "@/components/studio/ImageGeneratorPanel";
+import { PropertiesBar } from "@/components/studio/properties/PropertiesBar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -130,6 +131,12 @@ export default function OverlayPage() {
 	const {
 		activeTool,
 		setActiveTool,
+		defaultTextProps,
+		defaultShapeProps,
+		defaultDrawingProps,
+		setDefaultTextProps,
+		setDefaultShapeProps,
+		setDefaultDrawingProps,
 		dragStartPositions,
 		setDragStartPositions,
 		isDraggingImage,
@@ -172,7 +179,10 @@ export default function OverlayPage() {
 	const {
 		// Future use for text/shapes
 		elements: canvasElements,
+		setElements: setCanvasElements,
 		addElement: addCanvasElement,
+		updateElement: updateCanvasElement,
+		removeElement: removeCanvasElement,
 	} = useCanvasElements();
 
 	const [isStorageLoaded, setIsStorageLoaded] = useState(false);
@@ -1434,6 +1444,8 @@ export default function OverlayPage() {
 				if (selectedIds.length > 0) {
 					e.preventDefault();
 					handleDelete();
+					// Also delete elements
+					selectedIds.forEach((id) => removeCanvasElement(id));
 				}
 			}
 			// Duplicate
@@ -1571,7 +1583,8 @@ export default function OverlayPage() {
 
 			{/* Creative Toolbar (Area A) - Left Side */}
 			<CreativeToolbar
-				setActiveTool={() => {}} // Placeholder
+				activeTool={activeTool}
+				setActiveTool={setActiveTool}
 				onAddClick={() => fileInputRef.current?.click()} // Fallback
 				onUploadImage={() => fileInputRef.current?.click()}
 				onUploadVideo={() => fileInputRef.current?.click()} // Can separate if needed
@@ -1684,6 +1697,7 @@ export default function OverlayPage() {
 						stageRef={stageRef}
 						images={images}
 						videos={videos}
+						elements={canvasElements}
 						selectedIds={selectedIds}
 						selectionBox={selectionBox}
 						isSelecting={isSelecting}
@@ -1692,14 +1706,20 @@ export default function OverlayPage() {
 						croppingImageId={croppingImageId}
 						dragStartPositions={dragStartPositions}
 						isDraggingImage={isDraggingImage}
+						activeTool={activeTool}
+						defaultTextProps={defaultTextProps}
+						defaultShapeProps={defaultShapeProps}
+						defaultDrawingProps={defaultDrawingProps}
 						setImages={setImages}
 						setVideos={setVideos}
+						setElements={setCanvasElements}
 						setSelectedIds={setSelectedIds}
 						setIsDraggingImage={setIsDraggingImage}
 						setHiddenVideoControlsIds={setHiddenVideoControlsIds}
 						setDragStartPositions={setDragStartPositions}
 						setCroppingImageId={setCroppingImageId}
 						saveToHistory={saveToHistory}
+						setActiveTool={setActiveTool}
 						onMouseDown={handleMouseDown}
 						onMouseMove={handleMouseMove}
 						onMouseUp={handleMouseUp}
@@ -1797,6 +1817,25 @@ export default function OverlayPage() {
 							}
 						}}
 						handleSelect={handleSelect}
+					/>
+
+					<PropertiesBar
+						elements={canvasElements}
+						selectedIds={selectedIds}
+						updateElement={updateCanvasElement}
+						onDelete={() => {
+							if (selectedIds.length > 0) {
+								selectedIds.forEach((id) => removeCanvasElement(id));
+								handleDelete();
+							}
+						}}
+						activeTool={activeTool}
+						defaultTextProps={defaultTextProps}
+						setDefaultTextProps={setDefaultTextProps}
+						defaultShapeProps={defaultShapeProps}
+						setDefaultShapeProps={setDefaultShapeProps}
+						defaultDrawingProps={defaultDrawingProps}
+						setDefaultDrawingProps={setDefaultDrawingProps}
 					/>
 
 					<FloatingContextMenu

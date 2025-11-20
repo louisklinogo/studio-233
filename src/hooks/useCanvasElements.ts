@@ -9,6 +9,19 @@ import type {
 
 export function useCanvasElements() {
 	const [elements, setElements] = useState<CanvasElement[]>([]);
+	// We might want to use this hook in page.tsx to lift state up, or keep it here if page.tsx delegates.
+	// However, page.tsx currently manages images/videos separately.
+	// To follow the "Iterative approach", we should probably export these actions
+	// so page.tsx can use them or merge them into the main state.
+
+	// But wait, page.tsx has its own `images` and `videos` state.
+	// We are adding `texts`, `shapes`, `drawings` alongside them in page.tsx?
+	// OR are we going to use `useCanvasElements` to manage ALL of them eventually?
+
+	// For this task, let's assume page.tsx will use this hook or valid equivalents.
+	// The user's prompt implies we should "Update CanvasStage.tsx to render new elements".
+	// This means the state needs to be passed down to CanvasStage.
+
 	const [selectedElementId, setSelectedElementId] = useState<string | null>(
 		null,
 	);
@@ -39,13 +52,6 @@ export function useCanvasElements() {
 		[selectedElementId],
 	);
 
-	const getElement = useCallback(
-		(id: string) => {
-			return elements.find((el) => el.id === id);
-		},
-		[elements],
-	);
-
 	// Helper to create defaults
 	const createDefaultText = (
 		x: number,
@@ -62,7 +68,7 @@ export function useCanvasElements() {
 		opacity: 1,
 		isVisible: true,
 		isLocked: false,
-		zIndex: elements.length + 1,
+		zIndex: 10,
 		content,
 		fontFamily: "Inter",
 		fontSize: 24,
@@ -85,7 +91,7 @@ export function useCanvasElements() {
 		opacity: 1,
 		isVisible: true,
 		isLocked: false,
-		zIndex: elements.length + 1,
+		zIndex: 10,
 		shapeType,
 		fill: "#e2e8f0",
 		stroke: "#64748b",
@@ -101,7 +107,6 @@ export function useCanvasElements() {
 		addElement,
 		updateElement,
 		removeElement,
-		getElement,
 		createDefaultText,
 		createDefaultShape,
 	};

@@ -1,13 +1,22 @@
 import Konva from "konva";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Layer, Stage } from "react-konva";
+import { CanvasDrawing } from "@/components/canvas/CanvasDrawing";
 import { CanvasGrid } from "@/components/canvas/CanvasGrid";
 import { CanvasImage } from "@/components/canvas/CanvasImage";
+import { CanvasShape } from "@/components/canvas/CanvasShape";
+import { CanvasText } from "@/components/canvas/CanvasText";
 import { CanvasVideo } from "@/components/canvas/CanvasVideo";
 import { CropOverlayWrapper } from "@/components/canvas/CropOverlayWrapper";
 import { SelectionBoxComponent } from "@/components/canvas/SelectionBox";
 import type { ViewportState } from "@/hooks/useViewportState";
 import type { PlacedImage, PlacedVideo, SelectionBox } from "@/types/canvas";
+import type {
+	CanvasElement,
+	DrawingElement,
+	ShapeElement,
+	TextElement,
+} from "@/types/elements";
 import { createCroppedImage } from "@/utils/image-processing";
 
 interface CanvasStageProps {
@@ -17,6 +26,8 @@ interface CanvasStageProps {
 	stageRef: React.RefObject<Konva.Stage | null>;
 	images: PlacedImage[];
 	videos: PlacedVideo[];
+	// New elements
+	elements: CanvasElement[];
 	selectedIds: string[];
 	selectionBox: SelectionBox;
 	isSelecting: boolean;
@@ -25,10 +36,33 @@ interface CanvasStageProps {
 	croppingImageId: string | null;
 	dragStartPositions: Map<string, { x: number; y: number }>;
 	isDraggingImage: boolean;
+	activeTool: string;
+
+	// Default props for new elements
+	defaultTextProps?: {
+		fontFamily: string;
+		fontSize: number;
+		fill: string;
+		align: "left" | "center" | "right";
+	};
+	defaultShapeProps?: {
+		fill: string;
+		stroke: string;
+		strokeWidth: number;
+		cornerRadius: number;
+		shapeType: "rect" | "circle" | "star" | "polygon";
+	};
+	defaultDrawingProps?: {
+		stroke: string;
+		strokeWidth: number;
+		tension: number;
+	};
 
 	// State setters
 	setImages: React.Dispatch<React.SetStateAction<PlacedImage[]>>;
 	setVideos: React.Dispatch<React.SetStateAction<PlacedVideo[]>>;
+	// New element setters
+	setElements: React.Dispatch<React.SetStateAction<CanvasElement[]>>;
 	setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
 	setIsDraggingImage: (isDragging: boolean) => void;
 	setHiddenVideoControlsIds: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -37,6 +71,7 @@ interface CanvasStageProps {
 	) => void;
 	setCroppingImageId: (id: string | null) => void;
 	saveToHistory: () => void;
+	setActiveTool: (tool: any) => void;
 
 	// Event handlers
 	onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) => void;
@@ -60,6 +95,7 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 			stageRef,
 			images,
 			videos,
+			elements,
 			selectedIds,
 			selectionBox,
 			isSelecting,
@@ -68,14 +104,20 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 			croppingImageId,
 			dragStartPositions,
 			isDraggingImage,
+			activeTool,
 			setImages,
 			setVideos,
+			setElements,
 			setSelectedIds,
 			setIsDraggingImage,
 			setHiddenVideoControlsIds,
 			setDragStartPositions,
 			setCroppingImageId,
 			saveToHistory,
+			setActiveTool,
+			defaultTextProps,
+			defaultShapeProps,
+			defaultDrawingProps,
 			onMouseDown,
 			onMouseMove,
 			onMouseUp,
@@ -89,6 +131,187 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 		},
 		ref,
 	) => {
+		// Local state for drawing interactions
+		const [isDrawing, setIsDrawing] = useState(false);
+		const [currentShapeId, setCurrentShapeId] = useState<string | null>(null);
+		const [currentDrawingId, setCurrentDrawingId] = useState<string | null>(
+			null,
+		);
+		const [justCreatedId, setJustCreatedId] = useState<string | null>(null);
+
+		// Clear justCreatedId when selection changes
+		React.useEffect(() => {
+			if (
+				justCreatedId &&
+				(!selectedIds.includes(justCreatedId) || selectedIds.length === 0)
+			) {
+				setJustCreatedId(null);
+			}
+		}, [selectedIds, justCreatedId]);
+
+		// Helper to get pointer position relative to canvas
+		const getPointerPos = () => {
+			const stage = stageRef.current;
+			if (!stage) return { x: 0, y: 0 };
+			const pointer = stage.getPointerPosition();
+			if (!pointer) return { x: 0, y: 0 };
+			return {
+				x: (pointer.x - viewport.x) / viewport.scale,
+				y: (pointer.y - viewport.y) / viewport.scale,
+			};
+		};
+
+		const handleStageMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+			// Delegate to parent handler first (for panning/selection)
+			onMouseDown(e);
+
+			if (activeTool === "select" || activeTool === "pan") return;
+
+			const pos = getPointerPos();
+
+			if (activeTool === "text") {
+				// Click-to-type interaction
+				const newText: TextElement = {
+					id: crypto.randomUUID(),
+					type: "text",
+					x: pos.x,
+					y: pos.y,
+					width: 200,
+					height: 50,
+					rotation: 0,
+					opacity: 1,
+					isVisible: true,
+					isLocked: false,
+					zIndex: 10,
+					content: "Type here...",
+					fontFamily: "Inter",
+					fontSize: 24,
+					fill: "#000000",
+					align: "left",
+					...defaultTextProps,
+				};
+				setElements((prev) => [...prev, newText]);
+				setSelectedIds([newText.id]);
+				setJustCreatedId(newText.id);
+
+				// Switch back to select tool after creating text (standard behavior? or stay in text mode?)
+				// Figma stays in text mode until you click away or finish.
+				// For now let's set tool to select so user can edit immediately.
+				setActiveTool("select");
+				saveToHistory();
+			} else if (activeTool === "shape") {
+				setIsDrawing(true);
+				const newShape: ShapeElement = {
+					id: crypto.randomUUID(),
+					type: "shape",
+					x: pos.x,
+					y: pos.y,
+					width: 0, // Start with 0 width
+					height: 0,
+					rotation: 0,
+					opacity: 1,
+					isVisible: true,
+					isLocked: false,
+					zIndex: 10,
+					shapeType: "rect", // Default to rect
+					fill: "#e2e8f0",
+					stroke: "#64748b",
+					strokeWidth: 2,
+					cornerRadius: 0,
+					...defaultShapeProps,
+				};
+				setElements((prev) => [...prev, newShape]);
+				setCurrentShapeId(newShape.id);
+			} else if (activeTool === "draw") {
+				setIsDrawing(true);
+				const newDrawing: DrawingElement = {
+					id: crypto.randomUUID(),
+					type: "drawing",
+					x: 0, // Points are absolute or relative? Usually points are relative to Group or absolute on Layer.
+					// Let's use 0,0 and absolute points for now, simpler.
+					y: 0,
+					rotation: 0,
+					width: 0, // Bounding box update later
+					height: 0,
+					opacity: 1,
+					isVisible: true,
+					isLocked: false,
+					zIndex: 10,
+					points: [pos.x, pos.y],
+					stroke: "#000000",
+					strokeWidth: 3,
+					tension: 0.5,
+					lineCap: "round",
+					lineJoin: "round",
+					...defaultDrawingProps,
+				};
+				setElements((prev) => [...prev, newDrawing]);
+				setCurrentDrawingId(newDrawing.id);
+			}
+		};
+
+		const handleStageMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+			onMouseMove(e);
+
+			if (!isDrawing) return;
+			const pos = getPointerPos();
+
+			if (activeTool === "shape" && currentShapeId) {
+				setElements((prev) =>
+					prev.map((el) => {
+						if (el.id === currentShapeId) {
+							const startX = el.x; // This was set on MouseDown
+							const startY = el.y; // This might be wrong if we update x/y.
+							// Actually, creating from corner:
+							// x/y is start point. width/height is delta.
+							// But creating from center vs corner?
+							// Let's assume corner dragging.
+							// If width is negative, flip?
+							// Konva Rect allows negative width/height? Yes.
+							return {
+								...el,
+								width: pos.x - el.x,
+								height: pos.y - el.y,
+							};
+						}
+						return el;
+					}),
+				);
+			} else if (activeTool === "draw" && currentDrawingId) {
+				setElements((prev) =>
+					prev.map((el) => {
+						if (el.id === currentDrawingId && el.type === "drawing") {
+							return {
+								...el,
+								points: [...el.points, pos.x, pos.y],
+							};
+						}
+						return el;
+					}),
+				);
+			}
+		};
+
+		const handleStageMouseUp = (e: Konva.KonvaEventObject<MouseEvent>) => {
+			onMouseUp(e);
+			if (isDrawing) {
+				setIsDrawing(false);
+				setCurrentShapeId(null);
+				setCurrentDrawingId(null);
+
+				// Select the newly created object
+				if (currentShapeId) setSelectedIds([currentShapeId]);
+				if (currentDrawingId) setSelectedIds([currentDrawingId]);
+
+				// Switch back to select tool? Or keep drawing?
+				// Usually "Draw" tool stays active. "Shape" tool stays active.
+				// But for "low friction" sometimes auto-switching is nice.
+				// Let's keep tool active for Shapes/Draw to allow multiple creations.
+
+				saveToHistory();
+			}
+		};
+
 		return (
 			<div
 				ref={ref}
@@ -98,7 +321,13 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 					width: `${canvasSize.width}px`,
 					minHeight: `${canvasSize.height}px`,
 					minWidth: `${canvasSize.width}px`,
-					cursor: isPanningCanvas ? "grabbing" : "default",
+					cursor: isPanningCanvas
+						? "grabbing"
+						: activeTool === "text"
+							? "text"
+							: activeTool === "draw" || activeTool === "shape"
+								? "crosshair"
+								: "default",
 					WebkitTouchCallout: "none",
 					touchAction: "none",
 				}}
@@ -119,9 +348,9 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 						onDragEnd={(e) => {
 							e.evt?.preventDefault();
 						}}
-						onMouseDown={onMouseDown}
-						onMouseMove={onMouseMove}
-						onMouseUp={onMouseUp}
+						onMouseDown={handleStageMouseDown}
+						onMouseMove={handleStageMouseMove}
+						onMouseUp={handleStageMouseUp}
 						onMouseLeave={onMouseLeave}
 						onWheel={onWheel}
 						onTouchStart={onTouchStart}
@@ -260,6 +489,81 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 										}
 									/>
 								))}
+
+							{/* New Elements (Text, Shape, Drawing) */}
+							{elements.map((el) => {
+								const isSelected = selectedIds.includes(el.id);
+								const updateHandler = (newAttrs: Partial<any>) => {
+									setElements((prev) =>
+										prev.map((item) =>
+											item.id === el.id ? { ...item, ...newAttrs } : item,
+										),
+									);
+								};
+
+								if (el.type === "text") {
+									return (
+										<CanvasText
+											key={el.id}
+											element={el as TextElement}
+											isSelected={isSelected}
+											onSelect={() =>
+												handleSelect(el.id, {
+													evt: {
+														shiftKey: false,
+														metaKey: false,
+														ctrlKey: false,
+													},
+												} as any)
+											}
+											onChange={updateHandler}
+											isDraggable={activeTool === "select"}
+											autoFocus={justCreatedId === el.id}
+										/>
+									);
+								}
+								if (el.type === "shape") {
+									return (
+										<CanvasShape
+											key={el.id}
+											element={el as ShapeElement}
+											isSelected={isSelected}
+											onSelect={() =>
+												handleSelect(el.id, {
+													evt: {
+														shiftKey: false,
+														metaKey: false,
+														ctrlKey: false,
+													},
+												} as any)
+											}
+											onChange={updateHandler}
+											isDraggable={activeTool === "select"}
+										/>
+									);
+								}
+								if (el.type === "drawing") {
+									return (
+										<CanvasDrawing
+											key={el.id}
+											element={el as DrawingElement}
+											isSelected={isSelected}
+											onSelect={() =>
+												handleSelect(el.id, {
+													evt: {
+														shiftKey: false,
+														metaKey: false,
+														ctrlKey: false,
+													},
+												} as any)
+											}
+											onChange={updateHandler}
+											isDraggable={activeTool === "select"}
+										/>
+									);
+								}
+								return null;
+							})}
 
 							{/* Crop overlay */}
 							{croppingImageId &&

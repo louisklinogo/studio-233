@@ -73,27 +73,24 @@ export const CreativeToolbar: React.FC<CreativeToolbarProps> = ({
 				<div className="flex flex-col gap-1">
 					<ToolButton
 						icon={Type}
-						label="Text (Coming Soon)"
+						label="Text (T)"
 						isActive={activeTool === "text"}
 						onClick={() => setActiveTool("text")}
 						shortcut="T"
-						disabled={true}
 					/>
 					<ToolButton
 						icon={Square}
-						label="Shapes (Coming Soon)"
+						label="Shapes (R)"
 						isActive={activeTool === "shape"}
 						onClick={() => setActiveTool("shape")}
 						shortcut="R"
-						disabled={true}
 					/>
 					<ToolButton
 						icon={Pencil}
-						label="Draw (Coming Soon)"
+						label="Draw (P)"
 						isActive={activeTool === "draw"}
 						onClick={() => setActiveTool("draw")}
 						shortcut="P"
-						disabled={true}
 					/>
 				</div>
 
