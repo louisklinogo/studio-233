@@ -5,47 +5,32 @@ import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Konva from "konva";
 import {
-	Check,
 	ChevronDown,
 	ExternalLink,
 	ImageIcon,
-	MonitorIcon,
-	MoonIcon,
 	Paperclip,
 	PlayIcon,
-	Plus,
 	Redo,
 	SlidersHorizontal,
-	SunIcon,
 	Trash2,
 	Undo,
 	X,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Group, Layer, Line, Rect, Stage } from "react-konva";
-import { CanvasContextMenu } from "@/components/canvas/CanvasContextMenu";
-import { CanvasGrid } from "@/components/canvas/CanvasGrid";
-import { CanvasImage } from "@/components/canvas/CanvasImage";
-import { CanvasVideo } from "@/components/canvas/CanvasVideo";
-import { CropOverlayWrapper } from "@/components/canvas/CropOverlayWrapper";
+import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { DimensionDisplay } from "@/components/canvas/DimensionDisplay";
-import { ExtendVideoDialog } from "@/components/canvas/ExtendVideoDialog";
+import { FloatingContextMenu } from "@/components/canvas/FloatingContextMenu";
 import { GithubBadge } from "@/components/canvas/GithubBadge";
-import { ImageToVideoDialog } from "@/components/canvas/ImageToVideoDialog";
 import { MiniMap } from "@/components/canvas/MiniMap";
 import { MobileToolbar } from "@/components/canvas/MobileToolbar";
-import { SelectionBoxComponent } from "@/components/canvas/SelectionBox";
 // Import extracted components
 import { ShortcutBadge } from "@/components/canvas/ShortcutBadge";
 import { StreamingImage } from "@/components/canvas/StreamingImage";
 import { StreamingVideo } from "@/components/canvas/StreamingVideo";
 import { VideoControls } from "@/components/canvas/VideoControls";
-import { RemoveVideoBackgroundDialog } from "@/components/canvas/VideoModelComponents";
 import { VideoOverlays } from "@/components/canvas/VideoOverlays";
-import { VideoToVideoDialog } from "@/components/canvas/VideoToVideoDialog";
 import { ZoomControls } from "@/components/canvas/ZoomControls";
 import { GenerationsIndicator } from "@/components/generations-indicator";
 import { Logo, SpinnerIcon } from "@/components/icons";
@@ -59,25 +44,8 @@ import {
 	CreativeToolbar,
 	type ToolType as CreativeToolType,
 } from "@/components/studio/CreativeToolbar";
+import { DialogManager } from "@/components/studio/DialogManager";
 import { Button } from "@/components/ui/button";
-import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
 	Tooltip,
@@ -225,6 +193,12 @@ export default function OverlayPage() {
 
 	const [_, setIsSaving] = useState(false);
 	const [showSuccess, setShowSuccess] = useState(false);
+
+	// Context menu state
+	const [contextMenuPosition, setContextMenuPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
 
 	// Viewport hook
 	const {
@@ -1563,21 +1537,6 @@ export default function OverlayPage() {
 				onAddClick={() => fileInputRef.current?.click()}
 			/>
 
-			{/* Bottom Toolbar - Navigation & Selection */}
-			<BottomToolbar
-				activeTool={activeTool}
-				setActiveTool={setActiveTool}
-				isChatOpen={isChatOpen}
-				onChatToggle={() => setIsChatOpen(!isChatOpen)}
-				chatCount={0} // Placeholder for queue system
-				imagesCount={selectedIds.length}
-				onRunAll={() => {
-					if (generationSettings.prompt.trim()) {
-						handleRun();
-					}
-				}}
-			/>
-
 			{/* Contextual Chat Interface */}
 			<ChatInterface
 				isOpen={isChatOpen}
@@ -1670,422 +1629,165 @@ export default function OverlayPage() {
 						className="pointer-events-none absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10"
 						aria-hidden="true"
 					/>
-					<ContextMenu
+					<CanvasStage
+						canvasSize={canvasSize}
+						viewport={viewport}
+						isCanvasReady={isCanvasReady}
+						stageRef={stageRef}
+						images={images}
+						videos={videos}
+						selectedIds={selectedIds}
+						selectionBox={selectionBox}
+						isSelecting={isSelecting}
+						showGrid={showGrid}
+						isPanningCanvas={isPanningCanvas}
+						croppingImageId={croppingImageId}
+						dragStartPositions={dragStartPositions}
+						isDraggingImage={isDraggingImage}
+						setImages={setImages}
+						setVideos={setVideos}
+						setSelectedIds={setSelectedIds}
+						setIsDraggingImage={setIsDraggingImage}
+						setHiddenVideoControlsIds={setHiddenVideoControlsIds}
+						setDragStartPositions={setDragStartPositions}
+						setCroppingImageId={setCroppingImageId}
+						saveToHistory={saveToHistory}
+						onMouseDown={handleMouseDown}
+						onMouseMove={handleMouseMove}
+						onMouseUp={handleMouseUp}
+						onMouseLeave={() => {
+							if (isPanningCanvas) {
+								setIsPanningCanvas(false);
+							}
+						}}
+						onWheel={handleWheel}
+						onTouchStart={handleTouchStart}
+						onTouchMove={handleTouchMove}
+						onTouchEnd={handleTouchEnd}
+						onContextMenu={(e) => {
+							// Prevent default browser menu
+							e.evt.preventDefault();
+
+							// Check if this is a forwarded event from a video overlay
+							const videoId = (e.evt as any)?.videoId || (e as any)?.videoId;
+							if (videoId) {
+								// This is a right-click on a video
+								if (!selectedIds.includes(videoId)) {
+									setSelectedIds([videoId]);
+								}
+								// Set context menu position
+								setContextMenuPosition({
+									x: e.evt.clientX,
+									y: e.evt.clientY,
+								});
+								return;
+							}
+
+							// Get clicked position
+							const stage = e.target.getStage();
+							if (!stage) return;
+
+							const point = stage.getPointerPosition();
+							if (!point) return;
+
+							// Convert to canvas coordinates
+							const canvasPoint = {
+								x: (point.x - viewport.x) / viewport.scale,
+								y: (point.y - viewport.y) / viewport.scale,
+							};
+
+							// Check if we clicked on a video first (check in reverse order for top-most)
+							const clickedVideo = [...videos].reverse().find((vid) => {
+								return (
+									canvasPoint.x >= vid.x &&
+									canvasPoint.x <= vid.x + vid.width &&
+									canvasPoint.y >= vid.y &&
+									canvasPoint.y <= vid.y + vid.height
+								);
+							});
+
+							if (clickedVideo) {
+								if (!selectedIds.includes(clickedVideo.id)) {
+									setSelectedIds([clickedVideo.id]);
+								}
+								setContextMenuPosition({
+									x: e.evt.clientX,
+									y: e.evt.clientY,
+								});
+								return;
+							}
+
+							// Check if we clicked on an image (check in reverse order for top-most image)
+							const clickedImage = [...images].reverse().find((img) => {
+								// Simple bounding box check
+								// TODO: Could be improved to handle rotation
+								return (
+									canvasPoint.x >= img.x &&
+									canvasPoint.x <= img.x + img.width &&
+									canvasPoint.y >= img.y &&
+									canvasPoint.y <= img.y + img.height
+								);
+							});
+
+							if (clickedImage) {
+								if (!selectedIds.includes(clickedImage.id)) {
+									// If clicking on unselected image, select only that image
+									setSelectedIds([clickedImage.id]);
+								}
+								// If already selected, keep current selection for multi-select context menu
+								setContextMenuPosition({
+									x: e.evt.clientX,
+									y: e.evt.clientY,
+								});
+							} else {
+								// Clicked on empty space - show menu anyway or clear selection?
+								// For now, let's show the menu at cursor
+								setContextMenuPosition({
+									x: e.evt.clientX,
+									y: e.evt.clientY,
+								});
+							}
+						}}
+						handleSelect={handleSelect}
+					/>
+
+					<FloatingContextMenu
+						position={contextMenuPosition}
 						onOpenChange={(open) => {
 							if (!open) {
+								setContextMenuPosition(null);
 								// Reset isolate state when context menu closes
 								setIsolateTarget(null);
 								setIsolateInputValue("");
 							}
 						}}
-					>
-						<ContextMenuTrigger asChild>
-							<div
-								className="relative bg-background overflow-hidden w-full h-full"
-								style={{
-									// Use consistent style property names to avoid hydration errors
-									height: `${canvasSize.height}px`,
-									width: `${canvasSize.width}px`,
-									minHeight: `${canvasSize.height}px`,
-									minWidth: `${canvasSize.width}px`,
-									cursor: isPanningCanvas ? "grabbing" : "default",
-									WebkitTouchCallout: "none", // Add this for iOS
-									touchAction: "none", // For touch devices
-								}}
-							>
-								{isCanvasReady && (
-									<Stage
-										ref={stageRef}
-										width={canvasSize.width}
-										height={canvasSize.height}
-										x={viewport.x}
-										y={viewport.y}
-										scaleX={viewport.scale}
-										scaleY={viewport.scale}
-										draggable={false}
-										onDragStart={(e) => {
-											e.evt?.preventDefault();
-										}}
-										onDragEnd={(e) => {
-											e.evt?.preventDefault();
-										}}
-										onMouseDown={handleMouseDown}
-										onMouseMove={handleMouseMove}
-										onMouseUp={handleMouseUp}
-										onMouseLeave={() => {
-											// Stop panning if mouse leaves the stage
-											if (isPanningCanvas) {
-												setIsPanningCanvas(false);
-											}
-										}}
-										onTouchStart={handleTouchStart}
-										onTouchMove={handleTouchMove}
-										onTouchEnd={handleTouchEnd}
-										onContextMenu={(e) => {
-											// Check if this is a forwarded event from a video overlay
-											const videoId =
-												(e.evt as any)?.videoId || (e as any)?.videoId;
-											if (videoId) {
-												// This is a right-click on a video
-												if (!selectedIds.includes(videoId)) {
-													setSelectedIds([videoId]);
-												}
-												return;
-											}
-
-											// Get clicked position
-											const stage = e.target.getStage();
-											if (!stage) return;
-
-											const point = stage.getPointerPosition();
-											if (!point) return;
-
-											// Convert to canvas coordinates
-											const canvasPoint = {
-												x: (point.x - viewport.x) / viewport.scale,
-												y: (point.y - viewport.y) / viewport.scale,
-											};
-
-											// Check if we clicked on a video first (check in reverse order for top-most)
-											const clickedVideo = [...videos].reverse().find((vid) => {
-												return (
-													canvasPoint.x >= vid.x &&
-													canvasPoint.x <= vid.x + vid.width &&
-													canvasPoint.y >= vid.y &&
-													canvasPoint.y <= vid.y + vid.height
-												);
-											});
-
-											if (clickedVideo) {
-												if (!selectedIds.includes(clickedVideo.id)) {
-													setSelectedIds([clickedVideo.id]);
-												}
-												return;
-											}
-
-											// Check if we clicked on an image (check in reverse order for top-most image)
-											const clickedImage = [...images].reverse().find((img) => {
-												// Simple bounding box check
-												// TODO: Could be improved to handle rotation
-												return (
-													canvasPoint.x >= img.x &&
-													canvasPoint.x <= img.x + img.width &&
-													canvasPoint.y >= img.y &&
-													canvasPoint.y <= img.y + img.height
-												);
-											});
-
-											if (clickedImage) {
-												if (!selectedIds.includes(clickedImage.id)) {
-													// If clicking on unselected image, select only that image
-													setSelectedIds([clickedImage.id]);
-												}
-												// If already selected, keep current selection for multi-select context menu
-											}
-										}}
-										onWheel={handleWheel}
-									>
-										<Layer>
-											{/* Grid background */}
-											{showGrid && (
-												<CanvasGrid
-													viewport={viewport}
-													canvasSize={canvasSize}
-												/>
-											)}
-
-											{/* Selection box */}
-											<SelectionBoxComponent selectionBox={selectionBox} />
-
-											{/* Render images */}
-											{images
-												.filter((image) => {
-													// Performance optimization: only render visible images
-													const buffer = 100; // pixels buffer
-													const viewBounds = {
-														left: -viewport.x / viewport.scale - buffer,
-														top: -viewport.y / viewport.scale - buffer,
-														right:
-															(canvasSize.width - viewport.x) / viewport.scale +
-															buffer,
-														bottom:
-															(canvasSize.height - viewport.y) /
-																viewport.scale +
-															buffer,
-													};
-
-													return !(
-														image.x + image.width < viewBounds.left ||
-														image.x > viewBounds.right ||
-														image.y + image.height < viewBounds.top ||
-														image.y > viewBounds.bottom
-													);
-												})
-												.map((image) => (
-													<CanvasImage
-														key={image.id}
-														image={image}
-														isSelected={selectedIds.includes(image.id)}
-														onSelect={(e) => handleSelect(image.id, e)}
-														onChange={(newAttrs) => {
-															setImages((prev) =>
-																prev.map((img) =>
-																	img.id === image.id
-																		? { ...img, ...newAttrs }
-																		: img,
-																),
-															);
-														}}
-														onDoubleClick={() => {
-															setCroppingImageId(image.id);
-														}}
-														onDragStart={() => {
-															// If dragging a selected item in a multi-selection, keep the selection
-															// If dragging an unselected item, select only that item
-															let currentSelectedIds = selectedIds;
-															if (!selectedIds.includes(image.id)) {
-																currentSelectedIds = [image.id];
-																setSelectedIds(currentSelectedIds);
-															}
-
-															setIsDraggingImage(true);
-															// Save positions of all selected items
-															const positions = new Map<
-																string,
-																{ x: number; y: number }
-															>();
-															currentSelectedIds.forEach((id) => {
-																const img = images.find((i) => i.id === id);
-																if (img) {
-																	positions.set(id, { x: img.x, y: img.y });
-																}
-															});
-															setDragStartPositions(positions);
-														}}
-														onDragEnd={() => {
-															setIsDraggingImage(false);
-															saveToHistory();
-															setDragStartPositions(new Map());
-														}}
-														selectedIds={selectedIds}
-														images={images}
-														setImages={setImages}
-														isDraggingImage={isDraggingImage}
-														isCroppingImage={croppingImageId === image.id}
-														dragStartPositions={dragStartPositions}
-													/>
-												))}
-
-											{/* Render videos */}
-											{videos
-												.filter((video) => {
-													// Performance optimization: only render visible videos
-													const buffer = 100; // pixels buffer
-													const viewBounds = {
-														left: -viewport.x / viewport.scale - buffer,
-														top: -viewport.y / viewport.scale - buffer,
-														right:
-															(canvasSize.width - viewport.x) / viewport.scale +
-															buffer,
-														bottom:
-															(canvasSize.height - viewport.y) /
-																viewport.scale +
-															buffer,
-													};
-
-													return !(
-														video.x + video.width < viewBounds.left ||
-														video.x > viewBounds.right ||
-														video.y + video.height < viewBounds.top ||
-														video.y > viewBounds.bottom
-													);
-												})
-												.map((video) => (
-													<CanvasVideo
-														key={video.id}
-														video={video}
-														isSelected={selectedIds.includes(video.id)}
-														onSelect={(e) => handleSelect(video.id, e)}
-														onChange={(newAttrs) => {
-															setVideos((prev) =>
-																prev.map((vid) =>
-																	vid.id === video.id
-																		? { ...vid, ...newAttrs }
-																		: vid,
-																),
-															);
-														}}
-														onDragStart={() => {
-															// If dragging a selected item in a multi-selection, keep the selection
-															// If dragging an unselected item, select only that item
-															let currentSelectedIds = selectedIds;
-															if (!selectedIds.includes(video.id)) {
-																currentSelectedIds = [video.id];
-																setSelectedIds(currentSelectedIds);
-															}
-
-															setIsDraggingImage(true);
-															// Hide video controls during drag
-															setHiddenVideoControlsIds(
-																(prev) => new Set([...prev, video.id]),
-															);
-															// Save positions of all selected items
-															const positions = new Map<
-																string,
-																{ x: number; y: number }
-															>();
-															currentSelectedIds.forEach((id) => {
-																const vid = videos.find((v) => v.id === id);
-																if (vid) {
-																	positions.set(id, { x: vid.x, y: vid.y });
-																}
-															});
-															setDragStartPositions(positions);
-														}}
-														onDragEnd={() => {
-															setIsDraggingImage(false);
-															// Show video controls after drag ends
-															setHiddenVideoControlsIds((prev) => {
-																const newSet = new Set(prev);
-																newSet.delete(video.id);
-																return newSet;
-															});
-															saveToHistory();
-															setDragStartPositions(new Map());
-														}}
-														selectedIds={selectedIds}
-														videos={videos}
-														setVideos={setVideos}
-														isDraggingVideo={isDraggingImage}
-														isCroppingVideo={false}
-														dragStartPositions={dragStartPositions}
-														onResizeStart={() =>
-															setHiddenVideoControlsIds(
-																(prev) => new Set([...prev, video.id]),
-															)
-														}
-														onResizeEnd={() =>
-															setHiddenVideoControlsIds((prev) => {
-																const newSet = new Set(prev);
-																newSet.delete(video.id);
-																return newSet;
-															})
-														}
-													/>
-												))}
-
-											{/* Crop overlay */}
-											{croppingImageId &&
-												(() => {
-													const croppingImage = images.find(
-														(img) => img.id === croppingImageId,
-													);
-													if (!croppingImage) return null;
-
-													return (
-														<CropOverlayWrapper
-															image={croppingImage}
-															viewportScale={viewport.scale}
-															onCropChange={(crop) => {
-																setImages((prev) =>
-																	prev.map((img) =>
-																		img.id === croppingImageId
-																			? { ...img, ...crop }
-																			: img,
-																	),
-																);
-															}}
-															onCropEnd={async () => {
-																// Apply crop to image dimensions
-																if (croppingImage) {
-																	const cropWidth =
-																		croppingImage.cropWidth || 1;
-																	const cropHeight =
-																		croppingImage.cropHeight || 1;
-																	const cropX = croppingImage.cropX || 0;
-																	const cropY = croppingImage.cropY || 0;
-
-																	try {
-																		// Create the cropped image at full resolution
-																		const croppedImageSrc =
-																			await createCroppedImage(
-																				croppingImage.src,
-																				cropX,
-																				cropY,
-																				cropWidth,
-																				cropHeight,
-																			);
-
-																		setImages((prev) =>
-																			prev.map((img) =>
-																				img.id === croppingImageId
-																					? {
-																							...img,
-																							// Replace with cropped image
-																							src: croppedImageSrc,
-																							// Update position to the crop area's top-left
-																							x: img.x + cropX * img.width,
-																							y: img.y + cropY * img.height,
-																							// Update dimensions to match crop size
-																							width: cropWidth * img.width,
-																							height: cropHeight * img.height,
-																							// Remove crop values completely
-																							cropX: undefined,
-																							cropY: undefined,
-																							cropWidth: undefined,
-																							cropHeight: undefined,
-																						}
-																					: img,
-																			),
-																		);
-																	} catch (error) {
-																		console.error(
-																			"Failed to create cropped image:",
-																			error,
-																		);
-																	}
-																}
-
-																setCroppingImageId(null);
-																saveToHistory();
-															}}
-														/>
-													);
-												})()}
-										</Layer>
-									</Stage>
-								)}
-							</div>
-						</ContextMenuTrigger>
-						<CanvasContextMenu
-							selectedIds={selectedIds}
-							images={images}
-							videos={videos}
-							isGenerating={isGenerating}
-							generationSettings={generationSettings}
-							isolateInputValue={isolateInputValue}
-							isIsolating={isIsolating}
-							handleRun={handleRun}
-							handleGeminiEdit={handleGeminiEdit}
-							isGeminiEditing={isGeminiEditing}
-							handleDuplicate={handleDuplicate}
-							handleRemoveBackground={handleRemoveBackground}
-							handleCombineImages={handleCombineImages}
-							handleDelete={handleDelete}
-							handleIsolate={handleIsolate}
-							handleConvertToVideo={handleConvertToVideo}
-							handleVideoToVideo={handleVideoToVideo}
-							handleExtendVideo={handleExtendVideo}
-							handleRemoveVideoBackground={handleRemoveVideoBackground}
-							setCroppingImageId={setCroppingImageId}
-							setIsolateInputValue={setIsolateInputValue}
-							setIsolateTarget={setIsolateTarget}
-							sendToFront={sendToFront}
-							sendToBack={sendToBack}
-							bringForward={bringForward}
-							sendBackward={sendBackward}
-						/>
-					</ContextMenu>
+						selectedIds={selectedIds}
+						images={images}
+						videos={videos}
+						isGenerating={isGenerating}
+						generationSettings={generationSettings}
+						isolateInputValue={isolateInputValue}
+						isIsolating={isIsolating}
+						handleRun={handleRun}
+						handleGeminiEdit={handleGeminiEdit}
+						isGeminiEditing={isGeminiEditing}
+						handleDuplicate={handleDuplicate}
+						handleRemoveBackground={handleRemoveBackground}
+						handleCombineImages={handleCombineImages}
+						handleDelete={handleDelete}
+						handleIsolate={handleIsolate}
+						handleConvertToVideo={handleConvertToVideo}
+						handleVideoToVideo={handleVideoToVideo}
+						handleExtendVideo={handleExtendVideo}
+						handleRemoveVideoBackground={handleRemoveVideoBackground}
+						setCroppingImageId={setCroppingImageId}
+						setIsolateInputValue={setIsolateInputValue}
+						setIsolateTarget={setIsolateTarget}
+						sendToFront={sendToFront}
+						sendToBack={sendToBack}
+						bringForward={bringForward}
+						sendBackward={sendBackward}
+					/>
 
 					<div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-2">
 						{/* Fal logo */}
@@ -2117,6 +1819,20 @@ export default function OverlayPage() {
 							sendBackward={sendBackward}
 						/>
 					</div>
+
+					{/* Assistant Panel Toggle Trigger (Floating) */}
+					{!isChatOpen && (
+						<div className="absolute top-4 right-4 z-20 animate-in fade-in slide-in-from-top-2">
+							<Button
+								size="icon"
+								variant="secondary"
+								className="h-10 w-10 rounded-full shadow-md bg-background/90 backdrop-blur hover:bg-background border border-border/50"
+								onClick={() => setIsChatOpen(true)}
+							>
+								<SpinnerIcon className="h-5 w-5" />
+							</Button>
+						</div>
+					)}
 
 					{/* Prompt bar removed - Moved to AssistantPanel */}
 
@@ -2153,366 +1869,103 @@ export default function OverlayPage() {
 						)}
 						viewport={viewport}
 					/>
+
+					{/* Bottom Toolbar - Navigation & Selection */}
+					<BottomToolbar
+						activeTool={activeTool}
+						setActiveTool={setActiveTool}
+						isChatOpen={isChatOpen}
+						onChatToggle={() => setIsChatOpen(!isChatOpen)}
+						chatCount={0} // Placeholder for queue system
+						imagesCount={selectedIds.length}
+						onRunAll={() => {
+							if (generationSettings.prompt.trim()) {
+								handleRun();
+							}
+						}}
+					/>
 				</div>
 			</main>
 
 			{/* Assistant Panel */}
-			<div className="w-[420px] h-full border-l border-border z-[9999] relative flex-shrink-0 bg-background shadow-xl overflow-hidden">
-				<AssistantPanel
-					prompt={generationSettings.prompt}
-					setPrompt={(p) =>
-						setGenerationSettings((prev) => ({ ...prev, prompt: p }))
-					}
-					generationSettings={generationSettings}
-					setGenerationSettings={setGenerationSettings}
-					isGenerating={isGenerating}
-					isGeminiEditing={isGeminiEditing}
-					handleRun={handleRun}
-					handleGeminiEdit={handleGeminiEdit}
-					handleUpload={(files) => handleFileUpload(files)}
-					selectedIds={selectedIds}
-					className="h-full w-full"
-				/>
-			</div>
+			<AnimatePresence mode="wait">
+				{isChatOpen && (
+					<motion.div
+						initial={{ width: 0, opacity: 0 }}
+						animate={{ width: 420, opacity: 1 }}
+						exit={{ width: 0, opacity: 0 }}
+						transition={{ duration: 0.3, ease: "easeInOut" }}
+						className="h-full border-l border-border z-[9999] relative flex-shrink-0 bg-background shadow-xl overflow-hidden"
+					>
+						<AssistantPanel
+							prompt={generationSettings.prompt}
+							setPrompt={(p) =>
+								setGenerationSettings((prev) => ({ ...prev, prompt: p }))
+							}
+							generationSettings={generationSettings}
+							setGenerationSettings={setGenerationSettings}
+							isGenerating={isGenerating}
+							isGeminiEditing={isGeminiEditing}
+							handleRun={handleRun}
+							handleGeminiEdit={handleGeminiEdit}
+							handleUpload={(files) => handleFileUpload(files)}
+							selectedIds={selectedIds}
+							className="h-full w-full"
+						/>
+					</motion.div>
+				)}
+			</AnimatePresence>
 
-			{/* Style Selection Dialog */}
-			<Dialog open={isStyleDialogOpen} onOpenChange={setIsStyleDialogOpen}>
-				<DialogContent className="w-[95vw] max-w-4xl max-h-[80vh] overflow-hidden">
-					<DialogHeader>
-						<DialogTitle>Choose a Style</DialogTitle>
-						<DialogDescription>
-							Select a style to apply to your images or choose Custom to use
-							your own LoRA
-						</DialogDescription>
-					</DialogHeader>
-
-					<div className="relative">
-						{/* Fixed gradient overlays outside scrollable area */}
-						<div className="pointer-events-none absolute -top-[1px] left-0 right-0 z-30 h-4 md:h-12 bg-gradient-to-b from-background via-background/90 to-transparent" />
-						<div className="pointer-events-none absolute -bottom-[1px] left-0 right-0 z-30 h-4 md:h-12 bg-gradient-to-t from-background via-background/90 to-transparent" />
-
-						{/* Scrollable content container */}
-						<div className="overflow-y-auto max-h-[60vh] px-1">
-							<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pt-4 pb-6 md:pt-8 md:pb-12">
-								{/* Custom option */}
-								<button
-									onClick={() => {
-										setGenerationSettings({
-											...generationSettings,
-											loraUrl: "",
-											prompt: "",
-											styleId: "custom",
-										});
-										setIsStyleDialogOpen(false);
-									}}
-									className={cn(
-										"group relative flex flex-col items-center gap-2 p-3 rounded-xl border",
-										generationSettings.styleId === "custom"
-											? "border-primary bg-primary/10"
-											: "border-border hover:border-primary/50",
-									)}
-								>
-									<div className="w-full aspect-square rounded-lg bg-muted flex items-center justify-center">
-										<Plus className="h-8 w-8 text-muted-foreground" />
-									</div>
-									<span className="text-sm font-medium">Custom</span>
-								</button>
-
-								{/* Predefined styles */}
-								{styleModels.map((model) => (
-									<button
-										key={model.id}
-										onClick={() => {
-											setGenerationSettings({
-												...generationSettings,
-												loraUrl: model.loraUrl || "",
-												prompt: model.prompt,
-												styleId: model.id,
-											});
-											setIsStyleDialogOpen(false);
-										}}
-										className={cn(
-											"group relative flex flex-col items-center gap-2 p-3 rounded-xl border",
-											generationSettings.styleId === model.id
-												? "border-primary bg-primary/10"
-												: "border-border hover:border-primary/50",
-										)}
-									>
-										<div className="relative w-full aspect-square rounded-lg overflow-hidden">
-											<Image
-												src={model.imageSrc}
-												alt={model.name}
-												width={200}
-												height={200}
-												className="w-full h-full object-cover"
-											/>
-											{generationSettings.styleId === model.id && (
-												<div className="absolute inset-0 bg-primary/20 flex items-center justify-center"></div>
-											)}
-										</div>
-										<span className="text-sm font-medium text-center">
-											{model.name}
-										</span>
-									</button>
-								))}
-							</div>
-						</div>
-					</div>
-				</DialogContent>
-			</Dialog>
-
-			{/* Settings dialog */}
-			<Dialog
-				open={isSettingsDialogOpen}
-				onOpenChange={setIsSettingsDialogOpen}
-			>
-				<DialogContent className="w-[95vw] max-w-2xl max-h-[80vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>Settings</DialogTitle>
-					</DialogHeader>
-
-					<div className="space-y-6">
-						<div className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="api-key">FAL API Key</Label>
-								<p className="text-sm text-muted-foreground">
-									Add your own FAL API key to bypass rate limits and use your
-									own quota.
-								</p>
-								<Input
-									id="api-key"
-									type="password"
-									placeholder="Enter your API key"
-									value={tempApiKey}
-									onChange={(e) => setTempApiKey(e.target.value)}
-									className="font-mono"
-									style={{ fontSize: "16px" }}
-								/>
-								<p className="text-xs text-muted-foreground">
-									Get your API key from{" "}
-									<Link
-										href="https://fal.ai/dashboard/keys"
-										target="_blank"
-										className="underline hover:text-foreground"
-									>
-										fal.ai/dashboard/keys
-									</Link>
-								</p>
-							</div>
-
-							{customApiKey && (
-								<div className="rounded-xl bg-green-500/10 border border-green-500/20 p-3">
-									<div className="flex items-center gap-2 text-sm text-green-600">
-										<Check className="h-4 w-4" />
-										<span>Currently using custom API key</span>
-									</div>
-								</div>
-							)}
-
-							<div className="flex justify-between gap-2">
-								<Button
-									variant="secondary"
-									onClick={() => {
-										setCustomApiKey("");
-										setTempApiKey("");
-										setIsApiKeyDialogOpen(false);
-										toast({
-											title: "API key removed",
-											description: "Using default rate-limited API",
-										});
-									}}
-									disabled={!customApiKey}
-								>
-									Remove Key
-								</Button>
-
-								<div className="flex gap-2">
-									<Button
-										variant="secondary"
-										onClick={() => {
-											setTempApiKey(customApiKey);
-											setIsApiKeyDialogOpen(false);
-										}}
-									>
-										Cancel
-									</Button>
-									<Button
-										variant="primary"
-										onClick={() => {
-											const trimmedKey = tempApiKey.trim();
-											if (trimmedKey) {
-												setCustomApiKey(trimmedKey);
-												setIsApiKeyDialogOpen(false);
-												toast({
-													title: "API key saved",
-													description: "Your custom API key is now active",
-												});
-											} else if (trimmedKey) {
-												toast({
-													title: "Invalid API key",
-													description: "FAL API keys should start with 'fal_'",
-													variant: "destructive",
-												});
-											}
-										}}
-										disabled={!tempApiKey.trim()}
-									>
-										Save Key
-									</Button>
-								</div>
-							</div>
-						</div>
-
-						<div className="h-px bg-border/40" />
-
-						{/* Appearance */}
-						<div className="flex justify-between">
-							<div className="flex flex-col gap-2">
-								<Label htmlFor="appearance">Appearance</Label>
-								<p className="text-sm text-muted-foreground">
-									Customize how studio+233 looks on your device.
-								</p>
-							</div>
-							<Select
-								value={theme || "system"}
-								onValueChange={(value: "system" | "light" | "dark") =>
-									setTheme(value)
-								}
-							>
-								<SelectTrigger className="max-w-[140px] rounded-xl">
-									<div className="flex items-center gap-2">
-										{theme === "light" ? (
-											<SunIcon className="size-4" />
-										) : theme === "dark" ? (
-											<MoonIcon className="size-4" />
-										) : (
-											<MonitorIcon className="size-4" />
-										)}
-										<span className="capitalize">{theme || "system"}</span>
-									</div>
-								</SelectTrigger>
-								<SelectContent className="rounded-xl">
-									<SelectItem value="system" className="rounded-lg">
-										<div className="flex items-center gap-2">
-											<MonitorIcon className="size-4" />
-											<span>System</span>
-										</div>
-									</SelectItem>
-									<SelectItem value="light" className="rounded-lg">
-										<div className="flex items-center gap-2">
-											<SunIcon className="size-4" />
-											<span>Light</span>
-										</div>
-									</SelectItem>
-									<SelectItem value="dark" className="rounded-lg">
-										<div className="flex items-center gap-2">
-											<MoonIcon className="size-4" />
-											<span>Dark</span>
-										</div>
-									</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-
-						{/* Grid */}
-						<div className="flex justify-between">
-							<div className="flex flex-col gap-2">
-								<Label htmlFor="grid">Show Grid</Label>
-								<p className="text-sm text-muted-foreground">
-									Show a grid on the canvas to help you align your images.
-								</p>
-							</div>
-							<Switch
-								id="grid"
-								checked={showGrid}
-								onCheckedChange={setShowGrid}
-							/>
-						</div>
-
-						{/* Minimap */}
-						<div className="flex justify-between">
-							<div className="flex flex-col gap-2">
-								<Label htmlFor="minimap">Show Minimap</Label>
-								<p className="text-sm text-muted-foreground">
-									Show a minimap in the corner to navigate the canvas.
-								</p>
-							</div>
-							<Switch
-								id="minimap"
-								checked={showMinimap}
-								onCheckedChange={setShowMinimap}
-							/>
-						</div>
-					</div>
-				</DialogContent>
-			</Dialog>
-
-			{/* Image to Video Dialog */}
-			<ImageToVideoDialog
-				isOpen={isImageToVideoDialogOpen}
-				onClose={() => {
-					setIsImageToVideoDialogOpen(false);
-					setSelectedImageForVideo(null);
-				}}
-				onConvert={handleImageToVideoConversion}
-				imageUrl={
-					selectedImageForVideo
-						? images.find((img) => img.id === selectedImageForVideo)?.src || ""
-						: ""
+			<DialogManager
+				isStyleDialogOpen={isStyleDialogOpen}
+				setIsStyleDialogOpen={setIsStyleDialogOpen}
+				isSettingsDialogOpen={isSettingsDialogOpen}
+				setIsSettingsDialogOpen={setIsSettingsDialogOpen}
+				isApiKeyDialogOpen={isApiKeyDialogOpen}
+				setIsApiKeyDialogOpen={setIsApiKeyDialogOpen}
+				showGrid={showGrid}
+				setShowGrid={setShowGrid}
+				showMinimap={showMinimap}
+				setShowMinimap={setShowMinimap}
+				generationSettings={generationSettings}
+				setGenerationSettings={setGenerationSettings}
+				customApiKey={customApiKey}
+				setCustomApiKey={setCustomApiKey}
+				tempApiKey={tempApiKey}
+				setTempApiKey={setTempApiKey}
+				theme={theme}
+				setTheme={setTheme}
+				isImageToVideoDialogOpen={isImageToVideoDialogOpen}
+				setIsImageToVideoDialogOpen={setIsImageToVideoDialogOpen}
+				selectedImageForVideo={selectedImageForVideo}
+				setSelectedImageForVideo={setSelectedImageForVideo}
+				isConvertingToVideo={isConvertingToVideo}
+				handleImageToVideoConversion={handleImageToVideoConversion}
+				isVideoToVideoDialogOpen={isVideoToVideoDialogOpen}
+				setIsVideoToVideoDialogOpen={setIsVideoToVideoDialogOpen}
+				selectedVideoForVideo={selectedVideoForVideo}
+				setSelectedVideoForVideo={setSelectedVideoForVideo}
+				isTransformingVideo={isTransformingVideo}
+				handleVideoToVideoTransformation={handleVideoToVideoTransformation}
+				isExtendVideoDialogOpen={isExtendVideoDialogOpen}
+				setIsExtendVideoDialogOpen={setIsExtendVideoDialogOpen}
+				selectedVideoForExtend={selectedVideoForExtend}
+				setSelectedVideoForExtend={setSelectedVideoForExtend}
+				isExtendingVideo={isExtendingVideo}
+				handleVideoExtension={handleVideoExtension}
+				isRemoveVideoBackgroundDialogOpen={isRemoveVideoBackgroundDialogOpen}
+				setIsRemoveVideoBackgroundDialogOpen={
+					setIsRemoveVideoBackgroundDialogOpen
 				}
-				isConverting={isConvertingToVideo}
-			/>
-
-			<VideoToVideoDialog
-				isOpen={isVideoToVideoDialogOpen}
-				onClose={() => {
-					setIsVideoToVideoDialogOpen(false);
-					setSelectedVideoForVideo(null);
-				}}
-				onConvert={handleVideoToVideoTransformation}
-				videoUrl={
-					selectedVideoForVideo
-						? videos.find((vid) => vid.id === selectedVideoForVideo)?.src || ""
-						: ""
+				selectedVideoForBackgroundRemoval={selectedVideoForBackgroundRemoval}
+				setSelectedVideoForBackgroundRemoval={
+					setSelectedVideoForBackgroundRemoval
 				}
-				isConverting={isTransformingVideo}
-			/>
-
-			<ExtendVideoDialog
-				isOpen={isExtendVideoDialogOpen}
-				onClose={() => {
-					setIsExtendVideoDialogOpen(false);
-					setSelectedVideoForExtend(null);
-				}}
-				onExtend={handleVideoExtension}
-				videoUrl={
-					selectedVideoForExtend
-						? videos.find((vid) => vid.id === selectedVideoForExtend)?.src || ""
-						: ""
-				}
-				isExtending={isExtendingVideo}
-			/>
-
-			<RemoveVideoBackgroundDialog
-				isOpen={isRemoveVideoBackgroundDialogOpen}
-				onClose={() => {
-					setIsRemoveVideoBackgroundDialogOpen(false);
-					setSelectedVideoForBackgroundRemoval(null);
-				}}
-				onProcess={handleVideoBackgroundRemoval}
-				videoUrl={
-					selectedVideoForBackgroundRemoval
-						? videos.find((vid) => vid.id === selectedVideoForBackgroundRemoval)
-								?.src || ""
-						: ""
-				}
-				videoDuration={
-					selectedVideoForBackgroundRemoval
-						? videos.find((vid) => vid.id === selectedVideoForBackgroundRemoval)
-								?.duration || 0
-						: 0
-				}
-				isProcessing={isRemovingVideoBackground}
+				isRemovingVideoBackground={isRemovingVideoBackground}
+				handleVideoBackgroundRemoval={handleVideoBackgroundRemoval}
+				images={images}
+				videos={videos}
+				toast={toast}
 			/>
 
 			{/* Video Generation Streaming Components */}

@@ -19,7 +19,7 @@ export const CreativeToolbar: React.FC<CreativeToolbarProps> = ({
 }) => {
 	return (
 		<TooltipProvider delayDuration={0}>
-			<div className="hidden md:flex flex-col gap-2 p-2 bg-background/80 backdrop-blur-md border rounded-2xl shadow-lg absolute top-1/2 -translate-y-1/2 left-4 z-20">
+			<div className="hidden md:flex flex-col gap-1.5 p-1.5 bg-background/80 backdrop-blur-md border rounded-2xl shadow-lg absolute top-1/2 -translate-y-1/2 left-4 z-20">
 				<div className="flex flex-col gap-1">
 					<ToolButton
 						icon={Plus}
