@@ -75,6 +75,9 @@ interface FloatingContextMenuProps {
 	sendToBack: () => void;
 	bringForward: () => void;
 	sendBackward: () => void;
+	isolateInputValue: string;
+	setIsolateInputValue: (value: string) => void;
+	setIsolateTarget: (id: string | null) => void;
 }
 
 export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({

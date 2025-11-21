@@ -94,6 +94,14 @@ interface DialogManagerProps {
 	images: PlacedImage[];
 	videos: PlacedVideo[];
 	toast: any; // Using any for toaster to avoid complexity with hook return type
+
+	// Isolate Dialog
+	isolateInputValue: string;
+	setIsolateInputValue: (value: string) => void;
+	isIsolating: boolean;
+	handleIsolate: () => void;
+	isIsolateDialogOpen: boolean;
+	setIsIsolateDialogOpen: (open: boolean) => void;
 }
 
 export const DialogManager: React.FC<DialogManagerProps> = ({
@@ -144,6 +152,12 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 	images,
 	videos,
 	toast,
+	isolateInputValue,
+	setIsolateInputValue,
+	isIsolating,
+	handleIsolate,
+	isIsolateDialogOpen,
+	setIsIsolateDialogOpen,
 }) => {
 	return (
 		<>
@@ -492,6 +506,37 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 				}
 				isProcessing={isRemovingVideoBackground}
 			/>
+
+			<Dialog open={isIsolateDialogOpen} onOpenChange={setIsIsolateDialogOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Isolate Object</DialogTitle>
+						<DialogDescription>
+							Describe the object you want to isolate from the image.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex flex-col gap-4 py-4">
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="isolate-prompt">Object Description</Label>
+							<Input
+								id="isolate-prompt"
+								placeholder="e.g. red car, cat, person in blue shirt"
+								value={isolateInputValue}
+								onChange={(e) => setIsolateInputValue(e.target.value)}
+							/>
+						</div>
+						<Button
+							onClick={handleIsolate}
+							disabled={isIsolating || !isolateInputValue.trim()}
+						>
+							{isIsolating && (
+								<SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
+							)}
+							Isolate Object
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 };

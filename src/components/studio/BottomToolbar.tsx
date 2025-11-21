@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
+export type ToolType = "select" | "pan" | "text" | "shape" | "draw" | "add";
+
 interface BottomToolbarProps {
 	undo: () => void;
 	redo: () => void;
