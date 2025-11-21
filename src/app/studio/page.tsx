@@ -17,13 +17,21 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { BatchJob } from "@/lib/batch-store";
 
+interface FileUploadStatus {
+	progress: number;
+	status: "idle" | "uploading" | "uploaded" | "error";
+}
+
 export default function StudioPage() {
-	const [isProcessing, setIsProcessing] = useState(false);
-	const [isUploading, setIsUploading] = useState(false);
 	const [files, setFiles] = useState<File[]>([]);
 	const [uploadProgress, setUploadProgress] = useState(0);
+	const [isUploading, setIsUploading] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(false);
 	const [activeJobIds, setActiveJobIds] = useState<string[]>([]);
-	const [jobs, setJobs] = useState<BatchJob[]>([]);
+	const [jobStatuses, setJobStatuses] = useState<BatchJob[]>([]);
+	const [fileUploadStatuses, setFileUploadStatuses] = useState<
+		Map<string, FileUploadStatus>
+	>(new Map());
 
 	const { toast } = useToast();
 
@@ -38,7 +46,7 @@ export default function StudioPage() {
 				);
 				if (res.ok) {
 					const data = await res.json();
-					setJobs(data.jobs);
+					setJobStatuses(data.jobs);
 
 					// Check if all completed
 					const allDone = data.jobs.every(
@@ -66,36 +74,136 @@ export default function StudioPage() {
 		return () => clearInterval(interval);
 	}, [activeJobIds, isProcessing, toast]);
 
-	const handleRunBatch = async () => {
+	const handleFilesSelected = (newFiles: File[]) => {
+		setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+		const newStatuses = new Map(fileUploadStatuses);
+		newFiles.forEach((file) => {
+			newStatuses.set(file.name, { progress: 0, status: "idle" });
+		});
+		setFileUploadStatuses(newStatuses);
+	};
+
+	const handleRemoveFile = (index: number) => {
+		const fileToRemove = files[index];
+		setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+		setFileUploadStatuses((prevStatuses) => {
+			const newStatuses = new Map(prevStatuses);
+			if (fileToRemove) {
+				newStatuses.delete(fileToRemove.name);
+			}
+			return newStatuses;
+		});
+	};
+
+	const handleRemoveFiles = (indices: number[]) => {
+		const indicesSet = new Set(indices);
+		const filesToRemove = files.filter((_, i) => indicesSet.has(i));
+		setFiles((prevFiles) => prevFiles.filter((_, i) => !indicesSet.has(i)));
+		setFileUploadStatuses((prevStatuses) => {
+			const newStatuses = new Map(prevStatuses);
+			filesToRemove.forEach((file) => {
+				newStatuses.delete(file.name);
+			});
+			return newStatuses;
+		});
+	};
+
+	const handleUpload = async () => {
 		if (files.length === 0) return;
 
 		setIsUploading(true);
 		setUploadProgress(0);
 
+		// Initialize all files as idle
+		const initialStatuses = new Map<string, FileUploadStatus>();
+		files.forEach((file) => {
+			initialStatuses.set(file.name, { progress: 0, status: "idle" });
+		});
+		setFileUploadStatuses(initialStatuses);
+
 		const uploadedUrls: string[] = [];
+		let completedCount = 0;
 		let successCount = 0;
 		let failCount = 0;
 
-		try {
-			// 1. Upload all files to Vercel Blob
-			for (let i = 0; i < files.length; i++) {
-				const file = files[i];
-				try {
-					const newBlob = await upload(file.name, file, {
-						access: "public",
-						handleUploadUrl: "/api/upload",
+		// Concurrency helper
+		const CONCURRENCY_LIMIT = 3;
+		const queue = [...files];
+		const activePromises: Promise<void>[] = [];
+
+		const updateGlobalProgress = () => {
+			const total = files.length;
+			if (total === 0) return;
+			const percent = Math.round((completedCount / total) * 100);
+			setUploadProgress(percent);
+		};
+
+		const processFile = async (file: File) => {
+			try {
+				// Set status to uploading
+				setFileUploadStatuses((prev) => {
+					const newMap = new Map(prev);
+					newMap.set(file.name, { progress: 0, status: "uploading" });
+					return newMap;
+				});
+
+				const newBlob = await upload(file.name, file, {
+					access: "public",
+					handleUploadUrl: "/api/upload",
+					onUploadProgress: (progressEvent) => {
+						setFileUploadStatuses((prev) => {
+							const newMap = new Map(prev);
+							newMap.set(file.name, {
+								progress: progressEvent.percentage,
+								status: "uploading",
+							});
+							return newMap;
+						});
+					},
+				});
+
+				if (newBlob.url) {
+					uploadedUrls.push(newBlob.url);
+					successCount++;
+
+					// Mark as uploaded
+					setFileUploadStatuses((prev) => {
+						const newMap = new Map(prev);
+						newMap.set(file.name, { progress: 100, status: "uploaded" });
+						return newMap;
 					});
-
-					if (newBlob.url) {
-						uploadedUrls.push(newBlob.url);
-						successCount++;
-					}
-				} catch (error) {
-					console.error(`Failed to upload ${file.name}:`, error);
-					failCount++;
 				}
+			} catch (error) {
+				console.error(`Failed to upload ${file.name}:`, error);
+				failCount++;
 
-				setUploadProgress(Math.round(((i + 1) / files.length) * 100));
+				// Mark as error
+				setFileUploadStatuses((prev) => {
+					const newMap = new Map(prev);
+					newMap.set(file.name, { progress: 0, status: "error" });
+					return newMap;
+				});
+			} finally {
+				completedCount++;
+				updateGlobalProgress();
+			}
+		};
+
+		try {
+			// Process queue with concurrency limit
+			while (queue.length > 0 || activePromises.length > 0) {
+				while (queue.length > 0 && activePromises.length < CONCURRENCY_LIMIT) {
+					const file = queue.shift();
+					if (file) {
+						const p = processFile(file).then(() => {
+							activePromises.splice(activePromises.indexOf(p), 1);
+						});
+						activePromises.push(p);
+					}
+				}
+				if (activePromises.length > 0) {
+					await Promise.race(activePromises);
+				}
 			}
 
 			if (uploadedUrls.length === 0) {
@@ -118,6 +226,7 @@ export default function StudioPage() {
 			setFiles([]);
 			setUploadProgress(0);
 			setIsUploading(false);
+			setFileUploadStatuses(new Map()); // Clear file upload statuses
 		} catch (error: any) {
 			console.error(error);
 			setIsUploading(false);
@@ -126,6 +235,7 @@ export default function StudioPage() {
 				title: "Error",
 				description: error.message || "Failed to start batch.",
 				variant: "destructive",
+				duration: 5000,
 			});
 		}
 	};
@@ -146,16 +256,17 @@ export default function StudioPage() {
 			label: "Processing",
 			status: isProcessing
 				? "processing"
-				: jobs.some((j) => j.status === "completed")
+				: jobStatuses.some((j) => j.status === "completed")
 					? "completed"
 					: "pending",
 		},
 		{
 			id: "verify",
 			label: "Verification",
-			status: jobs.some((j) => j.status === "verifying")
+			status: jobStatuses.some((j) => j.status === "verifying")
 				? "processing"
-				: jobs.every((j) => j.status === "completed") && jobs.length > 0
+				: jobStatuses.every((j) => j.status === "completed") &&
+						jobStatuses.length > 0
 					? "completed"
 					: "pending",
 		},
@@ -163,8 +274,10 @@ export default function StudioPage() {
 			id: "complete",
 			label: "Done",
 			status:
-				jobs.length > 0 &&
-				jobs.every((j) => j.status === "completed" || j.status === "failed")
+				jobStatuses.length > 0 &&
+				jobStatuses.every(
+					(j) => j.status === "completed" || j.status === "failed",
+				)
 					? "completed"
 					: "pending",
 		},
@@ -175,12 +288,12 @@ export default function StudioPage() {
 			<StudioSidebar>
 				<InputQueue
 					files={files}
-					onFilesSelected={(newFiles) => setFiles([...files, ...newFiles])}
-					onRemoveFile={(index) =>
-						setFiles(files.filter((_, i) => i !== index))
-					}
+					onFilesSelected={handleFilesSelected}
+					onRemoveFile={handleRemoveFile}
+					onRemoveFiles={handleRemoveFiles}
 					isUploading={isUploading}
 					uploadProgress={uploadProgress}
+					fileUploadStatuses={fileUploadStatuses}
 				/>
 			</StudioSidebar>
 
@@ -210,7 +323,7 @@ export default function StudioPage() {
 						</Button>
 						<Button
 							size="sm"
-							onClick={handleRunBatch}
+							onClick={handleUpload}
 							disabled={isProcessing || isUploading || files.length === 0}
 							className="min-w-[120px]"
 						>
@@ -229,7 +342,7 @@ export default function StudioPage() {
 				</StudioHeader>
 
 				<StudioContent>
-					<ResultsGrid jobs={jobs} isProcessing={isProcessing} />
+					<ResultsGrid jobs={jobStatuses} isProcessing={isProcessing} />
 				</StudioContent>
 			</div>
 		</StudioLayout>

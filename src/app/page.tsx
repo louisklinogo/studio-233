@@ -1931,7 +1931,7 @@ export default function OverlayPage() {
 
 					{/* Assistant Panel Toggle Trigger (Floating) */}
 					<div className="absolute top-4 right-4 z-20 flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-						<Link href="/batch">
+						<Link href="/studio">
 							<Button
 								variant="secondary"
 								className="h-10 px-4 rounded-full shadow-md bg-background/90 backdrop-blur hover:bg-background border border-border/50 gap-2"
@@ -1939,7 +1939,7 @@ export default function OverlayPage() {
 								<div className="p-1 bg-primary/10 rounded-md">
 									<History className="w-3 h-3 text-primary" />
 								</div>
-								<span className="text-xs font-medium">Batch Mode</span>
+								<span className="text-xs font-medium">Studio</span>
 							</Button>
 						</Link>
 
