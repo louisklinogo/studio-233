@@ -3,24 +3,33 @@
 import { upload } from "@vercel/blob/client";
 import { History, Loader2, Play, Settings } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { startBatchProcessing } from "@/app/actions/batch-actions";
-import { InputQueue } from "@/components/studio-workflow/InputQueue";
-import { PipelineVisualizer } from "@/components/studio-workflow/PipelineVisualizer";
-import { ResultsGrid } from "@/components/studio-workflow/ResultsGrid";
+import { InputQueue } from "@/components/studio+/InputQueue";
+import { EmptyStateInstructions } from "@/components/studio+/EmptyStateInstructions";
+import { ConfigurationPanel } from "@/components/studio+/ConfigurationPanel";
+import { LiveProgressView } from "@/components/studio+/LiveProgressView";
+import { CompletionView } from "@/components/studio+/CompletionView";
+import { PipelineVisualizer } from "@/components/studio+/PipelineVisualizer";
+import { ResultsGrid } from "@/components/studio+/ResultsGrid";
 import {
 	StudioContent,
 	StudioHeader,
 	StudioLayout,
 	StudioSidebar,
-} from "@/components/studio-workflow/StudioLayout";
+} from "@/components/studio+/StudioLayout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { BatchJob } from "@/lib/batch-store";
+import { canvasStorage, type BatchUpload } from "@/lib/storage";
 
 interface FileUploadStatus {
 	progress: number;
 	status: "idle" | "uploading" | "uploaded" | "error";
 }
+
+type RightPaneView = "empty" | "configure" | "processing" | "complete";
+type WorkflowType = "mannequin" | "style" | "logo" | "custom";
 
 export default function StudioPage() {
 	const [files, setFiles] = useState<File[]>([]);
@@ -33,7 +42,39 @@ export default function StudioPage() {
 		Map<string, FileUploadStatus>
 	>(new Map());
 
+	// Right Pane State
+	const [rightPaneView, setRightPaneView] = useState<RightPaneView>("empty");
+	const [workflowType, setWorkflowType] = useState<WorkflowType>("mannequin");
+	const [referenceImage, setReferenceImage] = useState<File | null>(null);
+	const [customPrompt, setCustomPrompt] = useState("");
+
 	const { toast } = useToast();
+
+	// Load saved files from IndexedDB on mount
+	useEffect(() => {
+		const loadSavedFiles = async () => {
+			const savedBatchFiles = await canvasStorage.getAllBatchFiles();
+			if (savedBatchFiles.length > 0) {
+				// Convert BatchUpload to File objects
+				const loadedFiles = savedBatchFiles.map((batchFile) => {
+					// Convert data URL back to File
+					const byteString = atob(batchFile.dataUrl.split(",")[1]);
+					const ab = new ArrayBuffer(byteString.length);
+					const ia = new Uint8Array(ab);
+					for (let i = 0; i < byteString.length; i++) {
+						ia[i] = byteString.charCodeAt(i);
+					}
+					const blob = new Blob([ab], { type: batchFile.fileType });
+					return new File([blob], batchFile.fileName, {
+						type: batchFile.fileType,
+					});
+				});
+				setFiles(loadedFiles);
+				setRightPaneView("configure");
+			}
+		};
+		loadSavedFiles();
+	}, []);
 
 	// Polling logic
 	useEffect(() => {
@@ -54,6 +95,7 @@ export default function StudioPage() {
 					);
 					if (allDone && isProcessing) {
 						setIsProcessing(false);
+						setRightPaneView("complete");
 						toast({
 							title: "Batch Complete",
 							description: "All items have been processed.",
@@ -74,16 +116,37 @@ export default function StudioPage() {
 		return () => clearInterval(interval);
 	}, [activeJobIds, isProcessing, toast]);
 
-	const handleFilesSelected = (newFiles: File[]) => {
+	const handleFilesSelected = async (newFiles: File[]) => {
 		setFiles((prevFiles) => [...prevFiles, ...newFiles]);
 		const newStatuses = new Map(fileUploadStatuses);
 		newFiles.forEach((file) => {
 			newStatuses.set(file.name, { progress: 0, status: "idle" });
 		});
 		setFileUploadStatuses(newStatuses);
+
+		// Save to IndexedDB immediately
+		for (const file of newFiles) {
+			const reader = new FileReader();
+			reader.onload = async (e) => {
+				if (e.target?.result) {
+					await canvasStorage.saveBatchFile(
+						e.target.result as string,
+						file.name,
+						file.type,
+						file.size,
+					);
+				}
+			};
+			reader.readAsDataURL(file);
+		}
+
+		// Transition to configure view
+		if (rightPaneView === "empty") {
+			setRightPaneView("configure");
+		}
 	};
 
-	const handleRemoveFile = (index: number) => {
+	const handleRemoveFile = async (index: number) => {
 		const fileToRemove = files[index];
 		setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
 		setFileUploadStatuses((prevStatuses) => {
@@ -93,11 +156,30 @@ export default function StudioPage() {
 			}
 			return newStatuses;
 		});
+
+		// Remove from IndexedDB
+		if (fileToRemove) {
+			const savedFiles = await canvasStorage.getAllBatchFiles();
+			const matchingFile = savedFiles.find(
+				(f) => f.fileName === fileToRemove.name,
+			);
+			if (matchingFile) {
+				await canvasStorage.deleteBatchFile(matchingFile.id);
+			}
+		}
+
+		// Check if we should transition back to empty view
+		if (files.length === 1) {
+			// Will be 0 after removal
+			setRightPaneView("empty");
+		}
 	};
 
-	const handleRemoveFiles = (indices: number[]) => {
+	const handleRemoveFiles = async (indices: number[]) => {
 		const indicesSet = new Set(indices);
 		const filesToRemove = files.filter((_, i) => indicesSet.has(i));
+
+		// Update UI state immediately
 		setFiles((prevFiles) => prevFiles.filter((_, i) => !indicesSet.has(i)));
 		setFileUploadStatuses((prevStatuses) => {
 			const newStatuses = new Map(prevStatuses);
@@ -106,6 +188,24 @@ export default function StudioPage() {
 			});
 			return newStatuses;
 		});
+
+		// Remove from IndexedDB
+		if (filesToRemove.length > 0) {
+			const savedFiles = await canvasStorage.getAllBatchFiles();
+			for (const fileToRemove of filesToRemove) {
+				const matchingFile = savedFiles.find(
+					(f) => f.fileName === fileToRemove.name,
+				);
+				if (matchingFile) {
+					await canvasStorage.deleteBatchFile(matchingFile.id);
+				}
+			}
+		}
+
+		// Check if we should transition back to empty view
+		if (files.length === filesToRemove.length) {
+			setRightPaneView("empty");
+		}
 	};
 
 	const handleUpload = async () => {
@@ -227,6 +327,12 @@ export default function StudioPage() {
 			setUploadProgress(0);
 			setIsUploading(false);
 			setFileUploadStatuses(new Map()); // Clear file upload statuses
+
+			// Clear IndexedDB batch files
+			await canvasStorage.clearBatchFiles();
+
+			// Transition to processing view
+			setRightPaneView("processing");
 		} catch (error: any) {
 			console.error(error);
 			setIsUploading(false);
@@ -266,7 +372,7 @@ export default function StudioPage() {
 			status: jobStatuses.some((j) => j.status === "verifying")
 				? "processing"
 				: jobStatuses.every((j) => j.status === "completed") &&
-						jobStatuses.length > 0
+					jobStatuses.length > 0
 					? "completed"
 					: "pending",
 		},
@@ -275,9 +381,9 @@ export default function StudioPage() {
 			label: "Done",
 			status:
 				jobStatuses.length > 0 &&
-				jobStatuses.every(
-					(j) => j.status === "completed" || j.status === "failed",
-				)
+					jobStatuses.every(
+						(j) => j.status === "completed" || j.status === "failed",
+					)
 					? "completed"
 					: "pending",
 		},
@@ -308,7 +414,7 @@ export default function StudioPage() {
 								Studio+ Workflow
 							</h1>
 							<p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
-								Batch Processor
+								Batch Settings
 							</p>
 						</div>
 					</div>
@@ -342,7 +448,79 @@ export default function StudioPage() {
 				</StudioHeader>
 
 				<StudioContent>
-					<ResultsGrid jobs={jobStatuses} isProcessing={isProcessing} />
+					<AnimatePresence mode="wait">
+						{rightPaneView === "empty" && (
+							<EmptyStateInstructions key="empty" />
+						)}
+
+						{rightPaneView === "configure" && (
+							<ConfigurationPanel
+								key="configure"
+								filesCount={files.length}
+								workflowType={workflowType}
+								onWorkflowChange={setWorkflowType}
+								referenceImage={referenceImage}
+								onReferenceChange={setReferenceImage}
+								customPrompt={customPrompt}
+								onPromptChange={setCustomPrompt}
+								onStartBatch={handleUpload}
+								onBack={() => {
+									setFiles([]);
+									canvasStorage.clearBatchFiles();
+									setRightPaneView("empty");
+								}}
+							/>
+						)}
+
+						{rightPaneView === "processing" && (
+							<LiveProgressView
+								key="processing"
+								jobs={jobStatuses.map((job) => ({
+									id: job.id,
+									originalUrl: job.originalUrl,
+									resultUrl: job.resultUrl,
+									status: job.status,
+									attempt: job.attempt,
+									error: job.error,
+								}))}
+								isProcessing={isProcessing}
+								onImageClick={(jobId) => {
+									// TODO: Implement image detail view
+									console.log("Image clicked:", jobId);
+								}}
+							/>
+						)}
+
+						{rightPaneView === "complete" && (
+							<CompletionView
+								key="complete"
+								jobs={jobStatuses.map((job) => ({
+									id: job.id,
+									originalUrl: job.originalUrl,
+									resultUrl: job.resultUrl,
+									status: job.status,
+									error: job.error,
+								}))}
+								onDownloadAll={() => {
+									// TODO: Implement download all
+									console.log("Download all");
+								}}
+								onRetryFailed={() => {
+									// TODO: Implement retry failed
+									console.log("Retry failed");
+								}}
+								onNewBatch={() => {
+									setJobStatuses([]);
+									setActiveJobIds([]);
+									setRightPaneView("empty");
+								}}
+								onImageClick={(jobId) => {
+									// TODO: Implement image detail view
+									console.log("Image clicked:", jobId);
+								}}
+							/>
+						)}
+					</AnimatePresence>
 				</StudioContent>
 			</div>
 		</StudioLayout>

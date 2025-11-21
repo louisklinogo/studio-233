@@ -1,11 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
+	Check,
 	ChevronLeft,
 	ChevronRight,
 	FileImage,
+	Loader2,
 	Plus,
 	Trash2,
 	X,
+	XCircle,
 } from "lucide-react";
 import React, { useRef, useState } from "react";
 import {
@@ -32,7 +35,7 @@ interface InputQueueProps {
 	files: File[];
 	onFilesSelected: (files: File[]) => void;
 	onRemoveFile: (index: number) => void;
-	onRemoveFiles?: (indices: number[]) => void;
+	onRemoveFiles?: (indices: number[]) => Promise<void> | void;
 	isUploading: boolean;
 	uploadProgress: number;
 	fileUploadStatuses?: Map<string, FileUploadStatus>;
@@ -147,9 +150,7 @@ export function InputQueue({
 		<div className="flex flex-col h-full">
 			{/* Header */}
 			<div className="p-3 border-b bg-muted/5">
-				<h2 className="font-semibold text-sm tracking-wide text-muted-foreground mb-1">
-					Input Queue
-				</h2>
+
 				<div className="flex items-center justify-between">
 					<span className="text-2xl font-bold">
 						{files.length}{" "}
@@ -201,52 +202,47 @@ export function InputQueue({
 					<>
 						{/* Visual Preview Grid (Small, 2x3) */}
 						<div className="p-5 border-b">
-							<div className="flex items-center justify-between mb-2">
-								<h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-									Preview
-								</h3>
-								<div className="flex items-center gap-2">
-									{totalPages > 1 && (
-										<div className="flex items-center gap-1">
-											<Button
-												variant="ghost"
-												size="icon"
-												className="h-6 w-6"
-												onClick={() =>
-													setPreviewPage((p) => Math.max(0, p - 1))
-												}
-												disabled={previewPage === 0}
-											>
-												<ChevronLeft className="w-3 h-3" />
-											</Button>
-											<span className="text-xs text-muted-foreground min-w-[60px] text-center">
-												{startIdx + 1}-{Math.min(endIdx, files.length)} of{" "}
-												{files.length}
-											</span>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="h-6 w-6"
-												onClick={() =>
-													setPreviewPage((p) => Math.min(totalPages - 1, p + 1))
-												}
-												disabled={previewPage >= totalPages - 1}
-											>
-												<ChevronRight className="w-3 h-3" />
-											</Button>
-										</div>
-									)}
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => fileInputRef.current?.click()}
-										aria-label="Add more files"
-										className="hover:bg-accent"
-									>
-										<Plus className="w-4 h-4 mr-1" />
-										Add More
-									</Button>
-								</div>
+							<div className="flex items-center justify-end gap-2 mb-2">
+								{totalPages > 1 && (
+									<div className="flex items-center gap-1">
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-6 w-6"
+											onClick={() =>
+												setPreviewPage((p) => Math.max(0, p - 1))
+											}
+											disabled={previewPage === 0}
+										>
+											<ChevronLeft className="w-3 h-3" />
+										</Button>
+										<span className="text-xs text-muted-foreground min-w-[60px] text-center">
+											{startIdx + 1}-{Math.min(endIdx, files.length)} of{" "}
+											{files.length}
+										</span>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-6 w-6"
+											onClick={() =>
+												setPreviewPage((p) => Math.min(totalPages - 1, p + 1))
+											}
+											disabled={previewPage >= totalPages - 1}
+										>
+											<ChevronRight className="w-3 h-3" />
+										</Button>
+									</div>
+								)}
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => fileInputRef.current?.click()}
+									aria-label="Add more files"
+									className="hover:bg-accent"
+								>
+									<Plus className="w-4 h-4 mr-1" />
+									Add More
+								</Button>
 							</div>
 							<div className="grid grid-cols-3 gap-2">
 								<AnimatePresence mode="wait">
@@ -280,7 +276,7 @@ export function InputQueue({
 						{/* File Management Table */}
 						{/* File Management Table */}
 						<div className="flex-1 overflow-hidden flex flex-col">
-							<ScrollArea className="flex-1">
+							<ScrollArea className="flex-1 scrollbar-none">
 								<table className="w-full caption-bottom text-sm">
 									<TableHeader className="sticky top-0 z-10 bg-background border-b shadow-sm">
 										<TableRow>
@@ -291,7 +287,7 @@ export function InputQueue({
 													aria-label="Select all"
 													className={cn(
 														isSomeSelected &&
-															"data-[state=checked]:bg-primary/50",
+														"data-[state=checked]:bg-primary/50",
 													)}
 												/>
 											</TableHead>
@@ -343,39 +339,42 @@ export function InputQueue({
 														const status = fileUploadStatuses.get(file.name);
 														if (!status || status.status === "idle") {
 															return (
-																<Badge
-																	variant="secondary"
-																	className="font-normal"
-																>
-																	Ready
-																</Badge>
+																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/50">
+																	<div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+																	<span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+																		Ready
+																	</span>
+																</div>
 															);
 														}
 														if (status.status === "uploading") {
 															return (
-																<Badge
-																	variant="outline"
-																	className="border-primary text-primary font-normal"
-																>
-																	{Math.round(status.progress)}%
-																</Badge>
+																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+																	<Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
+																	<span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+																		{Math.round(status.progress)}%
+																	</span>
+																</div>
 															);
 														}
 														if (status.status === "uploaded") {
 															return (
-																<Badge className="bg-green-500 hover:bg-green-600 font-normal">
-																	Uploaded
-																</Badge>
+																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30">
+																	<Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+																	<span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+																		Uploaded
+																	</span>
+																</div>
 															);
 														}
 														if (status.status === "error") {
 															return (
-																<Badge
-																	variant="destructive"
-																	className="font-normal"
-																>
-																	Failed
-																</Badge>
+																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/30">
+																	<XCircle className="w-3 h-3 text-red-600 dark:text-red-400" />
+																	<span className="text-xs font-medium text-red-600 dark:text-red-400">
+																		Failed
+																	</span>
+																</div>
 															);
 														}
 													})()}

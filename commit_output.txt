@@ -1,0 +1,40 @@
+[33m[STARTED][39m Backing up original state...
+[32m[COMPLETED][39m Backed up original state in git stash (9e974f0)
+[33m[STARTED][39m Running tasks for staged files...
+[33m[STARTED][39m package.json[0;90m — 28 files[0m
+[33m[STARTED][39m **/*[0;90m — 28 files[0m
+[33m[STARTED][39m bunx biome check --write --no-errors-on-unmatched
+[32m[COMPLETED][39m bunx biome check --write --no-errors-on-unmatched
+[32m[COMPLETED][39m **/*[0;90m — 28 files[0m
+[32m[COMPLETED][39m package.json[0;90m — 28 files[0m
+[32m[COMPLETED][39m Running tasks for staged files...
+[33m[STARTED][39m Applying modifications from tasks...
+[32m[COMPLETED][39m Applying modifications from tasks...
+[33m[STARTED][39m Cleaning up temporary files...
+[32m[COMPLETED][39m Cleaning up temporary files...
+[main 974d914] feat: implement premium 3D folder empty state
+ 28 files changed, 5149 insertions(+), 113 deletions(-)
+ create mode 100644 .agent/rules/code-style.md
+ create mode 100644 commands.txt
+ create mode 100644 docs/research/inngest/ai-inference.md
+ create mode 100644 docs/research/inngest/cleanup-after-function-cancellation.md
+ create mode 100644 docs/research/inngest/creating-an-event-key.md
+ create mode 100644 docs/research/inngest/creating-middleware.md
+ create mode 100644 docs/research/inngest/encryption-middleware.md
+ create mode 100644 docs/research/inngest/events-and-triggers.md
+ create mode 100644 docs/research/inngest/failure-handlers.md
+ create mode 100644 docs/research/inngest/inngest-apps.md
+ create mode 100644 docs/research/inngest/inngest-functions-resources.md
+ create mode 100644 docs/research/inngest/inngest-functions.md
+ create mode 100644 docs/research/inngest/performing-api-requests-or-fetch.md
+ create mode 100644 docs/research/inngest/react-hooks.md
+ create mode 100644 docs/research/inngest/scheduling-a-one-off-function.md
+ create mode 100644 docs/research/inngest/sending-events.md
+ create mode 100644 docs/research/inngest/sentry-middleware.md
+ create mode 100644 docs/research/inngest/sleeps.md
+ create mode 100644 docs/research/inngest/steps-and-workflows.md
+ create mode 100644 docs/research/inngest/stream-realtime.md
+ create mode 100644 docs/research/inngest/vercel-inngest.md
+ create mode 100644 docs/research/inngest/wait-for-an-event.md
+ create mode 100644 public/assets/folder-icon.png
+ create mode 100644 src/components/studio-workflow/EmptyStateCardStack.tsx

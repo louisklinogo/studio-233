@@ -56,6 +56,15 @@ interface CanvasVideo {
 	createdAt: number;
 }
 
+interface BatchUpload {
+	id: string;
+	fileName: string;
+	fileType: string;
+	fileSize: number;
+	dataUrl: string; // Base64 data
+	createdAt: number;
+}
+
 // IndexedDB schema
 interface CanvasDB extends DBSchema {
 	images: {
@@ -65,6 +74,10 @@ interface CanvasDB extends DBSchema {
 	videos: {
 		key: string;
 		value: CanvasVideo;
+	};
+	batchUploads: {
+		key: string;
+		value: BatchUpload;
 	};
 }
 
@@ -76,7 +89,7 @@ class CanvasStorage {
 	private readonly MAX_IMAGE_SIZE = 50 * 1024 * 1024; // 50MB max per image
 
 	async init() {
-		this.db = await openDB<CanvasDB>(this.DB_NAME, this.DB_VERSION + 1, {
+		this.db = await openDB<CanvasDB>(this.DB_NAME, this.DB_VERSION + 2, {
 			upgrade(db: IDBPDatabase<CanvasDB>, oldVersion) {
 				if (!db.objectStoreNames.contains("images")) {
 					db.createObjectStore("images", { keyPath: "id" });
@@ -85,6 +98,11 @@ class CanvasStorage {
 				// Add videos object store in version 2
 				if (oldVersion < 2 && !db.objectStoreNames.contains("videos")) {
 					db.createObjectStore("videos", { keyPath: "id" });
+				}
+
+				// Add batchUploads object store in version 3
+				if (oldVersion < 3 && !db.objectStoreNames.contains("batchUploads")) {
+					db.createObjectStore("batchUploads", { keyPath: "id" });
 				}
 			},
 		});
@@ -163,6 +181,58 @@ class CanvasStorage {
 	async deleteVideo(id: string): Promise<void> {
 		if (!this.db) await this.init();
 		await this.db!.delete("videos", id);
+	}
+
+	// Save batch file to IndexedDB
+	async saveBatchFile(
+		dataUrl: string,
+		fileName: string,
+		fileType: string,
+		fileSize: number,
+		id?: string,
+	): Promise<string> {
+		if (!this.db) await this.init();
+
+		// Check size
+		const sizeInBytes = new Blob([dataUrl]).size;
+		if (sizeInBytes > this.MAX_IMAGE_SIZE) {
+			throw new Error(
+				`File size exceeds maximum allowed size of ${this.MAX_IMAGE_SIZE / 1024 / 1024}MB`,
+			);
+		}
+
+		const fileId = id || crypto.randomUUID();
+		const batchFile: BatchUpload = {
+			id: fileId,
+			fileName,
+			fileType,
+			fileSize,
+			dataUrl,
+			createdAt: Date.now(),
+		};
+
+		await this.db!.put("batchUploads", batchFile);
+		return fileId;
+	}
+
+	// Get all batch files from IndexedDB
+	async getAllBatchFiles(): Promise<BatchUpload[]> {
+		if (!this.db) await this.init();
+		return await this.db!.getAll("batchUploads");
+	}
+
+	// Delete single batch file from IndexedDB
+	async deleteBatchFile(id: string): Promise<void> {
+		if (!this.db) await this.init();
+		await this.db!.delete("batchUploads", id);
+	}
+
+	// Clear all batch files from IndexedDB
+	async clearBatchFiles(): Promise<void> {
+		if (!this.db) await this.init();
+		const tx = this.db!.transaction("batchUploads", "readwrite");
+		await tx.objectStore("batchUploads").clear();
+		await tx.done;
 	}
 
 	// Save canvas state to localStorage
@@ -303,4 +373,5 @@ export type {
 	ImageTransform,
 	CanvasImage,
 	CanvasVideo,
+	BatchUpload,
 };

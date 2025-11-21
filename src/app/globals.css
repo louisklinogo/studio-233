@@ -194,6 +194,23 @@
 	.scrollbar-hide::-webkit-scrollbar {
 		display: none; /* Chrome, Safari and Opera */
 	}
+	
+	.scrollbar-none {
+		scrollbar-width: none; /* Firefox */
+		-ms-overflow-style: none; /* IE and Edge */
+	}
+	.scrollbar-none::-webkit-scrollbar {
+		display: none; /* Chrome, Safari and Opera */
+	}
+	
+	/* For Radix ScrollArea */
+	.scrollbar-none [data-radix-scroll-area-viewport] {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+	.scrollbar-none [data-radix-scroll-area-viewport]::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 html {
