@@ -65,9 +65,28 @@ export function InputQueue({
 	);
 	const [previewPage, setPreviewPage] = useState(0);
 	const [isDragging, setIsDragging] = useState(false);
+	const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
 	const PREVIEW_PAGE_SIZE = 6;
 	const totalPages = Math.ceil(files.length / PREVIEW_PAGE_SIZE);
+
+	// Keyboard navigation for lightbox
+	React.useEffect(() => {
+		if (lightboxIndex === null) return;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "ArrowLeft") {
+				setLightboxIndex((prev) => (prev! > 0 ? prev! - 1 : files.length - 1));
+			} else if (e.key === "ArrowRight") {
+				setLightboxIndex((prev) => (prev! < files.length - 1 ? prev! + 1 : 0));
+			} else if (e.key === "Escape") {
+				setLightboxIndex(null);
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [lightboxIndex, files.length]);
 
 	const handleDrop = (e: React.DragEvent) => {
 		e.preventDefault();
@@ -150,7 +169,6 @@ export function InputQueue({
 		<div className="flex flex-col h-full">
 			{/* Header */}
 			<div className="p-3 border-b bg-muted/5">
-
 				<div className="flex items-center justify-between">
 					<span className="text-2xl font-bold">
 						{files.length}{" "}
@@ -201,7 +219,7 @@ export function InputQueue({
 				) : (
 					<>
 						{/* Visual Preview Grid (Small, 2x3) */}
-						<div className="p-5 border-b">
+						<div className="p-5 border-b relative">
 							<div className="flex items-center justify-end gap-2 mb-2">
 								{totalPages > 1 && (
 									<div className="flex items-center gap-1">
@@ -209,9 +227,7 @@ export function InputQueue({
 											variant="ghost"
 											size="icon"
 											className="h-6 w-6"
-											onClick={() =>
-												setPreviewPage((p) => Math.max(0, p - 1))
-											}
+											onClick={() => setPreviewPage((p) => Math.max(0, p - 1))}
 											disabled={previewPage === 0}
 										>
 											<ChevronLeft className="w-3 h-3" />
@@ -254,7 +270,8 @@ export function InputQueue({
 												initial={{ opacity: 0, scale: 0.9 }}
 												animate={{ opacity: 1, scale: 1 }}
 												exit={{ opacity: 0, scale: 0.9 }}
-												className="relative aspect-square bg-muted rounded-md overflow-hidden group border border-border"
+												className="relative aspect-square bg-muted rounded-md overflow-hidden group border border-border cursor-pointer"
+												onClick={() => setLightboxIndex(globalIndex)}
 											>
 												<img
 													src={URL.createObjectURL(file)}
@@ -271,6 +288,70 @@ export function InputQueue({
 									})}
 								</AnimatePresence>
 							</div>
+
+							{/* Lightbox Overlay */}
+							<AnimatePresence>
+								{lightboxIndex !== null && (
+									<motion.div
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										className="absolute inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center"
+										onClick={() => setLightboxIndex(null)}
+									>
+										<div
+											className="relative w-full h-full p-8 flex items-center justify-center"
+											onClick={(e) => e.stopPropagation()}
+										>
+											{/* Close button */}
+											<button
+												onClick={() => setLightboxIndex(null)}
+												className="absolute top-2 right-2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+											>
+												<X className="w-4 h-4" />
+											</button>
+
+											{/* Previous button */}
+											<button
+												onClick={() =>
+													setLightboxIndex((prev) =>
+														prev! > 0 ? prev! - 1 : files.length - 1,
+													)
+												}
+												className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+											>
+												<ChevronLeft className="w-5 h-5" />
+											</button>
+
+											{/* Image */}
+											<div className="max-w-full max-h-full flex items-center justify-center">
+												<img
+													src={URL.createObjectURL(files[lightboxIndex])}
+													alt={files[lightboxIndex].name}
+													className="max-w-full max-h-full object-contain rounded-lg"
+												/>
+											</div>
+
+											{/* Next button */}
+											<button
+												onClick={() =>
+													setLightboxIndex((prev) =>
+														prev! < files.length - 1 ? prev! + 1 : 0,
+													)
+												}
+												className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+											>
+												<ChevronRight className="w-5 h-5" />
+											</button>
+
+											{/* Image info */}
+											<div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/50 text-white text-xs">
+												{lightboxIndex + 1} / {files.length}
+											</div>
+										</div>
+									</motion.div>
+								)}
+							</AnimatePresence>
 						</div>
 
 						{/* File Management Table */}
@@ -287,7 +368,7 @@ export function InputQueue({
 													aria-label="Select all"
 													className={cn(
 														isSomeSelected &&
-														"data-[state=checked]:bg-primary/50",
+															"data-[state=checked]:bg-primary/50",
 													)}
 												/>
 											</TableHead>

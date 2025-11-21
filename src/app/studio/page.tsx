@@ -1,15 +1,15 @@
 "use client";
 
 import { upload } from "@vercel/blob/client";
+import { AnimatePresence } from "framer-motion";
 import { History, Loader2, Play, Settings } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import { startBatchProcessing } from "@/app/actions/batch-actions";
-import { InputQueue } from "@/components/studio+/InputQueue";
-import { EmptyStateInstructions } from "@/components/studio+/EmptyStateInstructions";
-import { ConfigurationPanel } from "@/components/studio+/ConfigurationPanel";
-import { LiveProgressView } from "@/components/studio+/LiveProgressView";
 import { CompletionView } from "@/components/studio+/CompletionView";
+import { ConfigurationPanel } from "@/components/studio+/ConfigurationPanel";
+import { EmptyStateInstructions } from "@/components/studio+/EmptyStateInstructions";
+import { InputQueue } from "@/components/studio+/InputQueue";
+import { LiveProgressView } from "@/components/studio+/LiveProgressView";
 import { PipelineVisualizer } from "@/components/studio+/PipelineVisualizer";
 import { ResultsGrid } from "@/components/studio+/ResultsGrid";
 import {
@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { BatchJob } from "@/lib/batch-store";
-import { canvasStorage, type BatchUpload } from "@/lib/storage";
+import { type BatchUpload, canvasStorage } from "@/lib/storage";
 
 interface FileUploadStatus {
 	progress: number;
@@ -372,7 +372,7 @@ export default function StudioPage() {
 			status: jobStatuses.some((j) => j.status === "verifying")
 				? "processing"
 				: jobStatuses.every((j) => j.status === "completed") &&
-					jobStatuses.length > 0
+						jobStatuses.length > 0
 					? "completed"
 					: "pending",
 		},
@@ -381,9 +381,9 @@ export default function StudioPage() {
 			label: "Done",
 			status:
 				jobStatuses.length > 0 &&
-					jobStatuses.every(
-						(j) => j.status === "completed" || j.status === "failed",
-					)
+				jobStatuses.every(
+					(j) => j.status === "completed" || j.status === "failed",
+				)
 					? "completed"
 					: "pending",
 		},
@@ -405,19 +405,7 @@ export default function StudioPage() {
 
 			<div className="flex-1 flex flex-col min-w-0">
 				<StudioHeader>
-					<div className="flex items-center gap-2">
-						<div className="p-2 bg-primary/10 rounded-md">
-							<History className="w-5 h-5 text-primary" />
-						</div>
-						<div>
-							<h1 className="text-lg font-bold leading-none">
-								Studio+ Workflow
-							</h1>
-							<p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
-								Batch Settings
-							</p>
-						</div>
-					</div>
+					<div className="flex items-center gap-2"></div>
 
 					<div className="flex-1 flex justify-center">
 						<PipelineVisualizer steps={steps} />
