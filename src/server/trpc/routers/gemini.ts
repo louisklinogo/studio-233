@@ -85,7 +85,7 @@ export async function generateImageFromText(
 	const google = createGoogleGenerativeAI({ apiKey: key });
 
 	const result = await generateText({
-		model: google("gemini-2.5-flash-image-preview"),
+		model: google("gemini-3-pro-preview"),
 		prompt: prompt,
 	});
 
@@ -103,6 +103,64 @@ export async function generateImageFromText(
 		width: 1024, // Gemini Flash Image defaults (usually square)
 		height: 1024,
 		seed: undefined, // Seed not returned by default API
+	};
+}
+
+export async function generateImageFromTextWithFallback(
+	prompt: string,
+	imageUrl: string,
+	apiKey?: string,
+	ctx?: any,
+) {
+	await checkRateLimit(apiKey, ctx);
+
+	const key =
+		apiKey ||
+		process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+		process.env.GEMINI_API_KEY;
+
+	if (!key) {
+		throw new Error(
+			"Google Gemini API key is required. Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY.",
+		);
+	}
+
+	const google = createGoogleGenerativeAI({ apiKey: key });
+	const { image, mediaType } = parseImageInput(imageUrl);
+
+	const result = await generateText({
+		model: google("gemini-3-pro-preview"),
+		prompt: [
+			{
+				role: "user" as const,
+				content: [
+					{
+						type: "text" as const,
+						text: prompt,
+					},
+					{
+						type: "image" as const,
+						image,
+						mediaType,
+					},
+				],
+			},
+		],
+	});
+
+	const file = result.files?.find((f) => f.mediaType.startsWith("image/"));
+
+	if (!file) {
+		throw new Error("Gemini did not return an image");
+	}
+
+	const base64 = Buffer.from(file.uint8Array).toString("base64");
+	const dataUrl = `data:${file.mediaType};base64,${base64}`;
+
+	return {
+		url: dataUrl,
+		width: 1024,
+		height: 1024,
 	};
 }
 
@@ -150,7 +208,7 @@ export const geminiRouter = router({
 			const { image, mediaType } = parseImageInput(input.imageUrl);
 
 			const result = await generateText({
-				model: google("gemini-2.5-flash-image-preview"),
+				model: google("gemini-3-pro-preview"),
 				prompt: [
 					{
 						role: "user" as const,

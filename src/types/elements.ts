@@ -27,11 +27,20 @@ export interface TextElement extends BaseElement {
 
 export interface ShapeElement extends BaseElement {
 	type: "shape";
-	shapeType: "rect" | "circle" | "star" | "polygon";
+	shapeType:
+		| "rect"
+		| "circle"
+		| "triangle"
+		| "arrow"
+		| "line"
+		| "star"
+		| "polygon";
 	fill: string;
 	stroke: string;
 	strokeWidth: number;
 	cornerRadius?: number;
+	// For lines and arrows (Quadratic Bezier: [x1, y1, cx, cy, x2, y2])
+	points?: number[];
 }
 
 export interface DrawingElement extends BaseElement {

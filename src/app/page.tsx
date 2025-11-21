@@ -7,6 +7,7 @@ import Konva from "konva";
 import {
 	ChevronDown,
 	ExternalLink,
+	History,
 	ImageIcon,
 	Paperclip,
 	PlayIcon,
@@ -31,7 +32,7 @@ import { StreamingImage } from "@/components/canvas/StreamingImage";
 import { StreamingVideo } from "@/components/canvas/StreamingVideo";
 import { VideoControls } from "@/components/canvas/VideoControls";
 import { VideoOverlays } from "@/components/canvas/VideoOverlays";
-import { ZoomControls } from "@/components/canvas/ZoomControls";
+
 import { GenerationsIndicator } from "@/components/generations-indicator";
 import { Logo, SpinnerIcon } from "@/components/icons";
 import {
@@ -102,57 +103,6 @@ import { convertImageToVideo } from "@/utils/video-utils";
 
 export default function OverlayPage() {
 	const { theme, setTheme } = useTheme();
-	const {
-		images,
-		setImages,
-		videos,
-		setVideos,
-		selectedIds,
-		setSelectedIds,
-		selectionBox,
-		setSelectionBox,
-		isSelecting,
-		setIsSelecting,
-		history,
-		setHistory,
-		historyIndex,
-		setHistoryIndex,
-		saveToHistory,
-		undo,
-		redo,
-		deleteSelected: handleDelete,
-		duplicateSelected: handleDuplicate,
-		sendToFront,
-		sendToBack,
-		bringForward,
-		sendBackward,
-	} = useCanvasState();
-
-	const {
-		activeTool,
-		setActiveTool,
-		defaultTextProps,
-		defaultShapeProps,
-		defaultDrawingProps,
-		setDefaultTextProps,
-		setDefaultShapeProps,
-		setDefaultDrawingProps,
-		dragStartPositions,
-		setDragStartPositions,
-		isDraggingImage,
-		setIsDraggingImage,
-		hiddenVideoControlsIds,
-		setHiddenVideoControlsIds,
-		croppingImageId,
-		setCroppingImageId,
-		isolateTarget,
-		setIsolateTarget,
-		isolateInputValue,
-		setIsolateInputValue,
-		isIsolating,
-		setIsIsolating,
-	} = useInteractionState();
-
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const {
@@ -177,13 +127,75 @@ export default function OverlayPage() {
 	} = useUIState();
 
 	const {
-		// Future use for text/shapes
+		activeTool,
+		setActiveTool,
+		defaultTextProps,
+		setDefaultTextProps,
+		defaultShapeProps,
+		setDefaultShapeProps,
+		defaultDrawingProps,
+		setDefaultDrawingProps,
+		dragStartPositions,
+		setDragStartPositions,
+		isDraggingImage,
+		setIsDraggingImage,
+		hiddenVideoControlsIds,
+		setHiddenVideoControlsIds,
+		croppingImageId,
+		setCroppingImageId,
+		isolateTarget,
+		setIsolateTarget,
+		isolateInputValue,
+		setIsolateInputValue,
+		isIsolating,
+		setIsIsolating,
+	} = useInteractionState();
+	const {
+		images,
+		setImages,
+		videos,
+		setVideos,
+		// elements are now managed by useCanvasState
 		elements: canvasElements,
 		setElements: setCanvasElements,
-		addElement: addCanvasElement,
-		updateElement: updateCanvasElement,
-		removeElement: removeCanvasElement,
-	} = useCanvasElements();
+		selectedIds,
+		setSelectedIds,
+		selectionBox,
+		setSelectionBox,
+		isSelecting,
+		setIsSelecting,
+		history,
+		setHistory,
+		historyIndex,
+		setHistoryIndex,
+		saveToHistory,
+		undo,
+		redo,
+		deleteSelected: handleDelete,
+		duplicateSelected: handleDuplicate,
+		sendToFront,
+		sendToBack,
+		bringForward,
+		sendBackward,
+	} = useCanvasState();
+
+	// Helper wrapper to update elements while we transition
+	// Eventually updateElement should be part of useCanvasState or we expose setElements there
+	const updateCanvasElement = (id: string, updates: any) => {
+		setCanvasElements((prev) =>
+			prev.map((el) => (el.id === id ? { ...el, ...updates } : el)),
+		);
+	};
+
+	// Helper wrapper to add elements
+	// Eventually addElement should be part of useCanvasState
+	const addCanvasElement = (element: any) => {
+		setCanvasElements((prev) => [...prev, element]);
+	};
+
+	const removeCanvasElement = (id: string) => {
+		setCanvasElements((prev) => prev.filter((el) => el.id !== id));
+	};
 
 	const [isStorageLoaded, setIsStorageLoaded] = useState(false);
 	const [visibleIndicators, setVisibleIndicators] = useState<Set<string>>(
@@ -1918,8 +1930,20 @@ export default function OverlayPage() {
 					</div>
 
 					{/* Assistant Panel Toggle Trigger (Floating) */}
-					{!isChatOpen && (
-						<div className="absolute top-4 right-4 z-20 animate-in fade-in slide-in-from-top-2">
+					<div className="absolute top-4 right-4 z-20 flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+						<Link href="/batch">
+							<Button
+								variant="secondary"
+								className="h-10 px-4 rounded-full shadow-md bg-background/90 backdrop-blur hover:bg-background border border-border/50 gap-2"
+							>
+								<div className="p-1 bg-primary/10 rounded-md">
+									<History className="w-3 h-3 text-primary" />
+								</div>
+								<span className="text-xs font-medium">Batch Mode</span>
+							</Button>
+						</Link>
+
+						{!isChatOpen && (
 							<Button
 								size="icon"
 								variant="secondary"
@@ -1928,8 +1952,8 @@ export default function OverlayPage() {
 							>
 								<SpinnerIcon className="h-5 w-5" />
 							</Button>
-						</div>
-					)}
+						)}
+					</div>
 
 					{/* Prompt bar removed - Moved to AssistantPanel */}
 
@@ -1951,11 +1975,6 @@ export default function OverlayPage() {
           )} */}
 
 					{/* Zoom controls */}
-					<ZoomControls
-						viewport={viewport}
-						setViewport={setViewport}
-						canvasSize={canvasSize}
-					/>
 
 					<GithubBadge />
 
@@ -1967,15 +1986,36 @@ export default function OverlayPage() {
 						viewport={viewport}
 					/>
 
-					{/* Bottom Toolbar - Queue Status (Only visible when items queued) */}
+					{/* Bottom Toolbar - Navigation & History */}
 					<BottomToolbar
-						chatCount={0} // Placeholder for queue system
-						imagesCount={selectedIds.length}
-						onRunAll={() => {
-							if (generationSettings.prompt.trim()) {
-								handleRun();
-							}
+						undo={undo}
+						redo={redo}
+						canUndo={historyIndex > 0}
+						canRedo={historyIndex < history.length - 1}
+						zoom={viewport.scale}
+						setZoom={(newScale) => {
+							const centerX = canvasSize.width / 2;
+							const centerY = canvasSize.height / 2;
+							const mousePointTo = {
+								x: (centerX - viewport.x) / viewport.scale,
+								y: (centerY - viewport.y) / viewport.scale,
+							};
+							setViewport({
+								x: centerX - mousePointTo.x * newScale,
+								y: centerY - mousePointTo.y * newScale,
+								scale: newScale,
+							});
 						}}
+						onFitToScreen={() => {
+							// Calculate fit scale
+							// For now, just reset to 100% at center
+							setViewport({
+								x: 0,
+								y: 0,
+								scale: 1,
+							});
+						}}
+						selectedCount={selectedIds.length}
 					/>
 				</div>
 			</main>

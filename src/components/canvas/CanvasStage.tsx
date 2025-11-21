@@ -218,8 +218,16 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 					stroke: "#64748b",
 					strokeWidth: 2,
 					cornerRadius: 0,
+					strokeWidth: 2,
+					cornerRadius: 0,
 					...defaultShapeProps,
 				};
+
+				// Initialize points for line/arrow
+				if (newShape.shapeType === "line" || newShape.shapeType === "arrow") {
+					newShape.points = [0, 0, 0, 0, 0, 0];
+				}
+
 				setElements((prev) => [...prev, newShape]);
 				setCurrentShapeId(newShape.id);
 			} else if (activeTool === "draw") {
@@ -268,10 +276,26 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 							// Let's assume corner dragging.
 							// If width is negative, flip?
 							// Konva Rect allows negative width/height? Yes.
+							// Konva Rect allows negative width/height? Yes.
+							const width = pos.x - el.x;
+							const height = pos.y - el.y;
+
+							const updates: Partial<ShapeElement> = {
+								width,
+								height,
+							};
+
+							// Update points for line/arrow
+							if (
+								(el.shapeType === "line" || el.shapeType === "arrow") &&
+								el.points
+							) {
+								updates.points = [0, 0, width / 2, height / 2, width, height];
+							}
+
 							return {
 								...el,
-								width: pos.x - el.x,
-								height: pos.y - el.y,
+								...updates,
 							};
 						}
 						return el;
@@ -296,17 +320,57 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 			onMouseUp(e);
 			if (isDrawing) {
 				setIsDrawing(false);
-				setCurrentShapeId(null);
-				setCurrentDrawingId(null);
 
-				// Select the newly created object
-				if (currentShapeId) setSelectedIds([currentShapeId]);
+				// Normalize shape dimensions if needed
+				if (currentShapeId) {
+					setElements((prev) =>
+						prev.map((el) => {
+							if (el.id === currentShapeId && el.type === "shape") {
+								let { x, y, width, height } = el;
+
+								// Normalize negative width/height
+								let points = el.points ? [...el.points] : undefined;
+
+								if (width < 0) {
+									x += width;
+									// Shift points if they exist
+									if (points) {
+										for (let i = 0; i < points.length; i += 2) {
+											points[i] -= width;
+										}
+									}
+									width = Math.abs(width);
+								}
+								if (height < 0) {
+									y += height;
+									// Shift points if they exist
+									if (points) {
+										for (let i = 1; i < points.length; i += 2) {
+											points[i] -= height;
+										}
+									}
+									height = Math.abs(height);
+								}
+
+								return {
+									...el,
+									x,
+									y,
+									width,
+									height,
+									points,
+								};
+							}
+							return el;
+						}),
+					);
+					setSelectedIds([currentShapeId]);
+				}
+
 				if (currentDrawingId) setSelectedIds([currentDrawingId]);
 
-				// Switch back to select tool? Or keep drawing?
-				// Usually "Draw" tool stays active. "Shape" tool stays active.
-				// But for "low friction" sometimes auto-switching is nice.
-				// Let's keep tool active for Shapes/Draw to allow multiple creations.
+				setCurrentShapeId(null);
+				setCurrentDrawingId(null);
 
 				saveToHistory();
 			}

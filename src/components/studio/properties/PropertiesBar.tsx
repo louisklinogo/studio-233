@@ -2,10 +2,12 @@ import {
 	AlignCenter,
 	AlignLeft,
 	AlignRight,
+	ArrowRight,
 	Bold,
 	Circle,
 	Copy,
 	Italic,
+	Minus,
 	Pencil,
 	Square,
 	Star,
@@ -26,6 +28,7 @@ import type {
 } from "@/types/elements";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { FontSelector } from "./FontSelector";
+import { FontSizeSelector } from "./FontSizeSelector";
 import { PropertySlider } from "./PropertySlider";
 
 interface PropertiesBarProps {
@@ -66,15 +69,10 @@ export const PropertiesBar: React.FC<PropertiesBarProps> = ({
 	const showToolProperties =
 		!selectedElement && ["text", "shape", "draw"].includes(activeTool || "");
 
-	if (!selectedElement && !showToolProperties) return null;
-
 	// Helper to update the current element OR default props
 	const isToolMode = !selectedElement;
 
-	// We need separate render logic or a unified way to access props
-	// Ideally we render the same controls but binding to different values/setters
-
-	return (
+	return selectedElement || showToolProperties ? (
 		<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-md border shadow-lg rounded-xl p-2 flex items-center gap-4 z-30 animate-in fade-in slide-in-from-top-2 max-w-[90vw] overflow-x-auto">
 			{!isToolMode && (
 				<>
@@ -127,17 +125,14 @@ export const PropertiesBar: React.FC<PropertiesBarProps> = ({
 
 					<Separator orientation="vertical" className="h-8" />
 
-					<div className="w-[60px]">
-						<input
-							type="number"
-							className="w-full h-8 px-2 text-xs border rounded bg-transparent text-center"
+					<div className="w-[70px]">
+						<FontSizeSelector
 							value={
 								isToolMode
 									? defaultTextProps?.fontSize
 									: (selectedElement as TextElement).fontSize
 							}
-							onChange={(e) => {
-								const val = Number(e.target.value);
+							onChange={(val) =>
 								isToolMode
 									? setDefaultTextProps?.({
 											...defaultTextProps,
@@ -145,8 +140,8 @@ export const PropertiesBar: React.FC<PropertiesBarProps> = ({
 										})
 									: updateElement(selectedElement!.id, {
 											fontSize: val,
-										} as Partial<TextElement>);
-							}}
+										} as Partial<TextElement>)
+							}
 						/>
 					</div>
 
@@ -193,11 +188,45 @@ export const PropertiesBar: React.FC<PropertiesBarProps> = ({
 									} as Partial<ShapeElement>);
 						}}
 					>
-						<ToggleGroupItem value="rect" size="sm" className="h-8 w-8 p-0">
+						<ToggleGroupItem
+							value="rect"
+							size="sm"
+							className="h-8 w-8 p-0"
+							title="Rectangle"
+						>
 							<Square className="h-4 w-4" />
 						</ToggleGroupItem>
-						<ToggleGroupItem value="circle" size="sm" className="h-8 w-8 p-0">
+						<ToggleGroupItem
+							value="circle"
+							size="sm"
+							className="h-8 w-8 p-0"
+							title="Circle"
+						>
 							<Circle className="h-4 w-4" />
+						</ToggleGroupItem>
+						<ToggleGroupItem
+							value="triangle"
+							size="sm"
+							className="h-8 w-8 p-0"
+							title="Triangle"
+						>
+							<Triangle className="h-4 w-4" />
+						</ToggleGroupItem>
+						<ToggleGroupItem
+							value="arrow"
+							size="sm"
+							className="h-8 w-8 p-0"
+							title="Arrow"
+						>
+							<ArrowRight className="h-4 w-4" />
+						</ToggleGroupItem>
+						<ToggleGroupItem
+							value="line"
+							size="sm"
+							className="h-8 w-8 p-0"
+							title="Line"
+						>
+							<Minus className="h-4 w-4" />
 						</ToggleGroupItem>
 					</ToggleGroup>
 
@@ -380,5 +409,5 @@ export const PropertiesBar: React.FC<PropertiesBarProps> = ({
 				</>
 			)}
 		</div>
-	);
+	) : null;
 };

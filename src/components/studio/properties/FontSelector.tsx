@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,7 +52,7 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
 					<span style={{ fontFamily: value }} className="truncate">
 						{fonts.find((font) => font.value === value)?.label || value}
 					</span>
-					<ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+					<ChevronDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-[200px] p-0">

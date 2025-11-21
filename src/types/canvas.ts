@@ -1,3 +1,5 @@
+import type { CanvasElement } from "./elements";
+
 export interface PlacedImage {
 	id: string;
 	src: string;
@@ -29,6 +31,7 @@ export interface PlacedVideo extends Omit<PlacedImage, "isGenerated"> {
 export interface HistoryState {
 	images: PlacedImage[];
 	videos?: PlacedVideo[]; // Optional for backward compatibility
+	elements?: CanvasElement[]; // Text, Shape, Drawing
 	selectedIds: string[];
 }
 

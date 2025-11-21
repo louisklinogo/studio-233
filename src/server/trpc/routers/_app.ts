@@ -3,7 +3,11 @@ import { tracked } from "@trpc/server";
 import sharp from "sharp";
 import { z } from "zod";
 import { publicProcedure, rateLimitedProcedure, router } from "../init";
-import { geminiRouter, generateImageFromText } from "./gemini";
+import {
+	geminiRouter,
+	generateImageFromText,
+	generateImageFromTextWithFallback,
+} from "./gemini";
 
 const fal = createFalClient({
 	credentials: () => process.env.FAL_KEY as string,
@@ -633,33 +637,71 @@ export const appRouter = router({
 	removeBackground: publicProcedure
 		.input(
 			z.object({
-				imageUrl: z.string().url(),
+				imageUrl: z.string(),
 				apiKey: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				const falClient = await getFalClient(input.apiKey, ctx);
+			// If no FAL key is present, skip directly to fallback
+			const falKey = input.apiKey || process.env.FAL_KEY;
 
-				const result = await falClient.subscribe(
-					"fal-ai/bria/background/remove",
-					{
-						input: {
-							image_url: input.imageUrl,
-							sync_mode: true,
+			if (falKey) {
+				try {
+					const falClient = await getFalClient(input.apiKey, ctx);
+
+					const result = await falClient.subscribe(
+						"fal-ai/bria/background/remove",
+						{
+							input: {
+								image_url: input.imageUrl,
+								sync_mode: true,
+							},
 						},
-					},
+					);
+
+					return {
+						url: result.data.image.url,
+					};
+				} catch (error) {
+					console.error(
+						"FAL background removal failed, attempting Gemini fallback:",
+						error,
+					);
+					// Proceed to fallback below
+				}
+			} else {
+				console.log("No FAL key found, defaulting to Gemini fallback");
+			}
+
+			// Fallback to Gemini
+			try {
+				// We'll use the Gemini fallback if we have a key
+				const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+				if (!apiKey) {
+					// If no Gemini key, throw error explaining both failed
+					throw new Error(
+						falKey
+							? "FAL failed and no Gemini API key found"
+							: "No API keys configured for background removal",
+					);
+				}
+
+				const result = await generateImageFromTextWithFallback(
+					"Remove the background from this image. Return ONLY the image with transparent background. Keep the subject intact.",
+					input.imageUrl,
+					apiKey,
+					ctx,
 				);
 
 				return {
-					url: result.data.image.url,
+					url: result.url,
 				};
-			} catch (error) {
-				console.error("Error removing background:", error);
+			} catch (geminiError) {
+				console.error("Gemini fallback failed:", geminiError);
 				throw new Error(
-					error instanceof Error
-						? error.message
-						: "Failed to remove background",
+					geminiError instanceof Error
+						? geminiError.message
+						: "Failed to remove background (both providers failed)",
 				);
 			}
 		}),
