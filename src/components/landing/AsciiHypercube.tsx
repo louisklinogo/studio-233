@@ -1,17 +1,38 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export const AsciiHypercube = () => {
 	const preRef = useRef<HTMLPreElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [isVisible, setIsVisible] = useState(false);
+
+	// Intersection Observer
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setIsVisible(entry.isIntersecting);
+			},
+			{ threshold: 0.1 },
+		);
+
+		if (containerRef.current) {
+			observer.observe(containerRef.current);
+		}
+
+		return () => observer.disconnect();
+	}, []);
 
 	useEffect(() => {
+		if (!isVisible) return;
+
 		let t = 0;
 		let animationFrameId: number;
 
-		const width = 100; // Increased from 80
-		const height = 50; // Increased from 40
-		const scale = 35; // Increased from 30
+		const isMobile = window.innerWidth < 768;
+		const width = isMobile ? 50 : 100;
+		const height = isMobile ? 25 : 50;
+		const scale = isMobile ? 18 : 35;
 		const speed = 0.02;
 
 		// 4D rotation matrices
@@ -164,10 +185,14 @@ export const AsciiHypercube = () => {
 		render();
 
 		return () => cancelAnimationFrame(animationFrameId);
-	}, []);
+	}, [isVisible]);
 
 	return (
-		<div className="flex items-center justify-center w-full h-full overflow-hidden">
+		<div
+			ref={containerRef}
+			className="flex items-center justify-center w-full h-full overflow-hidden"
+			aria-hidden="true"
+		>
 			<pre
 				ref={preRef}
 				className="font-mono text-[8px] sm:text-[10px] md:text-xs leading-[1.0] text-neutral-900 dark:text-white whitespace-pre select-none opacity-80"
@@ -177,6 +202,9 @@ export const AsciiHypercube = () => {
 					letterSpacing: "0px",
 				}}
 			/>
+			<span className="sr-only">
+				ASCII art animation of a rotating 4D hypercube (tesseract).
+			</span>
 		</div>
 	);
 };

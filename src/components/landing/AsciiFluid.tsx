@@ -1,25 +1,44 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createNoise3D } from "simplex-noise";
 
 export const AsciiFluid = () => {
 	const preRef = useRef<HTMLPreElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [isVisible, setIsVisible] = useState(false);
+
+	// Intersection Observer
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setIsVisible(entry.isIntersecting);
+			},
+			{ threshold: 0.1 },
+		);
+
+		if (containerRef.current) {
+			observer.observe(containerRef.current);
+		}
+
+		return () => observer.disconnect();
+	}, []);
 
 	useEffect(() => {
+		if (!isVisible) return;
+
 		let t = 0;
 		let animationFrameId: number;
 		const noise3D = createNoise3D();
 
-		// Configuration
-		const width = 100; // Increased from 80
-		const height = 50; // Increased from 40
+		// Responsive Configuration
+		const isMobile = window.innerWidth < 768;
+		const width = isMobile ? 50 : 100;
+		const height = isMobile ? 25 : 50;
 		const speed = 0.005;
 		const noiseScale = 0.08;
 
 		// Density Ramp (Dark to Light)
-		// const chars = " .:-=+*#%@";
-		// const chars = " .`'.,^:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 		// Swiss style ramp:
 		const chars = " .-+*#@";
 
@@ -53,10 +72,14 @@ export const AsciiFluid = () => {
 		render();
 
 		return () => cancelAnimationFrame(animationFrameId);
-	}, []);
+	}, [isVisible]);
 
 	return (
-		<div className="flex items-center justify-center w-full h-full overflow-hidden">
+		<div
+			ref={containerRef}
+			className="flex items-center justify-center w-full h-full overflow-hidden"
+			aria-hidden="true"
+		>
 			<pre
 				ref={preRef}
 				className="font-mono text-[8px] sm:text-[10px] md:text-xs leading-[1.0] text-neutral-900 dark:text-white whitespace-pre select-none opacity-80"
@@ -66,6 +89,9 @@ export const AsciiFluid = () => {
 					letterSpacing: "0px",
 				}}
 			/>
+			<span className="sr-only">
+				ASCII art animation of fluid noise patterns.
+			</span>
 		</div>
 	);
 };

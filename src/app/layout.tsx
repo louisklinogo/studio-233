@@ -10,26 +10,26 @@ const defaultAppUrl =
 
 export const metadata: Metadata = {
 	title: {
-		default: "studio+233 - AI Creative Studio",
-		template: "%s | studio+233",
+		default: "Studio+233 | The AI-Native Creative Suite for Professionals",
+		template: "%s | Studio+233",
 	},
 	description:
-		"Transform your photos with AI-powered style transfer in seconds. Choose from LoRA models and prompt-based styles including anime, oil painting, cyberpunk, and more.",
+		"The AI-native creative suite for high-volume production. Infinite canvas for generation and editing, plus industrial-grade batch processing pipelines.",
 	keywords: [
+		"batch image processing",
+		"AI creative workflow",
+		"infinite canvas editor",
+		"automated design pipeline",
+		"commercial AI tools",
 		"AI image editing",
 		"image transformation",
 		"flux model",
 		"LoRA",
 		"AI art",
-		"LoRA",
-		"photo styling",
-		"artificial intelligence",
-		"machine learning",
-		"image generation",
 	],
-	authors: [{ name: "fal.ai" }],
-	creator: "LoRA",
-	publisher: "LoRA",
+	authors: [{ name: "Studio+233 Systems" }],
+	creator: "Studio+233",
+	publisher: "Studio+233",
 	formatDetection: {
 		email: false,
 		address: false,
@@ -43,25 +43,25 @@ export const metadata: Metadata = {
 		type: "website",
 		locale: "en_US",
 		url: "/",
-		title: "studio+233 - AI Creative Studio",
+		title: "Studio+233 | The AI-Native Creative Suite",
 		description:
-			"Transform your photos with AI-powered tools in seconds. Choose from advanced models and prompt-based generation.",
-		siteName: "studio+233",
+			"Infinite canvas. Agentic intelligence. Your creative engine for high-volume production.",
+		siteName: "Studio+233",
 		images: [
 			{
 				url: "/og-img-compress.png",
 				width: 1200,
 				height: 630,
-				alt: "studio+233 - AI Style Transfer Demo",
+				alt: "Studio+233 - AI Creative Suite",
 				type: "image/png",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "studio+233 - AI Creative Studio",
+		title: "Studio+233 | The AI-Native Creative Suite",
 		description:
-			"Transform your photos with AI-powered tools in seconds. Choose from advanced models and prompt-based generation.",
+			"Infinite canvas. Agentic intelligence. Your creative engine for high-volume production.",
 		creator: "@studio_233",
 		site: "@studio_233",
 		images: [
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
 				url: "/og-img-compress.png",
 				width: 1200,
 				height: 630,
-				alt: "studio+233 - AI Style Transfer Demo",
+				alt: "Studio+233 - AI Creative Suite",
 				type: "image/png",
 			},
 		],
@@ -99,10 +99,34 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const jsonLd = {
+		"@context": "https://schema.org",
+		"@type": "SoftwareApplication",
+		name: "Studio+233",
+		applicationCategory: "DesignApplication",
+		operatingSystem: "Web",
+		offers: {
+			"@type": "Offer",
+			price: "0",
+			priceCurrency: "USD",
+		},
+		featureList: [
+			"Infinite AI Canvas",
+			"Batch Image Processing",
+			"Video Generation",
+			"Object Isolation",
+			"AI Style Transfer",
+		],
+	};
+
 	return (
 		<html lang="en" className="antialiased" suppressHydrationWarning>
 			<head>
 				<meta name="color-scheme" content="dark" />
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+				/>
 				<BotIdClient
 					protect={[
 						{

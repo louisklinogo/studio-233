@@ -121,6 +121,10 @@ export function InputQueue({
 		if (e.target.files && e.target.files.length > 0) {
 			onFilesSelected(Array.from(e.target.files));
 		}
+		// Clear the input value to allow re-selecting the same file
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
 	};
 
 	const toggleSelection = (index: number) => {

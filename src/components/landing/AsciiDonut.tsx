@@ -1,11 +1,31 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export const AsciiDonut = () => {
 	const preRef = useRef<HTMLPreElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [isVisible, setIsVisible] = useState(false);
+
+	// Intersection Observer to pause animation when off-screen
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setIsVisible(entry.isIntersecting);
+			},
+			{ threshold: 0.1 },
+		);
+
+		if (containerRef.current) {
+			observer.observe(containerRef.current);
+		}
+
+		return () => observer.disconnect();
+	}, []);
 
 	useEffect(() => {
+		if (!isVisible) return;
+
 		let A = 0;
 		let B = 0;
 		let animationFrameId: number;
@@ -14,9 +34,10 @@ export const AsciiDonut = () => {
 			const b: string[] = [];
 			const z: number[] = [];
 
-			// Increased resolution for larger display
-			const width = 100; // Was 80
-			const height = 45; // Was 24
+			// Responsive resolution
+			const isMobile = window.innerWidth < 768;
+			const width = isMobile ? 50 : 100;
+			const height = isMobile ? 24 : 45;
 
 			for (let k = 0; k < width * height; k++) {
 				b[k] = " ";
@@ -39,8 +60,11 @@ export const AsciiDonut = () => {
 					const t = c * h * g - f * e;
 
 					// Scaled up projection
-					const x = Math.floor(width / 2 + 40 * D * (l * h * m - t * n));
-					const y = Math.floor(height / 2 + 20 * D * (l * h * n + t * m));
+					const scaleX = isMobile ? 20 : 40;
+					const scaleY = isMobile ? 10 : 20;
+
+					const x = Math.floor(width / 2 + scaleX * D * (l * h * m - t * n));
+					const y = Math.floor(height / 2 + scaleY * D * (l * h * n + t * m));
 					const o = x + width * y;
 
 					const N = Math.floor(
@@ -70,10 +94,14 @@ export const AsciiDonut = () => {
 		render();
 
 		return () => cancelAnimationFrame(animationFrameId);
-	}, []);
+	}, [isVisible]);
 
 	return (
-		<div className="flex items-center justify-center w-full h-full overflow-hidden">
+		<div
+			ref={containerRef}
+			className="flex items-center justify-center w-full h-full overflow-hidden"
+			aria-hidden="true"
+		>
 			<pre
 				ref={preRef}
 				className="font-mono text-[8px] sm:text-[10px] md:text-xs leading-[1.0] text-neutral-900 dark:text-white whitespace-pre select-none"
@@ -82,6 +110,9 @@ export const AsciiDonut = () => {
 					letterSpacing: "0px",
 				}}
 			/>
+			<span className="sr-only">
+				ASCII art animation of a rotating 3D donut (torus).
+			</span>
 		</div>
 	);
 };

@@ -18,13 +18,27 @@ export const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 	const [isComplete, setIsComplete] = useState(false);
 
 	useEffect(() => {
+		// Check if already booted in this session
+		const hasBooted = sessionStorage.getItem("studio-booted");
+		if (hasBooted) {
+			// Push to next tick to avoid hydration/render conflicts
+			setTimeout(() => {
+				setIsComplete(true);
+				onComplete();
+			}, 0);
+			return;
+		}
+
 		let currentIndex = 0;
 
 		const interval = setInterval(() => {
 			if (currentIndex >= BOOT_LOGS.length) {
 				clearInterval(interval);
 				setTimeout(() => setIsComplete(true), 500);
-				setTimeout(onComplete, 1000); // Wait for fade out
+				setTimeout(() => {
+					onComplete();
+					sessionStorage.setItem("studio-booted", "true");
+				}, 1000); // Wait for fade out
 				return;
 			}
 
