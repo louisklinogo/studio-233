@@ -34,7 +34,7 @@ export const AsciiFluid = () => {
 		// Responsive Configuration
 		const isMobile = window.innerWidth < 768;
 		const width = isMobile ? 50 : 100;
-		const height = isMobile ? 25 : 50;
+		const height = isMobile ? 18 : 35;
 		const speed = 0.005;
 		const noiseScale = 0.08;
 

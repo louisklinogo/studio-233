@@ -1,0 +1,115 @@
+"use client";
+
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import React, { useLayoutEffect, useRef } from "react";
+
+gsap.registerPlugin(ScrollTrigger);
+
+export const ManifestoGSAP = () => {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const textRef = useRef<HTMLDivElement>(null);
+	const paragraphRef = useRef<HTMLDivElement>(null);
+
+	useLayoutEffect(() => {
+		const ctx = gsap.context(() => {
+			const lines = gsap.utils.toArray(".manifesto-line");
+
+			// Create a unified timeline that handles pinning and all animations
+			const tl = gsap.timeline({
+				scrollTrigger: {
+					trigger: containerRef.current,
+					start: "top top",
+					end: "+=200%", // Increased duration for smoother pacing
+					pin: true,
+					scrub: 1,
+				},
+			});
+
+			// Phase 1: Split the big text away (starts at 0)
+			tl.to(lines[0], { x: "-20%", opacity: 0.5 }, 0)
+				.to(lines[1], { x: "20%", opacity: 0.5 }, 0)
+				.to(lines[2], { x: "-20%", opacity: 0.5 }, 0);
+
+			// Phase 2: Fade out big text completely (starts at 0.2)
+			// This ensures it's gone before the paragraph tries to be readable
+			tl.to(lines, { opacity: 0, filter: "blur(10px)" }, 0.2);
+
+			// Phase 3: Reveal the paragraph (starts at 0.3)
+			tl.fromTo(
+				paragraphRef.current,
+				{ scale: 0.9, opacity: 0, filter: "blur(10px)", y: 20 },
+				{ scale: 1, opacity: 1, filter: "blur(0px)", y: 0 },
+				0.3,
+			);
+
+			// Phase 4: Highlight the power words (starts at 0.5)
+			// Paragraph is fully visible now, so we animate the highlights
+			tl.to(
+				".kinetic-highlight",
+				{
+					color: "#FF4D00",
+					fontWeight: 900,
+					stagger: 0.1,
+				},
+				0.5,
+			);
+
+			// Phase 5: Fade out everything at the end (starts at 0.8)
+			tl.to(
+				[textRef.current, paragraphRef.current],
+				{
+					opacity: 0,
+					filter: "blur(10px)",
+					scale: 0.95,
+				},
+				0.8,
+			);
+		}, containerRef);
+
+		return () => ctx.revert();
+	}, []);
+
+	return (
+		<section
+			ref={containerRef}
+			className="relative z-30 h-screen flex flex-col items-center justify-start pt-[5vh] overflow-hidden"
+		>
+			<div
+				ref={textRef}
+				className="flex flex-col gap-2 md:gap-4 font-black text-[7vw] tracking-tighter leading-[0.8] select-none text-neutral-900 dark:text-white opacity-90 w-full max-w-[90vw] mx-auto"
+			>
+				<div className="manifesto-line whitespace-nowrap pl-4 w-full">
+					INFINITE CANVAS.
+				</div>
+				<div className="manifesto-line whitespace-nowrap text-right pr-4 text-[#FF4D00] w-full">
+					AGENTIC INTELLIGENCE.
+				</div>
+				<div className="manifesto-line whitespace-nowrap pl-4 w-full">
+					YOUR CREATIVE ENGINE.
+				</div>
+			</div>
+
+			<div
+				ref={paragraphRef}
+				className="absolute inset-0 flex items-center justify-center z-20 max-w-5xl px-6 md:px-12 opacity-0 pointer-events-none"
+			>
+				<p className="font-mono text-2xl md:text-4xl lg:text-5xl text-neutral-800 dark:text-neutral-200 leading-tight text-justify tracking-tight uppercase font-bold">
+					Studio+233 is not just a tool. It is a{" "}
+					<span className="kinetic-highlight transition-colors duration-300">
+						production environment
+					</span>{" "}
+					for the next generation of creators. Combine the freedom of an{" "}
+					<span className="kinetic-highlight transition-colors duration-300">
+						infinite canvas
+					</span>{" "}
+					with the power of{" "}
+					<span className="kinetic-highlight transition-colors duration-300">
+						autonomous AI agents
+					</span>{" "}
+					to scale your workflow from one to one thousand.
+				</p>
+			</div>
+		</section>
+	);
+};

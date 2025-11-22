@@ -6,16 +6,16 @@ export const ScannerFooter = () => {
 	return (
 		<div className="w-full overflow-hidden relative">
 			{/* Base Text (Dim) */}
-			<h1 className="text-[15vw] leading-[0.8] font-bold tracking-tighter text-neutral-300/30 dark:text-neutral-800/30 select-none pointer-events-none whitespace-nowrap -ml-1">
-				STUDIO
+			<h1 className="text-[20vw] leading-[0.8] font-bold tracking-tighter text-neutral-300/30 dark:text-neutral-800/30 select-none pointer-events-none whitespace-nowrap -ml-1">
+				■ STUDIO
 				<span className="text-[0.4em] inline-block align-top -mt-2 ml-1">
 					+233
 				</span>
 			</h1>
 
 			{/* Scanned Text (Dynamic Color) */}
-			<h1 className="absolute inset-0 text-[15vw] leading-[0.8] font-bold tracking-tighter select-none pointer-events-none whitespace-nowrap -ml-1 animate-scan-text">
-				STUDIO
+			<h1 className="absolute inset-0 text-[20vw] leading-[0.8] font-bold tracking-tighter select-none pointer-events-none whitespace-nowrap -ml-1 animate-scan-text">
+				■ STUDIO
 				<span className="text-[0.4em] inline-block align-top -mt-2 ml-1">
 					+233
 				</span>

@@ -9,8 +9,10 @@ import { BootSequence } from "@/components/landing/BootSequence";
 import { DataTicker } from "@/components/landing/DataTicker";
 import { GlitchCoordinates } from "@/components/landing/GlitchCoordinates";
 import { GlitchHeader } from "@/components/landing/GlitchHeader";
-import { Manifesto } from "@/components/landing/Manifesto";
+import { GlitchOverlay } from "@/components/landing/GlitchOverlay";
+import { ManifestoGSAP } from "@/components/landing/ManifestoGSAP";
 import { MenuLink } from "@/components/landing/MenuLink";
+import { NavigatorPrompt } from "@/components/landing/NavigatorPrompt";
 import { ReactiveGrid } from "@/components/landing/ReactiveGrid";
 import { ScannerFooter } from "@/components/landing/ScannerFooter";
 import { StatusPill } from "@/components/landing/StatusPill";
@@ -52,10 +54,16 @@ export default function HomePage() {
 				</section>
 
 				{/* Manifesto Section */}
-				<Manifesto />
+				<ManifestoGSAP />
+
+				{/* Navigator Prompt */}
+				<NavigatorPrompt />
 
 				{/* Main Navigation Grid */}
 				<main className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-0 flex-1">
+					{/* Glitch Overlay */}
+					<GlitchOverlay />
+
 					{/* Nav Item 01: Canvas */}
 					<section className="border-b md:border-b-0 border-r-0 md:border-r border-neutral-200 dark:border-neutral-800 p-6 md:p-12 flex flex-col justify-center min-h-[40vh]">
 						<h2 className="sr-only">Infinite Canvas</h2>
@@ -80,11 +88,11 @@ export default function HomePage() {
 				</main>
 
 				{/* Footer */}
-				<footer className="relative z-10 flex flex-col justify-end border-t border-neutral-200 dark:border-neutral-800 pt-4 shrink-0">
+				<footer className="relative z-10 flex flex-col justify-end border-t border-neutral-200 dark:border-neutral-800 pt-4 shrink-0 min-h-[40vh]">
 					<div className="flex justify-between items-end text-xs font-mono text-neutral-500 uppercase mb-2 px-6 md:px-12">
 						<div className="flex gap-4">
 							<span>© 2025</span>
-							<span>Studio+233 Systems</span>
+							<span>■ Studio+233 Systems</span>
 						</div>
 						<div className="flex gap-4">
 							<a
