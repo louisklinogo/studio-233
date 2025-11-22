@@ -1,8 +1,6 @@
 # studio+233
 
-![studio+233](./public/og-img-compress.png)
-
-studio+233 is an infinite canvas image editor with AI transformations. Built with Next.js, React Konva, and tRPC.
+studio+233 is an infinite canvas image editor and batch media processing app with AI transformations and configurations. Built with Next.js, React Konva, and tRPC.
 
 ## Features
 
@@ -129,7 +127,7 @@ Uses Bria's specialized background removal model:
 ### Setup
 
 1. Clone the repository
-2. Install dependencies: `npm install`
+2. Install dependencies: `bun install`
 3. Add your fal.ai API key to `.env.local`:
 
    ```
@@ -141,32 +139,18 @@ Uses Bria's specialized background removal model:
    KV_REST_API_TOKEN=
    ```
 
-4. Run development server: `npm run dev`
+4. Run development server: `bun run dev`
 
-### Pre-commit Hooks
-
-The project uses [Husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/lint-staged/lint-staged) for automated code formatting and linting before commits.
-
-Pre-commit hooks are automatically installed when you run `npm install` (via the `prepare` script).
-
-The hooks will:
-
-- Run Prettier formatting on staged files
-- Run ESLint with auto-fix on staged files
-- Only process files that are staged for commit (more efficient than processing all files)
-
-If you need to manually run the pre-commit checks:
-
-```bash
-npx lint-staged
 ```
 
 ### Tech Stack
 
-- **Next.js 15**: React framework with App Router
+- **Next.js 16**: React framework with App Router
 - **React Konva**: Canvas rendering engine
 - **tRPC**: Type-safe API layer
 - **fal.ai SDK**: AI model integration
+- **AI-SDK**: Unified model gateway
+- **Mastra AI**: Agentic Framework
 - **Tailwind CSS**: Styling
 - **IndexedDB**: Client-side storage
 - **Sharp**: Server-side image processing

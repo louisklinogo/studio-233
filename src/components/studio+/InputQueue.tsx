@@ -7,6 +7,7 @@ import {
 	Loader2,
 	Plus,
 	Trash2,
+	Upload,
 	X,
 	XCircle,
 } from "lucide-react";
@@ -24,6 +25,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/vectr-components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { EmptyStateCardStack } from "./EmptyStateCardStack";
+import { StudioBottomToolbar } from "./StudioBottomToolbar";
+import { UploadButtonDataSlot } from "./UploadButtonDataSlot";
+import { UploadButtonMagnetic } from "./UploadButtonMagnetic";
+import { UploadButtonMechanical } from "./UploadButtonMechanical";
 
 interface FileUploadStatus {
 	progress: number;
@@ -165,7 +170,7 @@ export function InputQueue({
 	}, [files.length, previewPage, totalPages]);
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full relative">
 			{/* Header */}
 			<div className="p-3 border-b bg-muted/5">
 				<div className="flex items-center justify-between">
@@ -175,27 +180,15 @@ export function InputQueue({
 							files
 						</span>
 					</span>
-					{selectedIndices.size > 0 && (
-						<div className="flex items-center gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setSelectedIndices(new Set())}
-								disabled={isUploading}
-							>
-								<X className="w-4 h-4 mr-1" />
-								Clear
-							</Button>
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={removeSelected}
-								disabled={isUploading}
-							>
-								<Trash2 className="w-4 h-4 mr-1" />
-								Remove ({selectedIndices.size})
-							</Button>
-						</div>
+
+					{/* Toggle these to test different options */}
+					{/* <UploadButtonMechanical onClick={() => fileInputRef.current?.click()} disabled={isUploading} /> */}
+					{/* <UploadButtonDataSlot onClick={() => fileInputRef.current?.click()} disabled={isUploading} /> */}
+					{files.length > 0 && (
+						<UploadButtonMagnetic
+							onClick={() => fileInputRef.current?.click()}
+							disabled={isUploading}
+						/>
 					)}
 				</div>
 			</div>
@@ -503,6 +496,13 @@ export function InputQueue({
 					</div>
 				</div>
 			)}
+
+			<StudioBottomToolbar
+				selectedCount={selectedIndices.size}
+				onClear={() => setSelectedIndices(new Set())}
+				onRemove={removeSelected}
+				disabled={isUploading}
+			/>
 		</div>
 	);
 }
