@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { LibSQLStore } from "@mastra/libsql";
 import { Memory } from "@mastra/memory";
+import { getModelConfig } from "../model-config";
 import { scorers } from "../scorers/weather-scorer";
 import { weatherTool } from "../tools/weather-tool";
 
@@ -20,7 +21,7 @@ export const weatherAgent = new Agent({
 
       Use the weatherTool to fetch current weather data.
 `,
-	model: "google/gemini-2.5-pro",
+	model: getModelConfig("general").model,
 	tools: { weatherTool },
 	scorers: {
 		toolCallAppropriateness: {

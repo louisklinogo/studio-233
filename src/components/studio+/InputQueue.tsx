@@ -21,7 +21,6 @@ import {
 } from "@/components/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/vectr-components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { EmptyStateCardStack } from "./EmptyStateCardStack";
@@ -357,7 +356,7 @@ export function InputQueue({
 						{/* File Management Table */}
 						{/* File Management Table */}
 						<div className="flex-1 overflow-hidden flex flex-col">
-							<ScrollArea className="flex-1 scrollbar-none">
+							<div className="flex-1 overflow-y-auto scrollbar-none">
 								<table className="w-full caption-bottom text-sm">
 									<TableHeader className="sticky top-0 z-10 bg-background border-b shadow-sm">
 										<TableRow>
@@ -474,7 +473,7 @@ export function InputQueue({
 										))}
 									</TableBody>
 								</table>
-							</ScrollArea>
+							</div>
 						</div>
 					</>
 				)}

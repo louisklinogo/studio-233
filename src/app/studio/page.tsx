@@ -7,11 +7,10 @@ import React, { useEffect, useState } from "react";
 import { startBatchProcessing } from "@/app/actions/batch-actions";
 import { CompletionView } from "@/components/studio+/CompletionView";
 import { ConfigurationPanel } from "@/components/studio+/ConfigurationPanel";
+import { StudioChatPanel } from "@/components/studio+/chat/StudioChatPanel";
 import { EmptyStateInstructions } from "@/components/studio+/EmptyStateInstructions";
 import { InputQueue } from "@/components/studio+/InputQueue";
 import { LiveProgressView } from "@/components/studio+/LiveProgressView";
-import { PipelineVisualizer } from "@/components/studio+/PipelineVisualizer";
-import { ResultsGrid } from "@/components/studio+/ResultsGrid";
 import {
 	StudioContent,
 	StudioHeader,
@@ -404,112 +403,7 @@ export default function StudioPage() {
 			</StudioSidebar>
 
 			<div className="flex-1 flex flex-col min-w-0">
-				<StudioHeader>
-					<div className="flex items-center gap-2"></div>
-
-					<div className="flex-1 flex justify-center">
-						<PipelineVisualizer steps={steps} />
-					</div>
-
-					<div className="flex items-center gap-2">
-						<Button variant="ghost" size="sm">
-							<Settings className="w-4 h-4" />
-						</Button>
-						<Button
-							size="sm"
-							onClick={handleUpload}
-							disabled={isProcessing || isUploading || files.length === 0}
-							className="min-w-[120px]"
-						>
-							{isUploading ? (
-								<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-							) : (
-								<Play className="w-4 h-4 mr-2" />
-							)}
-							{isUploading
-								? `Uploading...`
-								: isProcessing
-									? "Processing..."
-									: "Run Batch"}
-						</Button>
-					</div>
-				</StudioHeader>
-
-				<StudioContent>
-					<AnimatePresence mode="wait">
-						{rightPaneView === "empty" && (
-							<EmptyStateInstructions key="empty" />
-						)}
-
-						{rightPaneView === "configure" && (
-							<ConfigurationPanel
-								key="configure"
-								filesCount={files.length}
-								workflowType={workflowType}
-								onWorkflowChange={setWorkflowType}
-								referenceImage={referenceImage}
-								onReferenceChange={setReferenceImage}
-								customPrompt={customPrompt}
-								onPromptChange={setCustomPrompt}
-								onStartBatch={handleUpload}
-								onBack={() => {
-									setFiles([]);
-									canvasStorage.clearBatchFiles();
-									setRightPaneView("empty");
-								}}
-							/>
-						)}
-
-						{rightPaneView === "processing" && (
-							<LiveProgressView
-								key="processing"
-								jobs={jobStatuses.map((job) => ({
-									id: job.id,
-									originalUrl: job.originalUrl,
-									resultUrl: job.resultUrl,
-									status: job.status,
-									attempt: job.attempt,
-									error: job.error,
-								}))}
-								isProcessing={isProcessing}
-								onImageClick={(jobId) => {
-									// TODO: Implement image detail view
-									console.log("Image clicked:", jobId);
-								}}
-							/>
-						)}
-
-						{rightPaneView === "complete" && (
-							<CompletionView
-								key="complete"
-								jobs={jobStatuses.map((job) => ({
-									id: job.id,
-									originalUrl: job.originalUrl,
-									resultUrl: job.resultUrl,
-									status: job.status,
-									error: job.error,
-								}))}
-								onDownloadAll={() => {
-									// TODO: Implement download all
-									console.log("Download all");
-								}}
-								onRetryFailed={() => {
-									// TODO: Implement retry failed
-									console.log("Retry failed");
-								}}
-								onNewBatch={() => {
-									setJobStatuses([]);
-									setActiveJobIds([]);
-									setRightPaneView("empty");
-								}}
-								onImageClick={(jobId) => {
-									// TODO: Implement image detail view
-									console.log("Image clicked:", jobId);
-								}}
-							/>
-						)}
-					</AnimatePresence>
-				</StudioContent>
+				<StudioChatPanel filesCount={files.length} className="flex-1" />
 			</div>
 		</StudioLayout>
 	);

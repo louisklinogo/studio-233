@@ -1,5 +1,0 @@
-paco@paco MINGW64 ~/Projects/studio+233 (main)
-$ npx inngest-cli@latest dev
-Need to install the following packages:
-inngest-cli@1.13.7
-Ok to proceed? (y) y
