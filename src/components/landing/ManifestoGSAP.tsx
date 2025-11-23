@@ -20,9 +20,11 @@ export const ManifestoGSAP = () => {
 				scrollTrigger: {
 					trigger: containerRef.current,
 					start: "top top",
-					end: "+=200%", // Increased duration for smoother pacing
+					end: "+=250%", // Optimized duration for smooth animation flow
 					pin: true,
+					pinSpacing: true,
 					scrub: 1,
+					anticipatePin: 1,
 				},
 			});
 
@@ -38,10 +40,13 @@ export const ManifestoGSAP = () => {
 			// Phase 3: Reveal the paragraph (starts at 0.3)
 			tl.fromTo(
 				paragraphRef.current,
-				{ scale: 0.9, opacity: 0, filter: "blur(10px)", y: 20 },
+				{ scale: 0.9, opacity: 0, filter: "blur(10px)", y: 100 },
 				{ scale: 1, opacity: 1, filter: "blur(0px)", y: 0 },
 				0.3,
 			);
+
+			// Phase 3.5: Move paragraph upward (starts at 0.35)
+			tl.to(paragraphRef.current, { y: -400, ease: "none" }, 0.35);
 
 			// Phase 4: Highlight the power words (starts at 0.5)
 			// Paragraph is fully visible now, so we animate the highlights
@@ -50,12 +55,13 @@ export const ManifestoGSAP = () => {
 				{
 					color: "#FF4D00",
 					fontWeight: 900,
+					duration: 0.3,
 					stagger: 0.1,
 				},
 				0.5,
 			);
 
-			// Phase 5: Fade out everything at the end (starts at 0.8)
+			// Phase 5: Fade out everything at the end (starts at 2.0)
 			tl.to(
 				[textRef.current, paragraphRef.current],
 				{
@@ -63,7 +69,7 @@ export const ManifestoGSAP = () => {
 					filter: "blur(10px)",
 					scale: 0.95,
 				},
-				0.8,
+				2.0,
 			);
 		}, containerRef);
 
@@ -73,7 +79,7 @@ export const ManifestoGSAP = () => {
 	return (
 		<section
 			ref={containerRef}
-			className="relative z-30 h-screen flex flex-col items-center justify-start pt-[5vh] overflow-hidden"
+			className="relative z-30 min-h-[200vh] flex flex-col items-center justify-start pt-[5vh] overflow-hidden"
 		>
 			<div
 				ref={textRef}
@@ -92,7 +98,7 @@ export const ManifestoGSAP = () => {
 
 			<div
 				ref={paragraphRef}
-				className="absolute inset-0 flex items-center justify-center z-20 max-w-5xl px-6 md:px-12 opacity-0 pointer-events-none"
+				className="mt-[40vh] mb-[40vh] flex justify-center z-20 max-w-5xl px-6 md:px-12 opacity-0 mx-auto"
 			>
 				<p className="font-mono text-2xl md:text-4xl lg:text-5xl text-neutral-800 dark:text-neutral-200 leading-tight text-justify tracking-tight uppercase font-bold">
 					Studio+233 is not just a tool. It is a{" "}

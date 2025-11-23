@@ -2,11 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (pointer: fine) {
+	* {
+		cursor: none !important;
+	}
+}
+
 @layer base {
 	:root {
 		/* Light Mode: Clean, Objective, Calm "Paper" */
-		--background: 0.99 0.003 260; /* Slightly off-white (cool crisp paper) */
-		--foreground: 0.25 0.02 265; /* Deep Slate (softer than black) */
+		--background: 0.99 0.003 260;
+		/* Slightly off-white (cool crisp paper) */
+		--foreground: 0.25 0.02 265;
+		/* Deep Slate (softer than black) */
 		--card: 1 0 0;
 		--card-foreground: 0.25 0.02 265;
 		--popover: 1 0 0;
@@ -16,7 +24,8 @@
 		--primary: 0.25 0.02 265;
 		--primary-foreground: 0.98 0.003 260;
 
-		--secondary: 0.96 0.005 260; /* Very light slate */
+		--secondary: 0.96 0.005 260;
+		/* Very light slate */
 		--secondary-foreground: 0.25 0.02 265;
 
 		--muted: 0.96 0.005 260;
@@ -76,7 +85,8 @@
 
 	/* THEME: SAGE (Eucalyptus) */
 	.theme-sage {
-		--primary: 0.55 0.12 155; /* Muted Sage Green */
+		--primary: 0.55 0.12 155;
+		/* Muted Sage Green */
 		--primary-foreground: 0.99 0.01 155;
 		--ring: 0.55 0.12 155;
 		--sidebar-primary: 0.55 0.12 155;
@@ -85,7 +95,8 @@
 
 	/* THEME: STONE (Warm Taupe) */
 	.theme-stone {
-		--primary: 0.5 0.08 55; /* Warm Stone Brown */
+		--primary: 0.5 0.08 55;
+		/* Warm Stone Brown */
 		--primary-foreground: 0.98 0.01 55;
 		--ring: 0.5 0.08 55;
 		--sidebar-primary: 0.5 0.08 55;
@@ -103,7 +114,8 @@
 
 	.dark {
 		/* Dark Mode: "Midnight Glass" - Deep, rich, soothing */
-		--background: 0.12 0.01 265; /* Deepest Slate (not black) */
+		--background: 0.12 0.01 265;
+		/* Deepest Slate (not black) */
 		--foreground: 0.98 0.005 265;
 		--card: 0.14 0.01 265;
 		--card-foreground: 0.98 0.005 265;
@@ -181,6 +193,7 @@
 	* {
 		@apply border-border;
 	}
+
 	body {
 		@apply bg-background text-foreground;
 	}
@@ -188,26 +201,35 @@
 
 @layer utilities {
 	.scrollbar-hide {
-		-ms-overflow-style: none; /* IE and Edge */
-		scrollbar-width: none; /* Firefox */
+		-ms-overflow-style: none;
+		/* IE and Edge */
+		scrollbar-width: none;
+		/* Firefox */
 	}
+
 	.scrollbar-hide::-webkit-scrollbar {
-		display: none; /* Chrome, Safari and Opera */
+		display: none;
+		/* Chrome, Safari and Opera */
 	}
-	
+
 	.scrollbar-none {
-		scrollbar-width: none; /* Firefox */
-		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none;
+		/* Firefox */
+		-ms-overflow-style: none;
+		/* IE and Edge */
 	}
+
 	.scrollbar-none::-webkit-scrollbar {
-		display: none; /* Chrome, Safari and Opera */
+		display: none;
+		/* Chrome, Safari and Opera */
 	}
-	
+
 	/* For Radix ScrollArea */
 	.scrollbar-none [data-radix-scroll-area-viewport] {
 		scrollbar-width: none;
 		-ms-overflow-style: none;
 	}
+
 	.scrollbar-none [data-radix-scroll-area-viewport]::-webkit-scrollbar {
 		display: none;
 	}
@@ -238,6 +260,7 @@ h6 {
 	from {
 		transform: translateX(0);
 	}
+
 	to {
 		transform: translateX(-50%);
 	}
@@ -247,27 +270,35 @@ h6 {
 	0% {
 		transform: rotate(0deg);
 	}
+
 	20% {
 		transform: rotate(360deg);
 	}
+
 	25% {
 		transform: rotate(360deg);
 	}
+
 	45% {
 		transform: rotate(720deg);
 	}
+
 	50% {
 		transform: rotate(720deg);
 	}
+
 	70% {
 		transform: rotate(1080deg);
 	}
+
 	75% {
 		transform: rotate(1080deg);
 	}
+
 	95% {
 		transform: rotate(1440deg);
 	}
+
 	100% {
 		transform: rotate(1440deg);
 	}
@@ -278,6 +309,7 @@ h6 {
 	100% {
 		transform: translateY(0px);
 	}
+
 	50% {
 		transform: translateY(-20px);
 	}
@@ -287,10 +319,12 @@ h6 {
 	from {
 		transform: rotate(0deg);
 	}
+
 	to {
 		transform: rotate(360deg);
 	}
 }
+
 .animate-logo-spin {
 	animation: logo-spin 2s linear infinite;
 }
@@ -310,4 +344,19 @@ h6 {
 		line-height: 1.5 !important;
 		padding: 0.25rem 0 !important;
 	}
+}
+
+/* View Transitions API - Eclipse Switch */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+	z-index: 1;
+}
+
+::view-transition-new(root) {
+	z-index: 9999;
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AsciiCarousel } from "@/components/landing/AsciiCarousel";
 import { BootSequence } from "@/components/landing/BootSequence";
+import { CommandTerminal } from "@/components/landing/CommandTerminal";
 import { DataTicker } from "@/components/landing/DataTicker";
 import { GlitchCoordinates } from "@/components/landing/GlitchCoordinates";
 import { GlitchHeader } from "@/components/landing/GlitchHeader";
@@ -16,12 +17,16 @@ import { NavigatorPrompt } from "@/components/landing/NavigatorPrompt";
 import { ReactiveGrid } from "@/components/landing/ReactiveGrid";
 import { ScannerFooter } from "@/components/landing/ScannerFooter";
 import { StatusPill } from "@/components/landing/StatusPill";
+import { ThemeToggle } from "@/components/landing/ThemeToggle";
+
+import { CustomCursor } from "@/components/ui/CustomCursor";
 
 export default function HomePage() {
 	const [isBooted, setIsBooted] = useState(false);
 
 	return (
 		<>
+			<CustomCursor />
 			<BootSequence onComplete={() => setIsBooted(true)} />
 
 			<motion.div
@@ -42,8 +47,11 @@ export default function HomePage() {
 							The AI-Native Creative Suite for High-Volume Production
 						</p>
 					</div>
-					<div className="text-right hidden md:flex flex-col items-end gap-1">
-						<StatusPill />
+					<div className="text-right hidden md:flex flex-col items-end gap-4">
+						<div className="flex items-center gap-4">
+							<CommandTerminal />
+							<StatusPill />
+						</div>
 						<GlitchCoordinates />
 					</div>
 				</header>
