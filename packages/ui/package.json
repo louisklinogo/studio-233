@@ -1,0 +1,36 @@
+{
+    "name": "@studio233/ui",
+    "type": "module",
+    "exports": {
+        ".": {
+            "default": "./src/index.ts"
+        },
+        "./*": {
+            "default": "./src/*.ts"
+        },
+        "./styles": {
+            "default": "./src/styles/globals.css"
+        }
+    },
+    "scripts": {},
+    "devDependencies": {
+        "@studio233/config": "workspace:*",
+        "@types/react": "^19.1.6",
+        "tailwindcss": "^3.4.1",
+        "postcss": "^8",
+        "autoprefixer": "^10"
+    },
+    "peerDependencies": {
+        "typescript": "^5",
+        "react": "catalog:",
+        "react-dom": "catalog:"
+    },
+    "dependencies": {
+        "@radix-ui/react-slot": "^1.2.4",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^2.6.0",
+        "lucide-react": "^0.554.0",
+        "framer-motion": "^12.23.3"
+    }
+}

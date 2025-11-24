@@ -1,0 +1,12 @@
+{
+    "name": "@studio233/config",
+    "type": "module",
+    "exports": {
+        "./typescript": "./tsconfig.json",
+        "./biome": "./biome.json"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.3.3",
+        "typescript": "^5"
+    }
+}

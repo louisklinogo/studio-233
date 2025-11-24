@@ -12,7 +12,7 @@
 .vercel
 build
 coverage
-node_modules
+node_modules/
 npm-debug.log*
 out/
 yarn-debug.log*

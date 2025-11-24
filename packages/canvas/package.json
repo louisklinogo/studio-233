@@ -1,0 +1,27 @@
+{
+    "name": "@studio233/canvas",
+    "type": "module",
+    "exports": {
+        ".": {
+            "default": "./src/index.ts"
+        },
+        "./*": {
+            "default": "./src/*.ts"
+        }
+    },
+    "scripts": {},
+    "devDependencies": {
+        "@studio233/config": "workspace:*",
+        "@types/react": "^19.1.6"
+    },
+    "peerDependencies": {
+        "typescript": "^5",
+        "react": "catalog:"
+    },
+    "dependencies": {
+        "konva": "^9.3.22",
+        "react-konva": "^19.0.8",
+        "react-konva-utils": "^1.1.1",
+        "zod": "catalog:"
+    }
+}

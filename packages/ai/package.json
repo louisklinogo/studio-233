@@ -1,0 +1,29 @@
+{
+    "name": "@studio233/ai",
+    "type": "module",
+    "exports": {
+        ".": {
+            "default": "./src/index.ts"
+        },
+        "./*": {
+            "default": "./src/*.ts"
+        }
+    },
+    "scripts": {},
+    "devDependencies": {
+        "@studio233/config": "workspace:*"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@mastra/core": "^0.24.5",
+        "@mastra/libsql": "^0.16.2",
+        "@mastra/loggers": "^0.10.19",
+        "@ai-sdk/google": "^2.0.38",
+        "@fal-ai/client": "^1.7.0",
+        "ai": "^5.0.97",
+        "sharp": "^0.33.5",
+        "zod": "catalog:"
+    }
+}
