@@ -40,6 +40,7 @@ interface InputQueueProps {
 	onFilesSelected: (files: File[]) => void;
 	onRemoveFile: (index: number) => void;
 	onRemoveFiles?: (indices: number[]) => Promise<void> | void;
+	onUpload: () => void;
 	isUploading: boolean;
 	uploadProgress: number;
 	fileUploadStatuses?: Map<string, FileUploadStatus>;
@@ -59,6 +60,7 @@ export function InputQueue({
 	onFilesSelected,
 	onRemoveFile,
 	onRemoveFiles,
+	onUpload,
 	isUploading,
 	uploadProgress,
 	fileUploadStatuses = new Map(),
@@ -189,10 +191,7 @@ export function InputQueue({
 					{/* <UploadButtonMechanical onClick={() => fileInputRef.current?.click()} disabled={isUploading} /> */}
 					{/* <UploadButtonDataSlot onClick={() => fileInputRef.current?.click()} disabled={isUploading} /> */}
 					{files.length > 0 && (
-						<UploadButtonMagnetic
-							onClick={() => fileInputRef.current?.click()}
-							disabled={isUploading}
-						/>
+						<UploadButtonMagnetic onClick={onUpload} disabled={isUploading} />
 					)}
 				</div>
 			</div>
@@ -369,11 +368,13 @@ export function InputQueue({
 												/>
 											</TableHead>
 											<TableHead className="w-16 py-3">Preview</TableHead>
-											<TableHead className="py-3">Filename</TableHead>
+											<TableHead className="max-w-[200px] py-3">
+												Filename
+											</TableHead>
 											<TableHead className="w-24 py-3">Size</TableHead>
 											<TableHead className="w-20 py-3">Type</TableHead>
 											<TableHead className="w-24 py-3">Status</TableHead>
-											<TableHead className="w-12 py-3"></TableHead>
+											{/* <TableHead className="w-12 py-3"></TableHead> */}
 										</TableRow>
 									</TableHeader>
 									<TableBody>
@@ -456,7 +457,7 @@ export function InputQueue({
 														}
 													})()}
 												</TableCell>
-												<TableCell className="w-12 py-3">
+												{/* <TableCell className="w-12 py-3">
 													<button
 														onClick={() => onRemoveFile(i)}
 														disabled={isUploading}
@@ -465,7 +466,7 @@ export function InputQueue({
 													>
 														<X className="w-4 h-4" />
 													</button>
-												</TableCell>
+												</TableCell> */}
 											</TableRow>
 										))}
 									</TableBody>

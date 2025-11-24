@@ -1,18 +1,19 @@
 "use client";
 
 import { upload } from "@vercel/blob/client";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { History, Loader2, Play, Settings } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { startBatchProcessing } from "@/app/actions/batch-actions";
+import { AssetLibrary } from "@/components/studio+/AssetLibrary";
 import { CompletionView } from "@/components/studio+/CompletionView";
 import { ConfigurationPanel } from "@/components/studio+/ConfigurationPanel";
 import { StudioChatPanel } from "@/components/studio+/chat/StudioChatPanel";
 import { EmptyStateInstructions } from "@/components/studio+/EmptyStateInstructions";
+import { FloatingToolbar } from "@/components/studio+/FloatingToolbar";
 import { InputQueue } from "@/components/studio+/InputQueue";
 import { LiveProgressView } from "@/components/studio+/LiveProgressView";
 import {
-	StudioContent,
 	StudioHeader,
 	StudioLayout,
 	StudioSidebar,
@@ -21,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { BatchJob } from "@/lib/batch-store";
 import { type BatchUpload, canvasStorage } from "@/lib/storage";
+import { cn } from "@/lib/utils";
+import type { UploadedAsset, ViewState } from "@/types/studio";
 
 interface FileUploadStatus {
 	progress: number;
@@ -31,6 +34,11 @@ type RightPaneView = "empty" | "configure" | "processing" | "complete";
 type WorkflowType = "mannequin" | "style" | "logo" | "custom";
 
 export default function StudioPage() {
+	// View state management
+	const [viewState, setViewState] = useState<ViewState>("staging");
+	const [uploadedAssets, setUploadedAssets] = useState<UploadedAsset[]>([]);
+
+	// Staging state (InputQueue)
 	const [files, setFiles] = useState<File[]>([]);
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [isUploading, setIsUploading] = useState(false);
@@ -48,6 +56,11 @@ export default function StudioPage() {
 	const [customPrompt, setCustomPrompt] = useState("");
 
 	const { toast } = useToast();
+	const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+	// Panel Visibility State
+	const [showLeftPanel, setShowLeftPanel] = useState(true);
+	const [showRightPanel, setShowRightPanel] = useState(true);
 
 	// Load saved files from IndexedDB on mount
 	useEffect(() => {
@@ -74,6 +87,54 @@ export default function StudioPage() {
 		};
 		loadSavedFiles();
 	}, []);
+
+	// Handle additional asset uploads from library
+	const handleAssetsUploaded = (newAssets: UploadedAsset[]) => {
+		setUploadedAssets((prev) => [...prev, ...newAssets]);
+		toast({
+			title: "Upload Complete",
+			description: `${newAssets.length} assets added to library`,
+		});
+	};
+
+	// Persist assets to localStorage
+	useEffect(() => {
+		if (uploadedAssets.length > 0) {
+			localStorage.setItem("studio_assets", JSON.stringify(uploadedAssets));
+			localStorage.setItem("studio_view_state", viewState);
+		}
+	}, [uploadedAssets, viewState]);
+
+	// Restore assets from localStorage on mount
+	useEffect(() => {
+		const savedAssets = localStorage.getItem("studio_assets");
+		const savedViewState = localStorage.getItem("studio_view_state");
+
+		if (savedAssets) {
+			try {
+				const parsed = JSON.parse(savedAssets);
+				setUploadedAssets(parsed);
+				if (savedViewState === "library") {
+					setViewState("library");
+				}
+			} catch (error) {
+				console.error("Failed to restore assets:", error);
+				localStorage.removeItem("studio_assets");
+			}
+		}
+	}, []);
+
+	// Dev-only: Clear library
+	const handleClearLibrary = () => {
+		localStorage.removeItem("studio_assets");
+		localStorage.removeItem("studio_view_state");
+		setUploadedAssets([]);
+		setViewState("staging");
+		toast({
+			title: "Library Cleared",
+			description: "All assets removed (dev mode)",
+		});
+	};
 
 	// Polling logic
 	useEffect(() => {
@@ -309,36 +370,42 @@ export default function StudioPage() {
 				throw new Error("No files were successfully uploaded.");
 			}
 
-			// 2. Trigger Batch Processing
-			setIsProcessing(true);
-			const result = await startBatchProcessing(uploadedUrls);
+			// Create UploadedAsset objects
+			const newAssets: UploadedAsset[] = uploadedUrls.map((url, index) => ({
+				id: `asset-${Date.now()}-${index}`,
+				blobUrl: url,
+				filename: files[index].name,
+				fileType: files[index].type,
+				fileSize: files[index].size,
+				uploadedAt: Date.now(),
+				status: "uploaded" as const,
+			}));
 
-			if (result.jobIds) {
-				setActiveJobIds(result.jobIds);
-				toast({
-					title: "Batch Started",
-					description: `${successCount} items queued. Monitoring progress...`,
-				});
-			}
+			// Transition to library state
+			setUploadedAssets(newAssets);
+			setViewState("library");
 
-			// Reset upload state but keep processing state
+			// Clear staging area
 			setFiles([]);
 			setUploadProgress(0);
 			setIsUploading(false);
-			setFileUploadStatuses(new Map()); // Clear file upload statuses
+			setFileUploadStatuses(new Map());
 
 			// Clear IndexedDB batch files
 			await canvasStorage.clearBatchFiles();
 
-			// Transition to processing view
-			setRightPaneView("processing");
+			// Show success toast
+			toast({
+				title: "Upload Complete",
+				description: `${newAssets.length} assets uploaded successfully`,
+			});
 		} catch (error: any) {
 			console.error(error);
 			setIsUploading(false);
 			setIsProcessing(false);
 			toast({
 				title: "Error",
-				description: error.message || "Failed to start batch.",
+				description: error.message || "Failed to upload files.",
 				variant: "destructive",
 				duration: 5000,
 			});
@@ -390,21 +457,117 @@ export default function StudioPage() {
 
 	return (
 		<StudioLayout>
-			<StudioSidebar>
-				<InputQueue
-					files={files}
-					onFilesSelected={handleFilesSelected}
-					onRemoveFile={handleRemoveFile}
-					onRemoveFiles={handleRemoveFiles}
-					isUploading={isUploading}
-					uploadProgress={uploadProgress}
-					fileUploadStatuses={fileUploadStatuses}
-				/>
-			</StudioSidebar>
+			<FloatingToolbar
+				showLeftPanel={showLeftPanel}
+				showRightPanel={showRightPanel}
+				onToggleLeftPanel={() => setShowLeftPanel(!showLeftPanel)}
+				onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
+				onUploadClick={() => fileInputRef.current?.click()}
+			/>
 
-			<div className="flex-1 flex flex-col min-w-0">
-				<StudioChatPanel filesCount={files.length} className="flex-1" />
+			<AnimatePresence mode="wait">
+				{showLeftPanel && (
+					<motion.div
+						initial={{ width: 0, opacity: 0 }}
+						animate={{ width: 500, opacity: 1 }}
+						exit={{ width: 0, opacity: 0 }}
+						transition={{ type: "spring", stiffness: 300, damping: 30 }}
+						className="h-full flex-shrink-0 overflow-hidden border-r bg-card z-10 ml-20 rounded-l-2xl border-l"
+					>
+						<div className="w-[500px] h-full">
+							<StudioSidebar className="w-full border-none shadow-none">
+								{/* Dev-only: Clear Library Button */}
+								{process.env.NODE_ENV === "development" &&
+									viewState === "library" && (
+										<div className="absolute top-2 right-2 z-50">
+											<button
+												onClick={handleClearLibrary}
+												className="px-2 py-1 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded border border-red-500/20 transition-colors"
+												title="Clear library (dev only)"
+											>
+												🗑️ Clear
+											</button>
+										</div>
+									)}
+
+								<AnimatePresence mode="wait">
+									{viewState === "staging" ? (
+										<motion.div
+											key="staging"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ duration: 0.3 }}
+											className="h-full"
+										>
+											<InputQueue
+												files={files}
+												onFilesSelected={handleFilesSelected}
+												onRemoveFile={handleRemoveFile}
+												onRemoveFiles={handleRemoveFiles}
+												onUpload={handleUpload}
+												isUploading={isUploading}
+												uploadProgress={uploadProgress}
+												fileUploadStatuses={fileUploadStatuses}
+											/>
+										</motion.div>
+									) : (
+										<motion.div
+											key="library"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ duration: 0.3 }}
+											className="h-full"
+										>
+											<AssetLibrary
+												assets={uploadedAssets}
+												onUploadMore={() => {
+													// Fallback - not used anymore since we handle it internally
+												}}
+												onAssetsUploaded={handleAssetsUploaded}
+											/>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</StudioSidebar>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+
+			<div className="flex-1 flex flex-col min-w-0 relative">
+				<StudioChatPanel
+					filesCount={
+						viewState === "staging" ? files.length : uploadedAssets.length
+					}
+					className={cn(
+						"absolute right-0 top-0 bottom-0 w-[400px] border-l bg-card shadow-xl transition-transform duration-300 ease-in-out z-20",
+						showRightPanel ? "translate-x-0" : "translate-x-full",
+					)}
+				/>
+
+				{/* Main Canvas Area (Placeholder for now) */}
+				<div className="flex-1 bg-muted/5 flex items-center justify-center">
+					<p className="text-muted-foreground">Select assets to begin</p>
+				</div>
 			</div>
+
+			{/* Global File Input */}
+			<input
+				type="file"
+				ref={fileInputRef}
+				className="hidden"
+				multiple
+				accept="image/png, image/jpeg, image/webp"
+				onChange={(e) => {
+					if (e.target.files && e.target.files.length > 0) {
+						handleFilesSelected(Array.from(e.target.files));
+						// Reset value to allow selecting same files again
+						e.target.value = "";
+					}
+				}}
+			/>
 		</StudioLayout>
 	);
 }

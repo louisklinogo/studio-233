@@ -27,6 +27,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 						"image/gif",
 						"image/webp",
 					],
+					addRandomSuffix: true,
 					tokenPayload: JSON.stringify({
 						// optional, sent to your server on upload completion
 						// you could pass a user id or other metadata here
