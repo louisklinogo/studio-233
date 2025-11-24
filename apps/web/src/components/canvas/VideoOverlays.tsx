@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { VideoControls } from "./VideoControls";
-import type { PlacedVideo } from "@/types/canvas";
+import type { PlacedVideo } from "@studio233/canvas";
 
 interface VideoOverlaysProps {
   videos: PlacedVideo[];

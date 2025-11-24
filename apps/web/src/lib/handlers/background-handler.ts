@@ -1,4 +1,4 @@
-import type { PlacedImage } from "@/types/canvas";
+import type { PlacedImage } from "@studio233/canvas";
 import { uploadImageDirect } from "./generation-handler";
 
 interface BackgroundHandlerDeps {

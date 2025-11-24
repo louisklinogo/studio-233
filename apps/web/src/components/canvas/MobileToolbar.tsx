@@ -22,7 +22,7 @@ import {
   MoveDown,
 } from "lucide-react";
 import { SpinnerIcon } from "@/components/icons";
-import type { PlacedImage, GenerationSettings } from "@/types/canvas";
+import type { PlacedImage, GenerationSettings } from "@studio233/canvas";
 
 interface MobileToolbarProps {
   selectedIds: string[];

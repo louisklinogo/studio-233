@@ -91,7 +91,7 @@ import type {
 	PlacedVideo,
 	SelectionBox,
 	VideoGenerationSettings,
-} from "@/types/canvas";
+} from "@studio233/canvas";
 import {
 	imageToCanvasElement,
 	videoToCanvasElement,

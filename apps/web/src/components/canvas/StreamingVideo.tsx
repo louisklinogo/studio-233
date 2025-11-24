@@ -1,7 +1,7 @@
 import React from "react";
 import { useSubscription } from "@trpc/tanstack-react-query";
 import { useTRPC } from "@/trpc/client";
-import type { ActiveVideoGeneration } from "@/types/canvas";
+import type { ActiveVideoGeneration } from "@studio233/canvas";
 
 interface StreamingVideoProps {
   videoId: string;

@@ -15,7 +15,7 @@ import {
 	getVideoModelById,
 	type VideoModelConfig,
 } from "@/lib/video-models";
-import { VideoGenerationSettings } from "@/types/canvas";
+import { VideoGenerationSettings } from "@studio233/canvas";
 import {
 	ModelPricingDisplay,
 	VideoModelOptions,

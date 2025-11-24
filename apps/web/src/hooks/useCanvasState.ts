@@ -4,8 +4,8 @@ import type {
 	PlacedImage,
 	PlacedVideo,
 	SelectionBox,
-} from "@/types/canvas";
-import type { CanvasElement } from "@/types/elements";
+} from "@studio233/canvas";
+import type { CanvasElement } from "@studio233/canvas";
 
 export function useCanvasState() {
 	const [images, setImages] = useState<PlacedImage[]>([]);

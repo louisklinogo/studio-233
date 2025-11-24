@@ -1,4 +1,4 @@
-import type { PlacedImage, PlacedVideo } from "@/types/canvas";
+import type { PlacedImage, PlacedVideo } from "@studio233/canvas";
 import type { CanvasElement } from "@/lib/storage";
 
 export interface Viewport {

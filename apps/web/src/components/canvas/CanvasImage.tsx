@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
 import { useStreamingImage } from "@/hooks/useStreamingImage";
-import type { PlacedImage } from "@/types/canvas";
+import type { PlacedImage } from "@studio233/canvas";
 import { throttle } from "@/utils/performance";
 
 interface CanvasImageProps {

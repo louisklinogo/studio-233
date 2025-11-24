@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import type { PlacedImage, PlacedVideo } from "@/types/canvas";
+import type { PlacedImage, PlacedVideo } from "@studio233/canvas";
 
 interface MiniMapProps {
 	images: PlacedImage[];

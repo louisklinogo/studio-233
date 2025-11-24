@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from "react-konva";
-import type { SelectionBox } from "@/types/canvas";
+import type { SelectionBox } from "@studio233/canvas";
 
 interface SelectionBoxProps {
   selectionBox: SelectionBox;

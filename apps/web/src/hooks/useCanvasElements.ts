@@ -5,7 +5,7 @@ import type {
 	ElementType,
 	ShapeElement,
 	TextElement,
-} from "@/types/elements";
+} from "@studio233/canvas";
 
 export function useCanvasElements() {
 	const [elements, setElements] = useState<CanvasElement[]>([]);

@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { PlacedImage } from "@/types/canvas";
+import type { PlacedImage } from "@studio233/canvas";
 
 export interface ViewportState {
 	x: number;

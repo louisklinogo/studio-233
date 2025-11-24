@@ -9,7 +9,7 @@ import {
   Repeat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PlacedVideo } from "@/types/canvas";
+import type { PlacedVideo } from "@studio233/canvas";
 
 interface VideoControlsProps {
   video: PlacedVideo;

@@ -25,7 +25,7 @@ import type {
 	DrawingElement,
 	ShapeElement,
 	TextElement,
-} from "@/types/elements";
+} from "@studio233/canvas";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { FontSelector } from "./FontSelector";
 import { FontSizeSelector } from "./FontSizeSelector";

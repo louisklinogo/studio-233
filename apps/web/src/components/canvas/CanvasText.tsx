@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Text, Transformer } from "react-konva";
 import { Html } from "react-konva-utils";
-import type { TextElement } from "@/types/elements";
+import type { TextElement } from "@studio233/canvas";
 
 interface CanvasTextProps {
 	element: TextElement;

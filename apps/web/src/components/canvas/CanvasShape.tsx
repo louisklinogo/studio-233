@@ -7,7 +7,7 @@ import {
 	RegularPolygon,
 	Transformer,
 } from "react-konva";
-import type { ShapeElement } from "@/types/elements";
+import type { ShapeElement } from "@studio233/canvas";
 
 interface CanvasShapeProps {
 	element: ShapeElement;

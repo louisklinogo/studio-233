@@ -31,7 +31,7 @@ import type {
 	GenerationSettings,
 	PlacedImage,
 	PlacedVideo,
-} from "@/types/canvas";
+} from "@studio233/canvas";
 import { exportVideoAsGif } from "@/utils/gif-export";
 import { checkOS } from "@/utils/os-utils";
 import { ShortcutBadge } from "./ShortcutBadge";

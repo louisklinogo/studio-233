@@ -1,5 +1,5 @@
 import React from "react";
-import type { PlacedImage } from "@/types/canvas";
+import type { PlacedImage } from "@studio233/canvas";
 import {
   canvasToScreen,
   calculateBoundingBox,

@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { VideoGenerationSettings } from "@/types/canvas";
+import { VideoGenerationSettings } from "@studio233/canvas";
 import { SpinnerIcon } from "@/components/icons";
 import {
   VideoModelSelector,

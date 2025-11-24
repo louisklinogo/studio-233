@@ -8,7 +8,7 @@ import {
     ActiveVideoGeneration,
     PlacedImage,
     PlacedVideo,
-} from "@/types/canvas";
+} from "@studio233/canvas";
 import { getVideoModelById } from "@/lib/video-models";
 import { convertImageToVideo } from "@/utils/video-utils";
 

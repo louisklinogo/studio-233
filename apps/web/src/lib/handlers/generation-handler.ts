@@ -3,7 +3,7 @@ import type {
 	ActiveGeneration,
 	GenerationSettings,
 	PlacedImage,
-} from "@/types/canvas";
+} from "@studio233/canvas";
 
 interface GenerationHandlerDeps {
 	images: PlacedImage[];

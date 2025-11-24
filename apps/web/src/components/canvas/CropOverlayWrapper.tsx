@@ -1,7 +1,7 @@
 import React from "react";
 import useImage from "use-image";
 import { CropOverlay } from "./CropOverlay";
-import type { PlacedImage } from "@/types/canvas";
+import type { PlacedImage } from "@studio233/canvas";
 
 interface CropOverlayWrapperProps {
   image: PlacedImage;

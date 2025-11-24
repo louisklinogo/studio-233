@@ -13,7 +13,7 @@ import {
 	Rect,
 	Transformer,
 } from "react-konva";
-import type { PlacedVideo } from "@/types/canvas";
+import type { PlacedVideo } from "@studio233/canvas";
 import { throttle } from "@/utils/performance";
 
 interface CanvasVideoProps {

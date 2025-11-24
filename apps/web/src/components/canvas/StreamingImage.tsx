@@ -1,7 +1,7 @@
 import React from "react";
 import { useSubscription } from "@trpc/tanstack-react-query";
 import { useTRPC } from "@/trpc/client";
-import type { ActiveGeneration } from "@/types/canvas";
+import type { ActiveGeneration } from "@studio233/canvas";
 
 interface StreamingImageProps {
   imageId: string;

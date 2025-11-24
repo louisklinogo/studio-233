@@ -30,7 +30,7 @@ import type {
 	GenerationSettings,
 	PlacedImage,
 	PlacedVideo,
-} from "@/types/canvas";
+} from "@studio233/canvas";
 
 import { ThemeSwitcher } from "./ThemeSwitcher";
 

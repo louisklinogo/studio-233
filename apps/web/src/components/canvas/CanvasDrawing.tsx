@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Line, Transformer } from "react-konva";
-import type { DrawingElement } from "@/types/elements";
+import type { DrawingElement } from "@studio233/canvas";
 
 interface CanvasDrawingProps {
 	element: DrawingElement;
