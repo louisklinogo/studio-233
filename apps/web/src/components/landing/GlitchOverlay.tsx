@@ -27,7 +27,7 @@ export const GlitchOverlay = () => {
 					{[0, 1, 2, 3, 4, 5].map((i) => (
 						<motion.div
 							key={i}
-							className="absolute inset-x-0 h-[16.666%] bg-[#FF4D00] border-y border-black"
+							className="absolute inset-x-0 h-[16.666%] bg-[#FF4D00] border-y border-black pointer-events-none"
 							style={{ top: `${i * 16.666}%` }}
 							exit={{
 								x: i % 2 === 0 ? -1000 : 1000,

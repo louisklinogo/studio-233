@@ -23,15 +23,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 	const [messages, setMessages] = useState<UIMessage[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
+	const createTextMessage = (role: UIMessage["role"], text: string): UIMessage => ({
+		id: nanoid(),
+		role,
+		parts: [{ type: "text", text }],
+	});
+
 	const handleSubmit = async (text: string, files: File[]) => {
 		if (!text.trim() && files.length === 0) return;
 
 		// Add user message
-		const userMessage: UIMessage = {
-			id: nanoid(),
-			role: "user",
-			content: text,
-		};
+		const userMessage = createTextMessage("user", text);
 
 		setMessages((prev) => [...prev, userMessage]);
 		setIsLoading(true);
@@ -41,11 +43,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
 		// Simulate response for now
 		setTimeout(() => {
-			const assistantMessage: UIMessage = {
-				id: nanoid(),
-				role: "assistant",
-				content: "I'm processing your request...",
-			};
+			const assistantMessage = createTextMessage(
+				"assistant",
+				"I'm processing your request...",
+			);
 			setMessages((prev) => [...prev, assistantMessage]);
 			setIsLoading(false);
 		}, 1000);

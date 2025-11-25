@@ -2,6 +2,7 @@ import { Check, MonitorIcon, MoonIcon, Plus, SunIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { SpinnerIcon } from "@/components/icons";
 import { ExtendVideoDialog } from "@/components/canvas/ExtendVideoDialog";
 import { ImageToVideoDialog } from "@/components/canvas/ImageToVideoDialog";
 import { RemoveVideoBackgroundDialog } from "@/components/canvas/VideoModelComponents";

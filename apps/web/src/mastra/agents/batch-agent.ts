@@ -1,7 +1,7 @@
 import { Agent } from "@mastra/core/agent";
-import { LibSQLStore } from "@mastra/libsql";
 import { Memory } from "@mastra/memory";
 import { getModelConfig } from "../model-config";
+import { mastraStore } from "../store";
 
 export const batchAgent = new Agent({
 	name: "Batch Processor",
@@ -23,8 +23,6 @@ export const batchAgent = new Agent({
   `,
 	model: getModelConfig("general").model, // Uses Gemini 3 Pro
 	memory: new Memory({
-		storage: new LibSQLStore({
-			url: "file:../mastra.db",
-		}),
+		storage: mastraStore,
 	}),
 });

@@ -1,8 +1,8 @@
 import { Agent } from "@mastra/core/agent";
-import { LibSQLStore } from "@mastra/libsql";
 import { Memory } from "@mastra/memory";
 import { getModelConfig } from "../model-config";
 import { backgroundRemovalTool, objectIsolationTool } from "../tools";
+import { mastraStore } from "../store";
 
 export const orchestratorAgent = new Agent({
 	name: "Studio Orchestrator",
@@ -31,8 +31,6 @@ export const orchestratorAgent = new Agent({
 		objectIsolationTool,
 	},
 	memory: new Memory({
-		storage: new LibSQLStore({
-			url: "file:../mastra.db",
-		}),
+		storage: mastraStore,
 	}),
 });

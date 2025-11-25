@@ -599,13 +599,13 @@ export default function OverlayPage() {
 
 		const loadDefaultImages = async () => {
 			const defaultImagePaths = [
-				"/hat.png",
-				"/man.png",
-				"/og-img-compress.png",
-				"/chad.png",
-				"/anime.png",
-				"/cat.jpg",
-				"/overlay.png",
+				"/samples/077b8fd4-b483-4032-b4bb-16e97300d431.jpg",
+				"/samples/5f23f01a-cf87-4d96-9aa3-08ecee07f68a.jpeg",
+				"/samples/8ea7a5cb-15b4-4419-be46-a629eb9684cc.jpeg",
+				"/samples/91383fb3-dc5e-482e-a316-618d0c5d71a3.jpeg",
+				"/samples/A Civil Collection _ Fall 2025 _ Lookbook _ Fear….jpeg",
+				"/samples/a5372041-e052-4295-a3cf-86d70d27bcac.jpeg",
+				"/samples/b29388d1-8c3d-4a91-b987-2aadaab26bc5.jpeg",
 			];
 			const loadedImages: PlacedImage[] = [];
 
@@ -931,10 +931,10 @@ export default function OverlayPage() {
 			selectedIds,
 			generationSettings: settings
 				? {
-						...generationSettings,
-						...settings,
-						loraUrl: generationSettings.loraUrl,
-					}
+					...generationSettings,
+					...settings,
+					loraUrl: generationSettings.loraUrl,
+				}
 				: generationSettings,
 			customApiKey,
 			canvasSize,
@@ -1890,7 +1890,6 @@ export default function OverlayPage() {
 							isGenerating={isGenerating}
 							generationSettings={generationSettings}
 							isolateInputValue={isolateInputValue}
-							isIsolating={isIsolating}
 							handleRun={handleRun}
 							handleGeminiEdit={handleGeminiEdit}
 							isGeminiEditing={isGeminiEditing}
@@ -1908,7 +1907,6 @@ export default function OverlayPage() {
 									setIsIsolateDialogOpen(true);
 								}
 							}}
-							handleIsolate={handleIsolate}
 							handleConvertToVideo={handleConvertToVideo}
 							handleVideoToVideo={handleVideoToVideo}
 							handleExtendVideo={handleExtendVideo}

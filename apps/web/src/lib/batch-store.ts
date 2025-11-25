@@ -1,13 +1,14 @@
-import { kv } from "./kv";
+import { prisma, BatchStatus, Prisma } from "@studio233/db";
 
 export type BatchJobStatus =
 	| "queued"
 	| "processing"
 	| "verifying"
 	| "completed"
-	| "failed";
+	| "failed"
+	| "canceled";
 
-export interface BatchJob {
+export interface BatchJob extends Record<string, unknown> {
 	id: string;
 	imageUrl: string;
 	status: BatchJobStatus;
@@ -18,55 +19,141 @@ export interface BatchJob {
 	updatedAt: number;
 }
 
-const BATCH_PREFIX = "studio:batch:";
+const statusToDb: Record<BatchJobStatus, BatchStatus> = {
+	queued: BatchStatus.QUEUED,
+	processing: BatchStatus.PROCESSING,
+	verifying: BatchStatus.VERIFYING,
+	completed: BatchStatus.COMPLETED,
+	failed: BatchStatus.FAILED,
+	canceled: BatchStatus.CANCELED,
+};
+
+const statusFromDb = (status: BatchStatus): BatchJobStatus =>
+	status.toLowerCase() as BatchJobStatus;
+
+type DbBatchJob = Prisma.BatchJobGetPayload<{
+	include: { items: { orderBy: { createdAt: "asc" }; take: 1 } };
+}>;
+
+const mapDbJob = (job: DbBatchJob): BatchJob => {
+	const primaryItem = job.items[0];
+	const config = (job.config as Prisma.JsonObject | null) ?? null;
+	const summary = (job.resultSummary as Prisma.JsonObject | null) ?? null;
+	const error = job.error as Prisma.JsonValue | null;
+	const imageUrlFromConfig = config && typeof config["imageUrl"] === "string"
+		? (config["imageUrl"] as string)
+		: "";
+	const resultUrlFromSummary =
+		summary && typeof summary["resultUrl"] === "string"
+			? (summary["resultUrl"] as string)
+			: undefined;
+	return {
+		id: job.id,
+		imageUrl: primaryItem?.inputUrl ?? imageUrlFromConfig,
+		status: statusFromDb(job.status),
+		resultUrl: primaryItem?.outputUrl ?? resultUrlFromSummary,
+		attempts: job.attempts,
+		error: typeof error === "string" ? error : (error as any)?.message,
+		createdAt: job.createdAt.getTime(),
+		updatedAt: job.updatedAt.getTime(),
+	};
+};
 
 export const batchStore = {
-	async createJob(id: string, imageUrl: string) {
-		const job: BatchJob = {
-			id,
-			imageUrl,
-			status: "queued",
-			attempts: 0,
-			createdAt: Date.now(),
-			updatedAt: Date.now(),
-		};
-		await kv.hset(`${BATCH_PREFIX}${id}`, job);
-		return job;
+	async createJob(id: string, imageUrl: string, opts?: {
+		userId?: string;
+		projectId?: string;
+	}): Promise<BatchJob> {
+		const job = await prisma.batchJob.create({
+			data: {
+				id,
+				status: BatchStatus.QUEUED,
+				config: { imageUrl },
+				userId: opts?.userId,
+				projectId: opts?.projectId,
+				items: {
+					create: {
+						inputUrl: imageUrl,
+						status: BatchStatus.QUEUED,
+					},
+				},
+			},
+			include: { items: { orderBy: { createdAt: "asc" }, take: 1 } },
+		});
+		return mapDbJob(job);
 	},
 
 	async updateStatus(
 		id: string,
 		status: BatchJobStatus,
 		updates: Partial<BatchJob> = {},
-	) {
-		const key = `${BATCH_PREFIX}${id}`;
-		const existing = await kv.hgetall<BatchJob>(key);
-
-		if (!existing) return null;
-
-		const updatedJob = {
-			...existing,
-			...updates,
-			status,
-			updatedAt: Date.now(),
+	): Promise<BatchJob | null> {
+		const data: Prisma.BatchJobUpdateInput = {
+			status: statusToDb[status],
+			attempts:
+				typeof updates.attempts === "number"
+					? updates.attempts
+					: undefined,
+			error:
+				updates.error !== undefined
+					? updates.error
+						? { message: updates.error }
+						: Prisma.JsonNull
+					: undefined,
+			resultSummary:
+				updates.resultUrl
+					? { resultUrl: updates.resultUrl }
+					: undefined,
 		};
 
-		await kv.hset(key, updatedJob);
-		return updatedJob;
+		try {
+			const updated = await prisma.batchJob.update({
+				where: { id },
+				data: {
+					...data,
+					items: updates.resultUrl
+						? {
+							updateMany: {
+								where: { jobId: id },
+								data: {
+									outputUrl: updates.resultUrl,
+									status: statusToDb[status],
+								},
+							},
+						}
+						: undefined,
+				},
+				include: { items: { orderBy: { createdAt: "asc" }, take: 1 } },
+			});
+
+			return mapDbJob(updated);
+		} catch (error) {
+			if (
+				error instanceof Prisma.PrismaClientKnownRequestError &&
+				error.code === "P2025"
+			) {
+				return null;
+			}
+			throw error;
+		}
+	},
+	async getJob(id: string): Promise<BatchJob | null> {
+		const job = await prisma.batchJob.findUnique({
+			where: { id },
+			include: { items: { orderBy: { createdAt: "asc" }, take: 1 } },
+		});
+		return job ? mapDbJob(job) : null;
 	},
 
-	async getJob(id: string) {
-		return await kv.hgetall<BatchJob>(`${BATCH_PREFIX}${id}`);
-	},
-
-	async getJobs(ids: string[]) {
+	async getJobs(ids: string[]): Promise<BatchJob[]> {
 		if (ids.length === 0) return [];
 
-		// Pipeline for performance
-		const pipeline = kv.pipeline();
-		ids.forEach((id) => pipeline.hgetall(`${BATCH_PREFIX}${id}`));
-		const results = await pipeline.exec<BatchJob[]>();
+		const jobs = await prisma.batchJob.findMany({
+			where: { id: { in: ids } },
+			orderBy: { createdAt: "asc" },
+			include: { items: { orderBy: { createdAt: "asc" }, take: 1 } },
+		});
 
-		return results;
+		return jobs.map(mapDbJob);
 	},
 };

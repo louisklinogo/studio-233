@@ -50,8 +50,8 @@ const removeBackgroundStep = createStep({
 		imageUrl: z.string().url(),
 		provider: z.enum(["fal", "gemini"]),
 	}),
-	execute: async ({ context }) => {
-		const { imageUrl, apiKey } = context;
+	execute: async ({ inputData }) => {
+		const { imageUrl, apiKey } = inputData;
 		const falKey = apiKey || process.env.FAL_KEY;
 
 		// Try FAL first
@@ -63,7 +63,7 @@ const removeBackgroundStep = createStep({
 				});
 
 				if (result.data?.image?.url) {
-					return { imageUrl: result.data.image.url, provider: "fal" };
+					return { imageUrl: result.data.image.url, provider: "fal" as const };
 				}
 			} catch (error) {
 				console.warn(
@@ -76,7 +76,7 @@ const removeBackgroundStep = createStep({
 		// Fallback to Gemini
 		try {
 			const geminiUrl = await removeBackgroundWithGemini(imageUrl);
-			return { imageUrl: geminiUrl, provider: "gemini" };
+			return { imageUrl: geminiUrl, provider: "gemini" as const };
 		} catch (error) {
 			throw new Error(
 				`Background removal failed: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -89,12 +89,13 @@ const verifyQualityStep = createStep({
 	id: "verify-quality",
 	inputSchema: z.object({
 		imageUrl: z.string().url(),
+		provider: z.enum(["fal", "gemini"]),
 	}),
 	outputSchema: z.object({
 		verified: z.boolean(),
 		qualityScore: z.number(),
 	}),
-	execute: async ({ context }) => {
+	execute: async ({ inputData }) => {
 		// Mock verification for now
 		// In production, this could call a vision model to check for artifacts
 		return { verified: true, qualityScore: 0.95 };
@@ -103,10 +104,11 @@ const verifyQualityStep = createStep({
 
 export const backgroundRemovalWorkflow = createWorkflow({
 	id: "background-removal",
-	triggerSchema: z.object({
+	inputSchema: z.object({
 		imageUrl: z.string().url(),
 		apiKey: z.string().optional(),
 	}),
+	outputSchema: verifyQualityStep.outputSchema,
 })
 	.then(removeBackgroundStep)
 	.then(verifyQualityStep)

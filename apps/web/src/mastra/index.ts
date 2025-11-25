@@ -1,5 +1,4 @@
 import { Mastra } from "@mastra/core/mastra";
-import { LibSQLStore } from "@mastra/libsql";
 import { PinoLogger } from "@mastra/loggers";
 import { batchAgent } from "./agents/batch-agent";
 import { creativeAgent } from "./agents/creative-agent";
@@ -13,6 +12,7 @@ import {
 import { backgroundRemovalWorkflow } from "./workflows/background-removal";
 import { objectIsolationWorkflow } from "./workflows/object-isolation";
 import { weatherWorkflow } from "./workflows/weather-workflow";
+import { mastraStore } from "./store";
 
 export const mastra = new Mastra({
 	workflows: {
@@ -26,10 +26,7 @@ export const mastra = new Mastra({
 		completenessScorer,
 		translationScorer,
 	},
-	storage: new LibSQLStore({
-		// stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
-		url: ":memory:",
-	}),
+	storage: mastraStore,
 	logger: new PinoLogger({
 		name: "Mastra",
 		level: "info",

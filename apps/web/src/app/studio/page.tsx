@@ -26,6 +26,15 @@ import type { BatchJob } from "@/lib/batch-store";
 import { type BatchUpload, canvasStorage } from "@/lib/storage";
 import type { UploadedAsset, ViewState } from "@/types/studio";
 
+const TERMINAL_BATCH_STATES: BatchJob["status"][] = [
+	"completed",
+	"failed",
+	"canceled",
+];
+
+const isTerminalStatus = (status: BatchJob["status"]) =>
+	TERMINAL_BATCH_STATES.includes(status);
+
 interface FileUploadStatus {
 	progress: number;
 	status: "idle" | "uploading" | "uploaded" | "error";
@@ -151,9 +160,9 @@ export default function StudioPage() {
 					setJobStatuses(data.jobs);
 
 					// Check if all completed
-					const allDone = data.jobs.every(
-						(j: BatchJob) => j.status === "completed" || j.status === "failed",
-					);
+			const allDone = data.jobs.every((j: BatchJob) =>
+				isTerminalStatus(j.status),
+			);
 					if (allDone && isProcessing) {
 						setIsProcessing(false);
 						setRightPaneView("complete");
@@ -414,6 +423,13 @@ export default function StudioPage() {
 	};
 
 	// Calculate pipeline steps
+	const anyVerifying = jobStatuses.some((j) => j.status === "verifying");
+	const processActive =
+		isProcessing || jobStatuses.some((j) => j.status === "processing");
+	const allTerminal =
+		jobStatuses.length > 0 && jobStatuses.every((j) => isTerminalStatus(j.status));
+	const hasTerminal = jobStatuses.some((j) => isTerminalStatus(j.status));
+
 	const steps = [
 		{
 			id: "upload",
@@ -427,32 +443,27 @@ export default function StudioPage() {
 		{
 			id: "process",
 			label: "Processing",
-			status: isProcessing
+			status: processActive
 				? "processing"
-				: jobStatuses.some((j) => j.status === "completed")
+				: hasTerminal
 					? "completed"
-					: "pending",
+					: jobStatuses.length > 0
+						? "processing"
+						: "pending",
 		},
 		{
 			id: "verify",
 			label: "Verification",
-			status: jobStatuses.some((j) => j.status === "verifying")
+			status: anyVerifying
 				? "processing"
-				: jobStatuses.every((j) => j.status === "completed") &&
-					jobStatuses.length > 0
+				: allTerminal
 					? "completed"
 					: "pending",
 		},
 		{
 			id: "complete",
 			label: "Done",
-			status:
-				jobStatuses.length > 0 &&
-					jobStatuses.every(
-						(j) => j.status === "completed" || j.status === "failed",
-					)
-					? "completed"
-					: "pending",
+			status: allTerminal ? "completed" : "pending",
 		},
 	] as const;
 

@@ -1,9 +1,9 @@
 import { Agent } from "@mastra/core/agent";
-import { LibSQLStore } from "@mastra/libsql";
 import { Memory } from "@mastra/memory";
 import { getModelConfig } from "../model-config";
 import { scorers } from "../scorers/weather-scorer";
 import { weatherTool } from "../tools/weather-tool";
+import { mastraStore } from "../store";
 
 export const weatherAgent = new Agent({
 	name: "Weather Agent",
@@ -47,8 +47,6 @@ export const weatherAgent = new Agent({
 		},
 	},
 	memory: new Memory({
-		storage: new LibSQLStore({
-			url: "file:../mastra.db", // path is relative to the .mastra/output directory
-		}),
+		storage: mastraStore,
 	}),
 });

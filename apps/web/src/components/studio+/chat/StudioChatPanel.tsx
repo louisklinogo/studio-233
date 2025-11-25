@@ -1,6 +1,5 @@
 import { useChat } from "@ai-sdk/react";
-import { UIMessage } from "ai";
-import { nanoid } from "nanoid";
+import { DefaultChatTransport, UIMessage } from "ai";
 import React from "react";
 import { ChatInput } from "@/components/studio/chat/ChatInput";
 import { ChatList } from "@/components/studio/chat/ChatList";
@@ -16,10 +15,14 @@ export const StudioChatPanel: React.FC<StudioChatPanelProps> = ({
 	filesCount,
 	className,
 }) => {
-	const { messages, append, status, setMessages } = useChat({
-		api: "/api/chat", // Placeholder endpoint
+	const transport = React.useMemo(
+		() => new DefaultChatTransport({ api: "/api/chat" }),
+		[],
+	);
+	const { messages, sendMessage, status } = useChat({
 		id: "studio-chat",
-		initialMessages: [],
+		messages: [],
+		transport,
 	});
 
 	// Map AI SDK messages to UIMessage format expected by ChatList
@@ -27,24 +30,14 @@ export const StudioChatPanel: React.FC<StudioChatPanelProps> = ({
 	// The 'ai' package's Message type is very compatible with UIMessage.
 	const uiMessages = messages as unknown as UIMessage[];
 
-	const handleSubmit = (text: string, files: File[]) => {
+	const handleSubmit = (text: string, _files: File[]) => {
 		if (text.trim()) {
-			append({
-				id: nanoid(),
-				role: "user",
-				content: text,
-				// In a real implementation, we'd handle file attachments here
-				// experimental_attachments: files
-			});
+			void sendMessage({ text });
 		}
 	};
 
 	const handleSuggestionSelect = (suggestion: string) => {
-		append({
-			id: nanoid(),
-			role: "user",
-			content: suggestion,
-		});
+		void sendMessage({ text: suggestion });
 	};
 
 	return (

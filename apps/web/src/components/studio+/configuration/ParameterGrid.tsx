@@ -160,9 +160,9 @@ export function ParameterGrid({
 									<div className="text-muted-foreground text-xs font-mono">
 										{param.name}
 									</div>
-									<div className="text-foreground text-xs font-mono">
-										{String(param.default || "undefined")}
-									</div>
+				<div className="text-foreground text-xs font-mono">
+					{String(("default" in param ? param.default : undefined) ?? "undefined")}
+				</div>
 								</div>
 							);
 						})}

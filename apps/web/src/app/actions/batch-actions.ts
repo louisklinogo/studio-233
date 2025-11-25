@@ -1,34 +1,60 @@
 "use server";
 
+import { headers } from "next/headers";
 import { nanoid } from "nanoid";
+import { auth, usageService } from "@studio233/auth";
 import { inngest } from "@/inngest/client";
 import { batchStore } from "@/lib/batch-store";
 
 export async function startBatchProcessing(imageUrls: string[]) {
-	const jobs = [];
+	const jobs: string[] = [];
+	const requestHeaders = await headers();
+	const headerRecord = Object.fromEntries(requestHeaders.entries());
+	const session = await auth.api.getSession({ headers: headerRecord });
+	const userId = session?.user.id;
+	if (!userId) {
+		throw new Error("Authentication required to start batch jobs.");
+	}
 
-	// Create jobs in KV and prepare events
-	const events = await Promise.all(
-		imageUrls.map(async (url) => {
-			const jobId = nanoid();
+	const reference = `batch:${Date.now()}`;
+	const debitedAmount = await usageService.consumeForBatch(userId, imageUrls.length, {
+		reference,
+		description: `Batch run with ${imageUrls.length} images`,
+		metadata: { kind: "batch" },
+	});
 
-			// Initialize job in KV
-			await batchStore.createJob(jobId, url);
-			jobs.push(jobId);
+	// Create jobs in Postgres and prepare events
+	try {
+		const events = await Promise.all(
+			imageUrls.map(async (url) => {
+				const jobId = nanoid();
 
-			return {
-				name: "studio/process-fashion-item",
-				data: {
-					jobId, // Pass ID to Inngest function
-					imageUrl: url,
-					referenceImage: "default-mannequin",
-					timestamp: Date.now(),
-				},
-			};
-		}),
-	);
+				await batchStore.createJob(jobId, url, {
+					userId,
+				});
+				jobs.push(jobId);
 
-	await inngest.send(events);
+				return {
+					name: "studio/process-fashion-item",
+					data: {
+						jobId,
+						imageUrl: url,
+						referenceImage: "default-mannequin",
+						timestamp: Date.now(),
+					},
+				};
+			}),
+		);
 
-	return { success: true, count: events.length, jobIds: jobs };
+		await inngest.send(events);
+
+		return { success: true, count: events.length, jobIds: jobs };
+	} catch (error) {
+		await usageService.refund(userId, debitedAmount, {
+			reference: `${reference}:refund`,
+			description: "Batch run canceled",
+			metadata: { jobsAttempted: imageUrls.length },
+		});
+		throw error;
+	}
 }

@@ -105,17 +105,17 @@ export const ManifestoGSAP = () => {
 					Studio+233 is not just a tool. It is a{" "}
 					<ScrambleText
 						text="production environment"
-						className="kinetic-highlight transition-colors duration-300"
+						className="kinetic-highlight transition-colors duration-300 mr-2"
 					/>{" "}
 					for the next generation of creators. Combine the freedom of an{" "}
 					<ScrambleText
 						text="infinite canvas"
-						className="kinetic-highlight transition-colors duration-300"
+						className="kinetic-highlight transition-colors duration-300 mr-2"
 					/>{" "}
 					with the power of{" "}
 					<ScrambleText
 						text="autonomous AI agents"
-						className="kinetic-highlight transition-colors duration-300"
+						className="kinetic-highlight transition-colors duration-300 mr-2"
 					/>{" "}
 					to scale your workflow from one to one thousand.
 				</p>

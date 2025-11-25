@@ -3,8 +3,25 @@ import { Download, ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { BatchJob } from "@/lib/batch-store";
+
+const STATUS_LABELS: Record<BatchJob["status"], string> = {
+	canceled: "Canceled",
+	completed: "Completed",
+	failed: "Failed",
+	processing: "Processing",
+	queued: "Queued",
+	verifying: "Verifying",
+};
+
+const STATUS_VARIANTS: Record<BatchJob["status"], "default" | "secondary" | "destructive" | "outline"> = {
+	canceled: "secondary",
+	completed: "default",
+	failed: "destructive",
+	processing: "secondary",
+	queued: "outline",
+	verifying: "secondary",
+};
 
 interface ResultsGridProps {
 	jobs: BatchJob[];
@@ -44,16 +61,27 @@ export function ResultsGrid({ jobs, isProcessing }: ResultsGridProps) {
 								className="w-full h-full object-cover"
 							/>
 						) : (
-							<div className="w-full h-full flex items-center justify-center bg-muted/50">
+							<div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-muted/50 px-4 text-center">
 								{job.status === "failed" ? (
-									<span className="text-destructive text-sm font-medium">
-										Generation Failed
+									<>
+										<span className="text-destructive text-sm font-semibold">
+											Generation Failed
+										</span>
+										{job.error && (
+											<span className="text-xs text-muted-foreground">
+												{job.error}
+											</span>
+										)}
+									</>
+								) : job.status === "canceled" ? (
+									<span className="text-amber-500 text-sm font-semibold">
+										Job Canceled
 									</span>
 								) : (
 									<div className="flex flex-col items-center gap-2">
 										<div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
 										<span className="text-xs text-muted-foreground">
-											Processing...
+											{job.status === "verifying" ? "Verifying output..." : "Processing..."}
 										</span>
 									</div>
 								)}
@@ -71,20 +99,22 @@ export function ResultsGrid({ jobs, isProcessing }: ResultsGridProps) {
 
 						{/* Status Badge */}
 						<div className="absolute top-2 right-2">
-							<Badge
-								variant={job.status === "completed" ? "default" : "secondary"}
-								className={
-									job.status === "completed"
-										? "bg-green-500/90 hover:bg-green-500"
+						<Badge
+							variant={STATUS_VARIANTS[job.status]}
+							className={
+								job.status === "completed"
+									? "bg-green-500/90 hover:bg-green-500"
+									: job.status === "failed"
+										? "bg-destructive/80 text-destructive-foreground"
 										: ""
-								}
-							>
-								{job.status}
-							</Badge>
+							}
+						>
+							{STATUS_LABELS[job.status]}
+						</Badge>
 						</div>
 
 						{/* Actions Overlay */}
-						{job.status === "completed" && (
+					{job.status === "completed" && job.resultUrl && (
 							<div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between">
 								<Button
 									size="icon"
@@ -109,7 +139,7 @@ export function ResultsGrid({ jobs, isProcessing }: ResultsGridProps) {
 
 					<div className="p-3 border-t bg-card/50">
 						<div className="flex items-center justify-between text-xs text-muted-foreground">
-							<span className="font-mono truncate max-w-[100px]">
+						<span className="font-mono truncate max-w-[100px]">
 								{job.id.slice(0, 8)}...
 							</span>
 							<span>{job.attempts} attempts</span>

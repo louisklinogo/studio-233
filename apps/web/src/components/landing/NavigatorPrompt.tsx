@@ -34,7 +34,15 @@ export const NavigatorPrompt = () => {
 	const initRef = useRef<HTMLDivElement>(null);
 	const modeRef = useRef<HTMLDivElement>(null);
 	const promptRef = useRef<HTMLDivElement>(null);
-	const [progress, setProgress] = useState(0);
+	const [loadedItems, setLoadedItems] = useState<number>(0);
+	const [isComplete, setIsComplete] = useState(false);
+	const hasStartedRef = useRef(false);
+
+	const BOOT_ITEMS = [
+		"INFINITE_CANVAS.SYS",
+		"BATCH_STUDIO.SYS",
+		"AI_AGENTS.SYS",
+	];
 
 	const handleSelectMode = () => {
 		playConfirmSound();
@@ -48,75 +56,92 @@ export const NavigatorPrompt = () => {
 		}, 300);
 	};
 
+	// Boot sequence logic
 	useLayoutEffect(() => {
+		if (hasStartedRef.current) return;
+
+		const startBootSequence = () => {
+			if (hasStartedRef.current) return;
+			hasStartedRef.current = true;
+
+			// Sequence each item with delays
+			BOOT_ITEMS.forEach((_, index) => {
+				setTimeout(() => {
+					setLoadedItems(index + 1);
+					playConfirmSound(); // Beep for each item
+				}, (index + 1) * 1200); // 1.2s per item = 3.6s total
+			});
+
+			// Mark complete and transition to SELECT MODE
+			setTimeout(() => {
+				setIsComplete(true);
+			}, BOOT_ITEMS.length * 1200 + 800); // +800ms buffer
+		};
+
 		const ctx = gsap.context(() => {
+			// Fade in boot screen when entering viewport
 			gsap.fromTo(
 				initRef.current,
 				{ opacity: 0 },
 				{
 					opacity: 1,
+					duration: 0.5,
 					scrollTrigger: {
 						trigger: containerRef.current,
 						start: "top 75%",
-						end: "top 60%",
-						scrub: 1,
+						onEnter: startBootSequence, // Trigger boot on viewport entry
+						once: true,
 					},
 				},
 			);
 
-			gsap.to(
-				{},
-				{
-					scrollTrigger: {
-						trigger: containerRef.current,
-						start: "top 75%",
-						end: "top 50%",
-						scrub: 1,
-						onUpdate: (self) => setProgress(Math.floor(self.progress * 100)),
-					},
-				},
-			);
-
+			// Fade out boot screen when complete
 			gsap.to(initRef.current, {
 				opacity: 0,
+				duration: 0.5,
+				delay: BOOT_ITEMS.length * 1.2 + 0.8,
 				scrollTrigger: {
 					trigger: containerRef.current,
-					start: "top 50%",
-					end: "top 45%",
-					scrub: 1,
+					start: "top 75%",
+					once: true,
 				},
 			});
 
+			// Fade in SELECT MODE
 			gsap.fromTo(
 				modeRef.current,
-				{ opacity: 0, x: -5 },
+				{ opacity: 0, scale: 0.95 },
 				{
 					opacity: 1,
-					x: 0,
+					scale: 1,
+					duration: 0.8,
+					delay: BOOT_ITEMS.length * 1.2 + 1.3,
 					scrollTrigger: {
 						trigger: containerRef.current,
-						start: "top 45%",
-						end: "top 40%",
-						scrub: 1,
+						start: "top 75%",
+						once: true,
 					},
 				},
 			);
 
+			// Fade in prompt
 			gsap.fromTo(
 				promptRef.current,
 				{ opacity: 0, y: 10 },
 				{
 					opacity: 0.6,
 					y: 0,
+					duration: 0.5,
+					delay: BOOT_ITEMS.length * 1.2 + 1.8,
 					scrollTrigger: {
 						trigger: containerRef.current,
-						start: "top 40%",
-						end: "top 35%",
-						scrub: 1,
+						start: "top 75%",
+						once: true,
 					},
 				},
 			);
 
+			// Fade out when scrolling past
 			gsap.to([modeRef.current, promptRef.current], {
 				opacity: 0,
 				filter: "blur(10px)",
@@ -149,18 +174,44 @@ export const NavigatorPrompt = () => {
 				ref={initRef}
 				className="absolute inset-0 flex flex-col items-center justify-center opacity-0"
 			>
-				<div className="font-mono text-xs md:text-sm uppercase tracking-widest text-[#FF4D00] mb-4">
-					INITIALIZING...
+				<div className="font-mono text-xs md:text-sm uppercase tracking-widest text-[#FF4D00] mb-6">
+					SCANNING AVAILABLE MODES...
 				</div>
-				<div className="w-64 h-1 bg-neutral-800 border border-neutral-700">
+				<div className="flex flex-col gap-2 font-mono text-xs md:text-sm">
+					{BOOT_ITEMS.map((item, index) => (
+						<motion.div
+							key={item}
+							initial={{ opacity: 0, x: -10 }}
+							animate={{
+								opacity: loadedItems > index ? 1 : 0.3,
+								x: loadedItems > index ? 0 : -10,
+							}}
+							transition={{ duration: 0.3 }}
+							className="flex items-center gap-2"
+						>
+							<span className="text-neutral-500">&gt;</span>
+							<span className="text-neutral-400 flex-1">{item}</span>
+							<span className="text-neutral-600">
+								{"...........".substring(0, Math.max(1, 20 - item.length))}
+							</span>
+							{loadedItems > index ? (
+								<span className="text-green-500 font-bold">OK</span>
+							) : (
+								<span className="text-neutral-700">--</span>
+							)}
+						</motion.div>
+					))}
+				</div>
+				{isComplete && (
 					<motion.div
-						className="h-full bg-[#FF4D00]"
-						style={{ width: `${progress}%` }}
-					/>
-				</div>
-				<div className="font-mono text-xs text-neutral-600 mt-2">
-					{progress}%
-				</div>
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.3 }}
+						className="mt-6 font-mono text-xs text-neutral-500 uppercase tracking-widest"
+					>
+						&gt; AWAITING_USER_SELECTION
+					</motion.div>
+				)}
 			</div>
 
 			<div

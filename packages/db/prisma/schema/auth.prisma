@@ -1,18 +1,49 @@
 // Authentication models for Better Auth
 
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum CreditEntryType {
+  GRANT
+  CONSUME
+  ADJUSTMENT
+  REFUND
+}
+
 model User {
-  id            String    @id
+  id            String          @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean         @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   
   // Relations
   sessions      Session[]
   accounts      Account[]
   projects      Project[]
+  settings      UserSetting?
+  apiKeys       ApiKey[]
+  subscriptions Subscription[]
+  creditEntries CreditLedger[]
+  canvasSnapshots CanvasSnapshot[]
+  generationRuns GenerationRun[]
+  batchJobs     BatchJob[]
+  workflowRuns  WorkflowRun[]
+  threads       AgentThread[]
+  usageSamples  UsageSample[]
+  auditLogs     AuditLog[]
 
   @@unique([email])
   @@map("user")
@@ -64,4 +95,74 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model UserSetting {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timezone        String? @default("UTC")
+  locale          String? @default("en")
+  theme           String? @default("system")
+  notificationOpt Json?   @db.Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_setting")
+}
+
+model ApiKey {
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  tokenHash    String
+  status       ApiKeyStatus @default(ACTIVE)
+  scopes       String[]     @default([])
+  lastUsedAt   DateTime?
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([userId, status])
+  @@unique([tokenHash])
+  @@map("api_key")
+}
+
+model Subscription {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        String             @default("polar")
+  externalId      String
+  productId       String
+  planSlug        String?
+  status          SubscriptionStatus @default(TRIALING)
+  currentPeriodEnd DateTime?
+  cancelAt        DateTime?
+  canceledAt      DateTime?
+  meta            Json?              @db.Json
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([userId, status])
+  @@unique([provider, externalId])
+  @@map("subscription")
+}
+
+model CreditLedger {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryType     CreditEntryType
+  amount        Int
+  balanceAfter  Int
+  reference     String?
+  description   String?
+  metadata      Json?           @db.Json
+  createdAt     DateTime        @default(now())
+
+  @@index([userId, createdAt])
+  @@map("credit_ledger")
 }

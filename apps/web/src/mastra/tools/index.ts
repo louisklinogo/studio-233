@@ -14,13 +14,26 @@ export const backgroundRemovalTool = createTool({
 		provider: z.enum(["fal", "gemini"]),
 	}),
 	execute: async ({ context }) => {
-		const result = await backgroundRemovalWorkflow.execute({
-			triggerData: { imageUrl: context.imageUrl },
+		const run = await backgroundRemovalWorkflow.createRunAsync();
+		const result = await run.start({
+			inputData: { imageUrl: context.imageUrl },
 		});
-		return (
-			result.results["verify-quality"]?.payload ||
-			result.results["remove-background"]?.payload
-		);
+
+		if (result.status !== "success") {
+			throw new Error("Background removal workflow failed");
+		}
+
+		const verifyStep = result.steps["verify-quality"];
+		if (verifyStep?.status === "success") {
+			return verifyStep.output;
+		}
+
+		const removalStep = result.steps["remove-background"];
+		if (removalStep?.status === "success") {
+			return removalStep.output;
+		}
+
+		throw new Error("Background removal workflow produced no output");
 	},
 });
 
@@ -40,12 +53,23 @@ export const objectIsolationTool = createTool({
 		maskUrl: z.string().url(),
 	}),
 	execute: async ({ context }) => {
-		const result = await objectIsolationWorkflow.execute({
-			triggerData: {
+		const run = await objectIsolationWorkflow.createRunAsync();
+		const result = await run.start({
+			inputData: {
 				imageUrl: context.imageUrl,
 				prompt: context.prompt,
 			},
 		});
-		return result.results["isolate-object"]?.payload;
+
+		if (result.status !== "success") {
+			throw new Error("Object isolation workflow failed");
+		}
+
+		const isolationStep = result.steps["isolate-object"];
+		if (isolationStep?.status === "success") {
+			return isolationStep.output;
+		}
+
+		throw new Error("Object isolation workflow produced no output");
 	},
 });

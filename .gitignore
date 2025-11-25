@@ -20,3 +20,4 @@ yarn-error.log*/
 .archived/
 vectr/
 .env*.local
+durable-llm-streams/

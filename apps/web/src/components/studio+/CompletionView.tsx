@@ -2,23 +2,30 @@
 
 import { motion } from "framer-motion";
 import {
-    CheckCircle,
-    Download,
-    RefreshCw,
-    Plus,
-    Check,
-    X,
+	CheckCircle,
+	Download,
+	RefreshCw,
+	Plus,
+	Check,
+	X,
+	Pause,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface JobStatus {
-    id: string;
-    originalUrl: string;
-    resultUrl?: string;
-    status: "idle" | "uploading" | "processing" | "completed" | "failed";
-    error?: string;
+	id: string;
+	originalUrl: string;
+	resultUrl?: string;
+	status:
+		| "idle"
+		| "uploading"
+		| "processing"
+		| "completed"
+		| "failed"
+		| "canceled";
+	error?: string;
 }
 
 interface CompletionViewProps {
@@ -37,8 +44,9 @@ export function CompletionView({
     onImageClick,
 }: CompletionViewProps) {
     const totalCount = jobs.length;
-    const successCount = jobs.filter((j) => j.status === "completed").length;
-    const failedCount = jobs.filter((j) => j.status === "failed").length;
+	const successCount = jobs.filter((j) => j.status === "completed").length;
+	const failedCount = jobs.filter((j) => j.status === "failed").length;
+	const canceledCount = jobs.filter((j) => j.status === "canceled").length;
 
     return (
         <div className="flex flex-col h-full">
@@ -65,9 +73,14 @@ export function CompletionView({
 
                     <div>
                         <h2 className="text-2xl font-bold mb-1">Batch Complete!</h2>
-                        <p className="text-muted-foreground">
-                            Successfully processed {successCount}/{totalCount} images
-                        </p>
+					<p className="text-muted-foreground">
+						Successfully processed {successCount}/{totalCount} images
+						{canceledCount > 0 && (
+							<span className="ml-1 text-amber-500">
+								({canceledCount} canceled)
+							</span>
+						)}
+					</p>
                     </div>
                 </div>
             </motion.div>
@@ -102,14 +115,22 @@ export function CompletionView({
                                         </Badge>
                                     </div>
                                 )}
-                                {job.status === "failed" && (
-                                    <div className="flex flex-col items-center gap-2">
-                                        <X className="w-8 h-8 text-red-500" />
-                                        <Badge variant="destructive" className="text-xs">
-                                            Failed
-                                        </Badge>
-                                    </div>
-                                )}
+						{job.status === "failed" && (
+							<div className="flex flex-col items-center gap-2">
+								<X className="w-8 h-8 text-red-500" />
+								<Badge variant="destructive" className="text-xs">
+									Failed
+								</Badge>
+							</div>
+						)}
+						{job.status === "canceled" && (
+							<div className="flex flex-col items-center gap-2">
+								<Pause className="w-8 h-8 text-amber-400" />
+								<Badge variant="secondary" className="text-xs">
+									Canceled
+								</Badge>
+							</div>
+						)}
                             </div>
                         </motion.div>
                     ))}
@@ -129,7 +150,7 @@ export function CompletionView({
                     Download All ({successCount})
                 </Button>
 
-                {failedCount > 0 && (
+			{failedCount > 0 && (
                     <Button
                         size="lg"
                         variant="outline"
@@ -140,6 +161,17 @@ export function CompletionView({
                         Retry Failed ({failedCount})
                     </Button>
                 )}
+			{canceledCount > 0 && (
+				<Button
+					size="lg"
+					variant="outline"
+					onClick={onRetryFailed}
+					className="flex-1"
+				>
+					<RefreshCw className="w-4 h-4 mr-2" />
+					Restart Canceled ({canceledCount})
+				</Button>
+			)}
 
                 <Button
                     size="lg"

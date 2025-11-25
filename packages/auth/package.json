@@ -19,7 +19,7 @@
     "dependencies": {
         "better-auth": "catalog:",
         "@polar-sh/better-auth": "catalog:",
-        "@polar-sh/sdk": "^0.34.16",
+        "@polar-sh/sdk": "^0.41.4",
         "dotenv": "catalog:",
         "zod": "catalog:",
         "@studio233/db": "workspace:*"

@@ -1,4 +1,4 @@
-import type { UIMessage } from "ai";
+import type { FileUIPart, UIMessage } from "ai";
 import React from "react";
 import {
 	Conversation,
@@ -10,6 +10,7 @@ import {
 	MessageAttachment,
 	MessageAttachments,
 	MessageContent,
+	MessageResponse,
 } from "@/components/ai-elements/message";
 import { Logo } from "@/components/icons";
 
@@ -18,6 +19,9 @@ interface ChatListProps {
 	className?: string;
 	emptyState?: React.ReactNode;
 }
+
+const isFilePart = (part: UIMessage["parts"][number]): part is FileUIPart =>
+	part.type === "file";
 
 export const ChatList: React.FC<ChatListProps> = ({
 	messages,
@@ -35,31 +39,39 @@ export const ChatList: React.FC<ChatListProps> = ({
 								description="I can help you generate images, edit videos, and more. Just ask!"
 							/>
 						)
-					: messages.map((message) => (
+					: messages.map((message) => {
+						const attachmentParts = message.parts?.filter(isFilePart) ?? [];
+
+						return (
 							<Message
 								key={message.id}
 								from={message.role === "user" ? "user" : "assistant"}
 							>
 								<MessageContent>
-									{message.content}
-									{message.parts && message.parts.length > 0 && (
+									{message.parts?.map((part, index) => {
+										if (part.type === "text") {
+											return (
+												<MessageResponse key={`${message.id}-text-${index}`}>
+													{part.text}
+												</MessageResponse>
+											);
+										}
+										return null;
+									})}
+									{attachmentParts.length > 0 && (
 										<MessageAttachments>
-											{message.parts
-												.filter(
-													(part) =>
-														part.type === "file" || part.type === "image",
-												)
-												.map((part, index) => (
-													<MessageAttachment
-														key={index}
-														data={part as any} // Type assertion needed as UIMessage parts might differ slightly from FileUIPart
-													/>
-												))}
+											{attachmentParts.map((part, index) => (
+												<MessageAttachment
+													key={`${message.id}-attachment-${index}`}
+													data={part}
+												/>
+											))}
 										</MessageAttachments>
 									)}
 								</MessageContent>
 							</Message>
-						))}
+						);
+					})}
 			</ConversationContent>
 		</Conversation>
 	);

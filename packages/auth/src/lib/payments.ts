@@ -1,13 +1,19 @@
-import { Polar } from '@polar-sh/sdk';
+import { Polar } from "@polar-sh/sdk";
 
-const accessToken = process.env.POLAR_ACCESS_TOKEN;
+let cachedClient: Polar | null | undefined;
 
-if (!accessToken) {
-    throw new Error('POLAR_ACCESS_TOKEN environment variable is not set');
+export function getPolarClient(): Polar | null {
+	if (cachedClient !== undefined) {
+		return cachedClient;
+	}
+	const accessToken = process.env.POLAR_ACCESS_TOKEN;
+	if (!accessToken) {
+		if (process.env.NODE_ENV !== "production") {
+			console.warn("POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.");
+		}
+		cachedClient = null;
+		return cachedClient;
+	}
+	cachedClient = new Polar({ accessToken });
+	return cachedClient;
 }
-
-export const polarClient = new Polar({
-    accessToken,
-});
-
-export default polarClient;

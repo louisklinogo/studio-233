@@ -12,11 +12,16 @@ Original file is located at
 # Commented out IPython magic to ensure Python compatibility.
 # %pip install apify-client
 
+import os
+
 from apify_client import ApifyClient
 from google.colab import userdata
 
 # Initialize the ApifyClient with API token
-APIFY_API_TOKEN = userdata.get('APIFY_API_TOKEN')
+APIFY_API_TOKEN = userdata.get('APIFY_API_TOKEN') or os.getenv('APIFY_API_TOKEN')
+if APIFY_API_TOKEN is None:
+    raise ValueError("APIFY_API_TOKEN must be provided via Colab userdata or environment variables before running this script.")
+
 apify_client = ApifyClient(APIFY_API_TOKEN)
 
 # Replace with the actual ID of the Apify actor
@@ -139,7 +144,19 @@ Load the data from the specified Apify dataset URL using the requests library to
 
 import requests
 
-dataset_url = "https://api.apify.com/v2/datasets/YMK5vNlsOTijPdAQF/items?token=apify_api_QCVXaScFoNZ6zMHMhJlZwOctVi6tLZ3YcyvO"
+APIFY_DATASET_ID = userdata.get('APIFY_DATASET_ID') or os.getenv('APIFY_DATASET_ID')
+APIFY_DATASET_TOKEN = (
+    userdata.get('APIFY_DATASET_TOKEN')
+    or os.getenv('APIFY_DATASET_TOKEN')
+    or APIFY_API_TOKEN
+)
+
+if not APIFY_DATASET_ID or not APIFY_DATASET_TOKEN:
+    raise ValueError(
+        "APIFY_DATASET_ID and APIFY_DATASET_TOKEN must be provided before fetching the dataset."
+    )
+
+dataset_url = f"https://api.apify.com/v2/datasets/{APIFY_DATASET_ID}/items?token={APIFY_DATASET_TOKEN}"
 response = requests.get(dataset_url)
 
 if response.status_code == 200:

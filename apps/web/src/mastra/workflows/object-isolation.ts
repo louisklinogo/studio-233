@@ -22,8 +22,8 @@ const isolateObjectStep = createStep({
 		imageUrl: z.string().url(),
 		maskUrl: z.string().url(),
 	}),
-	execute: async ({ context }) => {
-		const { imageUrl, prompt, apiKey } = context;
+	execute: async ({ inputData }) => {
+		const { imageUrl, prompt, apiKey } = inputData;
 		const falKey = apiKey || process.env.FAL_KEY;
 
 		if (!falKey) throw new Error("FAL API key required for object isolation");
@@ -103,8 +103,9 @@ const isolateObjectStep = createStep({
 			.toBuffer();
 
 		// 3. Upload result
+		const blobData = Uint8Array.from(segmentedImage);
 		const uploadResult = await fal.storage.upload(
-			new Blob([segmentedImage], { type: "image/png" }),
+			new Blob([blobData], { type: "image/png" }),
 		);
 
 		return {
@@ -116,11 +117,12 @@ const isolateObjectStep = createStep({
 
 export const objectIsolationWorkflow = createWorkflow({
 	id: "object-isolation",
-	triggerSchema: z.object({
+	inputSchema: z.object({
 		imageUrl: z.string().url(),
 		prompt: z.string(),
 		apiKey: z.string().optional(),
 	}),
+	outputSchema: isolateObjectStep.outputSchema,
 })
 	.then(isolateObjectStep)
 	.commit();

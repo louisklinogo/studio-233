@@ -53,6 +53,14 @@ const CardDescription = React.forwardRef<
 ));
 CardDescription.displayName = "CardDescription";
 
+const CardAction = React.forwardRef<
+	HTMLDivElement,
+	React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+	<div ref={ref} className={cn("ms-auto", className)} {...props} />
+));
+CardAction.displayName = "CardAction";
+
 const CardContent = React.forwardRef<
 	HTMLDivElement,
 	React.HTMLAttributes<HTMLDivElement>
@@ -78,6 +86,7 @@ export {
 	CardHeader,
 	CardFooter,
 	CardTitle,
+	CardAction,
 	CardDescription,
 	CardContent,
 };

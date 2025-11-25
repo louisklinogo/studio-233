@@ -30,7 +30,7 @@ export function EmptyStateAgentCore() {
 						duration: 20,
 						repeat: Infinity,
 						ease: "linear",
-						reverse: true,
+						repeatType: "reverse",
 					}}
 				>
 					<Code2 className="w-4 h-4 text-blue-500" />

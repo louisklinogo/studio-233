@@ -218,8 +218,6 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 					stroke: "#64748b",
 					strokeWidth: 2,
 					cornerRadius: 0,
-					strokeWidth: 2,
-					cornerRadius: 0,
 					...defaultShapeProps,
 				};
 
@@ -267,7 +265,7 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 			if (activeTool === "shape" && currentShapeId) {
 				setElements((prev) =>
 					prev.map((el) => {
-						if (el.id === currentShapeId) {
+						if (el.id === currentShapeId && el.type === "shape") {
 							const startX = el.x; // This was set on MouseDown
 							const startY = el.y; // This might be wrong if we update x/y.
 							// Actually, creating from corner:

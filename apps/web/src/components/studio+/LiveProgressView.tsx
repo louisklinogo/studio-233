@@ -14,12 +14,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface JobStatus {
-    id: string;
-    originalUrl: string;
-    resultUrl?: string;
-    status: "idle" | "uploading" | "processing" | "completed" | "failed";
-    attempt?: number;
-    error?: string;
+	id: string;
+	originalUrl: string;
+	resultUrl?: string;
+	status:
+		| "idle"
+		| "uploading"
+		| "processing"
+		| "completed"
+		| "failed"
+		| "canceled";
+	attempt?: number;
+	error?: string;
 }
 
 interface ActivityItem {
@@ -43,10 +49,12 @@ export function LiveProgressView({
     onPause,
 }: LiveProgressViewProps) {
     const total = jobs.length;
-    const completed = jobs.filter((j) => j.status === "completed").length;
-    const processing = jobs.filter((j) => j.status === "processing").length;
-    const failed = jobs.filter((j) => j.status === "failed").length;
-    const percentage = total > 0 ? (completed / total) * 100 : 0;
+	const completed = jobs.filter((j) => j.status === "completed").length;
+	const processing = jobs.filter((j) => j.status === "processing").length;
+	const failed = jobs.filter((j) => j.status === "failed").length;
+	const canceled = jobs.filter((j) => j.status === "canceled").length;
+	const finished = completed + canceled;
+	const percentage = total > 0 ? (finished / total) * 100 : 0;
 
     // Mock activity feed (in real implementation, this would come from props)
     const activities: ActivityItem[] = jobs
@@ -54,14 +62,16 @@ export function LiveProgressView({
         .map((job, idx) => ({
             id: job.id,
             fileName: `image-${idx + 1}.jpg`,
-            message:
-                job.status === "completed"
-                    ? "✓ Complete"
-                    : job.status === "processing"
-                        ? `Processing (Attempt ${job.attempt || 1}/7)`
-                        : job.status === "failed"
-                            ? "Failed"
-                            : "Waiting",
+			message:
+				job.status === "completed"
+					? "✓ Complete"
+					: job.status === "processing"
+						? `Processing (Attempt ${job.attempt || 1}/7)`
+						: job.status === "failed"
+							? "Failed"
+							: job.status === "canceled"
+								? "Canceled"
+								: "Waiting",
             timestamp: Date.now() - idx * 1000,
         }));
 
@@ -102,8 +112,12 @@ export function LiveProgressView({
                         <span className="text-muted-foreground">Done: {completed}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-red-500" />
-                        <span className="text-muted-foreground">Failed: {failed}</span>
+				<div className="w-2 h-2 rounded-full bg-red-500" />
+				<span className="text-muted-foreground">Failed: {failed}</span>
+			</div>
+			<div className="flex items-center gap-2">
+				<div className="w-2 h-2 rounded-full bg-amber-500" />
+				<span className="text-muted-foreground">Canceled: {canceled}</span>
                     </div>
                 </div>
             </div>
@@ -136,9 +150,12 @@ export function LiveProgressView({
                                 {job.status === "processing" && (
                                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
                                 )}
-                                {job.status === "failed" && (
-                                    <X className="w-8 h-8 text-red-500" />
-                                )}
+				{job.status === "failed" && (
+					<X className="w-8 h-8 text-red-500" />
+				)}
+				{job.status === "canceled" && (
+					<Pause className="w-8 h-8 text-amber-400" />
+				)}
                             </div>
 
                             {/* Attempt Count (if retrying) */}
