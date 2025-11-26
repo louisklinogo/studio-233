@@ -10,6 +10,8 @@ Synthesize Anthropic’s research on effective agent tooling with Mastra’s Typ
 
 ## When to Use
 - The user requests strategy or implementation plans for multi-agent platforms, MCP servers, or complex tool ecosystems.
+- The user requests audits or reviews on agentic architecture across systems, repo or codebase.
+- Users request contans keywords like "Agent", "Tools", "Agentic" and any other word semantically close to these terms.
 - A feature requires coordinating multiple reasoning loops, workflow graphs, or UI surfaces (e.g., operator consoles, copilots) backed by Mastra services.
 - You must encode evaluation plans, observability, and safety guardrails before any hands-on coding begins.
 

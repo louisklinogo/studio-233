@@ -6,9 +6,11 @@ type Env = {
 	falKey?: string;
 	googleApiKey?: string;
 	searchApiKey?: string;
+	exaApiKey?: string;
 	siteExtractorKey?: string;
 	ffmpegPath?: string;
 	tavilyBaseUrl?: string;
+	exaBaseUrl?: string;
 };
 
 let cachedEnv: Env | null = null;
@@ -37,10 +39,12 @@ export function getEnv(): Env {
 			process.env.TAVILY_API_KEY ??
 			process.env.BRAVE_API_KEY ??
 			process.env.SERPAPI_API_KEY,
+		exaApiKey: process.env.EXA_API_KEY,
 		siteExtractorKey: process.env.SCRAPER_API_KEY,
 		ffmpegPath: process.env.FFMPEG_PATH,
 		tavilyBaseUrl:
 			process.env.TAVILY_API_BASE_URL ?? "https://api.tavily.com/search",
+		exaBaseUrl: process.env.EXA_API_BASE_URL ?? "https://api.exa.ai/search",
 	};
 
 	return cachedEnv;

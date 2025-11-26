@@ -34,6 +34,40 @@ const webSearchStep = createStep({
 	}),
 	execute: async ({ inputData }) => {
 		const { query, maxResults } = inputData;
+		if (env.exaApiKey) {
+			const response = await fetch(env.exaBaseUrl!, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-api-key": env.exaApiKey,
+				},
+				body: JSON.stringify({
+					query,
+					numResults: maxResults,
+					excludeDomains: ["exa.ai"],
+				}),
+			});
+			if (!response.ok) {
+				throw new Error(`Exa search error: ${response.status}`);
+			}
+			const data = await response.json();
+			const hits = data.results ?? data.data ?? [];
+			const results = hits.slice(0, maxResults).map((item: any) => ({
+				title:
+					item.title ??
+					item.document?.title ??
+					item.metadata?.title ??
+					"Untitled",
+				snippet:
+					item.text ??
+					item.snippet ??
+					item.summary ??
+					item.document?.text ??
+					"",
+				url: item.url ?? item.link ?? item.source?.url ?? "https://example.com",
+			}));
+			return { results, provider: "exa" };
+		}
 		if (env.searchApiKey) {
 			const response = await fetch(env.tavilyBaseUrl!, {
 				method: "POST",
