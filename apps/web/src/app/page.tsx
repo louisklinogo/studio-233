@@ -3,10 +3,10 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AsciiCarousel } from "@/components/landing/AsciiCarousel";
 import { BootSequence } from "@/components/landing/BootSequence";
-import { CommandTerminal } from "@/components/landing/CommandTerminal";
 import { DataTicker } from "@/components/landing/DataTicker";
 import { GlitchCoordinates } from "@/components/landing/GlitchCoordinates";
 import { GlitchHeader } from "@/components/landing/GlitchHeader";
@@ -14,6 +14,7 @@ import { GlitchOverlay } from "@/components/landing/GlitchOverlay";
 import { ManifestoGSAP } from "@/components/landing/ManifestoGSAP";
 import { MenuLink } from "@/components/landing/MenuLink";
 import { NavigatorPrompt } from "@/components/landing/NavigatorPrompt";
+import { PhysicalThemeSwitch } from "@/components/landing/PhysicalThemeSwitch";
 import { ReactiveGrid } from "@/components/landing/ReactiveGrid";
 import { ScannerFooter } from "@/components/landing/ScannerFooter";
 import { StatusPill } from "@/components/landing/StatusPill";
@@ -49,7 +50,7 @@ export default function HomePage() {
 					</div>
 					<div className="text-right hidden md:flex flex-col items-end gap-4">
 						<div className="flex items-center gap-4">
-							<CommandTerminal />
+							<PhysicalThemeSwitch />
 							<StatusPill />
 						</div>
 						<GlitchCoordinates />
@@ -76,7 +77,7 @@ export default function HomePage() {
 					<section className="border-b md:border-b-0 border-r-0 md:border-r border-neutral-200 dark:border-neutral-800 p-6 md:p-12 flex flex-col justify-center min-h-[40vh]">
 						<h2 className="sr-only">Infinite Canvas</h2>
 						<MenuLink
-							href="/canvas"
+							href="/login"
 							number="01"
 							label="Canvas"
 							description="// AI_POWERED_CANVAS / GENERATE_&_EDIT"
@@ -87,7 +88,7 @@ export default function HomePage() {
 					<section className="p-6 md:p-12 flex flex-col justify-center min-h-[40vh]">
 						<h2 className="sr-only">Batch Studio</h2>
 						<MenuLink
-							href="/studio"
+							href="/login"
 							number="02"
 							label="Studio"
 							description="// BATCH_PIPELINES / SCALE_YOUR_WORKFLOW"
