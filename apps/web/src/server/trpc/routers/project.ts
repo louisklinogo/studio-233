@@ -51,4 +51,147 @@ export const projectRouter = router({
 
 			return project;
 		}),
+
+	update: publicProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				name: z.string().optional(),
+				description: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await auth.api.getSession({ headers });
+
+			if (!session) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "You must be logged in to update a project",
+				});
+			}
+
+			// Verify ownership
+			const project = await prisma.project.findUnique({
+				where: { id: input.id },
+			});
+
+			if (!project || project.userId !== session.user.id) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Project not found or unauthorized",
+				});
+			}
+
+			return await prisma.project.update({
+				where: { id: input.id },
+				data: {
+					name: input.name,
+					description: input.description,
+				},
+			});
+		}),
+
+	delete: publicProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await auth.api.getSession({ headers });
+
+			if (!session) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "You must be logged in to delete a project",
+				});
+			}
+
+			// Verify ownership
+			const project = await prisma.project.findUnique({
+				where: { id: input.id },
+			});
+
+			if (!project || project.userId !== session.user.id) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Project not found or unauthorized",
+				});
+			}
+
+			return await prisma.project.delete({
+				where: { id: input.id },
+			});
+		}),
+
+	duplicate: publicProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await auth.api.getSession({ headers });
+
+			if (!session) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "You must be logged in to duplicate a project",
+				});
+			}
+
+			// Fetch original project with full canvas structure
+			const originalProject = await prisma.project.findUnique({
+				where: { id: input.id },
+				include: {
+					canvases: {
+						include: {
+							elements: true,
+						},
+					},
+				},
+			});
+
+			if (!originalProject || originalProject.userId !== session.user.id) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Project not found or unauthorized",
+				});
+			}
+
+			// Perform duplication in transaction
+			return await prisma.$transaction(async (tx) => {
+				// 1. Create new Project
+				const newProject = await tx.project.create({
+					data: {
+						name: `${originalProject.name} (Copy)`,
+						description: originalProject.description,
+						thumbnail: originalProject.thumbnail,
+						userId: session.user.id,
+					},
+				});
+
+				// 2. Duplicate Canvases and Elements
+				for (const canvas of originalProject.canvases) {
+					const newCanvas = await tx.canvas.create({
+						data: {
+							name: canvas.name,
+							width: canvas.width,
+							height: canvas.height,
+							data: canvas.data ?? {},
+							projectId: newProject.id,
+						},
+					});
+
+					// Bulk create elements for this canvas
+					if (canvas.elements.length > 0) {
+						await tx.canvasElement.createMany({
+							data: canvas.elements.map((el) => ({
+								canvasId: newCanvas.id,
+								kind: el.kind,
+								data: el.data ?? {},
+								zIndex: el.zIndex,
+							})),
+						});
+					}
+				}
+
+				return newProject;
+			});
+		}),
 });

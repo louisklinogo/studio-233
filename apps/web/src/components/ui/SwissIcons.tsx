@@ -116,4 +116,235 @@ export const SwissIcons = {
 			/>
 		</svg>
 	),
+
+	// ACTIONS -> The Plus (Addition)
+	Plus: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect x="11" y="4" width="2" height="16" fill="currentColor" />
+			<rect x="4" y="11" width="16" height="2" fill="currentColor" />
+		</svg>
+	),
+
+	// ACTIONS -> The Close (Termination)
+	Close: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M18 6L6 18"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M6 6L18 18"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
+	// NAV -> The Arrow (Direction)
+	ArrowUpRight: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M7 17L17 7"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M7 7H17V17"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
+	// NAV -> The Arrow Down (Insertion)
+	ArrowDown: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M12 4V20"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M5 13L12 20L19 13"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
+	// OPTIONS -> The More (Ellipsis)
+	More: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect x="4" y="10" width="4" height="4" fill="currentColor" />
+			<rect x="10" y="10" width="4" height="4" fill="currentColor" />
+			<rect x="16" y="10" width="4" height="4" fill="currentColor" />
+		</svg>
+	),
+
+	// EDIT -> The Pencil (Modification)
+	Edit: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				fillRule="evenodd"
+				clipRule="evenodd"
+				d="M16.6569 3.34315L20.6569 7.34315L7.34315 20.6569H3.34315V16.6569L16.6569 3.34315ZM18.0711 7.34315L16.6569 5.92893L5.34315 17.2426V18.6569H6.75736L18.0711 7.34315Z"
+				fill="currentColor"
+			/>
+		</svg>
+	),
+
+	// COPY -> The Clone (Replication)
+	Copy: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect
+				x="8"
+				y="8"
+				width="12"
+				height="12"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path d="M16 8V4H4V16H8" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// TRASH -> The Bin (Deletion)
+	Trash: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect
+				x="6"
+				y="6"
+				width="12"
+				height="14"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path d="M4 6H20" stroke="currentColor" strokeWidth="2" />
+			<path d="M9 6V3H15V6" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// LOADING -> The Spinner (Process)
+	Spinner: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M12 2V6"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M12 18V22"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M4.92893 4.92893L7.75736 7.75736"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M16.2426 16.2426L19.0711 19.0711"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M2 12H6"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M18 12H22"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M4.92893 19.0711L7.75736 16.2426"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M16.2426 7.75736L19.0711 4.92893"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
 };

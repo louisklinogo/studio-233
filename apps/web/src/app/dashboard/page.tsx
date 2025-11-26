@@ -62,10 +62,10 @@ export default async function DashboardPage() {
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-					<CreateProjectCard />
 					{user.projects.map((project) => (
 						<ProjectCard key={project.id} project={project} />
 					))}
+					<CreateProjectCard />
 					{user.projects.length === 0 && (
 						<div className="hidden md:flex items-center justify-center border border-neutral-200 dark:border-neutral-900 bg-white dark:bg-neutral-950/30 p-4 min-h-[160px] col-span-2">
 							<p className="font-mono text-xs text-neutral-600 text-center">
