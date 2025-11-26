@@ -3,7 +3,6 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useLayoutEffect, useRef } from "react";
-import { ScrambleText } from "@/components/ui/ScrambleText";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -103,25 +102,16 @@ export const ManifestoGSAP = () => {
 			>
 				<p className="font-mono text-2xl md:text-4xl lg:text-5xl text-neutral-800 dark:text-neutral-200 leading-tight text-justify tracking-tight uppercase font-bold">
 					Studio+233 is not just a tool. It is a{" "}
-					<span className="inline-block">
-						<ScrambleText
-							text="production environment"
-							className="kinetic-highlight transition-colors duration-300"
-						/>
+					<span className="kinetic-highlight inline-block transition-colors duration-300">
+						production environment
 					</span>{" "}
 					for the next generation of creators. Combine the freedom of an{" "}
-					<span className="inline-block">
-						<ScrambleText
-							text="infinite canvas"
-							className="kinetic-highlight transition-colors duration-300"
-						/>
+					<span className="kinetic-highlight inline-block transition-colors duration-300">
+						infinite canvas
 					</span>{" "}
 					with the power of{" "}
-					<span className="inline-block">
-						<ScrambleText
-							text="autonomous AI agents"
-							className="kinetic-highlight transition-colors duration-300"
-						/>
+					<span className="kinetic-highlight inline-block transition-colors duration-300">
+						autonomous AI agents
 					</span>{" "}
 					to scale your workflow from one to one thousand.
 				</p>
