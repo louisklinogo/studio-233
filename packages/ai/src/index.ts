@@ -1,56 +1,93 @@
 import { Mastra } from "@mastra/core/mastra";
-import { PostgresStore } from "@mastra/pg";
 import { PinoLogger } from "@mastra/loggers";
+import { batchOpsAgent } from "./agents/batch-ops";
+import { insightResearcherAgent } from "./agents/insight-researcher";
+import { motionDirectorAgent } from "./agents/motion-director";
+import { orchestratorAgent } from "./agents/orchestrator";
+import { visionForgeAgent } from "./agents/vision-forge";
+import { scorers } from "./scorers";
+import { mastraStore } from "./store";
 import { backgroundRemovalWorkflow } from "./workflows/background-removal";
+import {
+	htmlGeneratorWorkflow,
+	layoutDesignerWorkflow,
+} from "./workflows/layout";
 import { objectIsolationWorkflow } from "./workflows/object-isolation";
-
-/**
- * Mastra AI instance for Studio+233
- * 
- * This configures the AI workflows, agents, and observability.
- * Additional agents from src/mastra/agents will be migrated during app migration.
- */
-const connectionString =
-	process.env.MASTRA_DATABASE_URL ??
-	process.env.DATABASE_URL ??
-	process.env.POSTGRES_PRISMA_URL;
-
-if (!connectionString) {
-	throw new Error(
-		"MASTRA_DATABASE_URL or DATABASE_URL must be set to initialize Mastra.",
-	);
-}
-
-const storage = new PostgresStore({
-	connectionString,
-	schemaName: process.env.MASTRA_SCHEMA,
-});
+import {
+	imageAnalyzerWorkflow,
+	moodboardWorkflow,
+	siteExtractorWorkflow,
+	webSearchWorkflow,
+} from "./workflows/research";
+import {
+	captionOverlayWorkflow,
+	textToVideoWorkflow,
+	videoGifWorkflow,
+	videoStitchWorkflow,
+} from "./workflows/video";
+import {
+	imageReframeWorkflow,
+	imageUpscaleWorkflow,
+	paletteExtractionWorkflow,
+	storyboardWorkflow,
+} from "./workflows/vision-enhancements";
 
 export const mastra = new Mastra({
 	workflows: {
 		backgroundRemovalWorkflow,
 		objectIsolationWorkflow,
-		// Additional workflows to be added during migration
+		imageReframeWorkflow,
+		imageUpscaleWorkflow,
+		paletteExtractionWorkflow,
+		storyboardWorkflow,
+		htmlGeneratorWorkflow,
+		layoutDesignerWorkflow,
+		textToVideoWorkflow,
+		videoStitchWorkflow,
+		videoGifWorkflow,
+		captionOverlayWorkflow,
+		webSearchWorkflow,
+		siteExtractorWorkflow,
+		imageAnalyzerWorkflow,
+		moodboardWorkflow,
 	},
 	agents: {
-		// Agents will be migrated from src/mastra/agents
+		orchestratorAgent,
+		visionForgeAgent,
+		motionDirectorAgent,
+		insightResearcherAgent,
+		batchOpsAgent,
 	},
-	scorers: {
-		// Scorers will be migrated from src/mastra/scorers
-	},
-	storage,
+	scorers,
+	storage: mastraStore,
 	logger: new PinoLogger({
 		name: "Studio233-Mastra",
 		level: "info",
 	}),
 	telemetry: {
-		enabled: false,
+		enabled: true,
 	},
 	observability: {
 		default: { enabled: true },
 	},
 });
 
-// Re-export workflows for convenience
-export { backgroundRemovalWorkflow } from "./workflows/background-removal";
-export { objectIsolationWorkflow } from "./workflows/object-isolation";
+export { batchOpsAgent } from "./agents/batch-ops";
+export { insightResearcherAgent } from "./agents/insight-researcher";
+export { motionDirectorAgent } from "./agents/motion-director";
+export { orchestratorAgent } from "./agents/orchestrator";
+export {
+	breadthScoutAgent,
+	deepDiveAnalystAgent,
+} from "./agents/research-subagents";
+export { visionForgeAgent } from "./agents/vision-forge";
+export { getModelConfig } from "./model-config";
+export { scorers } from "./scorers";
+export { mastraStore } from "./store";
+export * from "./tools";
+export * from "./workflows/background-removal";
+export * from "./workflows/layout";
+export * from "./workflows/object-isolation";
+export * from "./workflows/research";
+export * from "./workflows/video";
+export * from "./workflows/vision-enhancements";

@@ -1,23 +1,27 @@
 export const MODEL_CONFIG = {
 	orchestrator: {
 		model: "google/gemini-2.5-flash",
-		temperature: 0.5,
+		temperature: 0.4,
 	},
-	creative: {
+	vision: {
 		model: "google/gemini-3-pro-preview",
-		temperature: 0.8,
+		temperature: 0.6,
 	},
-	transform: {
-		model: "google/gemini-3-pro-preview",
+	motion: {
+		model: "google/gemini-2.5-pro",
+		temperature: 0.3,
+	},
+	research: {
+		model: "google/gemini-2.5-pro",
 		temperature: 0.2,
 	},
 	batch: {
-		model: "google/gemini-3-pro-preview",
-		temperature: 0.1,
+		model: "google/gemini-2.5-flash",
+		temperature: 0.2,
 	},
-	canvas: {
+	storyboard: {
 		model: "google/gemini-3-pro-preview",
-		temperature: 0.4,
+		temperature: 0.75,
 	},
 	general: {
 		model: "google/gemini-3-pro-preview",

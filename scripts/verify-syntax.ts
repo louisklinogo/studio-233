@@ -1,4 +1,4 @@
-import { mastra } from "../src/mastra";
+import { mastra } from "../packages/ai/src";
 
 console.log("Mastra instance imported successfully.");
 console.log("Agents:", Object.keys(mastra.agents));

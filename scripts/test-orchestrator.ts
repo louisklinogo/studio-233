@@ -1,4 +1,4 @@
-import { mastra } from "../src/mastra";
+import { mastra } from "../packages/ai/src";
 
 async function testOrchestrator() {
 	const agent = mastra.getAgent("Studio Orchestrator");

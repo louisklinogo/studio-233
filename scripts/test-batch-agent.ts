@@ -1,4 +1,4 @@
-import { mastra } from "../src/mastra";
+import { mastra } from "../packages/ai/src";
 
 async function testBatchAgent() {
 	const agent = mastra.getAgent("batchAgent");
