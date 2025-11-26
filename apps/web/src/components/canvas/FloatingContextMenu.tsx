@@ -1,25 +1,8 @@
-import {
-	BringToFront,
-	ChevronDown,
-	ChevronUp,
-	Combine,
-	Copy,
-	CopyPlus,
-	Crop,
-	Download,
-	FilePlus,
-	Filter,
-	GripHorizontal,
-	Layers,
-	MoveDown,
-	MoveUp,
-	Play,
-	Scissors,
-	SendToBack,
-	Trash2,
-	Video,
-	X,
-} from "lucide-react";
+import type {
+	GenerationSettings,
+	PlacedImage,
+	PlacedVideo,
+} from "@studio233/canvas";
 import React from "react";
 import { SpinnerIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -35,17 +18,13 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type {
-	GenerationSettings,
-	PlacedImage,
-	PlacedVideo,
-} from "@studio233/canvas";
 import { exportVideoAsGif } from "@/utils/gif-export";
 import { checkOS } from "@/utils/os-utils";
 import { ShortcutBadge } from "./ShortcutBadge";
@@ -180,7 +159,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="h-7 w-7"
 										onClick={handleDuplicate}
 									>
-										<CopyPlus className="h-3.5 w-3.5" />
+										<SwissIcons.Copy className="h-3.5 w-3.5" />
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>Duplicate</TooltipContent>
@@ -193,7 +172,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="h-7 w-7"
 										onClick={bringForward}
 									>
-										<BringToFront className="h-3.5 w-3.5" />
+										<SwissIcons.ArrowUp className="h-3.5 w-3.5" />
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>Bring Forward</TooltipContent>
@@ -206,7 +185,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="h-7 w-7"
 										onClick={sendBackward}
 									>
-										<SendToBack className="h-3.5 w-3.5" />
+										<SwissIcons.ArrowDown className="h-3.5 w-3.5" />
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>Send Backward</TooltipContent>
@@ -219,13 +198,13 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
 										onClick={handleDelete}
 									>
-										<Trash2 className="h-3.5 w-3.5" />
+										<SwissIcons.Trash className="h-3.5 w-3.5" />
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>Delete</TooltipContent>
 							</Tooltip>
 						</div>
-						<GripHorizontal className="h-4 w-4 text-muted-foreground/30" />
+						<SwissIcons.Grip className="h-4 w-4 text-muted-foreground/30" />
 					</div>
 
 					<div className="overflow-y-auto max-h-[300px] p-1.5 space-y-1">
@@ -239,7 +218,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 									{isGenerating ? (
 										<SpinnerIcon className="h-3.5 w-3.5 animate-spin text-primary" />
 									) : (
-										<Play className="h-3.5 w-3.5 text-primary" />
+										<SwissIcons.Play className="h-3.5 w-3.5 text-primary" />
 									)}
 									<span>Run Generation</span>
 								</div>
@@ -258,7 +237,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 									{isGeminiEditing ? (
 										<SpinnerIcon className="h-3.5 w-3.5 animate-spin" />
 									) : (
-										<Filter className="h-3.5 w-3.5" />
+										<SwissIcons.Filter className="h-3.5 w-3.5" />
 									)}
 									Edit with Gemini
 								</DropdownMenuItem>
@@ -280,7 +259,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 								}
 								className="flex items-center gap-2"
 							>
-								<Crop className="h-3.5 w-3.5" />
+								<SwissIcons.Crop className="h-3.5 w-3.5" />
 								Crop Image
 							</DropdownMenuItem>
 							<DropdownMenuItem
@@ -291,7 +270,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 								}
 								className="flex items-center gap-2"
 							>
-								<Scissors className="h-3.5 w-3.5" />
+								<SwissIcons.Scissors className="h-3.5 w-3.5" />
 								Remove Background
 							</DropdownMenuItem>
 							<DropdownMenuItem
@@ -302,7 +281,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 								}
 								className="flex items-center gap-2"
 							>
-								<Filter className="h-3.5 w-3.5" />
+								<SwissIcons.Filter className="h-3.5 w-3.5" />
 								Isolate Object...
 							</DropdownMenuItem>
 							<DropdownMenuItem
@@ -310,7 +289,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 								disabled={selectedIds.length < 2}
 								className="flex items-center gap-2"
 							>
-								<Combine className="h-3.5 w-3.5" />
+								<SwissIcons.Combine className="h-3.5 w-3.5" />
 								Combine Images
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
@@ -327,7 +306,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										}}
 										className="flex items-center gap-2"
 									>
-										<Video className="h-3.5 w-3.5" />
+										<SwissIcons.Video className="h-3.5 w-3.5" />
 										Image to Video
 									</DropdownMenuItem>
 								)}
@@ -340,7 +319,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										}}
 										className="flex items-center gap-2"
 									>
-										<FilePlus className="h-3.5 w-3.5" />
+										<SwissIcons.FilePlus className="h-3.5 w-3.5" />
 										Extend Video
 									</DropdownMenuItem>
 								)}
@@ -353,7 +332,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										}}
 										className="flex items-center gap-2"
 									>
-										<Scissors className="h-3.5 w-3.5" />
+										<SwissIcons.Scissors className="h-3.5 w-3.5" />
 										Remove Video BG
 									</DropdownMenuItem>
 								)}
@@ -370,7 +349,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 									}
 									className="flex items-center gap-2"
 								>
-									<Layers className="h-3.5 w-3.5" />
+									<SwissIcons.Layers className="h-3.5 w-3.5" />
 									Layer Order
 								</DropdownMenuSubTrigger>
 								<DropdownMenuSubContent className="w-48" sideOffset={10}>
@@ -380,7 +359,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="flex items-center justify-between gap-2"
 									>
 										<div className="flex items-center gap-2">
-											<MoveUp className="h-3.5 w-3.5" />
+											<SwissIcons.BringToFront className="h-3.5 w-3.5" />
 											<span>Send to Front</span>
 										</div>
 										<ShortcutBadge
@@ -395,7 +374,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="flex items-center justify-between gap-2"
 									>
 										<div className="flex items-center gap-2">
-											<ChevronUp className="h-3.5 w-3.5" />
+											<SwissIcons.ArrowUp className="h-3.5 w-3.5" />
 											<span>Bring Forward</span>
 										</div>
 										<ShortcutBadge variant="alpha" size="xs" shortcut="]" />
@@ -406,7 +385,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="flex items-center justify-between gap-2"
 									>
 										<div className="flex items-center gap-2">
-											<ChevronDown className="h-3.5 w-3.5" />
+											<SwissIcons.ArrowDown className="h-3.5 w-3.5" />
 											<span>Send Backward</span>
 										</div>
 										<ShortcutBadge variant="alpha" size="xs" shortcut="[" />
@@ -417,7 +396,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 										className="flex items-center justify-between gap-2"
 									>
 										<div className="flex items-center gap-2">
-											<MoveDown className="h-3.5 w-3.5" />
+											<SwissIcons.SendToBack className="h-3.5 w-3.5" />
 											<span>Send to Back</span>
 										</div>
 										<ShortcutBadge
@@ -472,7 +451,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 							disabled={selectedIds.length === 0}
 							className="flex items-center gap-2"
 						>
-							<Download className="h-3.5 w-3.5" />
+							<SwissIcons.Download className="h-3.5 w-3.5" />
 							Download
 						</DropdownMenuItem>
 						{selectedIds.length === 1 &&
@@ -490,7 +469,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 									}}
 									className="flex items-center gap-2"
 								>
-									<Video className="h-3.5 w-3.5" />
+									<SwissIcons.Video className="h-3.5 w-3.5" />
 									Export GIF
 								</DropdownMenuItem>
 							)}

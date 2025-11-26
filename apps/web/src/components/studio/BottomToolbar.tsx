@@ -1,13 +1,6 @@
-import {
-	Maximize,
-	Minus,
-	MousePointer2,
-	Plus,
-	Redo2,
-	Undo2,
-} from "lucide-react";
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +40,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 						disabled={!canUndo}
 						title="Undo (Ctrl+Z)"
 					>
-						<Undo2 className="h-4 w-4" />
+						<SwissIcons.Undo className="h-4 w-4" />
 					</Button>
 					<Button
 						variant="ghost"
@@ -57,7 +50,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 						disabled={!canRedo}
 						title="Redo (Ctrl+Y)"
 					>
-						<Redo2 className="h-4 w-4" />
+						<SwissIcons.Redo className="h-4 w-4" />
 					</Button>
 				</div>
 
@@ -72,7 +65,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 						onClick={() => setZoom(Math.max(0.1, zoom - 0.1))}
 						title="Zoom Out (-)"
 					>
-						<Minus className="h-3 w-3" />
+						<SwissIcons.Minus className="h-3 w-3" />
 					</Button>
 
 					<span className="text-xs font-medium w-12 text-center tabular-nums">
@@ -86,7 +79,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 						onClick={() => setZoom(Math.min(5, zoom + 0.1))}
 						title="Zoom In (+)"
 					>
-						<Plus className="h-3 w-3" />
+						<SwissIcons.Plus className="h-3 w-3" />
 					</Button>
 				</div>
 
@@ -100,7 +93,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 					onClick={onFitToScreen}
 					title="Fit to Screen"
 				>
-					<Maximize className="h-3 w-3" />
+					<SwissIcons.Maximize className="h-3 w-3" />
 				</Button>
 
 				{/* Selection Status (only visible if items selected) */}
@@ -108,7 +101,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = ({
 					<>
 						<Separator orientation="vertical" className="h-6 mx-1" />
 						<div className="flex items-center gap-2 px-2 text-xs font-medium text-muted-foreground">
-							<MousePointer2 className="h-3 w-3" />
+							<SwissIcons.Cursor className="h-3 w-3" />
 							<span>{selectedCount} Selected</span>
 						</div>
 					</>

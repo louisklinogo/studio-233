@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface ToolButtonProps {
-	icon: LucideIcon;
+	icon: React.ComponentType<any> | LucideIcon;
 	label: string;
 	isActive?: boolean;
 	onClick: () => void;

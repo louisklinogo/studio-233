@@ -49,7 +49,31 @@ export function BraunDialog({
 		}
 	}, [open, initialData]);
 
+	const playClickSound = () => {
+		const AudioContext =
+			window.AudioContext || (window as any).webkitAudioContext;
+		if (!AudioContext) return;
+
+		const ctx = new AudioContext();
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+
+		osc.connect(gain);
+		gain.connect(ctx.destination);
+
+		osc.type = "square";
+		osc.frequency.setValueAtTime(150, ctx.currentTime);
+		osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+
+		gain.gain.setValueAtTime(0.1, ctx.currentTime);
+		gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+		osc.start(ctx.currentTime);
+		osc.stop(ctx.currentTime + 0.1);
+	};
+
 	const handleSubmit = () => {
+		playClickSound();
 		onSubmit({ name, description });
 	};
 
@@ -106,7 +130,7 @@ export function BraunDialog({
 											value={name}
 											onChange={(e) => setName(e.target.value)}
 											placeholder="UNTITLED_PROJECT"
-											className="bg-white dark:bg-[#111] border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white font-mono h-12 rounded-sm focus-visible:ring-0 focus-visible:border-[#FF4D00]"
+											className="bg-[#e5e5e5] dark:bg-[#111] border-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] text-neutral-900 dark:text-white font-mono h-12 rounded-sm focus-visible:ring-1 focus-visible:ring-[#FF4D00]"
 										/>
 									</div>
 									<div className="space-y-2">
@@ -117,7 +141,7 @@ export function BraunDialog({
 											value={description}
 											onChange={(e) => setDescription(e.target.value)}
 											placeholder="System notes..."
-											className="bg-white dark:bg-[#111] border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white font-mono min-h-[150px] rounded-sm focus-visible:ring-0 focus-visible:border-[#FF4D00] resize-none"
+											className="bg-[#e5e5e5] dark:bg-[#111] border-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] text-neutral-900 dark:text-white font-mono min-h-[150px] rounded-sm focus-visible:ring-1 focus-visible:ring-[#FF4D00] resize-none"
 										/>
 									</div>
 								</div>
@@ -126,7 +150,7 @@ export function BraunDialog({
 									<Button
 										onClick={handleSubmit}
 										disabled={isPending}
-										className="w-full bg-[#FF4D00] hover:bg-[#CC3D00] text-white font-mono text-xs uppercase h-12 rounded-sm"
+										className="w-full bg-[#FF4D00] hover:bg-[#CC3D00] text-white font-mono text-xs uppercase h-12 rounded-sm shadow-sm active:translate-y-[1px] transition-all"
 									>
 										{isPending ? (
 											<SwissIcons.Spinner className="w-4 h-4 animate-spin" />
@@ -153,12 +177,18 @@ export function BraunDialog({
 							/>
 
 							{/* Dialog Container with Perspective */}
-							<div className="relative perspective-[1000px]">
+							<div className="relative perspective-[2000px] group">
 								<motion.div
-									initial={{ rotateX: -15, opacity: 0, y: 20, scale: 0.95 }}
+									initial={{ rotateX: -25, opacity: 0, y: 40, scale: 0.9 }}
 									animate={{ rotateX: 0, opacity: 1, y: 0, scale: 1 }}
-									exit={{ rotateX: -10, opacity: 0, y: 10, scale: 0.95 }}
-									transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+									exit={{ rotateX: -20, opacity: 0, y: 30, scale: 0.95 }}
+									transition={{
+										type: "spring",
+										damping: 20,
+										stiffness: 100,
+										mass: 1,
+									}}
+									style={{ transformOrigin: "top center" }}
 									className="w-[480px] bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl overflow-hidden"
 								>
 									<div className="h-1.5 w-full bg-gradient-to-r from-transparent via-[#FF4D00] to-transparent opacity-50" />

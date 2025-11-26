@@ -1,18 +1,10 @@
-import {
-	Film,
-	Frame,
-	Image as ImageIcon,
-	Plus,
-	Upload,
-	Video,
-	Zap,
-} from "lucide-react";
 import React from "react";
 import {
 	HoverCard,
 	HoverCardContent,
 	HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 import { ToolButton } from "./toolbar/ToolButton";
 
@@ -39,7 +31,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 				{trigger || (
 					<div className="inline-block">
 						<ToolButton
-							icon={Plus}
+							icon={SwissIcons.Plus}
 							label="Add"
 							onClick={() => {}}
 							showTooltip={false}
@@ -62,7 +54,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 						onClick={onUploadImage}
 						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
 					>
-						<ImageIcon className="h-4 w-4" />
+						<SwissIcons.Image className="h-4 w-4" />
 						<span>Upload Image</span>
 					</button>
 
@@ -70,7 +62,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 						onClick={onUploadVideo}
 						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
 					>
-						<Video className="h-4 w-4" />
+						<SwissIcons.Video className="h-4 w-4" />
 						<span>Upload Video</span>
 					</button>
 				</div>
@@ -83,7 +75,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 						className="w-full flex items-center justify-between px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit group transition-colors text-left"
 					>
 						<div className="flex items-center gap-2">
-							<Zap className="h-4 w-4" />
+							<SwissIcons.Zap className="h-4 w-4" />
 							<span>Image Generator</span>
 						</div>
 						<span className="text-[10px] font-mono text-muted-foreground opacity-50">
@@ -95,7 +87,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 						onClick={onOpenVideoGenerator}
 						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
 					>
-						<Film className="h-4 w-4" />
+						<SwissIcons.Film className="h-4 w-4" />
 						<span>Video Generator</span>
 					</button>
 				</div>
@@ -107,7 +99,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 					className="w-full flex items-center justify-between px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
 				>
 					<div className="flex items-center gap-2">
-						<Frame className="h-4 w-4" />
+						<SwissIcons.Frame className="h-4 w-4" />
 						<span>Frame</span>
 					</div>
 					<span className="text-[10px] font-mono text-muted-foreground opacity-50">

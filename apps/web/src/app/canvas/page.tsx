@@ -15,20 +15,6 @@ import type {
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Konva from "konva";
-import {
-	ChevronDown,
-	ExternalLink,
-	History,
-	ImageIcon,
-	LayoutGrid,
-	Paperclip,
-	PlayIcon,
-	Redo,
-	SlidersHorizontal,
-	Trash2,
-	Undo,
-	X,
-} from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -63,6 +49,7 @@ import {
 } from "@/components/studio/ImageGeneratorPanel";
 import { PropertiesBar } from "@/components/studio/properties/PropertiesBar";
 import { Button } from "@/components/ui/button";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { Textarea } from "@/components/ui/textarea";
 import {
 	Tooltip,
@@ -1962,7 +1949,7 @@ export default function OverlayPage() {
 									className="h-10 px-4 rounded-full shadow-md bg-background/90 backdrop-blur hover:bg-background border border-border/50 gap-2"
 								>
 									<div className="p-1 bg-primary/10 rounded-md">
-										<History className="w-3 h-3 text-primary" />
+										<SwissIcons.History className="w-3 h-3 text-primary" />
 									</div>
 									<span className="text-xs font-medium">Studio</span>
 								</Button>

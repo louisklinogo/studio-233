@@ -1,13 +1,5 @@
-import {
-	Hand,
-	LayoutGrid,
-	MousePointer2,
-	Pencil,
-	Plus,
-	Square,
-	Type,
-} from "lucide-react";
 import React from "react";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AddMenu } from "./AddMenu";
@@ -53,14 +45,14 @@ export const CreativeToolbar: React.FC<CreativeToolbarProps> = ({
 
 				<div className="flex flex-col gap-1">
 					<ToolButton
-						icon={MousePointer2}
+						icon={SwissIcons.Cursor}
 						label="Select (V)"
 						isActive={activeTool === "select"}
 						onClick={() => setActiveTool("select")}
 						shortcut="V"
 					/>
 					<ToolButton
-						icon={Hand}
+						icon={SwissIcons.Hand}
 						label="Hand Tool (H)"
 						isActive={activeTool === "pan"}
 						onClick={() => setActiveTool("pan")}
@@ -72,21 +64,21 @@ export const CreativeToolbar: React.FC<CreativeToolbarProps> = ({
 
 				<div className="flex flex-col gap-1">
 					<ToolButton
-						icon={Type}
+						icon={SwissIcons.Type}
 						label="Text (T)"
 						isActive={activeTool === "text"}
 						onClick={() => setActiveTool("text")}
 						shortcut="T"
 					/>
 					<ToolButton
-						icon={Square}
+						icon={SwissIcons.Shape}
 						label="Shapes (R)"
 						isActive={activeTool === "shape"}
 						onClick={() => setActiveTool("shape")}
 						shortcut="R"
 					/>
 					<ToolButton
-						icon={Pencil}
+						icon={SwissIcons.Edit}
 						label="Draw (P)"
 						isActive={activeTool === "draw"}
 						onClick={() => setActiveTool("draw")}
@@ -98,7 +90,7 @@ export const CreativeToolbar: React.FC<CreativeToolbarProps> = ({
 
 				<div className="flex flex-col gap-1">
 					<ToolButton
-						icon={LayoutGrid}
+						icon={SwissIcons.Grid}
 						label="Templates (Coming Soon)"
 						onClick={() => {}}
 						disabled={true}

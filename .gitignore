@@ -21,3 +21,4 @@ yarn-error.log*/
 vectr/
 .env*.local
 durable-llm-streams/
+.turbo/
