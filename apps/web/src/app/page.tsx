@@ -40,7 +40,7 @@ export default function HomePage() {
 				<ReactiveGrid />
 
 				{/* Header */}
-				<header className="relative z-10 flex justify-between items-start border-b border-neutral-200 dark:border-neutral-800 p-6 md:p-12 pb-6">
+				<header className="relative z-10 flex justify-between items-start border-b border-neutral-200 dark:border-neutral-800 px-6 md:px-12 pt-4 md:pt-8 pb-3 md:pb-4">
 					<div className="flex flex-col gap-1">
 						<h1 className="sr-only">Studio+233: AI-Native Creative Suite</h1>
 						<GlitchHeader />

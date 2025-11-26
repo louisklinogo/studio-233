@@ -1,13 +1,13 @@
 import "dotenv/config";
-import { betterAuth, type BetterAuthOptions } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { polar, checkout, portal } from "@polar-sh/better-auth";
+import { checkout, polar, portal } from "@polar-sh/better-auth";
 import prisma from "@studio233/db";
+import { type BetterAuthOptions, betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { getPolarClient } from "./lib/payments";
 import { CreditLedgerService } from "./services/credit-ledger-service";
 import { SubscriptionService } from "./services/subscription-service";
-import { UserOnboardingService } from "./services/user-onboarding-service";
 import { UsageService } from "./services/usage-service";
+import { UserOnboardingService } from "./services/user-onboarding-service";
 import { PolarWebhookHandler } from "./webhooks/polar-webhook-handler";
 
 const creditLedgerService = new CreditLedgerService();
@@ -18,35 +18,41 @@ const polarWebhookHandler = new PolarWebhookHandler(subscriptionService);
 const polarClient = getPolarClient();
 const authPlugins = polarClient
 	? [
-		polar({
-			client: polarClient,
-			createCustomerOnSignUp: true,
-			enableCustomerPortal: true,
-			use: [
-				checkout({
-					products: [
-						{
-							productId: process.env.POLAR_PRODUCT_ID || "your-product-id",
-							slug: "pro",
-						},
-					],
-					successUrl: process.env.POLAR_SUCCESS_URL,
-					authenticatedUsersOnly: true,
-				}),
-				portal(),
-			],
-		}),
-	]
+			polar({
+				client: polarClient,
+				createCustomerOnSignUp: true,
+				enableCustomerPortal: true,
+				use: [
+					checkout({
+						products: [
+							{
+								productId: process.env.POLAR_PRODUCT_ID || "your-product-id",
+								slug: "pro",
+							},
+						],
+						successUrl: process.env.POLAR_SUCCESS_URL,
+						authenticatedUsersOnly: true,
+					}),
+					portal(),
+				],
+			}),
+		]
 	: [];
 
 export const auth = betterAuth<BetterAuthOptions>({
-    database: prismaAdapter(prisma, {
-        provider: 'postgresql',
-    }),
-    trustedOrigins: [process.env.CORS_ORIGIN || ''],
-    emailAndPassword: {
-        enabled: true,
-    },
+	database: prismaAdapter(prisma, {
+		provider: "postgresql",
+	}),
+	trustedOrigins: [process.env.CORS_ORIGIN || ""],
+	emailAndPassword: {
+		enabled: true,
+	},
+	socialProviders: {
+		google: {
+			clientId: process.env.GOOGLE_CLIENT_ID || "",
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+		},
+	},
 	plugins: authPlugins,
 	databaseHooks: {
 		user: {

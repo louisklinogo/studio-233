@@ -8,7 +8,6 @@ import { SystemSpecs } from "@/components/landing/SystemSpecs";
 export const AsciiCarousel = () => {
 	return (
 		<div className="relative w-full h-[400px] grid grid-cols-1 md:grid-cols-2 gap-0 border-y border-neutral-200 dark:border-neutral-800 overflow-hidden">
-
 			{/* Left: The Totem (AsciiDonut) */}
 			<div className="relative flex items-center justify-center overflow-hidden border-r border-neutral-200 dark:border-neutral-800 min-h-[300px]">
 				{/* Background Grid */}
@@ -37,7 +36,7 @@ export const AsciiCarousel = () => {
 			</div>
 
 			{/* Right: The Spec (SystemSpecs) */}
-			<div className="relative min-h-[300px] border-l border-neutral-200 dark:border-neutral-800">
+			<div className="relative min-h-[300px]">
 				{/* Background Grid */}
 				<div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 

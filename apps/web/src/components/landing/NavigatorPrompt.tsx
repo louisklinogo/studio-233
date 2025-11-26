@@ -32,11 +32,12 @@ const playConfirmSound = () => {
 export const NavigatorPrompt = () => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const initRef = useRef<HTMLDivElement>(null);
-	const modeRef = useRef<HTMLDivElement>(null);
-	const promptRef = useRef<HTMLDivElement>(null);
 	const [loadedItems, setLoadedItems] = useState<number>(0);
 	const [isComplete, setIsComplete] = useState(false);
+	const [isModeActive, setIsModeActive] = useState(false);
+	const [isPromptActive, setIsPromptActive] = useState(false);
 	const hasStartedRef = useRef(false);
+	const timeoutIdsRef = useRef<number[]>([]);
 
 	const BOOT_ITEMS = [
 		"INFINITE_CANVAS.SYS",
@@ -44,8 +45,21 @@ export const NavigatorPrompt = () => {
 		"AI_AGENTS.SYS",
 	];
 
+	const [isTriggered, setIsTriggered] = useState(false);
+
+	const clearQueuedTimeouts = () => {
+		timeoutIdsRef.current.forEach((id) => clearTimeout(id));
+		timeoutIdsRef.current = [];
+	};
+
+	const queueTimeout = (cb: () => void, delay: number) => {
+		const id = window.setTimeout(cb, delay);
+		timeoutIdsRef.current.push(id);
+	};
+
 	const handleSelectMode = () => {
 		playConfirmSound();
+		setIsTriggered(true);
 		window.dispatchEvent(new CustomEvent("unlockModes"));
 
 		setTimeout(() => {
@@ -66,16 +80,25 @@ export const NavigatorPrompt = () => {
 
 			// Sequence each item with delays
 			BOOT_ITEMS.forEach((_, index) => {
-				setTimeout(() => {
-					setLoadedItems(index + 1);
-					playConfirmSound(); // Beep for each item
-				}, (index + 1) * 1200); // 1.2s per item = 3.6s total
+				setTimeout(
+					() => {
+						setLoadedItems(index + 1);
+						playConfirmSound(); // Beep for each item
+					},
+					(index + 1) * 1200,
+				); // 1.2s per item = 3.6s total
 			});
 
-			// Mark complete and transition to SELECT MODE
-			setTimeout(() => {
+			const totalBootDuration = BOOT_ITEMS.length * 1200 + 800;
+
+			queueTimeout(() => {
 				setIsComplete(true);
-			}, BOOT_ITEMS.length * 1200 + 800); // +800ms buffer
+				setIsModeActive(true);
+			}, totalBootDuration);
+
+			queueTimeout(() => {
+				setIsPromptActive(true);
+			}, totalBootDuration + 500);
 		};
 
 		const ctx = gsap.context(() => {
@@ -106,61 +129,18 @@ export const NavigatorPrompt = () => {
 					once: true,
 				},
 			});
-
-			// Fade in SELECT MODE
-			gsap.fromTo(
-				modeRef.current,
-				{ opacity: 0, scale: 0.95 },
-				{
-					opacity: 1,
-					scale: 1,
-					duration: 0.8,
-					delay: BOOT_ITEMS.length * 1.2 + 1.3,
-					scrollTrigger: {
-						trigger: containerRef.current,
-						start: "top 75%",
-						once: true,
-					},
-				},
-			);
-
-			// Fade in prompt
-			gsap.fromTo(
-				promptRef.current,
-				{ opacity: 0, y: 10 },
-				{
-					opacity: 0.6,
-					y: 0,
-					duration: 0.5,
-					delay: BOOT_ITEMS.length * 1.2 + 1.8,
-					scrollTrigger: {
-						trigger: containerRef.current,
-						start: "top 75%",
-						once: true,
-					},
-				},
-			);
-
-			// Fade out when scrolling past
-			gsap.to([modeRef.current, promptRef.current], {
-				opacity: 0,
-				filter: "blur(10px)",
-				scrollTrigger: {
-					trigger: containerRef.current,
-					start: "bottom 30%",
-					end: "bottom 20%",
-					scrub: 1,
-				},
-			});
 		}, containerRef);
 
-		return () => ctx.revert();
+		return () => {
+			ctx.revert();
+			clearQueuedTimeouts();
+		};
 	}, []);
 
 	return (
 		<div
 			ref={containerRef}
-			className="relative z-10 min-h-[60vh] flex items-center justify-center overflow-hidden bg-black"
+			className={`relative z-10 min-h-[60vh] flex items-center justify-center overflow-hidden bg-black transition-all duration-1000 ${isTriggered ? "min-h-0 h-0 opacity-0 pointer-events-none overflow-hidden" : "opacity-100"}`}
 		>
 			<div className="absolute inset-0 pointer-events-none opacity-10">
 				<motion.div
@@ -215,8 +195,7 @@ export const NavigatorPrompt = () => {
 			</div>
 
 			<div
-				ref={modeRef}
-				className="absolute inset-0 flex flex-col items-center justify-center opacity-0"
+				className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ${isModeActive ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
 			>
 				<div className="relative">
 					<div className="absolute -top-4 -left-4 text-[#FF4D00] text-2xl font-mono">
@@ -244,8 +223,7 @@ export const NavigatorPrompt = () => {
 			</div>
 
 			<div
-				ref={promptRef}
-				className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-0"
+				className={`absolute bottom-12 left-1/2 -translate-x-1/2 transition-opacity duration-700 ${isPromptActive ? "opacity-60" : "opacity-0"}`}
 			>
 				<motion.div
 					className="font-mono text-xs uppercase tracking-widest text-neutral-500"

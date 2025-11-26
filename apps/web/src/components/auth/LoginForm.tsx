@@ -1,80 +1,84 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Loader2, Mail } from "lucide-react";
+import { ArrowRight, Loader2, Lock, Mail, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
-import { BiometricScanner } from "./BiometricScanner";
+import { FederatedLoginButton } from "./FederatedLoginButton";
 
 export function LoginForm() {
-	const [mode, setMode] = useState<"biometric" | "terminal">("biometric");
+	const [mode, setMode] = useState<"federated" | "credentials">("federated");
+	const [isSignUp, setIsSignUp] = useState(false);
 	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [name, setName] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
 
-	const handlePasskeyLogin = async () => {
+	const handleGoogleLogin = async () => {
 		setIsLoading(true);
 		try {
-			await authClient.signIn.passkey({
-				fetchOptions: {
-					onSuccess: () => {
-						toast.success("ACCESS GRANTED");
-						router.push("/dashboard");
-					},
-					onError: (ctx) => {
-						toast.error(ctx.error.message || "BIOMETRIC SCAN FAILED");
-					},
-				},
-			});
-		} catch (error) {
-			console.error(error);
-			toast.error("HARDWARE ERROR DETECTED");
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const handleMagicLink = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setIsLoading(true);
-		try {
-			await authClient.signIn.magicLink({
-				email,
+			await authClient.signIn.social({
+				provider: "google",
 				callbackURL: "/dashboard",
 				fetchOptions: {
 					onSuccess: () => {
-						toast.success("ENCRYPTED PACKET SENT. CHECK INBOX.");
+						toast.success("FEDERATION PROTOCOL ESTABLISHED");
 					},
 					onError: (ctx) => {
-						toast.error(ctx.error.message || "TRANSMISSION FAILED");
+						toast.error(ctx.error.message || "FEDERATION FAILED");
 					},
 				},
 			});
 		} catch (error) {
 			console.error(error);
+			toast.error("CONNECTION ERROR");
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const handleAnonymousLogin = async () => {
+	const handleCredentialsLogin = async (e: React.FormEvent) => {
+		e.preventDefault();
 		setIsLoading(true);
 		try {
-			await authClient.signIn.anonymous({
-				fetchOptions: {
-					onSuccess: () => {
-						toast.success("GUEST ACCESS GRANTED");
-						router.push("/dashboard");
+			if (isSignUp) {
+				await authClient.signUp.email({
+					email,
+					password,
+					name,
+					callbackURL: "/dashboard",
+					fetchOptions: {
+						onSuccess: () => {
+							toast.success("OPERATOR PROFILE CREATED");
+							router.push("/dashboard");
+						},
+						onError: (ctx) => {
+							toast.error(ctx.error.message || "REGISTRATION FAILED");
+						},
 					},
-					onError: (ctx) => {
-						toast.error(ctx.error.message);
+				});
+			} else {
+				await authClient.signIn.email({
+					email,
+					password,
+					callbackURL: "/dashboard",
+					fetchOptions: {
+						onSuccess: () => {
+							toast.success("ACCESS GRANTED");
+							router.push("/dashboard");
+						},
+						onError: (ctx) => {
+							toast.error(ctx.error.message || "INVALID CREDENTIALS");
+						},
 					},
-				},
-			});
+				});
+			}
 		} catch (error) {
 			console.error(error);
+			toast.error("AUTHENTICATION ERROR");
 		} finally {
 			setIsLoading(false);
 		}
@@ -86,74 +90,91 @@ export function LoginForm() {
 				{/* Mode Tabs */}
 				<div className="flex border-b border-neutral-200 dark:border-neutral-800">
 					<button
-						onClick={() => setMode("biometric")}
+						onClick={() => setMode("federated")}
 						className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
-							mode === "biometric"
-								? "text-emerald-500"
+							mode === "federated"
+								? "text-[#FF4D00]"
 								: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
 						}`}
 					>
-						HARDWARE_KEY
-						{mode === "biometric" && (
+						FEDERATED_AUTH
+						{mode === "federated" && (
 							<motion.div
 								layoutId="activeTab"
-								className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500"
+								className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
 							/>
 						)}
 					</button>
 					<button
-						onClick={() => setMode("terminal")}
+						onClick={() => setMode("credentials")}
 						className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
-							mode === "terminal"
-								? "text-emerald-500"
+							mode === "credentials"
+								? "text-[#FF4D00]"
 								: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
 						}`}
 					>
-						TERMINAL_INPUT
-						{mode === "terminal" && (
+						CREDENTIALS
+						{mode === "credentials" && (
 							<motion.div
 								layoutId="activeTab"
-								className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500"
+								className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
 							/>
 						)}
 					</button>
 				</div>
 
 				<AnimatePresence mode="wait">
-					{mode === "biometric" ? (
+					{mode === "federated" ? (
 						<motion.div
-							key="biometric"
+							key="federated"
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -10 }}
-							className="py-4"
+							className="py-4 space-y-4"
 						>
-							<BiometricScanner
-								onScan={handlePasskeyLogin}
-								isScanning={isLoading}
-							/>
-
-							<div className="mt-8 text-center">
-								<button
-									onClick={handleAnonymousLogin}
-									className="text-[10px] font-mono text-neutral-500 hover:text-emerald-500 underline decoration-dotted underline-offset-4 transition-colors"
-								>
-									[ ENTER_AS_GUEST_OPERATIVE ]
-								</button>
+							<div className="text-center mb-6">
+								<p className="font-mono text-[10px] text-neutral-500">
+									SELECT IDENTITY PROVIDER
+								</p>
 							</div>
+
+							<FederatedLoginButton
+								provider="google"
+								onClick={handleGoogleLogin}
+								isLoading={isLoading}
+							/>
 						</motion.div>
 					) : (
 						<motion.div
-							key="terminal"
+							key="credentials"
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -10 }}
 							className="py-8 space-y-4"
 						>
-							<form onSubmit={handleMagicLink} className="space-y-4">
+							<form onSubmit={handleCredentialsLogin} className="space-y-4">
+								{isSignUp && (
+									<div className="space-y-2">
+										<label className="font-sans text-xs font-medium text-neutral-900 dark:text-neutral-100 block">
+											Operator Name
+										</label>
+										<div className="relative">
+											<input
+												type="text"
+												required
+												value={name}
+												onChange={(e) => setName(e.target.value)}
+												className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-none px-3 py-3 font-mono text-sm focus:outline-none focus:border-[#FF4D00] transition-colors text-neutral-900 dark:text-neutral-100"
+												placeholder="JOHN DOE"
+											/>
+											<User className="absolute right-3 top-3 w-4 h-4 text-neutral-400" />
+										</div>
+									</div>
+								)}
+
 								<div className="space-y-2">
-									<label className="font-mono text-[10px] text-neutral-500 uppercase tracking-wider block">
-										Operator_ID (Email)
+									<label className="font-sans text-xs font-medium text-neutral-900 dark:text-neutral-100 block">
+										Email Address
 									</label>
 									<div className="relative">
 										<input
@@ -161,22 +182,41 @@ export function LoginForm() {
 											required
 											value={email}
 											onChange={(e) => setEmail(e.target.value)}
-											className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-none px-3 py-3 font-mono text-sm focus:outline-none focus:border-emerald-500 transition-colors text-neutral-900 dark:text-neutral-100"
+											className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-none px-3 py-3 font-mono text-sm focus:outline-none focus:border-[#FF4D00] transition-colors text-neutral-900 dark:text-neutral-100"
 											placeholder="OPERATIVE@STUDIO233.AI"
 										/>
 										<Mail className="absolute right-3 top-3 w-4 h-4 text-neutral-400" />
 									</div>
 								</div>
 
+								<div className="space-y-2">
+									<label className="font-sans text-xs font-medium text-neutral-900 dark:text-neutral-100 block">
+										Password
+									</label>
+									<div className="relative">
+										<input
+											type="password"
+											required
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-none px-3 py-3 font-mono text-sm focus:outline-none focus:border-[#FF4D00] transition-colors text-neutral-900 dark:text-neutral-100"
+											placeholder="••••••••••••"
+										/>
+										<Lock className="absolute right-3 top-3 w-4 h-4 text-neutral-400" />
+									</div>
+								</div>
+
 								<button
 									type="submit"
 									disabled={isLoading}
-									className="w-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black font-mono text-xs font-bold py-3 px-4 flex items-center justify-between hover:bg-emerald-600 dark:hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+									className="w-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black font-sans text-sm font-bold py-3 px-4 flex items-center justify-between hover:bg-[#FF4D00] dark:hover:bg-[#FF4D00] hover:text-white dark:hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
 								>
 									{isLoading ? (
-										<span>TRANSMITTING...</span>
+										<span>PROCESSING...</span>
 									) : (
-										<span>SEND_VERIFICATION_PACKET</span>
+										<span>
+											{isSignUp ? "INITIALIZE_OPERATOR" : "AUTHENTICATE"}
+										</span>
 									)}
 									{isLoading ? (
 										<Loader2 className="w-4 h-4 animate-spin" />
@@ -184,6 +224,16 @@ export function LoginForm() {
 										<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
 									)}
 								</button>
+
+								<div className="text-center pt-2">
+									<button
+										type="button"
+										onClick={() => setIsSignUp(!isSignUp)}
+										className="text-xs font-sans text-neutral-500 hover:text-[#FF4D00] transition-colors"
+									>
+										{isSignUp ? "Return to Login" : "Register New Operator"}
+									</button>
+								</div>
 							</form>
 						</motion.div>
 					)}
@@ -196,7 +246,7 @@ export function LoginForm() {
 					<span>SECURE_CHANNEL: TLS_1.3</span>
 					<span className="flex items-center gap-1">
 						STATUS:
-						<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+						<span className="w-1.5 h-1.5 rounded-full bg-[#FF4D00] animate-pulse" />
 						ACTIVE
 					</span>
 				</div>

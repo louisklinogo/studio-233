@@ -85,27 +85,21 @@ export const PhysicalThemeSwitch = () => {
 				{theme === "dark" ? "LIGHT_MODE" : "DARK_MODE"}
 			</span>
 
-			{/* Physical Switch Base */}
-			<div className="relative w-12 h-6 rounded-sm bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 shadow-inner transition-colors">
-				{/* Screw Heads (Decoration) */}
-				<div className="absolute top-1/2 -translate-y-1/2 left-0.5 w-0.5 h-0.5 rounded-full bg-neutral-400" />
-				<div className="absolute top-1/2 -translate-y-1/2 right-0.5 w-0.5 h-0.5 rounded-full bg-neutral-400" />
+			{/* Physical Switch Base (Braun Style) */}
+			<div className="relative w-12 h-6 bg-[#e5e5e5] dark:bg-[#2a2a2a] border border-neutral-300 dark:border-neutral-700 shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)] transition-colors overflow-hidden">
+				{/* Track Line */}
+				<div className="absolute top-1/2 left-2 right-2 h-px bg-neutral-300 dark:bg-neutral-600" />
 
 				{/* The Toggle Nub */}
 				<motion.div
-					className="absolute top-0.5 bottom-0.5 w-5 bg-white dark:bg-neutral-600 border border-neutral-300 dark:border-neutral-500 rounded-sm shadow-sm"
+					className="absolute top-[2px] bottom-[2px] w-5 bg-[#f0f0f0] dark:bg-[#3a3a3a] border border-neutral-300 dark:border-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,0.1)] flex items-center justify-center"
 					animate={{
 						left: theme === "dark" ? "calc(100% - 22px)" : "2px",
-						backgroundColor: theme === "dark" ? "#404040" : "#ffffff",
 					}}
-					transition={{ type: "spring", stiffness: 500, damping: 30 }}
+					transition={{ type: "spring", stiffness: 600, damping: 35 }}
 				>
-					{/* Grip Lines on Nub */}
-					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-0.5">
-						<div className="w-px h-2 bg-neutral-300 dark:bg-neutral-500" />
-						<div className="w-px h-2 bg-neutral-300 dark:bg-neutral-500" />
-						<div className="w-px h-2 bg-neutral-300 dark:bg-neutral-500" />
-					</div>
+					{/* Orange Indicator Line */}
+					<div className="w-[2px] h-3 bg-[#FF4D00]" />
 				</motion.div>
 			</div>
 		</button>
