@@ -16,31 +16,42 @@ export const ManifestoGSAP = () => {
 		const ctx = gsap.context(() => {
 			const lines = gsap.utils.toArray(".manifesto-line") as HTMLElement[];
 
+			// Initialize the Master Timeline
+			// This timeline is driven by the scroll position of the container.
 			const tl = gsap.timeline({
 				scrollTrigger: {
 					trigger: containerRef.current,
-					start: "top top",
-					end: "+=650%",
-					pin: true,
-					pinSpacing: true,
-					scrub: 1,
-					anticipatePin: 1,
+					start: "top top", // Start when top of container hits top of viewport
+					end: "+=650%", // The animation lasts for 6.5x the viewport height
+					pin: true, // Pin the container in place while scrolling
+					pinSpacing: true, // Add padding to compensate for the pinned duration
+					scrub: 1, // Smooth scrubbing effect (1s lag)
+					anticipatePin: 1, // Prevent jitter during pinning
 				},
 			});
 
+			/* =========================================
+			   PHASE 1: THE SPLIT (0% - 15%)
+			   The big "INFINITE CANVAS" text splits apart to reveal the content.
+			   ========================================= */
 			tl.addLabel("linesSplit", 0);
 
-			tl.to(lines[0], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit")
-				.to(lines[1], { x: "20%", opacity: 0.5, duration: 0.6 }, "linesSplit")
-				.to(lines[2], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit")
+			tl.to(lines[0], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit") // Top line moves left
+				.to(lines[1], { x: "20%", opacity: 0.5, duration: 0.6 }, "linesSplit") // Middle line moves right
+				.to(lines[2], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit") // Bottom line moves left
 				.to(
 					lines,
-					{ opacity: 0, filter: "blur(12px)", duration: 0.8 },
+					{ opacity: 0, filter: "blur(12px)", duration: 0.8 }, // Fade out and blur all lines
 					"linesSplit+=0.25",
 				);
 
+			/* =========================================
+			   PHASE 2: PARAGRAPH 01 (15% - 50%)
+			   The first paragraph enters, scrolls up, highlights keywords, and exits.
+			   ========================================= */
 			tl.addLabel("paragraph1Enter", "linesSplit+=0.9");
 
+			// 2.1 Entrance: Scale up and fade in from bottom
 			tl.fromTo(
 				paragraph1Ref.current,
 				{ scale: 0.9, opacity: 0, filter: "blur(15px)", y: 140 },
@@ -54,11 +65,13 @@ export const ManifestoGSAP = () => {
 				},
 				"paragraph1Enter",
 			)
+				// 2.2 Scroll Up: Move the paragraph upwards to simulate reading flow
 				.to(
 					paragraph1Ref.current,
-					{ y: -320, duration: 1.6, ease: "none" },
+					{ y: -450, duration: 2, ease: "none" },
 					"paragraph1Enter+=0.4",
 				)
+				// 2.3 Kinetic Highlight: Highlight keywords in sequence
 				.to(
 					".highlight-p1",
 					{
@@ -67,18 +80,24 @@ export const ManifestoGSAP = () => {
 						padding: "0 0.2em",
 						fontWeight: 900,
 						duration: 0.8,
-						stagger: 0.15,
+						stagger: 0.15, // Delay between each highlight
 					},
 					"paragraph1Enter+=0.9",
 				)
+				// 2.4 Exit: Fade out, blur, and scale down
 				.to(
 					paragraph1Ref.current,
-					{ opacity: 0, filter: "blur(12px)", scale: 0.94, duration: 0.6 },
+					{ opacity: 0, filter: "blur(12px)", scale: 0.94, duration: 1 },
 					"paragraph1Enter+=2.2",
 				);
 
+			/* =========================================
+			   PHASE 3: PARAGRAPH 02 (50% - 85%)
+			   The second paragraph follows the same pattern as the first.
+			   ========================================= */
 			tl.addLabel("paragraph2Enter", "paragraph1Enter+=2.6");
 
+			// 3.1 Entrance
 			tl.fromTo(
 				paragraph2Ref.current,
 				{ scale: 0.9, opacity: 0, filter: "blur(15px)", y: 140 },
@@ -92,11 +111,13 @@ export const ManifestoGSAP = () => {
 				},
 				"paragraph2Enter",
 			)
+				// 3.2 Scroll Up
 				.to(
 					paragraph2Ref.current,
-					{ y: -320, duration: 1.4, ease: "none" },
+					{ y: -450, duration: 2, ease: "none" },
 					"paragraph2Enter+=0.4",
 				)
+				// 3.3 Kinetic Highlight
 				.to(
 					".highlight-p2",
 					{
@@ -109,12 +130,17 @@ export const ManifestoGSAP = () => {
 					},
 					"paragraph2Enter+=0.9",
 				)
+				// 3.4 Exit
 				.to(
 					paragraph2Ref.current,
-					{ opacity: 0, filter: "blur(12px)", scale: 0.94, duration: 0.6 },
+					{ opacity: 0, filter: "blur(12px)", scale: 0.94, duration: 1 },
 					"paragraph2Enter+=2.0",
 				);
 
+			/* =========================================
+			   PHASE 4: OUTRO (85% - 100%)
+			   The final "SYSTEM READY" screen fades in.
+			   ========================================= */
 			tl.addLabel("manifestoOutro", "paragraph2Enter+=2.5");
 
 			tl.fromTo(

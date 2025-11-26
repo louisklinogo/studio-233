@@ -10,6 +10,7 @@ import { CompletionView } from "@/components/studio+/CompletionView";
 import { ConfigurationPanel } from "@/components/studio+/ConfigurationPanel";
 import { StudioChatPanel } from "@/components/studio+/chat/StudioChatPanel";
 import { EmptyStateInstructions } from "@/components/studio+/EmptyStateInstructions";
+import { FloatingToolbar } from "@/components/studio+/FloatingToolbar";
 import { InputQueue } from "@/components/studio+/InputQueue";
 import { LiveProgressView } from "@/components/studio+/LiveProgressView";
 import {
@@ -17,13 +18,15 @@ import {
 	StudioLayout,
 	StudioSidebar,
 } from "@/components/studio+/StudioLayout";
-import { FloatingToolbar } from "@/components/studio+/FloatingToolbar";
-import { WorkbenchStage, EmptyWorkbenchState } from "@/components/studio+/WorkbenchStage";
-import { cn } from "@/lib/utils";
+import {
+	EmptyWorkbenchState,
+	WorkbenchStage,
+} from "@/components/studio+/WorkbenchStage";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { BatchJob } from "@/lib/batch-store";
 import { type BatchUpload, canvasStorage } from "@/lib/storage";
+import { cn } from "@/lib/utils";
 import type { UploadedAsset, ViewState } from "@/types/studio";
 
 const TERMINAL_BATCH_STATES: BatchJob["status"][] = [
@@ -39,6 +42,8 @@ interface FileUploadStatus {
 	progress: number;
 	status: "idle" | "uploading" | "uploaded" | "error";
 }
+
+import { OperatorHeader } from "@/components/ui/operator/OperatorHeader";
 
 type RightPaneView = "empty" | "configure" | "processing" | "complete";
 type WorkflowType = "mannequin" | "style" | "logo" | "custom";
@@ -160,9 +165,9 @@ export default function StudioPage() {
 					setJobStatuses(data.jobs);
 
 					// Check if all completed
-			const allDone = data.jobs.every((j: BatchJob) =>
-				isTerminalStatus(j.status),
-			);
+					const allDone = data.jobs.every((j: BatchJob) =>
+						isTerminalStatus(j.status),
+					);
 					if (allDone && isProcessing) {
 						setIsProcessing(false);
 						setRightPaneView("complete");
@@ -427,7 +432,8 @@ export default function StudioPage() {
 	const processActive =
 		isProcessing || jobStatuses.some((j) => j.status === "processing");
 	const allTerminal =
-		jobStatuses.length > 0 && jobStatuses.every((j) => isTerminalStatus(j.status));
+		jobStatuses.length > 0 &&
+		jobStatuses.every((j) => isTerminalStatus(j.status));
 	const hasTerminal = jobStatuses.some((j) => isTerminalStatus(j.status));
 
 	const steps = [
@@ -468,30 +474,34 @@ export default function StudioPage() {
 	] as const;
 
 	return (
-		<StudioLayout>
-			<AnimatePresence mode="wait">
-				{showLeftPanel && (
-					<motion.div
-						initial={{ width: 0, opacity: 0 }}
-						animate={{ width: 500, opacity: 1 }}
-						exit={{ width: 0, opacity: 0 }}
-						transition={{ type: "spring", stiffness: 300, damping: 30 }}
-						className="h-full flex-shrink-0 overflow-hidden border-r bg-card z-10"
-					>
-						<div className="w-[500px] h-full">
-							<StudioSidebar className="w-full border-none shadow-none">
+		<div className="h-screen w-screen overflow-hidden bg-neutral-50 dark:bg-[#050505] relative flex flex-col">
+			<OperatorHeader mode="studio" title="Batch_Pipeline_Alpha" />
+
+			<div className="flex-1 flex relative pt-20 px-6 pb-6 gap-6 overflow-hidden">
+				<AnimatePresence mode="wait">
+					{showLeftPanel && (
+						<motion.div
+							initial={{ width: 0, opacity: 0, x: -20 }}
+							animate={{ width: 400, opacity: 1, x: 0 }}
+							exit={{ width: 0, opacity: 0, x: -20 }}
+							transition={{ type: "spring", stiffness: 300, damping: 30 }}
+							className="h-full z-10"
+						>
+							{/* Replaced StudioSidebar with Operator Panel Container */}
+							<div className="w-full h-full bg-[#f4f4f0] dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 flex flex-col shadow-xl">
 								{/* Dev-only: Clear Library Button */}
-								{process.env.NODE_ENV === "development" && viewState === "library" && (
-									<div className="absolute top-2 right-2 z-50">
-										<button
-											onClick={handleClearLibrary}
-											className="px-2 py-1 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded border border-red-500/20 transition-colors"
-											title="Clear library (dev only)"
-										>
-											🗑️ Clear
-										</button>
-									</div>
-								)}
+								{process.env.NODE_ENV === "development" &&
+									viewState === "library" && (
+										<div className="absolute top-2 right-2 z-50">
+											<button
+												onClick={handleClearLibrary}
+												className="px-2 py-1 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded border border-red-500/20 transition-colors"
+												title="Clear library (dev only)"
+											>
+												🗑️ Clear
+											</button>
+										</div>
+									)}
 
 								<AnimatePresence mode="wait">
 									{viewState === "staging" ? (
@@ -533,45 +543,41 @@ export default function StudioPage() {
 										</motion.div>
 									)}
 								</AnimatePresence>
-							</StudioSidebar>
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 
-			<div className="flex-1 flex flex-col min-w-0 relative">
-				{/* Floating Toolbar (Now relative to this canvas container) */}
-				<FloatingToolbar
-					showLeftPanel={showLeftPanel}
-					showRightPanel={showRightPanel}
-					onToggleLeftPanel={() => setShowLeftPanel(!showLeftPanel)}
-					onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
-					onUploadClick={() => fileInputRef.current?.click()}
-				/>
+				<div className="flex-1 flex flex-col min-w-0 relative bg-[#e5e5e5] dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 shadow-inner">
+					{/* Central Workbench */}
+					<WorkbenchStage>
+						<EmptyWorkbenchState />
+					</WorkbenchStage>
+				</div>
 
-				<WorkbenchStage>
-					<EmptyWorkbenchState />
-				</WorkbenchStage>
+				<AnimatePresence mode="wait">
+					{showRightPanel && (
+						<motion.div
+							initial={{ width: 0, opacity: 0, x: 20 }}
+							animate={{ width: 360, opacity: 1, x: 0 }}
+							exit={{ width: 0, opacity: 0, x: 20 }}
+							transition={{ type: "spring", stiffness: 300, damping: 30 }}
+							className="h-full z-10"
+						>
+							<div className="w-full h-full bg-[#f4f4f0] dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 flex flex-col shadow-xl">
+								<StudioChatPanel
+									filesCount={
+										viewState === "staging"
+											? files.length
+											: uploadedAssets.length
+									}
+									className="w-full h-full shadow-none border-none"
+								/>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
-
-			<AnimatePresence mode="wait">
-				{showRightPanel && (
-					<motion.div
-						initial={{ width: 0, opacity: 0 }}
-						animate={{ width: 400, opacity: 1 }}
-						exit={{ width: 0, opacity: 0 }}
-						transition={{ type: "spring", stiffness: 300, damping: 30 }}
-						className="h-full flex-shrink-0 overflow-hidden border-l bg-card z-10"
-					>
-						<div className="w-[400px] h-full">
-							<StudioChatPanel
-								filesCount={viewState === "staging" ? files.length : uploadedAssets.length}
-								className="w-full h-full shadow-none border-none"
-							/>
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
 
 			{/* Global File Input */}
 			<input
@@ -588,6 +594,6 @@ export default function StudioPage() {
 					}
 				}}
 			/>
-		</StudioLayout>
+		</div>
 	);
 }

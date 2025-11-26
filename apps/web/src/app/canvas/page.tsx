@@ -1,6 +1,17 @@
 "use client";
 
 import { createFalClient } from "@fal-ai/client";
+// Import types
+import type {
+	ActiveGeneration,
+	ActiveVideoGeneration,
+	GenerationSettings,
+	HistoryState,
+	PlacedImage,
+	PlacedVideo,
+	SelectionBox,
+	VideoGenerationSettings,
+} from "@studio233/canvas";
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Konva from "konva";
@@ -81,17 +92,6 @@ import { type CanvasState, canvasStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { getVideoModelById } from "@/lib/video-models";
 import { useTRPC } from "@/trpc/client";
-// Import types
-import type {
-	ActiveGeneration,
-	ActiveVideoGeneration,
-	GenerationSettings,
-	HistoryState,
-	PlacedImage,
-	PlacedVideo,
-	SelectionBox,
-	VideoGenerationSettings,
-} from "@studio233/canvas";
 import {
 	imageToCanvasElement,
 	videoToCanvasElement,
@@ -931,10 +931,10 @@ export default function OverlayPage() {
 			selectedIds,
 			generationSettings: settings
 				? {
-					...generationSettings,
-					...settings,
-					loraUrl: generationSettings.loraUrl,
-				}
+						...generationSettings,
+						...settings,
+						loraUrl: generationSettings.loraUrl,
+					}
 				: generationSettings,
 			customApiKey,
 			canvasSize,
@@ -1920,24 +1920,12 @@ export default function OverlayPage() {
 							sendBackward={sendBackward}
 						/>
 
-						<div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-2">
-							{/* Desktop Project Anchor */}
-							<div className="hidden md:flex items-center gap-0 p-1 bg-background/80 backdrop-blur-md border rounded-2xl shadow-lg transition-all hover:bg-background/100 hover:shadow-xl">
-								<Link
-									href="/"
-									className="p-2 hover:bg-muted rounded-xl transition-colors group"
-									title="Back to Dashboard"
-								>
-									<LayoutGrid className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
-								</Link>
-								<div className="w-[1px] h-4 bg-border mx-1" />
-								<button className="px-3 py-1.5 text-xs font-mono font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors text-left">
-									UNTITLED_PROJECT_01
-								</button>
-							</div>
+						{/* Overlay UI */}
+						<div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-4 pointer-events-none pt-[72px]">
+							{/* Desktop Project Anchor REMOVED - Handled by OperatorHeader */}
 
 							{/* Fal logo */}
-							<div className="md:hidden border bg-background/80 py-2 px-3 flex flex-row rounded-xl gap-2 items-center">
+							<div className="md:hidden border bg-background/80 py-2 px-3 flex flex-row rounded-xl gap-2 items-center pointer-events-auto">
 								<Link
 									href="https://fal.ai"
 									target="_blank"

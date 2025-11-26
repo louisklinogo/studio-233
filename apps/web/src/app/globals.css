@@ -191,6 +191,15 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+
+	/* Chrome Autofill Fix: Delay the background color change indefinitely */
+	input:-webkit-autofill,
+	input:-webkit-autofill:hover,
+	input:-webkit-autofill:focus,
+	input:-webkit-autofill:active {
+		transition: background-color 5000s ease-in-out 0s;
+		-webkit-text-fill-color: var(--foreground) !important;
+	}
 }
 
 @layer utilities {

@@ -70,8 +70,8 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
 			{/* Sidebar */}
 			<aside className="w-64 border-r border-neutral-200 dark:border-neutral-900 flex flex-col fixed h-full z-50 bg-white dark:bg-[#050505] transition-colors duration-300">
 				<div className="p-6 border-b border-neutral-200 dark:border-neutral-900">
-					<h1 className="font-mono text-[10px] tracking-[0.2em] text-[#FF4D00]">
-						STUDIO+233
+					<h1 className="font-black text-2xl tracking-tighter text-[#FF4D00] uppercase leading-none">
+						Studio+233
 					</h1>
 				</div>
 
