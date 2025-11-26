@@ -72,8 +72,10 @@ async function downloadImage(url: string): Promise<Buffer> {
 }
 
 import { getVideoModelById, VIDEO_MODELS } from "@/lib/video-models";
+import { projectRouter } from "./project";
 
 export const appRouter = router({
+	project: projectRouter,
 	gemini: geminiRouter,
 	transformVideo: publicProcedure
 		.input(

@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowUpRight, Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -14,42 +16,97 @@ export function ProjectCard({ project }: ProjectCardProps) {
 	return (
 		<Link
 			href={`/canvas/${project.id}`}
-			className="group border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30 hover:bg-neutral-50 dark:hover:bg-neutral-900/60 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-300 p-4 flex flex-col gap-4 min-h-[160px] relative overflow-hidden"
+			className="group relative flex flex-col bg-[#f4f4f0] dark:bg-[#111111] rounded-sm shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
 		>
-			{/* Scanline Overlay */}
-			<div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.02)_50%)] bg-[size:100%_4px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+			{/* Cartridge Body */}
+			<div className="p-1 pb-0 flex-1 flex flex-col">
+				{/* Paper Label Area */}
+				<div className="bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 p-4 flex-1 relative overflow-hidden group-hover:border-[#FF4D00] transition-colors">
+					{/* Write Protect Notch */}
+					<div className="absolute top-0 right-0 w-4 h-4 bg-[#f4f4f0] dark:bg-[#111111] border-b border-l border-neutral-200 dark:border-neutral-800" />
 
-			{/* Corner Bracket Reveal */}
-			<div className="absolute top-0 right-0 w-0 h-0 border-t-[8px] border-r-[8px] border-t-transparent border-r-[#FF4D00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+					<div className="flex justify-between items-start mb-4">
+						<div className="w-8 h-8 bg-neutral-100 dark:bg-black border border-neutral-200 dark:border-neutral-800 flex items-center justify-center font-mono text-xs font-bold text-neutral-500">
+							{project.name.slice(0, 2).toUpperCase()}
+						</div>
+						<ArrowUpRight className="w-4 h-4 text-neutral-300 group-hover:text-[#FF4D00] transition-colors" />
+					</div>
 
-			<div className="flex justify-between items-start relative z-10">
-				<div className="w-8 h-8 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-black flex items-center justify-center text-neutral-600 font-mono text-xs group-hover:border-[#FF4D00] group-hover:text-[#FF4D00] transition-colors">
-					{project.name.slice(0, 2).toUpperCase()}
+					<h3 className="font-bold text-neutral-900 dark:text-white truncate pr-4">
+						{project.name}
+					</h3>
+					<p className="font-mono text-[9px] text-neutral-400 mt-1">
+						ID: {project.id.slice(0, 8)}
+					</p>
 				</div>
-				<ArrowUpRight className="w-4 h-4 text-neutral-400 group-hover:text-[#FF4D00] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
 			</div>
 
-			<div className="mt-auto relative z-10">
-				<h3 className="font-bold text-neutral-900 dark:text-neutral-200 group-hover:text-[#FF4D00] dark:group-hover:text-white transition-colors truncate tracking-tight">
-					{project.name}
-				</h3>
-				<p className="text-[10px] font-mono text-neutral-500 mt-1 group-hover:text-neutral-600 dark:group-hover:text-neutral-400 transition-colors">
-					LAST_EDIT: {new Date(project.updatedAt).toLocaleDateString()}
-				</p>
+			{/* Grip / Bottom Bezel */}
+			<div className="h-10 bg-[#e5e5e5] dark:bg-[#1a1a1a] border-t border-neutral-300 dark:border-neutral-800 flex items-center justify-center gap-1 relative">
+				{/* Grip Ridges */}
+				<div className="w-12 h-[2px] bg-neutral-300 dark:bg-neutral-700 rounded-full" />
+				<div className="w-12 h-[2px] bg-neutral-300 dark:bg-neutral-700 rounded-full" />
+				<div className="w-12 h-[2px] bg-neutral-300 dark:bg-neutral-700 rounded-full" />
+
+				<div className="absolute right-3 top-1/2 -translate-y-1/2">
+					<p className="font-mono text-[8px] text-neutral-400 tracking-widest">
+						{new Date(project.updatedAt).toLocaleDateString()}
+					</p>
+				</div>
 			</div>
 		</Link>
 	);
 }
 
+import { useMutation } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useTRPC } from "@/trpc/client";
+
 export function CreateProjectCard() {
+	const trpc = useTRPC();
+	const router = useRouter();
+	const [isCreating, setIsCreating] = useState(false);
+	const createProject = useMutation({
+		...trpc.project.create.mutationOptions(),
+		onSuccess: (project) => {
+			router.push(`/canvas/${project.id}`);
+		},
+		onError: (error) => {
+			console.error("Failed to create project:", error);
+			setIsCreating(false);
+		},
+	});
+
+	const handleCreate = () => {
+		setIsCreating(true);
+		createProject.mutate({});
+	};
+
 	return (
-		<button className="group border border-dashed border-neutral-300 dark:border-neutral-800 hover:border-[#FF4D00]/50 hover:bg-[#FF4D00]/5 transition-all duration-300 p-4 flex flex-col items-center justify-center gap-3 min-h-[160px]">
-			<div className="w-10 h-10 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 group-hover:border-[#FF4D00] group-hover:text-[#FF4D00] text-neutral-500 flex items-center justify-center transition-colors">
-				<Plus className="w-5 h-5" />
+		<button
+			onClick={handleCreate}
+			disabled={isCreating}
+			className="group relative flex flex-col h-full min-h-[180px] bg-[#f4f4f0] dark:bg-[#111111] rounded-sm shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-dashed border-neutral-300 dark:border-neutral-800 hover:border-[#FF4D00] disabled:opacity-50 disabled:cursor-not-allowed"
+		>
+			<div className="flex-1 flex flex-col items-center justify-center gap-3 p-4">
+				<div className="w-10 h-10 rounded-full bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 flex items-center justify-center text-neutral-400 group-hover:text-[#FF4D00] group-hover:border-[#FF4D00] transition-colors">
+					{isCreating ? (
+						<Loader2 className="w-5 h-5 animate-spin" />
+					) : (
+						<Plus className="w-5 h-5" />
+					)}
+				</div>
+				<span className="font-mono text-xs text-neutral-500 group-hover:text-[#FF4D00] transition-colors uppercase tracking-widest">
+					{isCreating ? "Initializing..." : "Initialize Cartridge"}
+				</span>
 			</div>
-			<span className="font-mono text-xs text-neutral-500 group-hover:text-[#FF4D00] transition-colors uppercase tracking-widest">
-				Init_Canvas
-			</span>
+
+			{/* Grip / Bottom Bezel */}
+			<div className="h-10 bg-[#e5e5e5] dark:bg-[#1a1a1a] border-t border-neutral-300 dark:border-neutral-800 flex items-center justify-center opacity-50">
+				<div className="w-8 h-[2px] bg-neutral-300 dark:bg-neutral-700 rounded-full" />
+			</div>
 		</button>
 	);
 }
