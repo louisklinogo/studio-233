@@ -1,6 +1,6 @@
-import type { UIMessage } from "ai";
-import { nanoid } from "nanoid";
-import React, { useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { ChatHeader } from "./ChatHeader";
 import { ChatInput } from "./ChatInput";
@@ -20,41 +20,32 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 	onChat,
 	className,
 }) => {
-	const [messages, setMessages] = useState<UIMessage[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
-
-	const createTextMessage = (role: UIMessage["role"], text: string): UIMessage => ({
-		id: nanoid(),
-		role,
-		parts: [{ type: "text", text }],
+	const { messages, sendMessage, status, setMessages } = useChat({
+		transport: new DefaultChatTransport({
+			api: "/api/chat",
+		}),
+		onError: (err) => {
+			console.error("Chat error:", err);
+		},
 	});
+
+	const isLoading = status === "submitted" || status === "streaming";
 
 	const handleSubmit = async (text: string, files: File[]) => {
 		if (!text.trim() && files.length === 0) return;
 
-		// Add user message
-		const userMessage = createTextMessage("user", text);
-
-		setMessages((prev) => [...prev, userMessage]);
-		setIsLoading(true);
-
-		// Call the parent onChat handler
+		// Notify parent (canvas page) about the chat interaction
 		onChat(text);
 
-		// Simulate response for now
-		setTimeout(() => {
-			const assistantMessage = createTextMessage(
-				"assistant",
-				"I'm processing your request...",
-			);
-			setMessages((prev) => [...prev, assistantMessage]);
-			setIsLoading(false);
-		}, 1000);
+		await sendMessage({ text });
 	};
 
 	const handleNewChat = () => {
 		setMessages([]);
 	};
+
+	// AI SDK useChat already returns UIMessage instances
+	const uiMessages = messages as UIMessage[];
 
 	if (!isOpen) return null;
 
@@ -72,7 +63,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 						onSelectTemplate={(template) => handleSubmit(template, [])}
 					/>
 				) : (
-					<ChatList messages={messages} className="h-full" />
+					<ChatList messages={uiMessages} className="h-full" />
 				)}
 			</div>
 			<div className="p-4 pt-0">

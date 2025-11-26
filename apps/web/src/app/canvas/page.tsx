@@ -29,8 +29,10 @@ import { MobileToolbar } from "@/components/canvas/MobileToolbar";
 import { ShortcutBadge } from "@/components/canvas/ShortcutBadge";
 import { StreamingImage } from "@/components/canvas/StreamingImage";
 import { StreamingVideo } from "@/components/canvas/StreamingVideo";
+import { SystemEjectKey } from "@/components/canvas/SystemEjectKey";
 import { VideoControls } from "@/components/canvas/VideoControls";
 import { VideoOverlays } from "@/components/canvas/VideoOverlays";
+import { ZoomControls } from "@/components/canvas/ZoomControls";
 import { GenerationsIndicator } from "@/components/generations-indicator";
 import { Logo, SpinnerIcon } from "@/components/icons";
 import {
@@ -953,13 +955,8 @@ export default function OverlayPage() {
 	};
 
 	const handleChat = (prompt: string) => {
-		// For now, just update the prompt and show a toast
-		// In the future, this will handle actual agent interactions
+		// Sync chat prompt with generation settings
 		setGenerationSettings((prev) => ({ ...prev, prompt }));
-		toast({
-			title: "Message received",
-			description: "Agent functionality coming soon!",
-		});
 	};
 
 	const handleGeminiEdit = async () => {
@@ -2131,11 +2128,54 @@ export default function OverlayPage() {
 				<VideoOverlays
 					videos={videos}
 					selectedIds={selectedIds}
-					viewport={viewport}
-					hiddenVideoControlsIds={hiddenVideoControlsIds}
 					setVideos={setVideos}
 				/>
 			</motion.div>
+			{/* System Eject Key (Top Left) */}
+			<SystemEjectKey />
+
+			{/* Mobile Toolbar (Bottom Center) */}
+			<div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
+				<MobileToolbar
+					selectedIds={selectedIds}
+					images={images}
+					isGenerating={isGenerating}
+					generationSettings={generationSettings}
+					handleRun={handleRunHandler}
+					handleDuplicate={handleDuplicate}
+					handleRemoveBackground={() => {
+						if (selectedIds.length > 0) {
+							const selectedImage = images.find(
+								(img) => img.id === selectedIds[0],
+							);
+							if (selectedImage) {
+								handleRemoveBackgroundHandler(
+									selectedImage,
+									setImages,
+									removeBackground,
+									toast,
+								);
+							}
+						}
+					}}
+					handleCombineImages={() => {
+						// Implement combine logic
+					}}
+					handleDelete={handleDelete}
+					setCroppingImageId={setCroppingImageId}
+					sendToFront={sendToFront}
+					sendToBack={sendToBack}
+					bringForward={bringForward}
+					sendBackward={sendBackward}
+				/>
+			</div>
+
+			{/* Zoom Controls (Bottom Left) */}
+			<ZoomControls
+				viewport={viewport}
+				setViewport={setViewport}
+				canvasSize={canvasSize}
+			/>
 		</>
 	);
 }
