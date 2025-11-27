@@ -1,3 +1,12 @@
+import type {
+	CanvasElement,
+	DrawingElement,
+	PlacedImage,
+	PlacedVideo,
+	SelectionBox,
+	ShapeElement,
+	TextElement,
+} from "@studio233/canvas";
 import Konva from "konva";
 import React, { useRef, useState } from "react";
 import { Layer, Stage } from "react-konva";
@@ -10,13 +19,6 @@ import { CanvasVideo } from "@/components/canvas/CanvasVideo";
 import { CropOverlayWrapper } from "@/components/canvas/CropOverlayWrapper";
 import { SelectionBoxComponent } from "@/components/canvas/SelectionBox";
 import type { ViewportState } from "@/hooks/useViewportState";
-import type { PlacedImage, PlacedVideo, SelectionBox } from "@studio233/canvas";
-import type {
-	CanvasElement,
-	DrawingElement,
-	ShapeElement,
-	TextElement,
-} from "@studio233/canvas";
 import { createCroppedImage } from "@/utils/image-processing";
 
 interface CanvasStageProps {
@@ -377,7 +379,7 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 		return (
 			<div
 				ref={ref}
-				className="relative bg-background overflow-hidden w-full h-full"
+				className="relative bg-neutral-50 dark:bg-[#050505] overflow-hidden w-full h-full"
 				style={{
 					height: `${canvasSize.height}px`,
 					width: `${canvasSize.width}px`,

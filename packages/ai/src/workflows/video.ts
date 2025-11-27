@@ -144,7 +144,7 @@ const videoGifStep = createStep({
 		execute: z.boolean().default(false),
 	}),
 	outputSchema: z.object({
-		gifUrl: z.string(),
+		gifUrl: z.string().optional(),
 		command: z.string(),
 		executed: z.boolean(),
 	}),
@@ -157,7 +157,7 @@ const videoGifStep = createStep({
 		const command = `${ffmpeg ?? "ffmpeg"} -ss ${start} -t ${duration} -i "${videoUrl}" -vf "scale=${width}:-1:flags=lanczos" -gifflags -transdiff -y "${outputPath}"`;
 
 		if (!execute || !ffmpeg) {
-			return { command, executed: false as const, gifUrl: outputPath };
+			return { command, executed: false as const };
 		}
 
 		await new Promise<void>((resolve, reject) => {

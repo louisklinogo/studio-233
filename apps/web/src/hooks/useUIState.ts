@@ -46,7 +46,7 @@ export function useUIState() {
 
 	// Load grid setting from localStorage on mount
 	useEffect(() => {
-		const savedShowGrid = localStorage.getItem("showGrid");
+		const savedShowGrid = localStorage.getItem("studio_showGrid_v2");
 		if (savedShowGrid !== null) {
 			setShowGrid(savedShowGrid === "true");
 		}
@@ -62,7 +62,7 @@ export function useUIState() {
 
 	// Save grid setting to localStorage when it changes
 	useEffect(() => {
-		localStorage.setItem("showGrid", showGrid.toString());
+		localStorage.setItem("studio_showGrid_v2", showGrid.toString());
 	}, [showGrid]);
 
 	// Save minimap setting to localStorage when it changes

@@ -20,11 +20,11 @@ import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CalibrationScreen } from "@/components/canvas/CalibrationScreen";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
+import { ChatTrigger } from "@/components/canvas/ChatTrigger";
 import { DimensionDisplay } from "@/components/canvas/DimensionDisplay";
 import { FloatingContextMenu } from "@/components/canvas/FloatingContextMenu";
 import { GithubBadge } from "@/components/canvas/GithubBadge";
 import { MiniMap } from "@/components/canvas/MiniMap";
-import { MobileToolbar } from "@/components/canvas/MobileToolbar";
 // Import extracted components
 import { ShortcutBadge } from "@/components/canvas/ShortcutBadge";
 import { StreamingImage } from "@/components/canvas/StreamingImage";
@@ -36,20 +36,16 @@ import { ZoomControls } from "@/components/canvas/ZoomControls";
 import { GenerationsIndicator } from "@/components/generations-indicator";
 import { Logo, SpinnerIcon } from "@/components/icons";
 import {
-	BottomToolbar,
-	type ToolType,
-} from "@/components/studio/BottomToolbar";
-import {
-	CreativeToolbar,
+	CanvasPalette,
 	type ToolType as CreativeToolType,
-} from "@/components/studio/CreativeToolbar";
+} from "@/components/studio/CanvasPalette";
 import { ChatPanel } from "@/components/studio/chat/ChatPanel";
+import { ControlDeck } from "@/components/studio/control-deck/ControlDeck";
 import { DialogManager } from "@/components/studio/DialogManager";
 import {
 	ImageGeneratorPanel,
 	ImageGeneratorSettings,
 } from "@/components/studio/ImageGeneratorPanel";
-import { PropertiesBar } from "@/components/studio/properties/PropertiesBar";
 import { Button } from "@/components/ui/button";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { Textarea } from "@/components/ui/textarea";
@@ -959,6 +955,45 @@ export default function OverlayPage() {
 		setGenerationSettings((prev) => ({ ...prev, prompt }));
 	};
 
+	const handleCanvasCommand = (
+		command: import("@studio233/ai").CanvasCommand,
+	) => {
+		switch (command.type) {
+			case "add-image": {
+				const id = `generated-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+				// Place at center of current viewport
+				const viewportCenterX =
+					(canvasSize.width / 2 - viewport.x) / viewport.scale;
+				const viewportCenterY =
+					(canvasSize.height / 2 - viewport.y) / viewport.scale;
+
+				const width = Math.min(command.width, 512);
+				const height = Math.min(command.height, 512);
+
+				setImages((prev) => [
+					...prev,
+					{
+						id,
+						src: command.url,
+						x: viewportCenterX - width / 2,
+						y: viewportCenterY - height / 2,
+						width,
+						height,
+						rotation: 0,
+						isGenerated: true,
+					},
+				]);
+
+				setSelectedIds([id]);
+				break;
+			}
+			default: {
+				console.warn("Unhandled canvas command", command);
+			}
+		}
+	};
+
 	const handleGeminiEdit = async () => {
 		if (selectedIds.length !== 1) return;
 
@@ -1580,7 +1615,7 @@ export default function OverlayPage() {
 					isCalibrated ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.98 }
 				}
 				transition={{ duration: 0.8, ease: "easeOut" }}
-				className="bg-background text-foreground font-focal relative flex flex-row w-full overflow-hidden h-screen"
+				className="bg-neutral-50 dark:bg-[#050505] text-foreground font-focal relative flex flex-row w-full overflow-hidden h-screen"
 				style={{ height: "100dvh" }}
 				onDrop={handleDrop}
 				onDragOver={(e) => e.preventDefault()}
@@ -1597,8 +1632,8 @@ export default function OverlayPage() {
 					onChange={(e) => handleFileUpload(e.target.files)}
 				/>
 
-				{/* Creative Toolbar (Area A) - Left Side */}
-				<CreativeToolbar
+				{/* Canvas Palette (Area A) - Left Side */}
+				<CanvasPalette
 					activeTool={activeTool}
 					setActiveTool={setActiveTool}
 					onAddClick={() => fileInputRef.current?.click()} // Fallback
@@ -1612,6 +1647,10 @@ export default function OverlayPage() {
 							description: "Frame tool coming soon",
 						});
 					}}
+					undo={undo}
+					redo={redo}
+					canUndo={historyIndex > 0}
+					canRedo={historyIndex < history.length - 1}
 				/>
 
 				{/* Image Generator Panel */}
@@ -1839,25 +1878,6 @@ export default function OverlayPage() {
 							handleSelect={handleSelect}
 						/>
 
-						<PropertiesBar
-							elements={canvasElements}
-							selectedIds={selectedIds}
-							updateElement={updateCanvasElement}
-							onDelete={() => {
-								if (selectedIds.length > 0) {
-									selectedIds.forEach((id) => removeCanvasElement(id));
-									handleDelete();
-								}
-							}}
-							activeTool={activeTool}
-							defaultTextProps={defaultTextProps}
-							setDefaultTextProps={setDefaultTextProps}
-							defaultShapeProps={defaultShapeProps}
-							setDefaultShapeProps={setDefaultShapeProps}
-							defaultDrawingProps={defaultDrawingProps}
-							setDefaultDrawingProps={setDefaultDrawingProps}
-						/>
-
 						<FloatingContextMenu
 							position={contextMenuPosition}
 							onOpenChange={(open) => {
@@ -1918,51 +1938,9 @@ export default function OverlayPage() {
 									<Logo className="h-8 w-16 text-foreground" />
 								</Link>
 							</div>
-
-							{/* Mobile tool icons - animated based on selection */}
-							<MobileToolbar
-								selectedIds={selectedIds}
-								images={images}
-								isGenerating={isGenerating}
-								generationSettings={generationSettings}
-								handleRun={handleRun}
-								handleDuplicate={handleDuplicate}
-								handleRemoveBackground={handleRemoveBackground}
-								handleCombineImages={handleCombineImages}
-								handleDelete={handleDelete}
-								setCroppingImageId={setCroppingImageId}
-								sendToFront={sendToFront}
-								sendToBack={sendToBack}
-								bringForward={bringForward}
-								sendBackward={sendBackward}
-							/>
 						</div>
 
-						{/* Assistant Panel Toggle Trigger (Floating) */}
-						<div className="absolute top-4 right-4 z-20 flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-							<Link href="/studio">
-								<Button
-									variant="secondary"
-									className="h-10 px-4 rounded-full shadow-md bg-background/90 backdrop-blur hover:bg-background border border-border/50 gap-2"
-								>
-									<div className="p-1 bg-primary/10 rounded-md">
-										<SwissIcons.History className="w-3 h-3 text-primary" />
-									</div>
-									<span className="text-xs font-medium">Studio</span>
-								</Button>
-							</Link>
-
-							{!isChatOpen && (
-								<Button
-									size="icon"
-									variant="secondary"
-									className="h-10 w-10 rounded-full shadow-md bg-background/90 backdrop-blur hover:bg-background border border-border/50"
-									onClick={() => setIsChatOpen(true)}
-								>
-									<SpinnerIcon className="h-5 w-5" />
-								</Button>
-							)}
-						</div>
+						{/* Assistant Panel Toggle Trigger (Floating) - REMOVED (Replaced by ChatTrigger) */}
 
 						{/* Prompt bar removed - Moved to AssistantPanel */}
 
@@ -1994,38 +1972,6 @@ export default function OverlayPage() {
 							)}
 							viewport={viewport}
 						/>
-
-						{/* Bottom Toolbar - Navigation & History */}
-						<BottomToolbar
-							undo={undo}
-							redo={redo}
-							canUndo={historyIndex > 0}
-							canRedo={historyIndex < history.length - 1}
-							zoom={viewport.scale}
-							setZoom={(newScale) => {
-								const centerX = canvasSize.width / 2;
-								const centerY = canvasSize.height / 2;
-								const mousePointTo = {
-									x: (centerX - viewport.x) / viewport.scale,
-									y: (centerY - viewport.y) / viewport.scale,
-								};
-								setViewport({
-									x: centerX - mousePointTo.x * newScale,
-									y: centerY - mousePointTo.y * newScale,
-									scale: newScale,
-								});
-							}}
-							onFitToScreen={() => {
-								// Calculate fit scale
-								// For now, just reset to 100% at center
-								setViewport({
-									x: 0,
-									y: 0,
-									scale: 1,
-								});
-							}}
-							selectedCount={selectedIds.length}
-						/>
 					</div>
 				</main>
 
@@ -2043,6 +1989,8 @@ export default function OverlayPage() {
 								isOpen={isChatOpen}
 								onClose={() => setIsChatOpen(false)}
 								onChat={handleChat}
+								selectedImageIds={selectedIds}
+								onCanvasCommand={handleCanvasCommand}
 								className="h-full w-full"
 							/>
 						</motion.div>
@@ -2134,41 +2082,62 @@ export default function OverlayPage() {
 			{/* System Eject Key (Top Left) */}
 			<SystemEjectKey />
 
-			{/* Mobile Toolbar (Bottom Center) */}
-			<div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
-				<MobileToolbar
-					selectedIds={selectedIds}
-					images={images}
-					isGenerating={isGenerating}
-					generationSettings={generationSettings}
-					handleRun={handleRunHandler}
-					handleDuplicate={handleDuplicate}
-					handleRemoveBackground={() => {
-						if (selectedIds.length > 0) {
-							const selectedImage = images.find(
-								(img) => img.id === selectedIds[0],
-							);
-							if (selectedImage) {
-								handleRemoveBackgroundHandler(
-									selectedImage,
-									setImages,
-									removeBackground,
-									toast,
-								);
-							}
-						}
-					}}
-					handleCombineImages={() => {
-						// Implement combine logic
-					}}
-					handleDelete={handleDelete}
-					setCroppingImageId={setCroppingImageId}
-					sendToFront={sendToFront}
-					sendToBack={sendToBack}
-					bringForward={bringForward}
-					sendBackward={sendBackward}
-				/>
-			</div>
+			{/* Chat Trigger (Top Right) */}
+			<ChatTrigger
+				isOpen={isChatOpen}
+				onClick={() => setIsChatOpen(!isChatOpen)}
+			/>
+
+			{/* Control Deck (Universal Bottom Toolbar) */}
+			<ControlDeck
+				selectedIds={selectedIds}
+				images={images}
+				videos={videos}
+				elements={canvasElements}
+				updateElement={updateCanvasElement}
+				isGenerating={isGenerating}
+				generationSettings={generationSettings}
+				handleRun={() => handleRun()}
+				undo={undo}
+				redo={redo}
+				canUndo={historyIndex > 0}
+				canRedo={historyIndex < history.length - 1}
+				handleDuplicate={handleDuplicate}
+				handleRemoveBackground={handleRemoveBackground}
+				handleOpenIsolateDialog={() => {
+					if (
+						selectedIds.length === 1 &&
+						!videos.some((v) => v.id === selectedIds[0])
+					) {
+						setIsolateTarget(selectedIds[0]);
+						setIsolateInputValue("");
+						setIsIsolateDialogOpen(true);
+					}
+				}}
+				handleGeminiEdit={handleGeminiEdit}
+				isGeminiEditing={isGeminiEditing}
+				handleConvertToVideo={handleConvertToVideo}
+				handleCombineImages={handleCombineImages}
+				handleDelete={() => {
+					if (selectedIds.length > 0) {
+						selectedIds.forEach((id) => removeCanvasElement(id));
+						handleDelete();
+					}
+				}}
+				setCroppingImageId={setCroppingImageId}
+				sendToFront={sendToFront}
+				sendToBack={sendToBack}
+				bringForward={bringForward}
+				sendBackward={sendBackward}
+				activeTool={activeTool}
+				defaultTextProps={defaultTextProps}
+				setDefaultTextProps={setDefaultTextProps}
+				defaultShapeProps={defaultShapeProps}
+				setDefaultShapeProps={setDefaultShapeProps}
+				defaultDrawingProps={defaultDrawingProps}
+				setDefaultDrawingProps={setDefaultDrawingProps}
+				isChatOpen={isChatOpen}
+			/>
 
 			{/* Zoom Controls (Bottom Left) */}
 			<ZoomControls

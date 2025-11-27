@@ -4,18 +4,19 @@
 
 @layer base {
 	:root {
-		/* Light Mode: Clean, Objective, Calm "Paper" */
-		--background: 0.99 0.003 260;
-		/* Slightly off-white (cool crisp paper) */
+		/* Light Mode: Braun "Paper" - Off-White Matte */
+		--background: 0.96 0.005 90;
+		/* #f4f4f0 - Braun Paper */
 		--foreground: 0.25 0.02 265;
 		/* Deep Slate (softer than black) */
-		--card: 1 0 0;
+		--card: 0.96 0.005 90;
 		--card-foreground: 0.25 0.02 265;
-		--popover: 1 0 0;
+		--popover: 0.96 0.005 90;
 		--popover-foreground: 0.25 0.02 265;
 
-		/* DEFAULT Primary (Obsidian/Monochrome) */
-		--primary: 0.25 0.02 265;
+		/* PRIMARY: Braun Matte Blue/Grey (Rams Palette) */
+		--primary: 0.35 0.03 240;
+		/* #3B4B59 - Matte Blue/Grey */
 		--primary-foreground: 0.98 0.003 260;
 
 		--secondary: 0.96 0.005 260;
@@ -64,7 +65,8 @@
 		--font-mono:
 			ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
 			"Liberation Mono", monospace;
-		--radius: 0.5rem;
+		--radius: 0.125rem;
+		/* Braun Geometry: Sharp, Precise (2px) */
 		--shadow-2xs: 0px 1px 2px 0px hsl(240 10% 10% / 0.05);
 		--shadow-xs: 0px 2px 4px 0px hsl(240 10% 10% / 0.05);
 		--shadow-sm: 0px 4px 6px -1px hsl(240 10% 10% / 0.08);
@@ -75,6 +77,12 @@
 		--shadow-2xl: 0px 32px 64px -12px hsl(240 10% 10% / 0.12);
 		--tracking-normal: 0em;
 		--spacing: 0.25rem;
+
+		/* Braun Accent Colors (Rams Palette) */
+		--accent-warm: 0.7 0.06 70;
+		/* #BFA07A - Warm Beige */
+		--accent-critical: 0.65 0.22 40;
+		/* #FF4D00 - International Orange */
 	}
 
 	/* THEME: SAGE (Eucalyptus) */
@@ -107,18 +115,19 @@
 	}
 
 	.dark {
-		/* Dark Mode: "Midnight Glass" - Deep, rich, soothing */
-		--background: 0.12 0.01 265;
-		/* Deepest Slate (not black) */
+		/* Dark Mode: Braun "Matte Black" */
+		--background: 0.15 0 0;
+		/* #111111 - Matte Black */
 		--foreground: 0.98 0.005 265;
-		--card: 0.14 0.01 265;
+		--card: 0.17 0 0;
 		--card-foreground: 0.98 0.005 265;
-		--popover: 0.14 0.01 265;
+		--popover: 0.17 0 0;
 		--popover-foreground: 0.98 0.005 265;
 
-		/* DEFAULT Primary (Obsidian Dark -> White/Light Grey) */
-		--primary: 0.9 0.01 265;
-		--primary-foreground: 0.14 0.01 265;
+		/* PRIMARY: Braun Matte Blue/Grey (Slightly Lighter for Dark) */
+		--primary: 0.4 0.03 240;
+		/* Slightly lighter #3B4B59 for dark mode */
+		--primary-foreground: 0.98 0.005 265;
 
 		--secondary: 0.2 0.015 265;
 		--secondary-foreground: 0.98 0.005 265;

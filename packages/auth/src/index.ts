@@ -3,11 +3,14 @@ import { checkout, polar, portal } from "@polar-sh/better-auth";
 import prisma from "@studio233/db";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { emailOTP } from "better-auth/plugins";
+import { Resend } from "resend";
 import { getPolarClient } from "./lib/payments";
 import { CreditLedgerService } from "./services/credit-ledger-service";
 import { SubscriptionService } from "./services/subscription-service";
 import { UsageService } from "./services/usage-service";
 import { UserOnboardingService } from "./services/user-onboarding-service";
+import { buildOtpEmailHtml } from "./templates/otp-email";
 import { PolarWebhookHandler } from "./webhooks/polar-webhook-handler";
 
 const creditLedgerService = new CreditLedgerService();
@@ -16,6 +19,7 @@ const userOnboardingService = new UserOnboardingService(creditLedgerService);
 const usageService = new UsageService(creditLedgerService, subscriptionService);
 const polarWebhookHandler = new PolarWebhookHandler(subscriptionService);
 const polarClient = getPolarClient();
+const resendClient = new Resend(process.env.RESEND_API_KEY);
 const authPlugins = polarClient
 	? [
 			polar({
@@ -43,17 +47,57 @@ export const auth = betterAuth<BetterAuthOptions>({
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
+	trustedOrigins: [process.env.CORS_ORIGIN || "", "http://localhost:3001"],
 	emailAndPassword: {
-		enabled: true,
+		enabled: false,
 	},
 	socialProviders: {
 		google: {
+			prompt: "select_account",
 			clientId: process.env.GOOGLE_CLIENT_ID || "",
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
 		},
 	},
-	plugins: authPlugins,
+	plugins: [
+		...authPlugins,
+		emailOTP({
+			overrideDefaultEmailVerification: true,
+			async sendVerificationOTP({ email, otp, type }) {
+				if (!email || !otp) return;
+				if (!process.env.RESEND_API_KEY) {
+					if (process.env.NODE_ENV !== "production") {
+						console.warn("RESEND_API_KEY missing; cannot send OTP email.");
+					}
+					return;
+				}
+				const subjectPrefix =
+					type === "sign-in"
+						? "Studio+233 Access Code"
+						: type === "email-verification"
+							? "Studio+233 Email Verification"
+							: "Studio+233 Security Code";
+				const text =
+					type === "sign-in"
+						? `Your one-time access code is: ${otp}.\n\nIf you did not request this code, you can ignore this email.`
+						: `Your verification code is: ${otp}.`;
+				void resendClient.emails
+					.send({
+						from:
+							process.env.RESEND_FROM_EMAIL ||
+							"Studio233 Auth <no-reply@studio233.ai>",
+						to: email,
+						subject: subjectPrefix,
+						text,
+						html: buildOtpEmailHtml({ otp, type }),
+					})
+					.catch((error) => {
+						if (process.env.NODE_ENV !== "production") {
+							console.error("Failed to send OTP email via Resend", error);
+						}
+					});
+			},
+		}),
+	],
 	databaseHooks: {
 		user: {
 			create: {

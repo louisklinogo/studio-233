@@ -1,13 +1,6 @@
-import {
-	CaretDoubleRight,
-	ClockCounterClockwise,
-	DotsThree,
-	Plus,
-	ShareFat,
-	SlidersHorizontal,
-} from "@phosphor-icons/react";
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import {
 	Tooltip,
 	TooltipContent,
@@ -34,10 +27,17 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	return (
 		<div
 			className={cn(
-				"flex items-center justify-end p-3 bg-transparent",
+				"flex items-center justify-between p-4 bg-[#f4f4f0] dark:bg-[#111111] border-b border-neutral-200 dark:border-neutral-800",
 				className,
 			)}
 		>
+			<div className="flex items-center gap-2">
+				<div className="w-2 h-2 rounded-full bg-[#3B4B59]" />
+				<span className="font-mono text-xs font-medium tracking-widest uppercase text-neutral-500">
+					AI Communicator
+				</span>
+			</div>
+
 			<div className="flex items-center gap-1">
 				<TooltipProvider>
 					<Tooltip>
@@ -46,9 +46,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 								variant="ghost"
 								size="icon-sm"
 								onClick={onNewChat}
-								className="h-8 w-8 text-muted-foreground hover:text-foreground"
+								className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
 							>
-								<Plus size={16} weight="bold" />
+								<SwissIcons.Plus className="h-4 w-4" />
 								<span className="sr-only">New Chat</span>
 							</Button>
 						</TooltipTrigger>
@@ -60,38 +60,10 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 							<Button
 								variant="ghost"
 								size="icon-sm"
-								className="h-8 w-8 text-muted-foreground hover:text-foreground"
-							>
-								<SlidersHorizontal size={16} weight="regular" />
-								<span className="sr-only">Controls</span>
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Controls</TooltipContent>
-					</Tooltip>
-
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								className="h-8 w-8 text-muted-foreground hover:text-foreground"
-							>
-								<ShareFat size={16} weight="regular" />
-								<span className="sr-only">Share</span>
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Share</TooltipContent>
-					</Tooltip>
-
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								variant="ghost"
-								size="icon-sm"
 								onClick={onToggleHistory}
-								className="h-8 w-8 text-muted-foreground hover:text-foreground"
+								className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
 							>
-								<ClockCounterClockwise size={16} weight="regular" />
+								<SwissIcons.History className="h-4 w-4" />
 								<span className="sr-only">History</span>
 							</Button>
 						</TooltipTrigger>
@@ -104,13 +76,13 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 								variant="ghost"
 								size="icon-sm"
 								onClick={onCollapse}
-								className="h-8 w-8 text-muted-foreground hover:text-foreground"
+								className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
 							>
-								<CaretDoubleRight size={16} weight="regular" />
-								<span className="sr-only">Collapse</span>
+								<SwissIcons.Close className="h-4 w-4" />
+								<span className="sr-only">Close</span>
 							</Button>
 						</TooltipTrigger>
-						<TooltipContent>Collapse</TooltipContent>
+						<TooltipContent>Close Panel</TooltipContent>
 					</Tooltip>
 				</TooltipProvider>
 			</div>

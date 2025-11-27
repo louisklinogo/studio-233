@@ -1,6 +1,6 @@
 export const MODEL_CONFIG = {
 	orchestrator: {
-		model: "google/gemini-2.5-flash",
+		model: "google/gemini-3-pro-preview",
 		temperature: 0.4,
 	},
 	vision: {

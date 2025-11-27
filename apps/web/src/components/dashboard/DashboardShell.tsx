@@ -40,11 +40,11 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
 			<FieldPalette user={user} />
 
 			{/* Main Content */}
-			<main className="flex-1 min-h-screen relative overflow-hidden pl-24">
+			<main className="flex-1 min-h-screen relative overflow-hidden pl-[72px] md:pl-[20%]">
 				{/* Background Grid */}
 				<div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] opacity-50 pointer-events-none" />
 
-				<div className="relative z-10 p-8 md:p-12 max-w-7xl mx-auto">
+				<div className="relative z-10 p-8 md:p-12 max-w-7xl w-full">
 					{children}
 				</div>
 			</main>

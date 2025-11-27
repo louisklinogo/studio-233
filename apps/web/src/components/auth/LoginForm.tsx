@@ -1,21 +1,29 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Loader2, Lock, Mail, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { SwissIcons } from "../ui/SwissIcons";
 import { FederatedLoginButton } from "./FederatedLoginButton";
+import { LoginFormReceipt } from "./variants/LoginFormReceipt";
+import { LoginFormSignal } from "./variants/LoginFormSignal";
+
+type Variant = "signal" | "receipt";
 
 export function LoginForm() {
-	const [mode, setMode] = useState<"federated" | "credentials">("federated");
-	const [isSignUp, setIsSignUp] = useState(false);
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [name, setName] = useState("");
+	const [mode, setMode] = useState<"federated" | "email">("federated");
+	const [variant, setVariant] = useState<Variant>("signal");
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
+	const { data: session } = authClient.useSession();
+
+	useEffect(() => {
+		if (session) {
+			router.push("/dashboard");
+		}
+	}, [session, router]);
 
 	const handleGoogleLogin = async () => {
 		setIsLoading(true);
@@ -40,88 +48,93 @@ export function LoginForm() {
 		}
 	};
 
-	const handleCredentialsLogin = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setIsLoading(true);
-		try {
-			if (isSignUp) {
-				await authClient.signUp.email({
-					email,
-					password,
-					name,
-					callbackURL: "/dashboard",
-					fetchOptions: {
-						onSuccess: () => {
-							toast.success("OPERATOR PROFILE CREATED");
-							router.push("/dashboard");
-						},
-						onError: (ctx) => {
-							toast.error(ctx.error.message || "REGISTRATION FAILED");
-						},
-					},
-				});
-			} else {
-				await authClient.signIn.email({
-					email,
-					password,
-					callbackURL: "/dashboard",
-					fetchOptions: {
-						onSuccess: () => {
-							toast.success("ACCESS GRANTED");
-							router.push("/dashboard");
-						},
-						onError: (ctx) => {
-							toast.error(ctx.error.message || "INVALID CREDENTIALS");
-						},
-					},
-				});
-			}
-		} catch (error) {
-			console.error(error);
-			toast.error("AUTHENTICATION ERROR");
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
 	return (
 		<div className="flex-1 flex flex-col h-full justify-between">
 			<div className="space-y-6">
-				{/* Mode Tabs */}
-				<div className="flex border-b border-neutral-200 dark:border-neutral-800">
-					<button
-						onClick={() => setMode("federated")}
-						className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
-							mode === "federated"
-								? "text-[#FF4D00]"
-								: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
-						}`}
-					>
-						FEDERATED_AUTH
-						{mode === "federated" && (
-							<motion.div
-								layoutId="activeTab"
-								className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
-							/>
-						)}
-					</button>
-					<button
-						onClick={() => setMode("credentials")}
-						className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
-							mode === "credentials"
-								? "text-[#FF4D00]"
-								: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
-						}`}
-					>
-						CREDENTIALS
-						{mode === "credentials" && (
-							<motion.div
-								layoutId="activeTab"
-								className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
-							/>
-						)}
-					</button>
+				{/* Primary Navigation */}
+				<div className="flex items-end justify-between border-b border-neutral-200 dark:border-neutral-800 mb-4">
+					<div className="flex flex-1">
+						<button
+							onClick={() => setMode("federated")}
+							className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
+								mode === "federated"
+									? "text-[#FF4D00]"
+									: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+							}`}
+						>
+							FEDERATED_AUTH
+							{mode === "federated" && (
+								<motion.div
+									layoutId="activeTab"
+									className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
+								/>
+							)}
+						</button>
+						<button
+							onClick={() => setMode("email")}
+							className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
+								mode === "email"
+									? "text-[#FF4D00]"
+									: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+							}`}
+						>
+							EMAIL_ACCESS
+							{mode === "email" && (
+								<motion.div
+									layoutId="activeTab"
+									className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
+								/>
+							)}
+						</button>
+					</div>
 				</div>
+
+				{/* Secondary Interface Mode Toggle (Only visible in Email Mode) */}
+				<AnimatePresence>
+					{mode === "email" && (
+						<motion.div
+							initial={{ opacity: 0, height: 0 }}
+							animate={{ opacity: 1, height: "auto" }}
+							exit={{ opacity: 0, height: 0 }}
+							className="flex justify-end"
+						>
+							<div className="inline-flex bg-neutral-100 dark:bg-neutral-900 p-0.5 rounded-none border border-neutral-200 dark:border-neutral-800">
+								<button
+									onClick={() => setVariant("signal")}
+									className={`relative px-3 py-1 font-mono text-[9px] transition-colors ${
+										variant === "signal"
+											? "text-[#FF4D00]"
+											: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
+									}`}
+								>
+									SIGNAL
+									{variant === "signal" && (
+										<motion.div
+											layoutId="variantHighlight"
+											className="absolute inset-0 bg-white dark:bg-black shadow-sm border border-neutral-200 dark:border-neutral-800 -z-10"
+										/>
+									)}
+								</button>
+								<button
+									onClick={() => setVariant("receipt")}
+									className={`relative px-3 py-1 font-mono text-[9px] transition-colors ${
+										variant === "receipt"
+											? "text-[#FF4D00]"
+											: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
+									}`}
+								>
+									RECEIPT
+									{variant === "receipt" && (
+										<motion.div
+											layoutId="variantHighlight"
+											className="absolute inset-0 bg-white dark:bg-black shadow-sm border border-neutral-200 dark:border-neutral-800 -z-10"
+										/>
+									)}
+								</button>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 
 				<AnimatePresence mode="wait">
 					{mode === "federated" ? (
@@ -146,95 +159,14 @@ export function LoginForm() {
 						</motion.div>
 					) : (
 						<motion.div
-							key="credentials"
+							key="email"
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -10 }}
-							className="py-8 space-y-4"
+							className="py-0"
 						>
-							<form onSubmit={handleCredentialsLogin} className="space-y-4">
-								{isSignUp && (
-									<div className="space-y-2">
-										<label className="font-sans text-xs font-medium text-neutral-900 dark:text-neutral-100 block">
-											Operator Name
-										</label>
-										<div className="relative">
-											<input
-												type="text"
-												required
-												value={name}
-												onChange={(e) => setName(e.target.value)}
-												className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-none px-3 py-3 font-mono text-sm focus:outline-none focus:border-[#FF4D00] transition-colors text-neutral-900 dark:text-neutral-100"
-												placeholder="JOHN DOE"
-											/>
-											<User className="absolute right-3 top-3 w-4 h-4 text-neutral-400" />
-										</div>
-									</div>
-								)}
-
-								<div className="space-y-2">
-									<label className="font-sans text-xs font-medium text-neutral-900 dark:text-neutral-100 block">
-										Email Address
-									</label>
-									<div className="relative">
-										<input
-											type="email"
-											required
-											value={email}
-											onChange={(e) => setEmail(e.target.value)}
-											className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-none px-3 py-3 font-mono text-sm focus:outline-none focus:border-[#FF4D00] transition-colors text-neutral-900 dark:text-neutral-100"
-											placeholder="OPERATIVE@STUDIO233.AI"
-										/>
-										<Mail className="absolute right-3 top-3 w-4 h-4 text-neutral-400" />
-									</div>
-								</div>
-
-								<div className="space-y-2">
-									<label className="font-sans text-xs font-medium text-neutral-900 dark:text-neutral-100 block">
-										Password
-									</label>
-									<div className="relative">
-										<input
-											type="password"
-											required
-											value={password}
-											onChange={(e) => setPassword(e.target.value)}
-											className="w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-none px-3 py-3 font-mono text-sm focus:outline-none focus:border-[#FF4D00] transition-colors text-neutral-900 dark:text-neutral-100"
-											placeholder="••••••••••••"
-										/>
-										<Lock className="absolute right-3 top-3 w-4 h-4 text-neutral-400" />
-									</div>
-								</div>
-
-								<button
-									type="submit"
-									disabled={isLoading}
-									className="w-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black font-sans text-sm font-bold py-3 px-4 flex items-center justify-between hover:bg-[#FF4D00] dark:hover:bg-[#FF4D00] hover:text-white dark:hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
-								>
-									{isLoading ? (
-										<span>PROCESSING...</span>
-									) : (
-										<span>
-											{isSignUp ? "INITIALIZE_OPERATOR" : "AUTHENTICATE"}
-										</span>
-									)}
-									{isLoading ? (
-										<Loader2 className="w-4 h-4 animate-spin" />
-									) : (
-										<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-									)}
-								</button>
-
-								<div className="text-center pt-2">
-									<button
-										type="button"
-										onClick={() => setIsSignUp(!isSignUp)}
-										className="text-xs font-sans text-neutral-500 hover:text-[#FF4D00] transition-colors"
-									>
-										{isSignUp ? "Return to Login" : "Register New Operator"}
-									</button>
-								</div>
-							</form>
+							{variant === "signal" && <LoginFormSignal />}
+							{variant === "receipt" && <LoginFormReceipt />}
 						</motion.div>
 					)}
 				</AnimatePresence>

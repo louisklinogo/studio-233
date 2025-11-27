@@ -87,59 +87,49 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
 	};
 
 	return (
-		<div className="absolute bottom-6 left-6 flex flex-col items-center gap-2 z-20">
-			{/* Zoom Percentage Indicator */}
+		<div className="absolute bottom-6 left-6 z-20">
 			<div
 				className={cn(
-					"text-[10px] font-mono font-bold text-neutral-500 bg-[#f4f4f0] dark:bg-[#111111] px-2 py-1 rounded-sm",
-					"border border-neutral-200 dark:border-neutral-800 shadow-sm min-w-[48px] text-center",
-				)}
-			>
-				{Math.round(viewport.scale * 100)}%
-			</div>
-
-			{/* Control Strip */}
-			<div
-				className={cn(
-					"flex flex-col bg-neutral-200 dark:bg-neutral-800 rounded-sm overflow-hidden shadow-xl w-10",
+					// Chassis
+					"flex flex-row items-center h-10",
+					"bg-neutral-200 dark:bg-neutral-800 rounded-sm shadow-xl",
+					"gap-[1px] overflow-hidden",
 					"border border-neutral-200 dark:border-neutral-800",
 				)}
 			>
-				{/* Chassis Background */}
-				<div className="absolute inset-0 bg-[#f4f4f0] dark:bg-[#111111] -z-10" />
-
-				<Button
-					variant="ghost"
-					size="sm"
-					onClick={handleZoomIn}
-					className="w-10 h-10 p-0 rounded-none bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
-					title="Zoom In"
-				>
-					<SwissIcons.Plus className="h-4 w-4" />
-				</Button>
-
-				<div className="h-[1px] w-6 bg-neutral-300 dark:bg-neutral-700 mx-auto" />
-
+				{/* Zoom Out */}
 				<Button
 					variant="ghost"
 					size="sm"
 					onClick={handleZoomOut}
-					className="w-10 h-10 p-0 rounded-none bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+					className="w-10 h-full p-0 rounded-none bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
 					title="Zoom Out"
 				>
 					<SwissIcons.Minus className="h-4 w-4" />
 				</Button>
 
-				<div className="h-[1px] w-6 bg-neutral-300 dark:bg-neutral-700 mx-auto" />
+				{/* Percentage Indicator (Click to Reset) */}
+				<button
+					onClick={handleResetView}
+					className={cn(
+						"h-full min-w-[52px] px-2 flex items-center justify-center",
+						"bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors",
+						"text-[10px] font-mono font-bold text-neutral-600 dark:text-neutral-400 hover:text-[#FF4D00] cursor-pointer",
+					)}
+					title="Reset Zoom"
+				>
+					{Math.round(viewport.scale * 100)}%
+				</button>
 
+				{/* Zoom In */}
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={handleResetView}
-					className="w-10 h-10 p-0 rounded-none bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
-					title="Reset View"
+					onClick={handleZoomIn}
+					className="w-10 h-full p-0 rounded-none bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+					title="Zoom In"
 				>
-					<SwissIcons.Maximize className="h-4 w-4" />
+					<SwissIcons.Plus className="h-4 w-4" />
 				</Button>
 			</div>
 		</div>

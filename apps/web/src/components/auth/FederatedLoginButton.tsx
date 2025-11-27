@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 
 export const FederatedLoginButton = ({
 	provider,
@@ -51,7 +51,7 @@ export const FederatedLoginButton = ({
 					<span className="font-mono text-[9px] text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
 						INITIALIZE
 					</span>
-					<Check className="w-4 h-4 text-[#FF4D00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+					<SwissIcons.Check className="w-4 h-4 text-[#FF4D00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 				</div>
 			</div>
 

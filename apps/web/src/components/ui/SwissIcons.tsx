@@ -5,6 +5,70 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 export const SwissIcons = {
+	// SECURITY -> The Lock (Protection)
+	Lock: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect
+				x="5"
+				y="11"
+				width="14"
+				height="10"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path d="M8 11V7a4 4 0 1 1 8 0v4" stroke="currentColor" strokeWidth="2" />
+			<circle cx="12" cy="16" r="1" fill="currentColor" />
+		</svg>
+	),
+
+	// COMMUNICATION -> The Mail (Message)
+	Mail: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect
+				x="2"
+				y="4"
+				width="20"
+				height="16"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path d="M22 6L12 13L2 6" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// UI -> The Check (Validation)
+	Check: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M20 6L9 17L4 12"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
 	// HUB -> The Grid (Structure)
 	Grid: ({ size = 24, ...props }: IconProps) => (
 		<svg
@@ -979,6 +1043,7 @@ export const SwissIcons = {
 	),
 
 	// ACTIONS -> File Plus (Extend)
+	// ACTIONS -> File Plus (Extend)
 	// ACTIONS -> New Object (FilePlus)
 	FilePlus: ({ size = 24, ...props }: IconProps) => (
 		<svg
@@ -999,6 +1064,149 @@ export const SwissIcons = {
 			/>
 			<path d="M18 8V14" stroke="currentColor" strokeWidth="2" />
 			<path d="M15 11H21" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// AI -> Sparkles (Magic)
+	Sparkles: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+				fill="currentColor"
+			/>
+		</svg>
+	),
+
+	// ACTIONS -> Link (Connect)
+	Link: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
+	// NAV -> Globe (World)
+	Globe: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+			<path d="M2 12h20" stroke="currentColor" strokeWidth="2" />
+			<path
+				d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+		</svg>
+	),
+
+	// NAV -> Arrow Right (Move Right)
+	ArrowRight: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path d="M5 12h14" stroke="currentColor" strokeWidth="2" />
+			<path d="M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// ALIASES (Duplicated for safety)
+	Target: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" />
+			<path d="M12 2V6" stroke="currentColor" strokeWidth="2" />
+			<path d="M12 18V22" stroke="currentColor" strokeWidth="2" />
+			<path d="M2 12H6" stroke="currentColor" strokeWidth="2" />
+			<path d="M18 12H22" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	Pulse: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M2 12C2 12 5 4 8 12C11 20 13 4 16 12C19 20 22 12 22 12"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
+	Signal: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect x="4" y="14" width="4" height="6" fill="currentColor" />
+			<rect x="10" y="10" width="4" height="10" fill="currentColor" />
+			<rect x="16" y="4" width="4" height="16" fill="currentColor" />
+		</svg>
+	),
+
+	Sequence: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect x="2" y="8" width="6" height="8" fill="currentColor" />
+			<rect x="9" y="8" width="6" height="8" fill="currentColor" />
+			<rect x="16" y="8" width="6" height="8" fill="currentColor" />
 		</svg>
 	),
 };

@@ -1,6 +1,6 @@
+import type { PlacedImage, PlacedVideo } from "@studio233/canvas";
 import React from "react";
 import { cn } from "@/lib/utils";
-import type { PlacedImage, PlacedVideo } from "@studio233/canvas";
 
 interface MiniMapProps {
 	images: PlacedImage[];
@@ -74,17 +74,16 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 	return (
 		<div
 			className={cn(
-				"absolute bottom-4 right-2 md:right-4 z-20 bg-background/95 rounded-2xl p-1 backdrop-blur",
-				"shadow-[0_0_0_1px_rgba(50,50,50,0.16),0_4px_8px_-0.5px_rgba(50,50,50,0.08),0_8px_16px_-2px_rgba(50,50,50,0.04)]",
-				"dark:shadow-none dark:border dark:border-border",
+				"absolute bottom-6 right-6 z-20 bg-[#f4f4f0] dark:bg-[#111111] rounded-sm p-1 shadow-xl",
+				"border border-neutral-200 dark:border-neutral-800",
 			)}
 		>
-			<div className="relative w-24 h-16 md:w-36 md:h-24 bg-muted rounded-xl overflow-hidden">
+			<div className="relative w-24 h-16 md:w-36 md:h-24 bg-white dark:bg-[#1a1a1a] rounded-sm overflow-hidden border border-neutral-100 dark:border-neutral-800">
 				{/* Render tiny versions of images */}
 				{images.map((img) => (
 					<div
 						key={img.id}
-						className="absolute bg-primary/50"
+						className="absolute bg-neutral-400 dark:bg-neutral-600"
 						style={{
 							left: `${(img.x - minX) * scale + offsetX}px`,
 							top: `${(img.y - minY) * scale + offsetY}px`,
@@ -97,7 +96,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 				{videos.map((vid) => (
 					<div
 						key={vid.id}
-						className="absolute bg-primary"
+						className="absolute bg-neutral-500 dark:bg-neutral-500"
 						style={{
 							left: `${(vid.x - minX) * scale + offsetX}px`,
 							top: `${(vid.y - minY) * scale + offsetY}px`,
@@ -109,7 +108,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 
 				{/* Viewport indicator */}
 				<div
-					className="absolute border-2 border-blue-500 bg-blue-500/10"
+					className="absolute border border-[#3B4B59] bg-[#3B4B59]/10"
 					style={{
 						left: `${(-viewport.x / viewport.scale - minX) * scale + offsetX}px`,
 						top: `${(-viewport.y / viewport.scale - minY) * scale + offsetY}px`,
@@ -118,7 +117,12 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 					}}
 				/>
 			</div>
-			<p className="text-xs text-muted-foreground mt-1 text-center">Mini-map</p>
+			<div className="flex items-center justify-between mt-1 px-1">
+				<span className="text-[9px] font-mono uppercase tracking-wider text-neutral-400">
+					Map
+				</span>
+				<div className="w-1 h-1 rounded-full bg-[#3B4B59]" />
+			</div>
 		</div>
 	);
 };

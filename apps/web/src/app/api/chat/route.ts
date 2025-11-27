@@ -4,7 +4,7 @@ import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 
 export async function POST(req: Request) {
 	try {
-		const { messages } = await req.json();
+		const { messages, canvas } = await req.json();
 
 		const agent = mastra.getAgent("orchestratorAgent");
 
@@ -15,14 +15,20 @@ export async function POST(req: Request) {
 			});
 		}
 
-		const agentStream = await agent.stream(messages);
+		const agentStream = await agent.stream(messages, {
+			// canvas context can later be threaded into tools via runtimeContext
+			// when running Mastra in server mode. For now we simply keep it
+			// attached to this request scope.
+			// runtimeContext: canvas,
+		});
 
 		const uiMessageStream = createUIMessageStream({
 			async execute({ writer }) {
-				for await (const part of toAISdkFormat(agentStream, {
+				const formatted = toAISdkFormat(agentStream, {
 					from: "agent",
-				})!) {
-					writer.write(part);
+				}) as any;
+				for await (const part of formatted as AsyncIterable<any>) {
+					await writer.write(part as any);
 				}
 			},
 		});

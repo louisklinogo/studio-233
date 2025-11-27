@@ -35,10 +35,7 @@ export function getEnv(): Env {
 		falKey: process.env.FAL_KEY,
 		googleApiKey:
 			process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? process.env.GEMINI_API_KEY,
-		searchApiKey:
-			process.env.TAVILY_API_KEY ??
-			process.env.BRAVE_API_KEY ??
-			process.env.SERPAPI_API_KEY,
+		searchApiKey: process.env.TAVILY_API_KEY,
 		exaApiKey: process.env.EXA_API_KEY,
 		siteExtractorKey: process.env.SCRAPER_API_KEY,
 		ffmpegPath: process.env.FFMPEG_PATH,

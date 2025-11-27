@@ -1,12 +1,3 @@
-import {
-	ArrowUp,
-	AtSign,
-	Globe,
-	Lightbulb,
-	Mic,
-	Paperclip,
-	Zap,
-} from "lucide-react";
 import React from "react";
 import {
 	PromptInput,
@@ -20,6 +11,7 @@ import {
 	usePromptInputAttachments,
 } from "@/components/ai-elements/prompt-input";
 import { Button } from "@/components/ui/button";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import {
 	Tooltip,
 	TooltipContent,
@@ -43,11 +35,11 @@ const AttachButton = () => {
 				<Button
 					variant="ghost"
 					size="icon-sm"
-					className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
+					className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
 					type="button"
 					onClick={() => attachments.openFileDialog()}
 				>
-					<Paperclip className="h-4 w-4" />
+					<SwissIcons.Link className="h-4 w-4" />
 					<span className="sr-only">Attach files</span>
 				</Button>
 			</TooltipTrigger>
@@ -62,17 +54,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 	className,
 }) => {
 	return (
-		<div className={cn("p-4 bg-background", className)}>
+		<div className={cn("p-4 bg-[#f4f4f0] dark:bg-[#111111]", className)}>
 			<PromptInput
 				onSubmit={(message) => {
 					onSubmit(message.text, []);
 				}}
-				className="relative flex flex-col rounded-2xl border bg-background shadow-sm transition-colors focus-within:border-ring/50 hover:border-ring/20"
+				className="relative flex flex-col rounded-sm border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 shadow-inner transition-colors focus-within:border-[#3B4B59]/50"
 			>
 				<PromptInputBody>
 					<PromptInputTextarea
-						className="min-h-[44px] max-h-[200px] bg-transparent border-0 focus-visible:ring-0 p-4 resize-none shadow-none text-base placeholder:text-muted-foreground/70"
-						placeholder="Start with an idea, or type '@' to mention"
+						className="min-h-[44px] max-h-[200px] bg-transparent border-0 focus-visible:ring-0 p-4 resize-none shadow-none text-base placeholder:text-neutral-400 font-mono"
+						placeholder="Input command..."
 					/>
 				</PromptInputBody>
 
@@ -85,10 +77,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 									<Button
 										variant="ghost"
 										size="icon-sm"
-										className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
+										className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
 										type="button"
 									>
-										<AtSign className="h-4 w-4" />
+										<SwissIcons.Target className="h-4 w-4" />
 										<span className="sr-only">Mention</span>
 									</Button>
 								</TooltipTrigger>
@@ -104,24 +96,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 						<TooltipProvider>
 							<Tooltip>
 								<TooltipTrigger asChild>
-									<PromptInputButton className="text-muted-foreground hover:text-foreground">
-										<Lightbulb className="h-4 w-4" />
+									<PromptInputButton className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm">
+										<SwissIcons.Sparkles className="h-4 w-4" />
 									</PromptInputButton>
 								</TooltipTrigger>
 								<TooltipContent>Brainstorm</TooltipContent>
 							</Tooltip>
 							<Tooltip>
 								<TooltipTrigger asChild>
-									<PromptInputButton className="text-muted-foreground hover:text-foreground">
-										<Zap className="h-4 w-4" />
+									<PromptInputButton className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm">
+										<SwissIcons.Pulse className="h-4 w-4" />
 									</PromptInputButton>
 								</TooltipTrigger>
 								<TooltipContent>Quick Action</TooltipContent>
 							</Tooltip>
 							<Tooltip>
 								<TooltipTrigger asChild>
-									<PromptInputButton className="text-muted-foreground hover:text-foreground">
-										<Globe className="h-4 w-4" />
+									<PromptInputButton className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm">
+										<SwissIcons.Globe className="h-4 w-4" />
 									</PromptInputButton>
 								</TooltipTrigger>
 								<TooltipContent>Web Search</TooltipContent>
@@ -131,29 +123,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 									<Button
 										type="submit"
 										size="icon-sm"
-										className="h-8 w-8 rounded-full bg-muted-foreground/20 text-foreground hover:bg-muted-foreground/30"
+										className="h-8 w-8 rounded-sm bg-[#3B4B59] text-white hover:bg-[#3B4B59]/90 shadow-sm"
 										disabled={isLoading}
 									>
-										<ArrowUp className="h-4 w-4" />
+										<SwissIcons.ArrowUp className="h-4 w-4" />
 										<span className="sr-only">Send</span>
 									</Button>
 								</TooltipTrigger>
-								<TooltipContent>Send Message</TooltipContent>
+								<TooltipContent>Execute Command</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
 					</PromptInputTools>
 				</PromptInputFooter>
 			</PromptInput>
-			<div className="text-center text-[10px] text-muted-foreground pt-2">
-				Use{" "}
-				<kbd className="pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border bg-muted px-1 font-mono font-medium opacity-100">
-					Shift
-				</kbd>{" "}
-				+{" "}
-				<kbd className="pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border bg-muted px-1 font-mono font-medium opacity-100">
-					Return
-				</kbd>{" "}
-				for new line
+			<div className="text-center text-[10px] text-neutral-400 pt-2 font-mono uppercase tracking-wider">
+				System Ready
 			</div>
 		</div>
 	);
