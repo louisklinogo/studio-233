@@ -1,6 +1,7 @@
 "use client";
 
 import { createFalClient } from "@fal-ai/client";
+import type { CanvasCommand } from "@studio233/ai";
 // Import types
 import type {
 	ActiveGeneration,
@@ -955,45 +956,6 @@ export default function OverlayPage() {
 		setGenerationSettings((prev) => ({ ...prev, prompt }));
 	};
 
-	const handleCanvasCommand = (
-		command: import("@studio233/ai").CanvasCommand,
-	) => {
-		switch (command.type) {
-			case "add-image": {
-				const id = `generated-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-				// Place at center of current viewport
-				const viewportCenterX =
-					(canvasSize.width / 2 - viewport.x) / viewport.scale;
-				const viewportCenterY =
-					(canvasSize.height / 2 - viewport.y) / viewport.scale;
-
-				const width = Math.min(command.width, 512);
-				const height = Math.min(command.height, 512);
-
-				setImages((prev) => [
-					...prev,
-					{
-						id,
-						src: command.url,
-						x: viewportCenterX - width / 2,
-						y: viewportCenterY - height / 2,
-						width,
-						height,
-						rotation: 0,
-						isGenerated: true,
-					},
-				]);
-
-				setSelectedIds([id]);
-				break;
-			}
-			default: {
-				console.warn("Unhandled canvas command", command);
-			}
-		}
-	};
-
 	const handleGeminiEdit = async () => {
 		if (selectedIds.length !== 1) return;
 
@@ -1592,13 +1554,132 @@ export default function OverlayPage() {
 		handleDuplicate,
 		handleRun,
 		croppingImageId,
-		viewport,
-		canvasSize,
-		sendToFront,
-		sendToBack,
-		bringForward,
 		sendBackward,
 	]);
+
+	// Handle canvas commands from AI agents
+	const handleCanvasCommand = useCallback(
+		(command: CanvasCommand) => {
+			try {
+				if (command.type === "add-image") {
+					// Calculate center position in canvas coordinates
+					const viewportCenterX =
+						(canvasSize.width / 2 - viewport.x) / viewport.scale;
+					const viewportCenterY =
+						(canvasSize.height / 2 - viewport.y) / viewport.scale;
+
+					const newImage: PlacedImage = {
+						id: `ai-${Date.now()}-${Math.random()}`,
+						src: command.url,
+						x: viewportCenterX - command.width / 2,
+						y: viewportCenterY - command.height / 2,
+						width: command.width,
+						height: command.height,
+						rotation: 0,
+						isGenerated: true,
+					};
+
+					console.log("Adding AI-generated image to canvas:", {
+						id: newImage.id,
+						dimensions: `${command.width}x${command.height}`,
+						provider: command.meta?.provider,
+					});
+
+					setImages((prev) => [...prev, newImage]);
+					setSelectedIds([newImage.id]);
+					saveToHistory();
+
+					toast({
+						title: "Image generated",
+						description: `Created by ${command.meta?.provider || "AI"}`,
+					});
+				} else if (command.type === "update-image") {
+					const existingImage = images.find((img) => img.id === command.id);
+					if (!existingImage) {
+						throw new Error(`Image with id ${command.id} not found`);
+					}
+
+					console.log("Updating image on canvas:", {
+						id: command.id,
+						operation: command.meta?.operation,
+						provider: command.meta?.provider,
+					});
+
+					setImages((prev) =>
+						prev.map((img) =>
+							img.id === command.id
+								? { ...img, src: command.url, isGenerated: true }
+								: img,
+						),
+					);
+					saveToHistory();
+
+					toast({
+						title: "Image updated",
+						description: `${command.meta?.operation || "Operation"} completed`,
+					});
+				} else if (command.type === "add-video") {
+					const viewportCenterX =
+						(canvasSize.width / 2 - viewport.x) / viewport.scale;
+					const viewportCenterY =
+						(canvasSize.height / 2 - viewport.y) / viewport.scale;
+
+					const newVideo: PlacedVideo = {
+						id: `ai-video-${Date.now()}-${Math.random()}`,
+						src: command.url,
+						x: viewportCenterX - command.width / 2,
+						y: viewportCenterY - command.height / 2,
+						width: command.width,
+						height: command.height,
+						rotation: 0,
+						isVideo: true,
+						duration: command.duration,
+						currentTime: 0,
+						isPlaying: false,
+						volume: 1,
+						muted: false,
+						isLooping: false,
+						isGenerating: false,
+						isLoaded: false,
+					};
+
+					console.log("Adding AI-generated video to canvas:", {
+						id: newVideo.id,
+						dimensions: `${command.width}x${command.height}`,
+						duration: `${command.duration}s`,
+						provider: command.meta?.provider,
+					});
+
+					setVideos((prev) => [...prev, newVideo]);
+					setSelectedIds([newVideo.id]);
+					saveToHistory();
+
+					toast({
+						title: "Video generated",
+						description: `Created by ${command.meta?.provider || "AI"}`,
+					});
+				}
+			} catch (error) {
+				console.error("Failed to handle canvas command:", error);
+				toast({
+					title: "Failed to process command",
+					description: "There was an error processing the canvas command",
+					variant: "destructive",
+				});
+			}
+		},
+		[
+			viewport,
+			canvasSize,
+			images,
+			videos,
+			setImages,
+			setVideos,
+			setSelectedIds,
+			saveToHistory,
+			toast,
+		],
+	);
 
 	return (
 		<>

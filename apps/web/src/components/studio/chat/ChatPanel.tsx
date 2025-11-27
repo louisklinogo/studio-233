@@ -54,6 +54,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 		for (const message of messages) {
 			const parts = (message as UIMessage).parts ?? [];
 			parts.forEach((part, index) => {
+				// DEBUG: Log every part to inspect structure
+				if (part.type !== "text") {
+					console.log("Stream Part:", part.type, part);
+				}
+
+				// Handle explicit data commands
 				if ((part as any).type === "data-canvas-command") {
 					const key = `${message.id}-${index}`;
 					if (processedPartsRef.current.has(key)) return;
@@ -63,6 +69,54 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 						onCanvasCommand(command);
 					} catch (error) {
 						console.error("Failed to handle canvas command part", error);
+					}
+				}
+
+				// Handle Mastra tool results (custom format)
+				if (
+					(part as any).type === "tool-canvasTextToImageTool" ||
+					((part as any).type === "tool-invocation" &&
+						(part as any).toolInvocation?.toolName === "canvasTextToImageTool")
+				) {
+					const toolPart = part as any;
+					const toolCallId =
+						toolPart.toolCallId || toolPart.toolInvocation?.toolCallId;
+					const state = toolPart.state || toolPart.toolInvocation?.state;
+					const output = toolPart.output || toolPart.toolInvocation?.result;
+
+					// Use toolCallId to uniquely identify this execution
+					const key = `${message.id}-${toolCallId}`;
+
+					if (processedPartsRef.current.has(key)) return;
+
+					// Check for successful completion
+					if (state === "output-available" || state === "result") {
+						processedPartsRef.current.add(key);
+
+						// Handle nested command structure from Mastra
+						// The log showed: output: { command: { url: ... } }
+						const commandData = output?.command || output;
+
+						if (commandData && commandData.url) {
+							try {
+								const command: CanvasCommand = {
+									type: "add-image",
+									url: commandData.url,
+									width: commandData.width || 512,
+									height: commandData.height || 512,
+									meta: {
+										provider: commandData.meta?.provider || "ai",
+										prompt: commandData.meta?.prompt || "Generated Image",
+									},
+								};
+								onCanvasCommand(command);
+							} catch (error) {
+								console.error(
+									"Failed to handle canvas command from tool result",
+									error,
+								);
+							}
+						}
 					}
 				}
 			});

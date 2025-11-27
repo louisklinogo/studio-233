@@ -59,8 +59,8 @@ const textToImageStep = createStep({
 			const google = createGoogleGenerativeAI({ apiKey: googleKey });
 			const result = await generateText({
 				// Match the working canvas prompt generator, which uses
-				// google("gemini-3-pro-preview") and then reads result.files.
-				model: google("gemini-3-pro-preview"),
+				// google("gemini-3-pro-image-preview") and then reads result.files.
+				model: google("gemini-3-pro-image-preview"),
 				prompt,
 			});
 
