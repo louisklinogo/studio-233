@@ -29,6 +29,8 @@ export const MODEL_CONFIG = {
 	},
 } as const;
 
+export const IMAGE_GEN_MODEL = "gemini-3-pro-image-preview";
+
 export type AgentType = keyof typeof MODEL_CONFIG;
 
 export function getModelConfig(agentType: AgentType) {

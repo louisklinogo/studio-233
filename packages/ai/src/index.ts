@@ -81,7 +81,7 @@ export {
 	deepDiveAnalystAgent,
 } from "./agents/research-subagents";
 export { visionForgeAgent } from "./agents/vision-forge";
-export { getModelConfig } from "./model-config";
+export { getModelConfig, IMAGE_GEN_MODEL } from "./model-config";
 export { scorers } from "./scorers";
 export { mastraStore } from "./store";
 export * from "./tools";

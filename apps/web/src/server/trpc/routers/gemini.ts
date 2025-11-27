@@ -1,4 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { IMAGE_GEN_MODEL } from "@studio233/ai";
 import { generateText } from "ai";
 import { z } from "zod";
 import { rateLimitedProcedure, router } from "../init";
@@ -85,7 +86,7 @@ export async function generateImageFromText(
 	const google = createGoogleGenerativeAI({ apiKey: key });
 
 	const result = await generateText({
-		model: google("gemini-3-pro-image-preview"),
+		model: google(IMAGE_GEN_MODEL),
 		prompt: prompt,
 	});
 
@@ -129,7 +130,7 @@ export async function generateImageFromTextWithFallback(
 	const { image, mediaType } = parseImageInput(imageUrl);
 
 	const result = await generateText({
-		model: google("gemini-3-pro-image-preview"),
+		model: google(IMAGE_GEN_MODEL),
 		prompt: [
 			{
 				role: "user" as const,
@@ -208,7 +209,7 @@ export const geminiRouter = router({
 			const { image, mediaType } = parseImageInput(input.imageUrl);
 
 			const result = await generateText({
-				model: google("gemini-3-pro-image-preview"),
+				model: google(IMAGE_GEN_MODEL),
 				prompt: [
 					{
 						role: "user" as const,

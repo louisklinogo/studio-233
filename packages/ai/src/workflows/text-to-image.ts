@@ -5,6 +5,8 @@ import { generateText } from "ai";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { IMAGE_GEN_MODEL } from "../model-config";
+import { canvasToolOutputSchema } from "../schemas/tool-output";
 
 const env = getEnv();
 
@@ -26,13 +28,7 @@ const textToImageStep = createStep({
 			.optional(),
 		apiKey: z.string().optional(),
 	}),
-	outputSchema: z.object({
-		url: z.string().url(),
-		width: z.number(),
-		height: z.number(),
-		seed: z.number().optional(),
-		provider: z.enum(["fal", "gemini"]),
-	}),
+	outputSchema: canvasToolOutputSchema,
 	execute: async ({ inputData }) => {
 		const { prompt, modelId, loraUrl, seed, imageSize, apiKey } = inputData;
 
@@ -44,7 +40,7 @@ const textToImageStep = createStep({
 		// TRPC generateImageFromText helper used by the canvas prompt generator.
 		const shouldUseGemini =
 			modelId === "gemini-2.5-flash-image-preview" ||
-			modelId === "gemini-3-pro-image-preview" ||
+			modelId === IMAGE_GEN_MODEL ||
 			modelId?.startsWith("gemini") ||
 			(!falKey && !!googleKey);
 
@@ -59,8 +55,8 @@ const textToImageStep = createStep({
 			const google = createGoogleGenerativeAI({ apiKey: googleKey });
 			const result = await generateText({
 				// Match the working canvas prompt generator, which uses
-				// google("gemini-3-pro-image-preview") and then reads result.files.
-				model: google("gemini-3-pro-image-preview"),
+				// IMAGE_GEN_MODEL and then reads result.files.
+				model: google(IMAGE_GEN_MODEL),
 				prompt,
 			});
 
@@ -74,11 +70,16 @@ const textToImageStep = createStep({
 			const dataUrl = `data:${file.mediaType};base64,${base64}`;
 
 			return {
-				url: dataUrl,
-				width: 1024,
-				height: 1024,
-				seed: undefined,
-				provider: "gemini" as const,
+				command: {
+					type: "add-image",
+					url: dataUrl,
+					width: 1024,
+					height: 1024,
+					meta: {
+						provider: "gemini",
+						prompt,
+					},
+				},
 			};
 		}
 
@@ -118,11 +119,16 @@ const textToImageStep = createStep({
 		}
 
 		return {
-			url: resultData.images[0].url,
-			width: resultData.images[0].width,
-			height: resultData.images[0].height,
-			seed: resultData.seed,
-			provider: "fal" as const,
+			command: {
+				type: "add-image",
+				url: resultData.images[0].url,
+				width: resultData.images[0].width,
+				height: resultData.images[0].height,
+				meta: {
+					provider: "fal",
+					prompt,
+				},
+			},
 		};
 	},
 });

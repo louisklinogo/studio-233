@@ -54,11 +54,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 		for (const message of messages) {
 			const parts = (message as UIMessage).parts ?? [];
 			parts.forEach((part, index) => {
-				// DEBUG: Log every part to inspect structure
-				if (part.type !== "text") {
-					console.log("Stream Part:", part.type, part);
-				}
-
 				// Handle explicit data commands
 				if ((part as any).type === "data-canvas-command") {
 					const key = `${message.id}-${index}`;
@@ -72,49 +67,39 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 					}
 				}
 
-				// Handle Mastra tool results (custom format)
-				if (
-					(part as any).type === "tool-canvasTextToImageTool" ||
-					((part as any).type === "tool-invocation" &&
-						(part as any).toolInvocation?.toolName === "canvasTextToImageTool")
-				) {
+				// Standardized Tool Result Handler
+				// Supports both standard AI SDK 'tool-invocation' and Mastra's custom types
+				const isToolResult =
+					part.type === "tool-invocation" ||
+					(part as any).type?.startsWith("tool-");
+
+				if (isToolResult) {
 					const toolPart = part as any;
 					const toolCallId =
 						toolPart.toolCallId || toolPart.toolInvocation?.toolCallId;
 					const state = toolPart.state || toolPart.toolInvocation?.state;
 					const output = toolPart.output || toolPart.toolInvocation?.result;
 
-					// Use toolCallId to uniquely identify this execution
+					// Unique execution key
 					const key = `${message.id}-${toolCallId}`;
 
-					if (processedPartsRef.current.has(key)) return;
+					// Process only completed results we haven't seen yet
+					if (
+						(state === "output-available" || state === "result") &&
+						!processedPartsRef.current.has(key)
+					) {
+						// Check if the tool returned a UI command
+						// We look for 'command' in the output (standard protocol)
+						// Fallback: check if output itself looks like a command (legacy)
+						const command =
+							output?.command || (output?.type && output?.url ? output : null);
 
-					// Check for successful completion
-					if (state === "output-available" || state === "result") {
-						processedPartsRef.current.add(key);
-
-						// Handle nested command structure from Mastra
-						// The log showed: output: { command: { url: ... } }
-						const commandData = output?.command || output;
-
-						if (commandData && commandData.url) {
+						if (command) {
+							processedPartsRef.current.add(key);
 							try {
-								const command: CanvasCommand = {
-									type: "add-image",
-									url: commandData.url,
-									width: commandData.width || 512,
-									height: commandData.height || 512,
-									meta: {
-										provider: commandData.meta?.provider || "ai",
-										prompt: commandData.meta?.prompt || "Generated Image",
-									},
-								};
-								onCanvasCommand(command);
+								onCanvasCommand(command as CanvasCommand);
 							} catch (error) {
-								console.error(
-									"Failed to handle canvas command from tool result",
-									error,
-								);
+								console.error("Failed to execute canvas command", error);
 							}
 						}
 					}

@@ -8,6 +8,7 @@ import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { canvasToolOutputSchema } from "../schemas/tool-output";
 
 const env = getEnv();
 
@@ -24,19 +25,12 @@ const textToVideoStep = createStep({
 		duration: z.number().min(2).max(12).default(6),
 		aspectRatio: z.string().default("16:9"),
 	}),
-	outputSchema: z.object({
-		status: z.enum(["completed", "planned"]),
-		videoUrl: z.string().url().optional(),
-		provider: z.string(),
-		plan: z.string().optional(),
-	}),
+	outputSchema: canvasToolOutputSchema,
 	execute: async ({ inputData }) => {
 		const { prompt, mode, duration, aspectRatio } = inputData;
 		if (!env.falKey) {
 			return {
-				status: "planned" as const,
-				provider: "plan-only",
-				plan: `Render ${duration}s video at ${aspectRatio} using ${mode} mode. Prompt: ${prompt}`,
+				message: `Render ${duration}s video at ${aspectRatio} using ${mode} mode. Prompt: ${prompt} (Planned - No Key)`,
 			};
 		}
 
@@ -50,13 +44,30 @@ const textToVideoStep = createStep({
 			},
 		});
 		const videoUrl = result?.data?.video?.url;
+
+		if (!videoUrl) {
+			return {
+				message: `Model ${model} accepted prompt but did not return a URL.`,
+			};
+		}
+
+		// Estimate dimensions based on aspect ratio
+		const [w, h] = aspectRatio.split(":").map(Number);
+		const width = w && h ? (1024 / w) * w : 1024;
+		const height = w && h ? (1024 / w) * h : 576;
+
 		return {
-			status: videoUrl ? ("completed" as const) : ("planned" as const),
-			videoUrl,
-			provider: model,
-			plan: videoUrl
-				? undefined
-				: `Model ${model} accepted prompt but did not return a URL.`,
+			command: {
+				type: "add-video",
+				url: videoUrl,
+				width: Math.round(width),
+				height: Math.round(height),
+				duration,
+				meta: {
+					prompt,
+					provider: model,
+				},
+			},
 		};
 	},
 });

@@ -77,11 +77,42 @@ if (
 }
 ```
 
+## 3. Standardized Command Protocol (Architecture Upgrade)
+
+To prevent future fragility and support new tools without frontend changes, we implemented a standardized protocol for Tool-to-UI communication.
+
+### The Protocol
+All UI-facing tools must return a standard JSON structure defined in `packages/ai/src/schemas/tool-output.ts`.
+
+```typescript
+import { canvasToolOutputSchema } from "../schemas/tool-output";
+
+// Tool Output Structure
+{
+  command: {
+    type: "add-image" | "update-image" | "add-video",
+    url: string,
+    // ... command specific data
+  },
+  // Optional extra data
+  data: { ... }
+}
+```
+
+### Implementation Details
+1.  **Shared Schema:** Created `packages/ai/src/schemas/tool-output.ts` using Zod.
+2.  **Backend Update:** Refactored `packages/ai/src/workflows/text-to-image.ts` to import this schema and wrap its output in the `command` object.
+3.  **Frontend Update:** Refactored `ChatPanel.tsx` to remove tool-specific checks (e.g., `if toolName === 'canvasTextToImageTool'`). It now generically checks for `output.command` in any tool result and dispatches it to the canvas.
+
+This means adding a new tool (e.g., "Generate 3D Model") only requires the backend to return a valid `command`. No frontend changes are needed.
+
 ## Verification
 1.  **Backend:** The error `Gemini did not return an image` is gone.
 2.  **Frontend:** The chat now logs "I generated an image..." AND the image appears on the canvas.
 3.  **Model:** We are correctly using `gemini-3-pro-image-preview`.
+4.  **Protocol:** The system is using the generic `command` parser.
 
-## Future Recommendations
-*   **Standardize Tool Outputs:** Ensure backend tools return a consistent schema that the frontend expects.
+## Future Recommendations / Next Steps
+*   **Migrate Other Tools:** Update `text-to-video` and other workflows to use `canvasToolOutputSchema` and return `command` objects.
+*   **Strict Typing:** Enforce the `CanvasCommand` type sharing more strictly between the `ai` package and the `web` app (currently they have duplicate type definitions in `types/canvas.ts`).
 *   **Model Config:** Centralize the Gemini model ID string in `packages/ai/src/model-config.ts` so it only needs to be changed in one place.
