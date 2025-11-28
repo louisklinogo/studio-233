@@ -127,6 +127,10 @@ export default function RootLayout({
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
 				/>
+			</head>
+			<body
+				className={`${carlito.variable} ${poppins.variable} ${outfit.variable} font-sans bg-background text-foreground min-h-screen`}
+			>
 				<BotIdClient
 					protect={[
 						{
@@ -139,13 +143,9 @@ export default function RootLayout({
 						},
 					]}
 				/>
-			</head>
-			<body
-				className={`${carlito.variable} ${poppins.variable} ${outfit.variable} font-sans bg-background text-foreground min-h-screen`}
-			>
 				<CoreProviders>{children}</CoreProviders>
+				<Analytics />
 			</body>
-			<Analytics />
 		</html>
 	);
 }
