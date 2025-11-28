@@ -57,12 +57,12 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-// Import additional extracted components
 import { TRANSPARENT_PIXEL_DATA_URL } from "@/constants/canvas";
 import { useToast } from "@/hooks/use-toast";
 import { useCalibration } from "@/hooks/useCalibration";
 import { useCanvasElements } from "@/hooks/useCanvasElements";
 import { useCanvasState } from "@/hooks/useCanvasState";
+// Import additional extracted components
 import { useFalClient } from "@/hooks/useFalClient";
 import { useInteractionState } from "@/hooks/useInteractionState";
 import { useUIState } from "@/hooks/useUIState";
@@ -81,11 +81,6 @@ import { cn } from "@/lib/utils";
 import { getVideoModelById } from "@/lib/video-models";
 import { useTRPC } from "@/trpc/client";
 import {
-	calculatePlacement,
-	collectOccupiedRects,
-	normalizeDimensions,
-} from "@/utils/canvas-placement";
-import {
 	imageToCanvasElement,
 	videoToCanvasElement,
 } from "@/utils/canvas-utils";
@@ -96,17 +91,10 @@ import {
 import { checkOS } from "@/utils/os-utils";
 import { convertImageToVideo } from "@/utils/video-utils";
 
-export default function OverlayPage() {
+export function OverlayInterface() {
 	const { theme, setTheme } = useTheme();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isStorageLoaded, setIsStorageLoaded] = useState(false);
-	const lastPlacementRef = useRef<{
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-	} | null>(null);
-	const pendingToolCommands = useRef(new Map<string, string>());
 
 	// Use the robust calibration hook
 	const { isCalibrated, shouldShowBoot, handleAnimationComplete } =
@@ -948,7 +936,6 @@ export default function OverlayPage() {
 			toast,
 			generateTextToImage,
 			editWithGemini,
-			getPlacement: reservePlacement,
 		});
 	};
 
@@ -1573,139 +1560,37 @@ export default function OverlayPage() {
 	]);
 
 	// Handle canvas commands from AI agents
-	const computePlacement = useCallback(
-		(requestedWidth?: number, requestedHeight?: number) =>
-			calculatePlacement({
-				viewport,
-				canvasSize,
-				existingRects: collectOccupiedRects({ images, videos }),
-				requestedWidth,
-				requestedHeight,
-				lastPlacement: lastPlacementRef.current,
-				snapToGrid,
-				gridSize,
-			}),
-		[viewport, canvasSize, images, videos, snapToGrid, gridSize],
-	);
-
-	const reservePlacement = useCallback(
-		(requestedWidth?: number, requestedHeight?: number) => {
-			const result = computePlacement(requestedWidth, requestedHeight);
-			lastPlacementRef.current = result;
-			return result;
-		},
-		[computePlacement],
-	);
-
 	const handleCanvasCommand = useCallback(
 		(command: CanvasCommand) => {
 			console.log("🎯 handleCanvasCommand called with:", command);
 			try {
 				if (command.type === "add-image") {
-					const toolCallId = command.meta?.toolCallId;
-					const status = command.meta?.status ?? "ready";
+					// Calculate center position in canvas coordinates with safety checks
+					const scale = viewport?.scale || 1;
+					const viewportX = viewport?.x || 0;
+					const viewportY = viewport?.y || 0;
+					const canvasW = canvasSize?.width || 1920;
+					const canvasH = canvasSize?.height || 1080;
 
-					if (status === "pending") {
-						const placement = reservePlacement(command.width, command.height);
-						const placeholderId =
-							toolCallId || `ai-pending-${Date.now()}-${Math.random()}`;
-						const newImage: PlacedImage = {
-							id: placeholderId,
-							src: command.url || TRANSPARENT_PIXEL_DATA_URL,
-							x: placement.x,
-							y: placement.y,
-							width: placement.width,
-							height: placement.height,
-							rotation: 0,
-							isGenerated: true,
-						};
+					const viewportCenterX = (canvasW / 2 - viewportX) / scale;
+					const viewportCenterY = (canvasH / 2 - viewportY) / scale;
 
-						pendingToolCommands.current.set(
-							toolCallId || placeholderId,
-							placeholderId,
-						);
-						setImages((prev) => [...prev, newImage]);
-						setSelectedIds([newImage.id]);
-						return;
-					}
-
-					if (status === "error" && toolCallId) {
-						const placeholderId = pendingToolCommands.current.get(toolCallId);
-						if (placeholderId) {
-							pendingToolCommands.current.delete(toolCallId);
-							setImages((prev) =>
-								prev.filter((img) => img.id !== placeholderId),
-							);
-							toast({
-								title: "Generation cancelled",
-								description: "The AI tool stopped before producing an image.",
-								variant: "destructive",
-							});
-						}
-						return;
-					}
-
-					if (toolCallId) {
-						const placeholderId = pendingToolCommands.current.get(toolCallId);
-						if (placeholderId) {
-							pendingToolCommands.current.delete(toolCallId);
-							const { width, height } = normalizeDimensions(
-								command.width,
-								command.height,
-							);
-							let resolvedPlacement: {
-								x: number;
-								y: number;
-								width: number;
-								height: number;
-							} | null = null;
-
-							setImages((prev) =>
-								prev.map((img) => {
-									if (img.id !== placeholderId) return img;
-									const centerX = img.x + img.width / 2;
-									const centerY = img.y + img.height / 2;
-									const x = centerX - width / 2;
-									const y = centerY - height / 2;
-									resolvedPlacement = { x, y, width, height };
-									return {
-										...img,
-										src: command.url,
-										x,
-										y,
-										width,
-										height,
-										isGenerated: true,
-									};
-								}),
-							);
-
-							if (resolvedPlacement) {
-								lastPlacementRef.current = resolvedPlacement;
-							}
-
-							setSelectedIds([placeholderId]);
-							saveToHistory();
-
-							toast({
-								title: "Image generated",
-								description: `Created by ${command.meta?.provider || "AI"}`,
-							});
-							return;
-						}
-					}
-
-					const placement = reservePlacement(command.width, command.height);
 					const newImage: PlacedImage = {
 						id: `ai-${Date.now()}-${Math.random()}`,
 						src: command.url,
-						x: placement.x,
-						y: placement.y,
-						width: placement.width,
-						height: placement.height,
+						x: viewportCenterX - command.width / 2,
+						y: viewportCenterY - command.height / 2,
+						width: command.width,
+						height: command.height,
 						rotation: 0,
 						isGenerated: true,
 					};
+
+					console.log("Adding AI-generated image to canvas:", {
+						id: newImage.id,
+						dimensions: `${command.width}x${command.height}`,
+						provider: command.meta?.provider,
+					});
 
 					setImages((prev) => [...prev, newImage]);
 					setSelectedIds([newImage.id]);
@@ -1741,14 +1626,23 @@ export default function OverlayPage() {
 						description: `${command.meta?.operation || "Operation"} completed`,
 					});
 				} else if (command.type === "add-video") {
-					const placement = reservePlacement(command.width, command.height);
+					// Calculate center position with safety checks
+					const scale = viewport?.scale || 1;
+					const viewportX = viewport?.x || 0;
+					const viewportY = viewport?.y || 0;
+					const canvasW = canvasSize?.width || 1920;
+					const canvasH = canvasSize?.height || 1080;
+
+					const viewportCenterX = (canvasW / 2 - viewportX) / scale;
+					const viewportCenterY = (canvasH / 2 - viewportY) / scale;
+
 					const newVideo: PlacedVideo = {
 						id: `ai-video-${Date.now()}-${Math.random()}`,
 						src: command.url,
-						x: placement.x,
-						y: placement.y,
-						width: placement.width,
-						height: placement.height,
+						x: viewportCenterX - command.width / 2,
+						y: viewportCenterY - command.height / 2,
+						width: command.width,
+						height: command.height,
 						rotation: 0,
 						isVideo: true,
 						duration: command.duration,
@@ -1787,9 +1681,10 @@ export default function OverlayPage() {
 			}
 		},
 		[
+			viewport,
+			canvasSize,
 			images,
 			videos,
-			reservePlacement,
 			setImages,
 			setVideos,
 			setSelectedIds,

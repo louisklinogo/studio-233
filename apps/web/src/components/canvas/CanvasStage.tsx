@@ -34,6 +34,7 @@ interface CanvasStageProps {
 	selectionBox: SelectionBox;
 	isSelecting: boolean;
 	showGrid: boolean;
+	gridSize: number;
 	isPanningCanvas: boolean;
 	croppingImageId: string | null;
 	dragStartPositions: Map<string, { x: number; y: number }>;
@@ -102,6 +103,7 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 			selectionBox,
 			isSelecting,
 			showGrid,
+			gridSize,
 			isPanningCanvas,
 			croppingImageId,
 			dragStartPositions,
@@ -424,7 +426,11 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 					>
 						<Layer>
 							{showGrid && (
-								<CanvasGrid viewport={viewport} canvasSize={canvasSize} />
+								<CanvasGrid
+									viewport={viewport}
+									canvasSize={canvasSize}
+									gridSize={gridSize}
+								/>
 							)}
 
 							<SelectionBoxComponent selectionBox={selectionBox} />

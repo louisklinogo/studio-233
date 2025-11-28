@@ -10,6 +10,9 @@ export type CanvasCommand =
 				modelId?: string;
 				loraUrl?: string;
 				provider?: "fal" | "gemini";
+				toolCallId?: string;
+				status?: "pending" | "ready" | "error";
+				[key: string]: unknown;
 			};
 	  }
 	| {
@@ -19,7 +22,7 @@ export type CanvasCommand =
 			meta?: {
 				operation?: string;
 				provider?: string;
-				[key: string]: any;
+				[key: string]: unknown;
 			};
 	  }
 	| {
@@ -32,6 +35,6 @@ export type CanvasCommand =
 				prompt?: string;
 				modelId?: string;
 				provider?: string;
-				[key: string]: any;
+				[key: string]: unknown;
 			};
 	  };

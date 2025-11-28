@@ -4,6 +4,7 @@ import { generateText } from "ai";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { GEMINI_PRO_MODEL, GEMINI_TEXT_MODEL } from "../model-config";
 
 const env = getEnv();
 
@@ -43,7 +44,7 @@ Sections: ${inputData.sections.join(", ")}
 Color palette: ${inputData.colorPalette?.join(", ") ?? "designer's choice"}
 Return only JSON with keys html, css, rationale, components (component names).`;
 		const result = await generateText({
-			model: google("gemini-3-pro-preview"),
+			model: google(GEMINI_TEXT_MODEL),
 			prompt,
 			responseFormat: {
 				type: "json_schema",
@@ -106,7 +107,7 @@ Goals: ${inputData.goals.join(", ")}
 Platforms: ${inputData.platforms.join(", ")}
 Respond as JSON with sections (name, purpose, contentGuidelines[3], keyMetrics[2]), layoutNotes, testingChecklist.`;
 		const result = await generateText({
-			model: google("gemini-2.5-pro"),
+			model: google(GEMINI_PRO_MODEL),
 			prompt,
 			responseFormat: {
 				type: "json_schema",

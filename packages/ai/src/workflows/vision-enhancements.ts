@@ -5,6 +5,8 @@ import sharp from "sharp";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { GEMINI_TEXT_MODEL } from "../model-config";
+import { uploadImageBufferToBlob } from "../utils/blob-storage";
 
 const env = getEnv();
 
@@ -16,10 +18,6 @@ async function downloadImageBuffer(imageUrl: string) {
 		);
 	}
 	return Buffer.from(await response.arrayBuffer());
-}
-
-function bufferToDataUrl(buffer: Buffer, mimeType = "image/png") {
-	return `data:${mimeType};base64,${buffer.toString("base64")}`;
 }
 
 const imageReframeStep = createStep({
@@ -37,8 +35,13 @@ const imageReframeStep = createStep({
 		strategy: z.enum(["cover", "contain", "attention"]),
 	}),
 	execute: async ({ inputData }) => {
-		const { imageUrl, targetHeight, targetWidth, strategy } = inputData;
-		const buffer = await downloadImageBuffer(imageUrl);
+		const {
+			imageUrl: sourceImageUrl,
+			targetHeight,
+			targetWidth,
+			strategy,
+		} = inputData;
+		const buffer = await downloadImageBuffer(sourceImageUrl);
 		const resized = await sharp(buffer)
 			.resize(targetWidth, targetHeight, {
 				fit: strategy === "contain" ? "contain" : "cover",
@@ -50,8 +53,13 @@ const imageReframeStep = createStep({
 			.png()
 			.toBuffer();
 
+		const uploadedImageUrl = await uploadImageBufferToBlob(resized, {
+			contentType: "image/png",
+			prefix: "vision/reframe",
+		});
+
 		return {
-			imageUrl: bufferToDataUrl(resized),
+			imageUrl: uploadedImageUrl,
 			width: targetWidth,
 			height: targetHeight,
 			strategy,
@@ -81,8 +89,8 @@ const imageUpscaleStep = createStep({
 		scale: z.number(),
 	}),
 	execute: async ({ inputData }) => {
-		const { imageUrl, scale, maxDimension } = inputData;
-		const buffer = await downloadImageBuffer(imageUrl);
+		const { imageUrl: sourceImageUrl, scale, maxDimension } = inputData;
+		const buffer = await downloadImageBuffer(sourceImageUrl);
 		const image = sharp(buffer);
 		const meta = await image.metadata();
 		const targetWidth = Math.min((meta.width ?? 0) * scale, maxDimension);
@@ -94,8 +102,13 @@ const imageUpscaleStep = createStep({
 			.png()
 			.toBuffer();
 
+		const uploadedImageUrl = await uploadImageBufferToBlob(upscaled, {
+			contentType: "image/png",
+			prefix: "vision/upscale",
+		});
+
 		return {
-			imageUrl: bufferToDataUrl(upscaled),
+			imageUrl: uploadedImageUrl,
 			width: Math.round(targetWidth),
 			height: Math.round(targetHeight),
 			scale,
@@ -197,7 +210,7 @@ const storyboardStep = createStep({
 			throw new Error("Google API key required for storyboard generation");
 		}
 		const google = createGoogleGenerativeAI({ apiKey: key });
-		const model = google("gemini-3-pro-preview");
+		const model = google(GEMINI_TEXT_MODEL);
 		const formatDirective =
 			output === "html"
 				? "Return semantic HTML with <section> per frame and data attributes for timing."

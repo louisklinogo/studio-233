@@ -29,7 +29,14 @@ export const MODEL_CONFIG = {
 	},
 } as const;
 
-export const IMAGE_GEN_MODEL = "gemini-3-pro-image-preview";
+// Gemini model constants for workflows
+export const GEMINI_IMAGE_MODEL = "gemini-3-pro-image-preview";
+export const GEMINI_TEXT_MODEL = "gemini-3-pro-preview";
+export const GEMINI_PRO_MODEL = "gemini-2.5-pro";
+export const GEMINI_FLASH_MODEL = "gemini-2.5-flash";
+
+// Legacy alias for backward compatibility
+export const IMAGE_GEN_MODEL = GEMINI_IMAGE_MODEL;
 
 export type AgentType = keyof typeof MODEL_CONFIG;
 

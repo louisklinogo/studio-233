@@ -1,12 +1,18 @@
+import type {
+	GenerationSettings,
+	PlacedImage,
+	PlacedVideo,
+	VideoGenerationSettings,
+} from "@studio233/canvas";
 import { Check, MonitorIcon, MoonIcon, Plus, SunIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { SpinnerIcon } from "@/components/icons";
 import { ExtendVideoDialog } from "@/components/canvas/ExtendVideoDialog";
 import { ImageToVideoDialog } from "@/components/canvas/ImageToVideoDialog";
 import { RemoveVideoBackgroundDialog } from "@/components/canvas/VideoModelComponents";
 import { VideoToVideoDialog } from "@/components/canvas/VideoToVideoDialog";
+import { SpinnerIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -22,16 +28,11 @@ import {
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
-	SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { styleModels } from "@/lib/models";
 import { cn } from "@/lib/utils";
-import type {
-	GenerationSettings,
-	PlacedImage,
-	PlacedVideo,
-} from "@studio233/canvas";
 
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
@@ -45,6 +46,10 @@ interface DialogManagerProps {
 	setIsApiKeyDialogOpen: (open: boolean) => void;
 	showGrid: boolean;
 	setShowGrid: (show: boolean) => void;
+	snapToGrid: boolean;
+	setSnapToGrid: (snap: boolean) => void;
+	gridSize: number;
+	setGridSize: (size: number) => void;
 	showMinimap: boolean;
 	setShowMinimap: (show: boolean) => void;
 
@@ -68,21 +73,21 @@ interface DialogManagerProps {
 	selectedImageForVideo: string | null;
 	setSelectedImageForVideo: (id: string | null) => void;
 	isConvertingToVideo: boolean;
-	handleImageToVideoConversion: (settings: any) => void;
+	handleImageToVideoConversion: (settings: VideoGenerationSettings) => void;
 
 	isVideoToVideoDialogOpen: boolean;
 	setIsVideoToVideoDialogOpen: (open: boolean) => void;
 	selectedVideoForVideo: string | null;
 	setSelectedVideoForVideo: (id: string | null) => void;
 	isTransformingVideo: boolean;
-	handleVideoToVideoTransformation: (settings: any) => void;
+	handleVideoToVideoTransformation: (settings: VideoGenerationSettings) => void;
 
 	isExtendVideoDialogOpen: boolean;
 	setIsExtendVideoDialogOpen: (open: boolean) => void;
 	selectedVideoForExtend: string | null;
 	setSelectedVideoForExtend: (id: string | null) => void;
 	isExtendingVideo: boolean;
-	handleVideoExtension: (settings: any) => void;
+	handleVideoExtension: (settings: VideoGenerationSettings) => void;
 
 	isRemoveVideoBackgroundDialogOpen: boolean;
 	setIsRemoveVideoBackgroundDialogOpen: (open: boolean) => void;
@@ -94,7 +99,11 @@ interface DialogManagerProps {
 	// Data
 	images: PlacedImage[];
 	videos: PlacedVideo[];
-	toast: any; // Using any for toaster to avoid complexity with hook return type
+	toast: (props: {
+		title: string;
+		description?: string;
+		variant?: "default" | "destructive";
+	}) => void;
 
 	// Isolate Dialog
 	isolateInputValue: string;
@@ -110,10 +119,13 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 	setIsStyleDialogOpen,
 	isSettingsDialogOpen,
 	setIsSettingsDialogOpen,
-	isApiKeyDialogOpen,
 	setIsApiKeyDialogOpen,
 	showGrid,
 	setShowGrid,
+	snapToGrid,
+	setSnapToGrid,
+	gridSize,
+	setGridSize,
 	showMinimap,
 	setShowMinimap,
 	generationSettings,
@@ -180,6 +192,7 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 						<div className="overflow-y-auto max-h-[60vh] px-1">
 							<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pt-4 pb-6 md:pt-8 md:pb-12">
 								<button
+									type="button"
 									onClick={() => {
 										setGenerationSettings({
 											...generationSettings,
@@ -204,6 +217,7 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 
 								{styleModels.map((model) => (
 									<button
+										type="button"
 										key={model.id}
 										onClick={() => {
 											setGenerationSettings({
@@ -330,7 +344,7 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 													title: "API key saved",
 													description: "Your custom API key is now active",
 												});
-											} else if (trimmedKey) {
+											} else {
 												toast({
 													title: "Invalid API key",
 													description: "FAL API keys should start with 'fal_'",
@@ -419,6 +433,44 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 								id="grid"
 								checked={showGrid}
 								onCheckedChange={setShowGrid}
+							/>
+						</div>
+
+						{/* Snap to grid */}
+						<div className="flex justify-between">
+							<div className="flex flex-col gap-2">
+								<Label htmlFor="snap-grid">Snap to Grid</Label>
+								<p className="text-sm text-muted-foreground">
+									Automatically align new generations to the grid.
+								</p>
+							</div>
+							<Switch
+								id="snap-grid"
+								checked={snapToGrid}
+								onCheckedChange={setSnapToGrid}
+							/>
+						</div>
+
+						{/* Grid size */}
+						<div className="space-y-2">
+							<div className="flex items-center justify-between">
+								<div>
+									<Label htmlFor="grid-size">Grid Size</Label>
+									<p className="text-sm text-muted-foreground">
+										Controls spacing for grid lines and snapping.
+									</p>
+								</div>
+								<span className="text-sm text-muted-foreground">
+									{gridSize}px
+								</span>
+							</div>
+							<Slider
+								id="grid-size"
+								value={[gridSize]}
+								min={8}
+								step={4}
+								max={160}
+								onValueChange={([value]) => setGridSize(value)}
 							/>
 						</div>
 

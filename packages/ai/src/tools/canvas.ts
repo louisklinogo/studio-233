@@ -1,5 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { canvasToolOutputSchema } from "../schemas/tool-output";
 import type { CanvasCommand } from "../types/canvas";
 import { runWorkflow } from "../utils/run-workflow";
 import { textToImageWorkflow } from "../workflows/text-to-image";
@@ -14,41 +15,28 @@ export const canvasTextToImageTool = createTool({
 	description:
 		"Generate a new image from text for placement on the Studio+233 canvas.",
 	inputSchema: textToImageInputSchema,
-	outputSchema: z.object({
-		command: z.object({
-			type: z.literal("add-image"),
-			url: z.string().url(),
-			width: z.number(),
-			height: z.number(),
-			originalImageId: z.string().optional(),
-			meta: z
-				.object({
-					prompt: z.string().optional(),
-					modelId: z.string().optional(),
-					loraUrl: z.string().optional(),
-					provider: z.enum(["fal", "gemini"]).optional(),
-				})
-				.optional(),
-		}),
-	}),
+	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }, { writer }) => {
 		const input = context as TextToImageInput;
 
-		const result = await runWorkflow<TextToImageInput, TextToImageOutput>(
-			textToImageWorkflow,
-			input,
-		);
+		const workflowResult = await runWorkflow<
+			TextToImageInput,
+			TextToImageOutput
+		>(textToImageWorkflow, input);
+
+		const baseCommand = workflowResult.command;
+
+		if (!baseCommand) {
+			throw new Error("Text-to-image workflow did not return a canvas command");
+		}
 
 		const command: CanvasCommand = {
-			type: "add-image",
-			url: result.url,
-			width: result.width,
-			height: result.height,
+			...baseCommand,
 			meta: {
+				...(baseCommand.meta ?? {}),
 				prompt: input.prompt,
 				modelId: input.modelId,
 				loraUrl: input.loraUrl,
-				provider: result.provider,
 			},
 		};
 
@@ -58,6 +46,14 @@ export const canvasTextToImageTool = createTool({
 			data: command,
 		});
 
-		return { command };
+		return {
+			command,
+			message: "Image dispatched to canvas",
+			data: {
+				provider: command.meta?.provider,
+				width: command.width,
+				height: command.height,
+			},
+		};
 	},
 });

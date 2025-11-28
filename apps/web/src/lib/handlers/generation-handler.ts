@@ -5,10 +5,47 @@ import type {
 	PlacedImage,
 } from "@studio233/canvas";
 
+type Placement = { x: number; y: number; width: number; height: number };
+
+type TextToImageParams = {
+	prompt: string;
+	modelId?: string;
+	loraUrl?: string;
+	imageSize?: string;
+	apiKey?: string;
+};
+
+type TextToImageResult = {
+	url: string;
+	width: number;
+	height: number;
+};
+
+type GeminiEditParams = { imageUrl: string; prompt: string };
+type GeminiEditResult = { image: string };
+
+type UploadResult = { url: string };
+
+type GenerationSettingsWithReference = GenerationSettings & {
+	referenceImage?: string;
+};
+
+interface ImageProcessInput {
+	src: string;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	cropX?: number;
+	cropY?: number;
+	cropWidth?: number;
+	cropHeight?: number;
+}
+
 interface GenerationHandlerDeps {
 	images: PlacedImage[];
 	selectedIds: string[];
-	generationSettings: GenerationSettings;
+	generationSettings: GenerationSettingsWithReference;
 	customApiKey?: string;
 	canvasSize: { width: number; height: number };
 	viewport: { x: number; y: number; scale: number };
@@ -25,16 +62,39 @@ interface GenerationHandlerDeps {
 		description?: string;
 		variant?: "default" | "destructive";
 	}) => void;
-	generateTextToImage: (params: any) => Promise<any>;
-	editWithGemini?: (params: any) => Promise<any>;
+	generateTextToImage: (
+		params: TextToImageParams,
+	) => Promise<TextToImageResult>;
+	editWithGemini?: (params: GeminiEditParams) => Promise<GeminiEditResult>;
+	getPlacement?: (width?: number, height?: number) => Placement;
 }
+
+const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob> =>
+	new Promise((resolve, reject) => {
+		canvas.toBlob((blob) => {
+			if (blob) {
+				resolve(blob);
+			} else {
+				reject(new Error("Failed to convert canvas to blob"));
+			}
+		}, "image/png");
+	});
+
+const readBlobAsDataUrl = (blob: Blob): Promise<string> =>
+	new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => resolve(reader.result as string);
+		reader.onerror = () =>
+			reject(reader.error ?? new Error("Failed to read blob"));
+		reader.readAsDataURL(blob);
+	});
 
 export const uploadImageDirect = async (
 	dataUrl: string,
 	falClient: FalClient,
 	toast: GenerationHandlerDeps["toast"],
 	setIsApiKeyDialogOpen: GenerationHandlerDeps["setIsApiKeyDialogOpen"],
-) => {
+): Promise<UploadResult> => {
 	// Convert data URL to blob first
 	const response = await fetch(dataUrl);
 	const blob = await response.blob();
@@ -45,7 +105,7 @@ export const uploadImageDirect = async (
 			// 10MB warning
 			console.warn(
 				"Large image detected:",
-				(blob.size / 1024 / 1024).toFixed(2) + "MB",
+				`${(blob.size / 1024 / 1024).toFixed(2)}MB`,
 			);
 		}
 
@@ -53,13 +113,17 @@ export const uploadImageDirect = async (
 		const uploadResult = await falClient.storage.upload(blob);
 
 		return { url: uploadResult };
-	} catch (error: any) {
+	} catch (error: unknown) {
+		const status =
+			typeof error === "object" && error && "status" in error
+				? (error as { status?: number }).status
+				: undefined;
+		const message = error instanceof Error ? error.message : String(error);
 		// Check for rate limit error
 		const isRateLimit =
-			error.status === 429 ||
-			error.message?.includes("429") ||
-			error.message?.includes("rate limit") ||
-			error.message?.includes("Rate limit");
+			status === 429 ||
+			message.toLowerCase().includes("429") ||
+			message.toLowerCase().includes("rate limit");
 
 		if (isRateLimit) {
 			toast({
@@ -73,7 +137,7 @@ export const uploadImageDirect = async (
 		} else {
 			toast({
 				title: "Failed to upload image",
-				description: error instanceof Error ? error.message : "Unknown error",
+				description: message,
 				variant: "destructive",
 			});
 		}
@@ -137,6 +201,7 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 		toast,
 		generateTextToImage,
 		editWithGemini,
+		getPlacement,
 	} = deps;
 
 	if (!generationSettings.prompt) {
@@ -153,13 +218,7 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 	// Determine images to process:
 	// 1. Selected images on canvas
 	// 2. OR reference image from settings (newly uploaded in panel)
-	let imagesToProcess: {
-		src: string;
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-	}[] = [];
+	let imagesToProcess: ImageProcessInput[] = [];
 
 	// Use selected images from canvas if any
 	const selectedImages = images.filter((img) => selectedIds.includes(img.id));
@@ -171,8 +230,12 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 			y: img.y,
 			width: img.width,
 			height: img.height,
+			cropX: img.cropX,
+			cropY: img.cropY,
+			cropWidth: img.cropWidth,
+			cropHeight: img.cropHeight,
 		}));
-	} else if ((generationSettings as any).referenceImage) {
+	} else if (generationSettings.referenceImage) {
 		// Use the reference image uploaded in the panel
 		// Calculate center position
 		const viewportCenterX =
@@ -182,7 +245,7 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 
 		imagesToProcess = [
 			{
-				src: (generationSettings as any).referenceImage,
+				src: generationSettings.referenceImage,
 				x: viewportCenterX - 150, // Center - half default width
 				y: viewportCenterY - 150,
 				width: 300, // Default width
@@ -205,25 +268,33 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 			// Add the generated image to the canvas
 			const id = `generated-${Date.now()}-${Math.random()}`;
 
-			// Place at center of viewport
-			const viewportCenterX =
-				(canvasSize.width / 2 - viewport.x) / viewport.scale;
-			const viewportCenterY =
-				(canvasSize.height / 2 - viewport.y) / viewport.scale;
+			const defaultWidth = Math.min(result.width, 512);
+			const defaultHeight = Math.min(result.height, 512);
 
-			// Use the actual dimensions from the result
-			const width = Math.min(result.width, 512); // Limit display size
-			const height = Math.min(result.height, 512);
+			const placement = getPlacement
+				? getPlacement(result.width, result.height)
+				: (() => {
+						const viewportCenterX =
+							(canvasSize.width / 2 - viewport.x) / viewport.scale;
+						const viewportCenterY =
+							(canvasSize.height / 2 - viewport.y) / viewport.scale;
+						return {
+							x: viewportCenterX - defaultWidth / 2,
+							y: viewportCenterY - defaultHeight / 2,
+							width: defaultWidth,
+							height: defaultHeight,
+						};
+					})();
 
 			setImages((prev) => [
 				...prev,
 				{
 					id,
 					src: result.url,
-					x: viewportCenterX - width / 2,
-					y: viewportCenterY - height / 2,
-					width,
-					height,
+					x: placement.x,
+					y: placement.y,
+					width: placement.width,
+					height: placement.height,
 					rotation: 0,
 					isGenerated: true,
 				},
@@ -246,16 +317,12 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 	}
 
 	// Process each image individually
-	let successCount = 0;
-	let failureCount = 0;
-
 	for (const img of imagesToProcess) {
 		try {
 			// Check for Gemini Model
 			if (generationSettings.modelId === "gemini-2.5-flash-image-preview") {
 				if (!editWithGemini) {
 					console.warn("Gemini edit function not provided");
-					failureCount++;
 					continue;
 				}
 
@@ -276,10 +343,10 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 			}
 
 			// Get crop values (only applicable if it was a placed image, otherwise default)
-			const cropX = (img as any).cropX || 0;
-			const cropY = (img as any).cropY || 0;
-			const cropWidth = (img as any).cropWidth || 1;
-			const cropHeight = (img as any).cropHeight || 1;
+			const cropX = img.cropX ?? 0;
+			const cropY = img.cropY ?? 0;
+			const cropWidth = img.cropWidth ?? 1;
+			const cropHeight = img.cropHeight ?? 1;
 
 			// Load the image
 			const imgElement = new window.Image();
@@ -325,15 +392,8 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 			);
 
 			// Convert to blob and upload
-			const blob = await new Promise<Blob>((resolve) => {
-				canvas.toBlob((blob) => resolve(blob!), "image/png");
-			});
-
-			const reader = new FileReader();
-			const dataUrl = await new Promise<string>((resolve) => {
-				reader.onload = (e) => resolve(e.target?.result as string);
-				reader.readAsDataURL(blob);
-			});
+			const blob = await canvasToBlob(canvas);
+			const dataUrl = await readBlobAsDataUrl(blob);
 
 			// BRANCH: If Gemini, call editWithGemini directly with the dataUrl
 			if (
@@ -366,25 +426,26 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 							height: img.height,
 							rotation: 0,
 							isGenerated: true,
-							// parentGroupId: groupId // Optional
 						},
 					]);
 
-					successCount++;
 					continue; // Skip the rest of the loop (upload -> fal generation)
-				} catch (geminiError: any) {
+				} catch (geminiError: unknown) {
+					const msg =
+						geminiError instanceof Error
+							? geminiError.message
+							: "Unknown error";
 					console.error("Gemini generation failed:", geminiError);
-					failureCount++;
 					toast({
 						title: "Gemini Generation Failed",
-						description: geminiError.message || "Unknown error",
+						description: msg,
 						variant: "destructive",
 					});
 					continue;
 				}
 			}
 
-			let uploadResult;
+			let uploadResult: UploadResult | null = null;
 			try {
 				uploadResult = await uploadImageDirect(
 					dataUrl,
@@ -394,7 +455,6 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 				);
 			} catch (uploadError) {
 				console.error("Failed to upload image:", uploadError);
-				failureCount++;
 				// Skip this image if upload fails
 				continue;
 			}
@@ -402,20 +462,7 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 			// Only proceed with generation if upload succeeded
 			if (!uploadResult?.url) {
 				console.error("Upload succeeded but no URL returned");
-				failureCount++;
 				continue;
-			}
-
-			// Calculate output size maintaining aspect ratio
-			const aspectRatio = canvas.width / canvas.height;
-			const baseSize = 512;
-			let outputWidth = baseSize;
-			let outputHeight = baseSize;
-
-			if (aspectRatio > 1) {
-				outputHeight = Math.round(baseSize / aspectRatio);
-			} else {
-				outputWidth = Math.round(baseSize * aspectRatio);
 			}
 
 			const groupId = `single-${Date.now()}-${Math.random()}`;
@@ -430,10 +477,8 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 				img.width,
 				img.height,
 			);
-			successCount++;
 		} catch (error) {
 			console.error("Error processing image:", error);
-			failureCount++;
 			toast({
 				title: "Failed to process image",
 				description:

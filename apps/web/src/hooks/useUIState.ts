@@ -4,6 +4,8 @@ export function useUIState() {
 	const [isChatOpen, setIsChatOpen] = useState(false);
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
 	const [showGrid, setShowGrid] = useState(false);
+	const [snapToGrid, setSnapToGrid] = useState(false);
+	const [gridSize, setGridSize] = useState(40);
 	const [showMinimap, setShowMinimap] = useState(true);
 	const [isStyleDialogOpen, setIsStyleDialogOpen] = useState(false);
 	const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
@@ -50,6 +52,19 @@ export function useUIState() {
 		if (savedShowGrid !== null) {
 			setShowGrid(savedShowGrid === "true");
 		}
+
+		const savedSnapToGrid = localStorage.getItem("studio_snapToGrid");
+		if (savedSnapToGrid !== null) {
+			setSnapToGrid(savedSnapToGrid === "true");
+		}
+
+		const savedGridSize = localStorage.getItem("studio_gridSize");
+		if (savedGridSize !== null) {
+			const parsed = Number.parseInt(savedGridSize, 10);
+			if (!Number.isNaN(parsed) && parsed > 0) {
+				setGridSize(parsed);
+			}
+		}
 	}, []);
 
 	// Load minimap setting from localStorage on mount
@@ -64,6 +79,14 @@ export function useUIState() {
 	useEffect(() => {
 		localStorage.setItem("studio_showGrid_v2", showGrid.toString());
 	}, [showGrid]);
+
+	useEffect(() => {
+		localStorage.setItem("studio_snapToGrid", snapToGrid.toString());
+	}, [snapToGrid]);
+
+	useEffect(() => {
+		localStorage.setItem("studio_gridSize", gridSize.toString());
+	}, [gridSize]);
 
 	// Save minimap setting to localStorage when it changes
 	useEffect(() => {
@@ -86,6 +109,10 @@ export function useUIState() {
 		setIsSettingsDialogOpen,
 		showGrid,
 		setShowGrid,
+		snapToGrid,
+		setSnapToGrid,
+		gridSize,
+		setGridSize,
 		showMinimap,
 		setShowMinimap,
 		isStyleDialogOpen,

@@ -1,0 +1,2 @@
+export const TRANSPARENT_PIXEL_DATA_URL =
+	"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";

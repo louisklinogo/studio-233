@@ -1,5 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { canvasToolOutputSchema } from "../schemas/tool-output";
 import { runWorkflow } from "../utils/run-workflow";
 import { backgroundRemovalWorkflow } from "../workflows/background-removal";
 import {
@@ -20,16 +21,33 @@ export const backgroundRemovalTool = createTool({
 		"Remove or replace the background of an image while preserving the subject",
 	inputSchema: z.object({
 		imageUrl: z.string().url(),
+		originalImageId: z.string().optional(), // For canvas updates
 		apiKey: z.string().optional(),
 	}),
-	outputSchema: z.object({
-		imageUrl: z.string().url(),
-		provider: z.enum(["fal", "gemini"]),
-		verified: z.boolean(),
-		qualityScore: z.number(),
-	}),
-	execute: async ({ context }) =>
-		runWorkflow(backgroundRemovalWorkflow, context),
+	outputSchema: canvasToolOutputSchema,
+	execute: async ({ context }) => {
+		const result = await runWorkflow(backgroundRemovalWorkflow, context);
+
+		// Return standardized command format
+		return {
+			command: {
+				type: "update-image" as const,
+				id: context.originalImageId || "unknown",
+				url: result.imageUrl,
+				meta: {
+					operation: "background-removal",
+					provider: result.provider,
+					verified: result.verified,
+					qualityScore: result.qualityScore,
+				},
+			},
+			data: {
+				provider: result.provider,
+				verified: result.verified,
+			},
+			message: `Background removed successfully using ${result.provider}`,
+		};
+	},
 });
 
 export const objectIsolationTool = createTool({
@@ -38,13 +56,31 @@ export const objectIsolationTool = createTool({
 	inputSchema: z.object({
 		imageUrl: z.string().url(),
 		prompt: z.string().min(3),
+		originalImageId: z.string().optional(), // For canvas updates
 		apiKey: z.string().optional(),
 	}),
-	outputSchema: z.object({
-		imageUrl: z.string().url(),
-		maskUrl: z.string().url(),
-	}),
-	execute: async ({ context }) => runWorkflow(objectIsolationWorkflow, context),
+	outputSchema: canvasToolOutputSchema,
+	execute: async ({ context }) => {
+		const result = await runWorkflow(objectIsolationWorkflow, context);
+
+		// Return standardized command format
+		return {
+			command: {
+				type: "update-image" as const,
+				id: context.originalImageId || "unknown",
+				url: result.imageUrl,
+				meta: {
+					operation: "object-isolation",
+					prompt: context.prompt,
+					maskUrl: result.maskUrl,
+				},
+			},
+			data: {
+				maskUrl: result.maskUrl,
+			},
+			message: `Object isolated successfully: "${context.prompt}"`,
+		};
+	},
 });
 
 export const imageReframeTool = createTool({
@@ -56,9 +92,26 @@ export const imageReframeTool = createTool({
 		targetWidth: z.number().int().positive(),
 		targetHeight: z.number().int().positive(),
 		strategy: z.enum(["cover", "contain", "attention"]).default("cover"),
+		originalImageId: z.string().optional(), // For canvas updates
 	}),
-	outputSchema: imageReframeWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(imageReframeWorkflow, context),
+	outputSchema: canvasToolOutputSchema,
+	execute: async ({ context }) => {
+		const result = await runWorkflow(imageReframeWorkflow, context);
+
+		return {
+			command: {
+				type: "update-image" as const,
+				id: context.originalImageId || "unknown",
+				url: result.imageUrl,
+				meta: {
+					operation: "image-reframe",
+					strategy: context.strategy,
+					dimensions: `${context.targetWidth}x${context.targetHeight}`,
+				},
+			},
+			message: `Image reframed to ${context.targetWidth}x${context.targetHeight}`,
+		};
+	},
 });
 
 export const imageUpscaleTool = createTool({
@@ -68,9 +121,26 @@ export const imageUpscaleTool = createTool({
 		imageUrl: z.string().url(),
 		scale: z.number().min(1).max(4).default(2),
 		maxDimension: z.number().min(512).max(4096).default(2048),
+		originalImageId: z.string().optional(), // For canvas updates
 	}),
-	outputSchema: imageUpscaleWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(imageUpscaleWorkflow, context),
+	outputSchema: canvasToolOutputSchema,
+	execute: async ({ context }) => {
+		const result = await runWorkflow(imageUpscaleWorkflow, context);
+
+		return {
+			command: {
+				type: "update-image" as const,
+				id: context.originalImageId || "unknown",
+				url: result.imageUrl,
+				meta: {
+					operation: "image-upscale",
+					scale: context.scale,
+					dimensions: `${result.width}x${result.height}`,
+				},
+			},
+			message: `Image upscaled ${context.scale}x`,
+		};
+	},
 });
 
 export const paletteExtractorTool = createTool({

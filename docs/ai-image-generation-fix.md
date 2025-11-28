@@ -77,7 +77,13 @@ if (
 }
 ```
 
-## 3. Standardized Command Protocol (Architecture Upgrade)
+### 3. Tool Output Structure (Agent Tool Bug)
+
+After the stream handling patch landed we still saw the chat claiming success without painting anything. The canvas tool itself (`packages/ai/src/tools/canvas.ts`) was only returning the raw workflow payload (`{ url, width, height }`) instead of the standardized `{ command: { ... } }` envelope, so `ChatPanel` never saw a `command` field to dispatch.
+
+**Fix:** The tool now reuses `text-to-image` workflow's `command` object, merges any prompt/model metadata, streams the same payload via `data-canvas-command`, and returns `{ command }` to conform to `canvasToolOutputSchema`.
+
+### 4. Standardized Command Protocol (Architecture Upgrade)
 
 To prevent future fragility and support new tools without frontend changes, we implemented a standardized protocol for Tool-to-UI communication.
 
@@ -105,6 +111,12 @@ import { canvasToolOutputSchema } from "../schemas/tool-output";
 3.  **Frontend Update:** Refactored `ChatPanel.tsx` to remove tool-specific checks (e.g., `if toolName === 'canvasTextToImageTool'`). It now generically checks for `output.command` in any tool result and dispatches it to the canvas.
 
 This means adding a new tool (e.g., "Generate 3D Model") only requires the backend to return a valid `command`. No frontend changes are needed.
+
+### 5. Hosted Image URLs (Quota / Performance Fix)
+
+Even after the protocol fix, Gemini image generations still returned multi-megabyte `data:` URLs that we echoed back into subsequent agent turns. Each command stuffed the entire base64 payload into the orchestrator stream, rapidly consuming the Gemini-3 Pro token quota and triggering 429 errors.
+
+**Fix:** All workflows, tools, and TRPC helpers now stream the raw bytes directly to Vercel Blob (via `uploadImageBufferToBlob`) and return a short HTTPS URL instead of a data URI. The canvas still receives the full-resolution asset, but the LLM context only sees the lightweight URL, eliminating runaway token usage.
 
 ## Verification
 1.  **Backend:** The error `Gemini did not return an image` is gone.

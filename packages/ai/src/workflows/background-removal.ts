@@ -5,6 +5,8 @@ import { generateText } from "ai";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { GEMINI_IMAGE_MODEL } from "../model-config";
+import { uploadImageBufferToBlob } from "../utils/blob-storage";
 
 const env = getEnv();
 
@@ -18,7 +20,7 @@ async function removeBackgroundWithGemini(imageUrl: string, apiKey?: string) {
 	const imagePart = { type: "image" as const, image: new URL(imageUrl) };
 
 	const result = await generateText({
-		model: google("gemini-3-pro-preview"),
+		model: google(GEMINI_IMAGE_MODEL),
 		prompt: [
 			{
 				role: "user",
@@ -36,8 +38,11 @@ async function removeBackgroundWithGemini(imageUrl: string, apiKey?: string) {
 	const file = result.files?.find((f) => f.mediaType.startsWith("image/"));
 	if (!file) throw new Error("Gemini did not return an image");
 
-	const base64 = Buffer.from(file.uint8Array).toString("base64");
-	return `data:${file.mediaType};base64,${base64}`;
+	const buffer = Buffer.from(file.uint8Array);
+	return uploadImageBufferToBlob(buffer, {
+		contentType: file.mediaType,
+		prefix: "gemini/background-removal",
+	});
 }
 
 const removeBackgroundStep = createStep({

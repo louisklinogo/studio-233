@@ -1,11 +1,12 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { IMAGE_GEN_MODEL } from "@studio233/ai";
+import { IMAGE_GEN_MODEL, uploadImageBufferToBlob } from "@studio233/ai";
 import { generateText } from "ai";
 import { z } from "zod";
+import type { Context } from "../context";
 import { rateLimitedProcedure, router } from "../init";
 
 // Re-use the same rate limiting logic used for FAL when no custom API key is provided
-async function checkRateLimit(apiKey: string | undefined, ctx: any) {
+async function checkRateLimit(apiKey: string | undefined, ctx?: Context) {
 	if (apiKey) return;
 
 	const { shouldLimitRequest, createRateLimiter } = await import(
@@ -18,9 +19,10 @@ async function checkRateLimit(apiKey: string | undefined, ctx: any) {
 		perDay: createRateLimiter(50, "24 h"),
 	};
 
+	const req = ctx?.req;
 	const ip =
-		ctx.req?.headers.get?.("x-forwarded-for") ||
-		ctx.req?.headers.get?.("x-real-ip") ||
+		req?.headers.get?.("x-forwarded-for") ||
+		req?.headers.get?.("x-real-ip") ||
 		"unknown";
 
 	const limiterResult = await shouldLimitRequest(limiter, ip);
@@ -68,7 +70,7 @@ function parseImageInput(imageUrl: string): {
 export async function generateImageFromText(
 	prompt: string,
 	apiKey?: string,
-	ctx?: any,
+	ctx?: Context,
 ) {
 	await checkRateLimit(apiKey, ctx);
 
@@ -96,11 +98,13 @@ export async function generateImageFromText(
 		throw new Error("Gemini did not return an image");
 	}
 
-	const base64 = Buffer.from(file.uint8Array).toString("base64");
-	const dataUrl = `data:${file.mediaType};base64,${base64}`;
+	const blobUrl = await uploadImageBufferToBlob(Buffer.from(file.uint8Array), {
+		contentType: file.mediaType,
+		prefix: "gemini/trpc-text-to-image",
+	});
 
 	return {
-		url: dataUrl,
+		url: blobUrl,
 		width: 1024, // Gemini Flash Image defaults (usually square)
 		height: 1024,
 		seed: undefined, // Seed not returned by default API
@@ -111,7 +115,7 @@ export async function generateImageFromTextWithFallback(
 	prompt: string,
 	imageUrl: string,
 	apiKey?: string,
-	ctx?: any,
+	ctx?: Context,
 ) {
 	await checkRateLimit(apiKey, ctx);
 
@@ -155,11 +159,13 @@ export async function generateImageFromTextWithFallback(
 		throw new Error("Gemini did not return an image");
 	}
 
-	const base64 = Buffer.from(file.uint8Array).toString("base64");
-	const dataUrl = `data:${file.mediaType};base64,${base64}`;
+	const blobUrl = await uploadImageBufferToBlob(Buffer.from(file.uint8Array), {
+		contentType: file.mediaType,
+		prefix: "gemini/trpc-edit",
+	});
 
 	return {
-		url: dataUrl,
+		url: blobUrl,
 		width: 1024,
 		height: 1024,
 	};
@@ -234,9 +240,14 @@ export const geminiRouter = router({
 				throw new Error("Gemini did not return an image");
 			}
 
-			const base64 = Buffer.from(file.uint8Array).toString("base64");
-			const dataUrl = `data:${file.mediaType};base64,${base64}`;
+			const imageUrl = await uploadImageBufferToBlob(
+				Buffer.from(file.uint8Array),
+				{
+					contentType: file.mediaType,
+					prefix: "gemini/trpc-edit",
+				},
+			);
 
-			return { image: dataUrl };
+			return { image: imageUrl };
 		}),
 });

@@ -161,6 +161,7 @@
         "@mastra/core": "^0.24.5",
         "@mastra/loggers": "^0.10.19",
         "@mastra/pg": "^0.17.8",
+        "@vercel/blob": "^1.1.1",
         "ai": "^5.0.97",
         "sharp": "^0.33.5",
         "zod": "catalog:",

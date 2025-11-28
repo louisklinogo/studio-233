@@ -7,8 +7,22 @@ import { z } from "zod";
 import { getEnv } from "../config";
 import { IMAGE_GEN_MODEL } from "../model-config";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
+import { uploadImageBufferToBlob } from "../utils/blob-storage";
 
 const env = getEnv();
+
+type FalImage = {
+	url: string;
+	width: number;
+	height: number;
+};
+
+type FalImageResponse = {
+	data?: {
+		images?: FalImage[];
+	};
+	images?: FalImage[];
+};
 
 const textToImageStep = createStep({
 	id: "text-to-image-step",
@@ -66,13 +80,16 @@ const textToImageStep = createStep({
 				throw new Error("Gemini did not return an image");
 			}
 
-			const base64 = Buffer.from(file.uint8Array).toString("base64");
-			const dataUrl = `data:${file.mediaType};base64,${base64}`;
+			const imageBuffer = Buffer.from(file.uint8Array);
+			const blobUrl = await uploadImageBufferToBlob(imageBuffer, {
+				contentType: file.mediaType,
+				prefix: "gemini/text-to-image",
+			});
 
 			return {
 				command: {
 					type: "add-image",
-					url: dataUrl,
+					url: blobUrl,
 					width: 1024,
 					height: 1024,
 					meta: {
@@ -113,7 +130,8 @@ const textToImageStep = createStep({
 			},
 		);
 
-		const resultData = (result as any).data || result;
+		const falResponse = result as FalImageResponse;
+		const resultData = falResponse.data ?? falResponse;
 		if (!resultData.images?.[0]) {
 			throw new Error("No image generated");
 		}

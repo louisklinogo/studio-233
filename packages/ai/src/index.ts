@@ -86,6 +86,7 @@ export { scorers } from "./scorers";
 export { mastraStore } from "./store";
 export * from "./tools";
 export type { CanvasCommand } from "./types/canvas";
+export { uploadImageBufferToBlob } from "./utils/blob-storage";
 export * from "./workflows/background-removal";
 export * from "./workflows/layout";
 export * from "./workflows/object-isolation";

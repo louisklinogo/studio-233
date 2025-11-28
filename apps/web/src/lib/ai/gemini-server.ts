@@ -1,9 +1,16 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { uploadImageBufferToBlob } from "@studio233/ai";
 import { generateText } from "ai";
 
 // Strict model definitions as requested
 const PRIMARY_MODEL = "gemini-3-pro-preview";
 const FALLBACK_MODEL = "gemini-2.5-flash-image-preview";
+
+type GeminiContentPart =
+	| { type: "text"; text: string }
+	| { type: "image"; image: string | URL };
+
+type GeminiTextResult = Awaited<ReturnType<typeof generateText>>;
 
 interface GeminiGenerationOptions {
 	prompt: string;
@@ -30,7 +37,9 @@ export async function generateWithGemini(options: GeminiGenerationOptions) {
 
 	// Helper to prepare input
 	const prepareInput = (imageUrl?: string) => {
-		const content: any[] = [{ type: "text", text: options.prompt }];
+		const content: GeminiContentPart[] = [
+			{ type: "text", text: options.prompt },
+		];
 
 		if (imageUrl) {
 			// Simple check for data URL vs HTTP URL
@@ -63,10 +72,11 @@ export async function generateWithGemini(options: GeminiGenerationOptions) {
 			],
 		});
 
-		return processResult(result);
-	} catch (error: any) {
+		return await processResult(result);
+	} catch (error) {
+		const err = error instanceof Error ? error : new Error(String(error));
 		console.warn(
-			`[Gemini] Primary model ${PRIMARY_MODEL} failed: ${error.message}. Switching to FALLBACK: ${FALLBACK_MODEL}`,
+			`[Gemini] Primary model ${PRIMARY_MODEL} failed: ${err.message}. Switching to FALLBACK: ${FALLBACK_MODEL}`,
 		);
 
 		try {
@@ -80,15 +90,21 @@ export async function generateWithGemini(options: GeminiGenerationOptions) {
 				],
 			});
 
-			return processResult(result);
-		} catch (fallbackError: any) {
-			console.error(`[Gemini] Fallback model ${FALLBACK_MODEL} also failed.`);
-			throw fallbackError;
+			return await processResult(result);
+		} catch (fallbackError) {
+			const err =
+				fallbackError instanceof Error
+					? fallbackError
+					: new Error(String(fallbackError));
+			console.error(
+				`[Gemini] Fallback model ${FALLBACK_MODEL} also failed: ${err.message}.`,
+			);
+			throw err;
 		}
 	}
 }
 
-function processResult(result: any) {
+async function processResult(result: GeminiTextResult) {
 	// Check for images in the response (if Gemini generated an image)
 	// Note: generateText from 'ai' package returns text.
 	// If we want IMAGE generation, we might need a different call or check if the model returns image parts.
@@ -107,14 +123,20 @@ function processResult(result: any) {
 
 	// So we will return both text and potential image URL.
 
-	// @ts-ignore - 'files' might not be in the standard type definition yet if it's experimental
-	const files = result.files || [];
-	const imageFile = files.find((f: any) => f.mediaType.startsWith("image/"));
+	type GeminiFile = { mediaType: string; uint8Array: Uint8Array };
+	const fileContainer = result as { files?: GeminiFile[] };
+	const files = fileContainer.files ?? [];
+	const imageFile = files.find((file) => file.mediaType.startsWith("image/"));
 
 	let imageUrl = null;
 	if (imageFile) {
-		const base64 = Buffer.from(imageFile.uint8Array).toString("base64");
-		imageUrl = `data:${imageFile.mediaType};base64,${base64}`;
+		imageUrl = await uploadImageBufferToBlob(
+			Buffer.from(imageFile.uint8Array),
+			{
+				contentType: imageFile.mediaType,
+				prefix: "gemini/server-lib",
+			},
+		);
 	}
 
 	return {
