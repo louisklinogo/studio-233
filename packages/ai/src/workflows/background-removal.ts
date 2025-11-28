@@ -1,6 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createFalClient } from "@fal-ai/client";
-import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { generateText } from "ai";
 import { z } from "zod";
 
@@ -45,73 +44,76 @@ async function removeBackgroundWithGemini(imageUrl: string, apiKey?: string) {
 	});
 }
 
-const removeBackgroundStep = createStep({
-	id: "remove-background",
-	inputSchema: z.object({
-		imageUrl: z.string().url(),
-		apiKey: z.string().optional(),
-	}),
-	outputSchema: z.object({
-		imageUrl: z.string().url(),
-		provider: z.enum(["fal", "gemini"]),
-	}),
-	execute: async ({ inputData }) => {
-		const { imageUrl, apiKey } = inputData;
-		const falKey = apiKey || env.falKey;
-
-		// Try FAL first
-		if (falKey) {
-			try {
-				const fal = createFalClient({ credentials: () => falKey });
-				const result = await fal.subscribe("fal-ai/bria/background/remove", {
-					input: { image_url: imageUrl, sync_mode: true },
-				});
-
-				if (result.data?.image?.url) {
-					return { imageUrl: result.data.image.url, provider: "fal" as const };
-				}
-			} catch (error) {
-				console.warn(
-					"FAL background removal failed, attempting fallback:",
-					error,
-				);
-			}
-		}
-
-		// Fallback to Gemini
-		const geminiUrl = await removeBackgroundWithGemini(
-			imageUrl,
-			env.googleApiKey,
-		);
-		return { imageUrl: geminiUrl, provider: "gemini" as const };
-	},
+const backgroundRemovalCoreOutputSchema = z.object({
+	imageUrl: z.string().url(),
+	provider: z.enum(["fal", "gemini"]),
 });
 
-const verifyQualityStep = createStep({
-	id: "verify-quality",
-	inputSchema: z.object({
-		imageUrl: z.string().url(),
-		provider: z.enum(["fal", "gemini"]),
-	}),
-	outputSchema: z.object({
-		imageUrl: z.string().url(),
-		provider: z.enum(["fal", "gemini"]),
+export const backgroundRemovalInputSchema = z.object({
+	imageUrl: z.string().url(),
+	apiKey: z.string().optional(),
+});
+
+export const backgroundRemovalOutputSchema =
+	backgroundRemovalCoreOutputSchema.extend({
 		verified: z.boolean(),
 		qualityScore: z.number(),
-	}),
-	execute: async ({ inputData }) => {
-		return { ...inputData, verified: true, qualityScore: 0.95 };
-	},
-});
+	});
 
-export const backgroundRemovalWorkflow = createWorkflow({
+export type BackgroundRemovalInput = z.infer<
+	typeof backgroundRemovalInputSchema
+>;
+export type BackgroundRemovalResult = z.infer<
+	typeof backgroundRemovalOutputSchema
+>;
+
+async function executeBackgroundRemoval(
+	input: BackgroundRemovalInput,
+): Promise<z.infer<typeof backgroundRemovalCoreOutputSchema>> {
+	const { imageUrl, apiKey } = input;
+	const falKey = apiKey || env.falKey;
+
+	// Try FAL first
+	if (falKey) {
+		try {
+			const fal = createFalClient({ credentials: () => falKey });
+			const result = await fal.subscribe("fal-ai/bria/background/remove", {
+				input: { image_url: imageUrl, sync_mode: true },
+			});
+
+			if (result.data?.image?.url) {
+				return { imageUrl: result.data.image.url, provider: "fal" as const };
+			}
+		} catch (error) {
+			console.warn(
+				"FAL background removal failed, attempting fallback:",
+				error,
+			);
+		}
+	}
+
+	// Fallback to Gemini
+	const geminiUrl = await removeBackgroundWithGemini(
+		imageUrl,
+		env.googleApiKey,
+	);
+	return { imageUrl: geminiUrl, provider: "gemini" as const };
+}
+
+export async function runBackgroundRemovalWorkflow(
+	input: BackgroundRemovalInput,
+): Promise<BackgroundRemovalResult> {
+	const base = await executeBackgroundRemoval(input);
+	return {
+		...base,
+		verified: true,
+		qualityScore: 0.95,
+	};
+}
+
+export const backgroundRemovalWorkflow = {
 	id: "background-removal",
-	inputSchema: z.object({
-		imageUrl: z.string().url(),
-		apiKey: z.string().optional(),
-	}),
-	outputSchema: verifyQualityStep.outputSchema,
-})
-	.then(removeBackgroundStep)
-	.then(verifyQualityStep)
-	.commit();
+	inputSchema: backgroundRemovalInputSchema,
+	outputSchema: backgroundRemovalOutputSchema,
+	run: runBackgroundRemovalWorkflow,
+};

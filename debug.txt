@@ -1,34 +1,33 @@
-Runtime Error
+## Error Type
+Build Error
 
+## Error Message
+Parsing ecmascript source code failed
 
-invariant expected layout router to be mounted
-Call Stack
-13
+## Build Output
+./apps/web/src/components/studio/CanvasPalette.tsx:359:22
+Parsing ecmascript source code failed
+  357 | 				/>
+  358 | 				<ToolRow
+> 359 | 					icon={SwissIcons.Hand}
+      | 					                ^
+  360 | 					label="PAN"
+  361 | 					isActive={activeTool === "pan"}
+  362 | 					onClick={() => handleToolClick(() => setActiveTool("pan"))}
 
-Hide 12 ignore-listed frame(s)
-OuterLayoutRouter
-..\..\..\src\client\components\layout-router.tsx (570:11)
-Object.react_stack_bottom_frame
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (28016:1)
-renderWithHooks
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (7982:1)
-updateFunctionComponent
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (10499:1)
-beginWork
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (12083:1)
-runWithFiberInDEV
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (984:1)
-performUnitOfWork
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (18995:1)
-workLoopSync
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (18823:39)
-renderRootSync
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (18804:1)
-performWorkOnRoot
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (17912:1)
-performWorkOnRootViaSchedulerTask
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\react-dom\cjs\react-dom-client.development.js (20382:1)
-MessagePort.performWorkUntilDeadline
-..\..\node_modules\.bun\next@16.0.4+2b5434204782a989\node_modules\next\dist\compiled\scheduler\cjs\scheduler.development.js (45:1)
-OuterLayoutRouter
-<anonymous>
+Expected a semicolon
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/src/components/studio/CanvasPalette.tsx [Client Component Browser]
+    ./apps/web/src/components/canvas/OverlayInterface.tsx [Client Component Browser]
+    ./apps/web/src/components/canvas/OverlayInterface.tsx [Server Component]
+    ./apps/web/src/app/canvas/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/src/components/studio/CanvasPalette.tsx [Client Component SSR]
+    ./apps/web/src/components/canvas/OverlayInterface.tsx [Client Component SSR]
+    ./apps/web/src/components/canvas/OverlayInterface.tsx [Server Component]
+    ./apps/web/src/app/canvas/[id]/page.tsx [Server Component]
+
+Next.js version: 16.0.4 (Turbopack)

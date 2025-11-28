@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { runWorkflow } from "../../utils/run-workflow";
 import { paletteExtractionWorkflow } from "../vision-enhancements";
 
 const SAMPLE_PNG_BASE64 =
@@ -15,7 +14,7 @@ test("palette extraction returns requested number of swatches", async () => {
 		});
 
 	try {
-		const result = await runWorkflow(paletteExtractionWorkflow, {
+		const result = await paletteExtractionWorkflow.run({
 			imageUrl: "https://example.com/sample.png",
 			colors: 4,
 		});

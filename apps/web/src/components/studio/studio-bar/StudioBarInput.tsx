@@ -1,12 +1,8 @@
-"use client";
-
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Maximize2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
-import { StudioPromptDialog } from "./StudioPromptDialog";
-import { TranscriptionHUD } from "./TranscriptionHUD";
 
 interface StudioBarInputProps {
 	value: string;
@@ -14,6 +10,8 @@ interface StudioBarInputProps {
 	onSubmit: () => void;
 	isGenerating?: boolean;
 	placeholder?: string;
+	onExpand?: () => void;
+	onMic?: () => void;
 }
 
 const PLACEHOLDERS = [
@@ -30,13 +28,12 @@ export function StudioBarInput({
 	onSubmit,
 	isGenerating,
 	placeholder = "Type to create...",
+	onExpand,
+	onMic,
 }: StudioBarInputProps) {
 	const [isFocused, setIsFocused] = useState(false);
 	const [placeholderIndex, setPlaceholderIndex] = useState(0);
 	const [displayedPlaceholder, setDisplayedPlaceholder] = useState("");
-	const [isRecording, setIsRecording] = useState(false);
-	const [transcription, setTranscription] = useState("");
-	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	// Typewriter Effect
@@ -81,60 +78,6 @@ export function StudioBarInput({
 		return () => clearTimeout(timeout);
 	}, [isFocused, value, placeholderIndex]);
 
-	// Deepgram / Web Speech API Integration (Placeholder)
-	const toggleRecording = () => {
-		if (isRecording) {
-			stopRecording();
-		} else {
-			startRecording();
-		}
-	};
-
-	const startRecording = () => {
-		setIsRecording(true);
-		setTranscription("");
-		console.log("Starting recording...");
-
-		// Mock live transcription
-		const phrases = [
-			"Create",
-			" a",
-			" red",
-			" chair",
-			" in",
-			" a",
-			" white",
-			" room",
-		];
-		let i = 0;
-		const interval = setInterval(() => {
-			if (i < phrases.length) {
-				setTranscription((prev) => prev + phrases[i]);
-				i++;
-			} else {
-				clearInterval(interval);
-				setTimeout(() => {
-					stopRecording();
-					onChange(
-						value + (value ? " " : "") + "Create a red chair in a white room",
-					);
-				}, 500);
-			}
-		}, 300);
-
-		// Store interval to clear on unmount/stop (simplified for this mock)
-		(window as any).mockTranscriptionInterval = interval;
-	};
-
-	const stopRecording = () => {
-		setIsRecording(false);
-		setTranscription("");
-		if ((window as any).mockTranscriptionInterval) {
-			clearInterval((window as any).mockTranscriptionInterval);
-		}
-		console.log("Stopping recording...");
-	};
-
 	return (
 		<div
 			className={cn(
@@ -142,17 +85,6 @@ export function StudioBarInput({
 				isFocused ? "bg-white dark:bg-[#1a1a1a]" : "bg-transparent",
 			)}
 		>
-			{/* Transcription HUD Overlay */}
-			<AnimatePresence>
-				{isRecording && (
-					<TranscriptionHUD
-						isRecording={isRecording}
-						transcription={transcription}
-						onStop={stopRecording}
-					/>
-				)}
-			</AnimatePresence>
-
 			{/* Input Field */}
 			<input
 				ref={inputRef}
@@ -167,7 +99,7 @@ export function StudioBarInput({
 				}}
 				onFocus={() => setIsFocused(true)}
 				onBlur={() => setIsFocused(false)}
-				className="w-full h-full bg-transparent border-none outline-none px-4 pr-10 font-sans text-sm text-neutral-900 dark:text-white placeholder-transparent z-10"
+				className="w-full h-full bg-transparent border-none outline-none px-4 pr-24 font-sans text-sm text-neutral-900 dark:text-white placeholder-transparent z-10"
 			/>
 
 			{/* Typewriter Placeholder Overlay */}
@@ -182,55 +114,31 @@ export function StudioBarInput({
 				</div>
 			)}
 
-			{/* Actions: Mic & Expand */}
-			<div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 z-20">
+			{/* Actions: Mic & Expand (Control Zone) */}
+			<div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center z-20 h-8 gap-1">
+				{/* Mic Button */}
+				<button
+					onClick={() => onMic?.()}
+					className={cn(
+						"h-7 w-7 flex items-center justify-center rounded-sm transition-all duration-200",
+						"text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800",
+					)}
+					title="Dictate"
+				>
+					<SwissIcons.Mic size={14} />
+				</button>
+
+				<div className="w-[1px] h-3 bg-neutral-200 dark:bg-neutral-800" />
+
 				{/* Expand Button */}
 				<button
-					onClick={() => setIsDialogOpen(true)}
-					className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-					title="Open Editor"
+					onClick={() => onExpand?.()}
+					className="h-7 w-7 flex items-center justify-center rounded-sm text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+					title="Expand Editor"
 				>
 					<Maximize2 size={14} />
 				</button>
-
-				{/* Mic Button */}
-				<button
-					onClick={() => {
-						setIsDialogOpen(true);
-						// Small delay to let dialog open before starting recording
-						setTimeout(() => startRecording(), 100);
-					}}
-					className={cn(
-						"p-2 rounded-full transition-all duration-300 flex items-center justify-center",
-						isRecording
-							? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-							: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300",
-					)}
-				>
-					{isRecording ? (
-						<motion.div
-							animate={{ scale: [1, 1.2, 1] }}
-							transition={{ duration: 1.5, repeat: Infinity }}
-						>
-							<SwissIcons.Mic size={16} />
-						</motion.div>
-					) : (
-						<SwissIcons.Mic size={16} />
-					)}
-				</button>
 			</div>
-
-			{/* Mini Dialog (Popover) */}
-			<StudioPromptDialog
-				isOpen={isDialogOpen}
-				onClose={() => setIsDialogOpen(false)}
-				value={value}
-				onChange={onChange}
-				onSubmit={onSubmit}
-				isRecording={isRecording}
-				toggleRecording={toggleRecording}
-				transcription={transcription}
-			/>
 
 			{/* Active Border Bottom (Orange Heartbeat) */}
 			{isGenerating && (

@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 type Env = {
-	mastraDatabaseUrl: string;
+	mastraDatabaseUrl?: string;
 	mastraSchema?: string;
 	falKey?: string;
 	googleApiKey?: string;
@@ -22,12 +22,6 @@ export function getEnv(): Env {
 		process.env.MASTRA_DATABASE_URL ??
 		process.env.DATABASE_URL ??
 		process.env.POSTGRES_PRISMA_URL;
-
-	if (!mastraDatabaseUrl) {
-		throw new Error(
-			"MASTRA_DATABASE_URL or DATABASE_URL must be defined for @studio233/ai",
-		);
-	}
 
 	cachedEnv = {
 		mastraDatabaseUrl,

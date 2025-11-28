@@ -1,14 +1,13 @@
-import { mastra } from "../packages/ai/src";
+import { generateAgentResponse } from "../packages/ai/src";
 
 async function testOrchestratorTools() {
-	const agent = mastra.getAgent("orchestratorAgent");
-
 	// Test Case 1: Background Removal
 	console.log("Test 1: Background Removal Request");
 	try {
-		const result = await agent.generate(
-			"Remove the background from this image: https://example.com/image.jpg",
-		);
+		const result = await generateAgentResponse("orchestrator", {
+			prompt:
+				"Remove the background from this image: https://example.com/image.jpg",
+		});
 		console.log("Result:", JSON.stringify(result.text, null, 2));
 		console.log("Tool calls:", JSON.stringify(result.toolCalls, null, 2));
 	} catch (error) {
@@ -20,9 +19,10 @@ async function testOrchestratorTools() {
 	// Test Case 2: Object Isolation
 	console.log("Test 2: Object Isolation Request");
 	try {
-		const result = await agent.generate(
-			"Isolate the red car from this image: https://example.com/car.jpg",
-		);
+		const result = await generateAgentResponse("orchestrator", {
+			prompt:
+				"Isolate the red car from this image: https://example.com/car.jpg",
+		});
 		console.log("Result:", JSON.stringify(result.text, null, 2));
 		console.log("Tool calls:", JSON.stringify(result.toolCalls, null, 2));
 	} catch (error) {

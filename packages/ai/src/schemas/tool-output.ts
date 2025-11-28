@@ -24,7 +24,7 @@ export const canvasCommandSchema = z.discriminatedUnion("type", [
 		type: z.literal("update-image"),
 		id: z.string(),
 		url: z.string(),
-		meta: z.record(z.any()).optional(),
+		meta: z.record(z.string(), z.any()).optional(),
 	}),
 	z.object({
 		type: z.literal("add-video"),
@@ -32,7 +32,7 @@ export const canvasCommandSchema = z.discriminatedUnion("type", [
 		width: z.number(),
 		height: z.number(),
 		duration: z.number(),
-		meta: z.record(z.any()).optional(),
+		meta: z.record(z.string(), z.any()).optional(),
 	}),
 ]);
 
@@ -44,7 +44,7 @@ export const canvasToolOutputSchema = z
 	.object({
 		command: canvasCommandSchema.optional(),
 		// Allow arbitrary additional data for the agent
-		data: z.record(z.any()).optional(),
+		data: z.record(z.string(), z.any()).optional(),
 		message: z.string().optional(),
 	})
 	.passthrough(); // Allow other properties for backward compatibility if needed

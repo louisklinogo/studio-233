@@ -1,17 +1,24 @@
 # studio+233
 
-studio+233 is an infinite canvas image editor and batch media processing app with AI transformations and configurations. Built with Next.js, React Konva, and tRPC.
+studio+233 is the creative operations cockpit we wish we had: a fast, multiplayer canvas, an agentic AI studio, and a production-grade batch pipeline that keeps brand teams shipping work instead of wrangling tools. Think “Figma for moodboards” meets “Render farm for marketers” – all supercharged by our own orchestrator agents and workflow library.
 
-## Features
+## Why teams use studio+233
 
-- Infinite canvas with pan/zoom
-- Drag & drop image upload
-- AI generation via Flux Kontext LoRA
-- Background removal and object isolation
-- Real-time streaming of AI results
-- Multi-selection and image manipulation
-- Auto-save to IndexedDB
-- Undo/redo support
+| Goal | How we help |
+| --- | --- |
+| Ship new concepts in minutes | Sketch on an infinite canvas, drop references, then let our routing agent spin up moodboards, shots, and copy variations in one pass. |
+| Keep every stakeholder in flow | Real-time canvas updates, streaming tool output, and memory-aware agents keep the team aligned without Slack archaeology. |
+| Automate repetitive production | Define a spec once and run batch jobs (resize, background removal, object isolation, video stitching) across hundreds of assets with audit trails. |
+| Stay on-brand with AI | Tools carry prompts, LoRAs, and palette metadata through each step so creative direction survives every generation. |
+
+## Feature highlights
+
+- **Infinite AI Canvas** – React Konva + IndexedDB gives us buttery pan/zoom, multi-select, versioning, and offline persistence.
+- **Orchestrator Agents** – Our Mastra/AI-SDK hybrid agents route between Vision Forge, Motion Director, and Research sub-agents, triggering the right workflow at the right time.
+- **Real-Time Streaming** – Tool calls emit `data-canvas-command` parts, so users watch assets materialize stroke-by-stroke.
+- **Batch Ops Designer** – Describe the dataset, presets, and delivery rules; we queue and monitor the entire run for you.
+- **Proxy-friendly Uploads** – Fal.ai storage proxy sidesteps Vercel limits while keeping uploads secure.
+- **Rate-limited Free Tier** – Built-in quotas for anonymous users, auto-upgraded when they bring their own API keys.
 
 ## Technical Details
 

@@ -1,8 +1,6 @@
-import { mastra } from "../packages/ai/src";
+import { generateAgentResponse } from "../packages/ai/src";
 
 async function testOrchestrator() {
-	const agent = mastra.getAgent("Studio Orchestrator");
-
 	const testCases = [
 		"Remove the background from this image",
 		"Make this photo look like a Van Gogh painting",
@@ -15,7 +13,7 @@ async function testOrchestrator() {
 	for (const prompt of testCases) {
 		console.log(`Input: "${prompt}"`);
 		try {
-			const result = await agent.generate(prompt);
+			const result = await generateAgentResponse("orchestrator", { prompt });
 			console.log("Output:", result.text);
 			console.log("---\n");
 		} catch (error) {

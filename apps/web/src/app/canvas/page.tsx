@@ -48,6 +48,7 @@ import {
 	ImageGeneratorSettings,
 } from "@/components/studio/ImageGeneratorPanel";
 import { StudioBar } from "@/components/studio/studio-bar/StudioBar";
+import { StudioPromptDialog } from "@/components/studio/studio-bar/StudioPromptDialog";
 import { Button } from "@/components/ui/button";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { Textarea } from "@/components/ui/textarea";
@@ -322,6 +323,41 @@ export default function OverlayPage() {
 	);
 
 	const [isIsolateDialogOpen, setIsIsolateDialogOpen] = useState(false);
+
+	// Expanded Input & Recording State
+	const [isExpandedInputOpen, setIsExpandedInputOpen] = useState(false);
+	const [isRecordingPrompt, setIsRecordingPrompt] = useState(false);
+	const [promptTranscription, setPromptTranscription] = useState("");
+
+	const togglePromptRecording = useCallback(() => {
+		if (isRecordingPrompt) {
+			setIsRecordingPrompt(false);
+			setPromptTranscription("");
+		} else {
+			setIsRecordingPrompt(true);
+			setPromptTranscription("Listening...");
+			// Mock recording logic
+			const timer = setTimeout(() => {
+				setPromptTranscription((prev) =>
+					prev === "Listening..." ? "A red chair in a white room" : prev,
+				);
+			}, 1000);
+			const stopTimer = setTimeout(() => {
+				setIsRecordingPrompt(false);
+				setGenerationSettings((prev) => ({
+					...prev,
+					prompt:
+						(prev.prompt ? prev.prompt + " " : "") +
+						"A red chair in a white room",
+				}));
+				setPromptTranscription("");
+			}, 2500);
+			return () => {
+				clearTimeout(timer);
+				clearTimeout(stopTimer);
+			};
+		}
+	}, [isRecordingPrompt]);
 
 	useEffect(() => {
 		const currentCount =
@@ -2291,7 +2327,7 @@ export default function OverlayPage() {
 				onClick={() => setIsChatOpen(!isChatOpen)}
 			/>
 
-			{/* Studio Bar (Replaces Control Deck) */}
+			{/* StudioBar (Replaces Control Deck) */}
 			<StudioBar
 				selectedIds={selectedIds}
 				images={images}
@@ -2346,6 +2382,28 @@ export default function OverlayPage() {
 				defaultDrawingProps={defaultDrawingProps}
 				setDefaultDrawingProps={setDefaultDrawingProps}
 				isChatOpen={isChatOpen}
+				onExpandInput={() => setIsExpandedInputOpen(true)}
+				onMicInput={() => {
+					setIsExpandedInputOpen(true);
+					// Small delay to allow dialog to open
+					setTimeout(() => {
+						if (!isRecordingPrompt) togglePromptRecording();
+					}, 100);
+				}}
+			/>
+
+			{/* Extended Input Dialog (Rendered at Root) */}
+			<StudioPromptDialog
+				isOpen={isExpandedInputOpen}
+				onClose={() => setIsExpandedInputOpen(false)}
+				value={generationSettings.prompt}
+				onChange={(val) =>
+					setGenerationSettings((prev) => ({ ...prev, prompt: val }))
+				}
+				onSubmit={handleRun}
+				isRecording={isRecordingPrompt}
+				toggleRecording={togglePromptRecording}
+				transcription={promptTranscription}
 			/>
 
 			{/* Zoom Controls (Bottom Left) */}

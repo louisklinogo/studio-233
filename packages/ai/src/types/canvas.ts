@@ -9,7 +9,7 @@ export type CanvasCommand =
 				prompt?: string;
 				modelId?: string;
 				loraUrl?: string;
-				provider?: "fal" | "gemini";
+				provider?: string;
 				toolCallId?: string;
 				status?: "pending" | "ready" | "error";
 				[key: string]: unknown;

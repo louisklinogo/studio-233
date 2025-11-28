@@ -1,6 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createFalClient } from "@fal-ai/client";
-import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { generateText } from "ai";
 import { z } from "zod";
 
@@ -24,137 +23,133 @@ type FalImageResponse = {
 	images?: FalImage[];
 };
 
-const textToImageStep = createStep({
-	id: "text-to-image-step",
-	inputSchema: z.object({
-		prompt: z.string().min(1),
-		modelId: z.string().optional(),
-		loraUrl: z.string().url().optional(),
-		seed: z.number().optional(),
-		imageSize: z
-			.enum([
-				"landscape_4_3",
-				"portrait_4_3",
-				"square",
-				"landscape_16_9",
-				"portrait_16_9",
-			])
-			.optional(),
-		apiKey: z.string().optional(),
-	}),
-	outputSchema: canvasToolOutputSchema,
-	execute: async ({ inputData }) => {
-		const { prompt, modelId, loraUrl, seed, imageSize, apiKey } = inputData;
+export const textToImageInputSchema = z.object({
+	prompt: z.string().min(1),
+	modelId: z.string().optional(),
+	loraUrl: z.string().url().optional(),
+	seed: z.number().optional(),
+	imageSize: z
+		.enum([
+			"landscape_4_3",
+			"portrait_4_3",
+			"square",
+			"landscape_16_9",
+			"portrait_16_9",
+		])
+		.optional(),
+	apiKey: z.string().optional(),
+});
 
-		const googleKey = apiKey || env.googleApiKey;
-		const falKey = apiKey || env.falKey;
+export const textToImageOutputSchema = canvasToolOutputSchema;
 
-		// Prefer Gemini when an explicit Gemini model is requested or when no FAL key is
-		// available but a Google key is. This mirrors the behaviour of the existing
-		// TRPC generateImageFromText helper used by the canvas prompt generator.
-		const shouldUseGemini =
-			modelId === "gemini-2.5-flash-image-preview" ||
-			modelId === IMAGE_GEN_MODEL ||
-			modelId?.startsWith("gemini") ||
-			(!falKey && !!googleKey);
+export type TextToImageInput = z.infer<typeof textToImageInputSchema>;
+export type TextToImageResult = z.infer<typeof textToImageOutputSchema>;
 
-		// Gemini text-to-image path (aligned with apps/web Gemini helper)
-		if (shouldUseGemini) {
-			if (!googleKey) {
-				throw new Error(
-					"Google Gemini API key is required. Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY.",
-				);
-			}
+export async function runTextToImageWorkflow(
+	input: TextToImageInput,
+): Promise<TextToImageResult> {
+	const { prompt, modelId, loraUrl, seed, imageSize, apiKey } = input;
 
-			const google = createGoogleGenerativeAI({ apiKey: googleKey });
-			const result = await generateText({
-				// Match the working canvas prompt generator, which uses
-				// IMAGE_GEN_MODEL and then reads result.files.
-				model: google(IMAGE_GEN_MODEL),
-				prompt,
-			});
+	const googleKey = apiKey || env.googleApiKey;
+	const falKey = apiKey || env.falKey;
 
-			const file = result.files?.find((f) => f.mediaType.startsWith("image/"));
+	const shouldUseGemini =
+		modelId === "gemini-2.5-flash-image-preview" ||
+		modelId === IMAGE_GEN_MODEL ||
+		modelId?.startsWith("gemini") ||
+		(!falKey && !!googleKey);
 
-			if (!file) {
-				throw new Error("Gemini did not return an image");
-			}
-
-			const imageBuffer = Buffer.from(file.uint8Array);
-			const blobUrl = await uploadImageBufferToBlob(imageBuffer, {
-				contentType: file.mediaType,
-				prefix: "gemini/text-to-image",
-			});
-
-			return {
-				command: {
-					type: "add-image",
-					url: blobUrl,
-					width: 1024,
-					height: 1024,
-					meta: {
-						provider: "gemini",
-						prompt,
-					},
-				},
-			};
-		}
-
-		// FAL text-to-image path (mirrors existing TRPC generateTextToImage)
-		if (!falKey) {
+	if (shouldUseGemini) {
+		if (!googleKey) {
 			throw new Error(
-				"FAL API key is required for text-to-image generation and no Gemini fallback is available. Set FAL_KEY or GOOGLE_GENERATIVE_AI_API_KEY.",
+				"Google Gemini API key is required. Set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY.",
 			);
 		}
 
-		const falClient = createFalClient({
-			credentials: () => falKey,
+		const google = createGoogleGenerativeAI({ apiKey: googleKey });
+		const result = await generateText({
+			model: google(IMAGE_GEN_MODEL),
+			prompt,
 		});
 
-		const loras = loraUrl ? [{ path: loraUrl, scale: 1 }] : [];
+		const file = result.files?.find((f) => f.mediaType.startsWith("image/"));
 
-		const result = await falClient.subscribe(
-			"fal-ai/flux-kontext-lora/text-to-image",
-			{
-				input: {
-					prompt,
-					image_size: imageSize || "square",
-					num_inference_steps: 30,
-					guidance_scale: 2.5,
-					num_images: 1,
-					enable_safety_checker: true,
-					output_format: "png",
-					seed,
-					loras,
-				},
-			},
-		);
-
-		const falResponse = result as FalImageResponse;
-		const resultData = falResponse.data ?? falResponse;
-		if (!resultData.images?.[0]) {
-			throw new Error("No image generated");
+		if (!file) {
+			throw new Error("Gemini did not return an image");
 		}
+
+		const imageBuffer = Buffer.from(file.uint8Array);
+		const blobUrl = await uploadImageBufferToBlob(imageBuffer, {
+			contentType: file.mediaType,
+			prefix: "gemini/text-to-image",
+		});
 
 		return {
 			command: {
 				type: "add-image",
-				url: resultData.images[0].url,
-				width: resultData.images[0].width,
-				height: resultData.images[0].height,
+				url: blobUrl,
+				width: 1024,
+				height: 1024,
 				meta: {
-					provider: "fal",
+					provider: "gemini",
 					prompt,
 				},
 			},
 		};
-	},
-});
+	}
 
-export const textToImageWorkflow = createWorkflow({
+	if (!falKey) {
+		throw new Error(
+			"FAL API key is required for text-to-image generation and no Gemini fallback is available. Set FAL_KEY or GOOGLE_GENERATIVE_AI_API_KEY.",
+		);
+	}
+
+	const falClient = createFalClient({
+		credentials: () => falKey,
+	});
+
+	const loras = loraUrl ? [{ path: loraUrl, scale: 1 }] : [];
+
+	const result = await falClient.subscribe(
+		"fal-ai/flux-kontext-lora/text-to-image",
+		{
+			input: {
+				prompt,
+				image_size: imageSize || "square",
+				num_inference_steps: 30,
+				guidance_scale: 2.5,
+				num_images: 1,
+				enable_safety_checker: true,
+				output_format: "png",
+				seed,
+				loras,
+			},
+		},
+	);
+
+	const falResponse = result as FalImageResponse;
+	const resultData = falResponse.data ?? falResponse;
+	if (!resultData.images?.[0]) {
+		throw new Error("No image generated");
+	}
+
+	return {
+		command: {
+			type: "add-image",
+			url: resultData.images[0].url,
+			width: resultData.images[0].width,
+			height: resultData.images[0].height,
+			meta: {
+				provider: "fal",
+				prompt,
+			},
+		},
+	};
+}
+
+export const textToImageWorkflow = {
 	id: "text-to-image",
-	inputSchema: textToImageStep.inputSchema,
-	outputSchema: textToImageStep.outputSchema,
-})
-	.then(textToImageStep)
-	.commit();
+	inputSchema: textToImageInputSchema,
+	outputSchema: textToImageOutputSchema,
+	run: runTextToImageWorkflow,
+};

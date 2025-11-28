@@ -17,9 +17,6 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@mastra/core": "^0.24.5",
-		"@mastra/pg": "^0.17.8",
-		"@mastra/loggers": "^0.10.19",
 		"@vercel/blob": "^1.1.1",
 		"@ai-sdk/google": "^2.0.38",
 		"@fal-ai/client": "^1.7.0",

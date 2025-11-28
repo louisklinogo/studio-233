@@ -1,5 +1,5 @@
-import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { createTool } from "./factory";
 
 export const batchJobPlannerTool = createTool({
 	id: "batch-job-planner",
@@ -17,7 +17,7 @@ export const batchJobPlannerTool = createTool({
 						"image-upscale",
 					]),
 				),
-				metadata: z.record(z.any()).optional(),
+				metadata: z.record(z.string(), z.any()).optional(),
 			}),
 		),
 		priority: z.enum(["low", "normal", "high"]).default("normal"),

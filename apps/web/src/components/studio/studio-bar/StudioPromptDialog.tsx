@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 import { TranscriptionHUD } from "./TranscriptionHUD";
@@ -29,6 +30,12 @@ export function StudioPromptDialog({
 	transcription,
 }: StudioPromptDialogProps) {
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+		return () => setMounted(false);
+	}, []);
 
 	// Auto-focus when opened
 	useEffect(() => {
@@ -42,32 +49,35 @@ export function StudioPromptDialog({
 		}
 	}, [isOpen]);
 
-	return (
+	if (!mounted) return null;
+
+	return createPortal(
 		<AnimatePresence>
 			{isOpen && (
 				<>
 					{/* Backdrop (Invisible but catches clicks to close) */}
-					<div className="fixed inset-0 z-40" onClick={onClose} />
+					<div className="fixed inset-0 z-[60]" onClick={onClose} />
 
 					{/* Dialog */}
 					<motion.div
-						initial={{ opacity: 0, scale: 0.95, y: 10 }}
-						animate={{ opacity: 1, scale: 1, y: 0 }}
-						exit={{ opacity: 0, scale: 0.95, y: 10 }}
-						transition={{ type: "spring", duration: 0.3 }}
+						initial={{ opacity: 0, y: 20, scale: 0.98 }}
+						animate={{ opacity: 1, y: 0, scale: 1 }}
+						exit={{ opacity: 0, y: 20, scale: 0.98 }}
+						transition={{ type: "spring", stiffness: 350, damping: 25 }}
+						onClick={(e) => e.stopPropagation()}
 						className={cn(
-							"fixed bottom-24 left-1/2 -translate-x-1/2 z-50",
+							"fixed bottom-[5.5rem] left-1/2 -translate-x-1/2 z-[70]", // Elevated Z-index for portal
 							"w-[600px] max-w-[90vw] min-h-[160px]",
-							"bg-white dark:bg-[#111]",
-							"rounded-lg shadow-2xl",
-							"border border-neutral-200 dark:border-neutral-800",
+							"bg-[#f4f4f0] dark:bg-[#111111]", // Match StudioBar
+							"rounded-t-sm rounded-b-none shadow-xl", // Mechanical connection
+							"border-t border-x border-b-0 border-neutral-200 dark:border-neutral-800",
 							"flex flex-col overflow-hidden",
 						)}
 					>
 						{/* Header */}
-						<div className="flex items-center justify-between px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
-							<span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-								Prompt Editor
+						<div className="flex items-center justify-between px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-800/50">
+							<span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+								Extended Input
 							</span>
 							<button
 								onClick={onClose}
@@ -141,6 +151,7 @@ export function StudioPromptDialog({
 					</motion.div>
 				</>
 			)}
-		</AnimatePresence>
+		</AnimatePresence>,
+		document.body,
 	);
 }

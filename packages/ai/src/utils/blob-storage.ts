@@ -31,11 +31,15 @@ export async function uploadImageBufferToBlob(
 
 	const contentType = options.contentType ?? "image/png";
 	const extension = resolveExtension(contentType, options.extension);
+
+	if (options.access && options.access !== "public") {
+		throw new Error("Private blob uploads are not supported in this helper");
+	}
 	const key = `${options.prefix ?? "studio233/ai"}/${Date.now()}-${randomUUID()}.${extension}`;
 
 	try {
 		const { url } = await put(key, coerceBuffer(buffer), {
-			access: options.access ?? "public",
+			access: "public",
 			contentType,
 		});
 

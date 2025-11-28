@@ -1,5 +1,7 @@
-import { mastra } from "../packages/ai/src";
+import { AGENT_DEFINITIONS } from "../packages/ai/src";
 
-console.log("Mastra instance imported successfully.");
-console.log("Agents:", Object.keys(mastra.agents));
-console.log("Workflows:", Object.keys(mastra.workflows));
+console.log("Agent definitions loaded successfully.");
+console.log(
+	"Agents:",
+	Object.values(AGENT_DEFINITIONS).map((agent) => agent.name),
+);

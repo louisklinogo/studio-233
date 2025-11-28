@@ -1,9 +1,8 @@
-import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
 import type { CanvasCommand } from "../types/canvas";
-import { runWorkflow } from "../utils/run-workflow";
 import { textToImageWorkflow } from "../workflows/text-to-image";
+import { createTool } from "./factory";
 
 const textToImageInputSchema = textToImageWorkflow.inputSchema;
 type TextToImageInput = z.infer<typeof textToImageInputSchema>;
@@ -16,13 +15,10 @@ export const canvasTextToImageTool = createTool({
 		"Generate a new image from text for placement on the Studio+233 canvas.",
 	inputSchema: textToImageInputSchema,
 	outputSchema: canvasToolOutputSchema,
-	execute: async ({ context }, { writer }) => {
+	execute: async ({ context }) => {
 		const input = context as TextToImageInput;
 
-		const workflowResult = await runWorkflow<
-			TextToImageInput,
-			TextToImageOutput
-		>(textToImageWorkflow, input);
+		const workflowResult = await textToImageWorkflow.run(input);
 
 		const baseCommand = workflowResult.command;
 
@@ -40,11 +36,11 @@ export const canvasTextToImageTool = createTool({
 			},
 		};
 
-		// Stream a UI data part that the frontend can consume to update the canvas.
-		await writer?.custom({
-			type: "data-canvas-command",
-			data: command,
-		});
+		if (command.type !== "add-image") {
+			throw new Error(
+				"Text-to-image workflow returned unexpected command type",
+			);
+		}
 
 		return {
 			command,

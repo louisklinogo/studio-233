@@ -5,7 +5,6 @@ import { useTheme } from "next-themes";
 import React, { forwardRef, useEffect, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
-import { AddMenu } from "./AddMenu";
 
 export type ToolType = "select" | "pan" | "text" | "shape" | "draw" | "add";
 
@@ -56,7 +55,7 @@ const ToolRow = forwardRef<
 			disabled={disabled}
 			{...props}
 			className={cn(
-				`h-11 flex items-center relative group transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]`,
+				`h-12 flex items-center relative group transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]`,
 				isActive
 					? "bg-white dark:bg-[#1a1a1a]"
 					: "hover:bg-white dark:hover:bg-[#1a1a1a]",
@@ -68,15 +67,15 @@ const ToolRow = forwardRef<
 				{isActive && (
 					<motion.div
 						layoutId="activeTool"
-						className="w-1 h-6 bg-[#FF4D00] rounded-r-sm shadow-[0_0_8px_rgba(255,77,0,0.5)]"
+						className="w-1 h-8 bg-[#FF4D00] rounded-r-sm shadow-[0_0_8px_rgba(255,77,0,0.5)]"
 					/>
 				)}
 			</div>
 
 			{/* Icon */}
-			<div className="absolute left-0 w-10 flex items-center justify-center">
+			<div className="absolute left-0 w-12 flex items-center justify-center">
 				<Icon
-					size={18}
+					size={20}
 					className={cn(
 						"transition-colors",
 						isActive
@@ -94,7 +93,7 @@ const ToolRow = forwardRef<
 						animate={{ opacity: 1, x: 0 }}
 						exit={{ opacity: 0, x: -10 }}
 						className={cn(
-							"font-mono text-xs tracking-wider ml-10 whitespace-nowrap flex items-center gap-2",
+							"font-mono text-xs tracking-wider ml-12 whitespace-nowrap flex items-center gap-2",
 							isActive
 								? "text-neutral-900 dark:text-white font-bold"
 								: "text-neutral-500",
@@ -205,8 +204,8 @@ export function CanvasPalette({
 	return (
 		<motion.div
 			className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-neutral-300 dark:border-neutral-700 rounded-sm overflow-hidden"
-			initial={{ width: "40px" }}
-			animate={{ width: isHovered ? "200px" : "40px" }}
+			initial={{ width: "48px" }}
+			animate={{ width: isHovered ? "200px" : "48px" }}
 			transition={{ type: "spring", stiffness: 300, damping: 30 }}
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
@@ -216,25 +215,14 @@ export function CanvasPalette({
 
 			{/* Tools Container */}
 			<div className="flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800">
-				{/* Add Menu (Special Case) */}
-				<div className="bg-[#f4f4f0] dark:bg-[#111111]">
-					<AddMenu
-						onUploadImage={onUploadImage}
-						onUploadVideo={onUploadVideo}
-						onOpenImageGenerator={onOpenImageGenerator}
-						onOpenVideoGenerator={onOpenVideoGenerator}
-						onAddFrame={onAddFrame}
-						trigger={
-							<ToolRow
-								icon={SwissIcons.Plus}
-								label="ADD CONTENT"
-								onClick={() => playClickSound()} // Handled by AddMenu trigger but sound on click
-								isActive={false}
-								isHovered={isHovered}
-							/>
-						}
-					/>
-				</div>
+				{/* Add Content (Direct) */}
+				<ToolRow
+					icon={SwissIcons.Plus}
+					label="ADD CONTENT"
+					isActive={false}
+					onClick={() => handleToolClick(onAddClick)}
+					isHovered={isHovered}
+				/>
 
 				{/* Primary Tools */}
 				<ToolRow
@@ -281,37 +269,16 @@ export function CanvasPalette({
 				/>
 			</div>
 
-			{/* System Controls & Undo/Redo */}
+			{/* System Controls */}
 			<div className="flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 mt-[1px]">
-				{undo && redo && (
-					<>
-						<ToolRow
-							icon={SwissIcons.Undo}
-							label="UNDO"
-							onClick={() => handleToolClick(undo)}
-							disabled={!canUndo}
-							shortcut="Ctrl+Z"
-							isHovered={isHovered}
-						/>
-						<ToolRow
-							icon={SwissIcons.Redo}
-							label="REDO"
-							onClick={() => handleToolClick(redo)}
-							disabled={!canRedo}
-							shortcut="Ctrl+Y"
-							isHovered={isHovered}
-						/>
-					</>
-				)}
-
 				{/* Theme Toggle */}
 				<button
 					onClick={toggleTheme}
-					className="h-11 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]"
+					className="h-12 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]"
 				>
-					<div className="absolute left-0 w-10 flex items-center justify-center">
+					<div className="absolute left-0 w-12 flex items-center justify-center">
 						<SwissIcons.Contrast
-							size={18}
+							size={20}
 							className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
 						/>
 					</div>
@@ -321,7 +288,7 @@ export function CanvasPalette({
 								initial={{ opacity: 0, x: -10 }}
 								animate={{ opacity: 1, x: 0 }}
 								exit={{ opacity: 0, x: -10 }}
-								className="font-mono text-xs tracking-wider ml-10 whitespace-nowrap text-neutral-500 flex items-center gap-3"
+								className="font-mono text-xs tracking-wider ml-12 whitespace-nowrap text-neutral-500 flex items-center gap-3"
 							>
 								{theme === "dark" ? "LIGHT_MODE" : "DARK_MODE"}
 								{mounted && (

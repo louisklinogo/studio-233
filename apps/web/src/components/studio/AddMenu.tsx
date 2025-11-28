@@ -1,9 +1,9 @@
 import React from "react";
 import {
-	HoverCard,
-	HoverCardContent,
-	HoverCardTrigger,
-} from "@/components/ui/hover-card";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 import { ToolButton } from "./toolbar/ToolButton";
@@ -15,6 +15,7 @@ interface AddMenuProps {
 	onOpenVideoGenerator: () => void;
 	onAddFrame: () => void;
 	trigger?: React.ReactNode;
+	onOpenChange?: (open: boolean) => void;
 }
 
 export const AddMenu: React.FC<AddMenuProps> = ({
@@ -24,10 +25,11 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 	onOpenVideoGenerator,
 	onAddFrame,
 	trigger,
+	onOpenChange,
 }) => {
 	return (
-		<HoverCard openDelay={0} closeDelay={300}>
-			<HoverCardTrigger asChild>
+		<DropdownMenu onOpenChange={onOpenChange}>
+			<DropdownMenuTrigger asChild>
 				{trigger || (
 					<div className="inline-block">
 						<ToolButton
@@ -38,8 +40,8 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 						/>
 					</div>
 				)}
-			</HoverCardTrigger>
-			<HoverCardContent
+			</DropdownMenuTrigger>
+			<DropdownMenuContent
 				side="right"
 				align="start"
 				sideOffset={16}
@@ -52,7 +54,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 				<div className="space-y-1">
 					<button
 						onClick={onUploadImage}
-						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
+						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left outline-none focus:bg-accent focus:text-accent-foreground"
 					>
 						<SwissIcons.Image className="h-4 w-4" />
 						<span>Upload Image</span>
@@ -60,7 +62,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 
 					<button
 						onClick={onUploadVideo}
-						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
+						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left outline-none focus:bg-accent focus:text-accent-foreground"
 					>
 						<SwissIcons.Video className="h-4 w-4" />
 						<span>Upload Video</span>
@@ -72,7 +74,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 				<div className="space-y-1">
 					<button
 						onClick={onOpenImageGenerator}
-						className="w-full flex items-center justify-between px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit group transition-colors text-left"
+						className="w-full flex items-center justify-between px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit group transition-colors text-left outline-none focus:bg-accent focus:text-accent-foreground"
 					>
 						<div className="flex items-center gap-2">
 							<SwissIcons.Zap className="h-4 w-4" />
@@ -85,7 +87,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 
 					<button
 						onClick={onOpenVideoGenerator}
-						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
+						className="w-full flex items-center gap-2 px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left outline-none focus:bg-accent focus:text-accent-foreground"
 					>
 						<SwissIcons.Film className="h-4 w-4" />
 						<span>Video Generator</span>
@@ -96,7 +98,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 
 				<button
 					onClick={onAddFrame}
-					className="w-full flex items-center justify-between px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left"
+					className="w-full flex items-center justify-between px-2 py-2 text-sm cursor-pointer rounded-lg hover:bg-accent hover:text-accent-foreground font-outfit transition-colors text-left outline-none focus:bg-accent focus:text-accent-foreground"
 				>
 					<div className="flex items-center gap-2">
 						<SwissIcons.Frame className="h-4 w-4" />
@@ -106,7 +108,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({
 						F
 					</span>
 				</button>
-			</HoverCardContent>
-		</HoverCard>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 };

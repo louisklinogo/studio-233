@@ -1,13 +1,12 @@
-import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
-import { runWorkflow } from "../utils/run-workflow";
 import {
 	captionOverlayWorkflow,
 	textToVideoWorkflow,
 	videoGifWorkflow,
 	videoStitchWorkflow,
 } from "../workflows/video";
+import { createTool } from "./factory";
 
 export const textToVideoTool = createTool({
 	id: "text-to-video",
@@ -20,23 +19,27 @@ export const textToVideoTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(textToVideoWorkflow, context);
+		const result = await textToVideoWorkflow.run(context);
+
+		const command =
+			result.command && result.command.type === "add-video"
+				? {
+						...result.command,
+						meta: {
+							...(result.command.meta ?? {}),
+							mode: context.mode,
+						},
+					}
+				: result.command;
 
 		return {
-			command: {
-				type: "add-video" as const,
-				url: result.videoUrl,
-				width: 1920, // Default based on aspect ratio
-				height: 1080,
-				duration: context.duration,
-				meta: {
-					prompt: context.prompt,
-					modelId: result.modelId,
-					provider: result.provider,
-					mode: context.mode,
-				},
-			},
-			message: `Video generated successfully (${context.duration}s)`,
+			...result,
+			command,
+			message:
+				result.message ??
+				(command
+					? `Video generated successfully (${context.duration}s)`
+					: undefined),
 		};
 	},
 });
@@ -57,28 +60,17 @@ export const videoStitchTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(videoStitchWorkflow, context);
+		const result = await videoStitchWorkflow.run(context);
 
 		return {
-			command: result.videoUrl
-				? {
-						type: "add-video" as const,
-						url: result.videoUrl,
-						width: 1920,
-						height: 1080,
-						duration: result.totalDuration || 0,
-						meta: {
-							operation: "video-stitch",
-							clipCount: context.clips.length,
-							format: context.format,
-						},
-					}
-				: undefined,
+			command: undefined,
 			data: {
-				ffmpegCommand: result.ffmpegCommand,
+				ffmpegCommand: result.command,
+				executed: result.executed,
+				outputPath: result.outputPath,
 			},
-			message: result.videoUrl
-				? `Stitched ${context.clips.length} clips successfully`
+			message: result.executed
+				? `Stitched ${context.clips.length} clips to ${result.outputPath}`
 				: `Generated stitch command. Run with execute: true to process.`,
 		};
 	},
@@ -96,27 +88,17 @@ export const videoGifTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(videoGifWorkflow, context);
+		const result = await videoGifWorkflow.run(context);
 
 		return {
-			command: result.gifUrl
-				? {
-						type: "add-image" as const, // GIF is treated as image
-						url: result.gifUrl,
-						width: context.width,
-						height: Math.round(context.width / 1.77), // Assume 16:9
-						meta: {
-							operation: "video-to-gif",
-							duration: context.duration,
-							isAnimated: true,
-						},
-					}
-				: undefined,
+			command: undefined,
 			data: {
-				ffmpegCommand: result.ffmpegCommand,
+				ffmpegCommand: result.command,
+				executed: result.executed,
+				gifPath: result.gifUrl,
 			},
-			message: result.gifUrl
-				? `Converted to GIF (${context.duration}s)`
+			message: result.executed
+				? `Converted segment to GIF at ${result.gifUrl}`
 				: `Generated GIF command. Run with execute: true to process.`,
 		};
 	},
@@ -139,28 +121,18 @@ export const captionOverlayTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(captionOverlayWorkflow, context);
+		const result = await captionOverlayWorkflow.run(context);
 
 		return {
-			command: result.videoUrl
-				? {
-						type: "add-video" as const,
-						url: result.videoUrl,
-						width: 1920,
-						height: 1080,
-						duration: 0, // Duration from original video
-						meta: {
-							operation: "caption-overlay",
-							captionCount: context.captions.length,
-						},
-					}
-				: undefined,
+			command: undefined,
 			data: {
-				srtContent: result.srtContent,
-				ffmpegCommand: result.ffmpegCommand,
+				srtContent: result.srt,
+				ffmpegCommand: result.command,
+				executed: result.executed,
+				outputPath: result.outputPath,
 			},
-			message: result.videoUrl
-				? `Added ${context.captions.length} captions to video`
+			message: result.executed
+				? `Caption overlay complete. Output at ${result.outputPath}`
 				: `Generated caption overlay command. Run with execute: true to process.`,
 		};
 	},

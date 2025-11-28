@@ -1,12 +1,11 @@
-import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { runWorkflow } from "../utils/run-workflow";
 import {
 	imageAnalyzerWorkflow,
 	moodboardWorkflow,
 	siteExtractorWorkflow,
 	webSearchWorkflow,
 } from "../workflows/research";
+import { createTool } from "./factory";
 
 export const webSearchTool = createTool({
 	id: "web-search",
@@ -16,7 +15,7 @@ export const webSearchTool = createTool({
 		maxResults: z.number().min(1).max(10).default(5),
 	}),
 	outputSchema: webSearchWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(webSearchWorkflow, context),
+	execute: async ({ context }) => webSearchWorkflow.run(context),
 });
 
 export const siteExtractorTool = createTool({
@@ -27,7 +26,7 @@ export const siteExtractorTool = createTool({
 		maxLength: z.number().min(200).max(5000).default(1500),
 	}),
 	outputSchema: siteExtractorWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(siteExtractorWorkflow, context),
+	execute: async ({ context }) => siteExtractorWorkflow.run(context),
 });
 
 export const imageAnalyzerTool = createTool({
@@ -38,7 +37,7 @@ export const imageAnalyzerTool = createTool({
 		imageUrl: z.string().url(),
 	}),
 	outputSchema: imageAnalyzerWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(imageAnalyzerWorkflow, context),
+	execute: async ({ context }) => imageAnalyzerWorkflow.run(context),
 });
 
 export const moodboardTool = createTool({
@@ -51,5 +50,5 @@ export const moodboardTool = createTool({
 		format: z.enum(["markdown", "json"]).default("markdown"),
 	}),
 	outputSchema: moodboardWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(moodboardWorkflow, context),
+	execute: async ({ context }) => moodboardWorkflow.run(context),
 });

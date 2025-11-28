@@ -1,24 +1,36 @@
 "use server";
 
-import { mastra } from "@studio233/ai";
+import { type AgentKey, generateAgentResponse } from "@studio233/ai";
 
 type AgentResponse = {
 	text: string;
 	agent: string;
 };
 
+const AGENT_LABELS: Record<AgentKey, string> = {
+	orchestrator: "Studio Orchestrator",
+	vision: "Vision Forge",
+	motion: "Motion Director",
+	insight: "Insight Researcher",
+	batch: "Batch Ops",
+	"breadth-scout": "Research Breadth Scout",
+	"deep-dive": "Research Deep Dive Analyst",
+};
+
 async function callAgent(
-	agentName: string,
+	agentKey: AgentKey,
 	payload: { prompt: string; threadId?: string; resourceId?: string },
 ): Promise<AgentResponse> {
-	const agent = mastra.getAgent(agentName);
-	const result = await agent.generate(payload.prompt, {
-		memory: {
-			thread: payload.threadId ?? "server-action",
-			resource: payload.resourceId ?? agentName,
+	const result = await generateAgentResponse(agentKey, {
+		prompt: payload.prompt,
+		metadata: {
+			context: {
+				threadId: payload.threadId ?? "server-action",
+				resourceId: payload.resourceId ?? agentKey,
+			},
 		},
 	});
-	return { text: result.text, agent: agentName };
+	return { text: result.text, agent: AGENT_LABELS[agentKey] };
 }
 
 export const runOrchestrator = (input: {
@@ -26,7 +38,7 @@ export const runOrchestrator = (input: {
 	threadId?: string;
 	resourceId?: string;
 }) =>
-	callAgent("Studio Orchestrator", {
+	callAgent("orchestrator", {
 		prompt: input.brief,
 		threadId: input.threadId,
 		resourceId: input.resourceId,
@@ -37,7 +49,7 @@ export const runVisionForge = (input: {
 	threadId?: string;
 	resourceId?: string;
 }) =>
-	callAgent("Vision Forge", {
+	callAgent("vision", {
 		prompt: input.brief,
 		threadId: input.threadId,
 		resourceId: input.resourceId,
@@ -48,7 +60,7 @@ export const runMotionDirector = (input: {
 	threadId?: string;
 	resourceId?: string;
 }) =>
-	callAgent("Motion Director", {
+	callAgent("motion", {
 		prompt: input.brief,
 		threadId: input.threadId,
 		resourceId: input.resourceId,
@@ -59,7 +71,7 @@ export const runInsightResearcher = (input: {
 	threadId?: string;
 	resourceId?: string;
 }) =>
-	callAgent("Insight Researcher", {
+	callAgent("insight", {
 		prompt: input.brief,
 		threadId: input.threadId,
 		resourceId: input.resourceId,
@@ -70,7 +82,7 @@ export const runBatchOps = (input: {
 	threadId?: string;
 	resourceId?: string;
 }) =>
-	callAgent("Batch Ops", {
+	callAgent("batch", {
 		prompt: input.brief,
 		threadId: input.threadId,
 		resourceId: input.resourceId,

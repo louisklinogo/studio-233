@@ -21,12 +21,14 @@ import { StatusPill } from "@/components/landing/StatusPill";
 import { ThemeToggle } from "@/components/landing/ThemeToggle";
 
 import { CustomCursor } from "@/components/ui/CustomCursor";
+import { SmoothScroll } from "@/components/ui/smooth-scroll";
 
 export default function HomePage() {
 	const [isBooted, setIsBooted] = useState(false);
 
 	return (
 		<>
+			<SmoothScroll />
 			<CustomCursor />
 			<BootSequence onComplete={() => setIsBooted(true)} />
 

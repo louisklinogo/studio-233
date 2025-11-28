@@ -1,7 +1,5 @@
-import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
-import { runWorkflow } from "../utils/run-workflow";
 import { backgroundRemovalWorkflow } from "../workflows/background-removal";
 import {
 	htmlGeneratorWorkflow,
@@ -14,6 +12,7 @@ import {
 	paletteExtractionWorkflow,
 	storyboardWorkflow,
 } from "../workflows/vision-enhancements";
+import { createTool } from "./factory";
 
 export const backgroundRemovalTool = createTool({
 	id: "background-removal",
@@ -26,7 +25,7 @@ export const backgroundRemovalTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(backgroundRemovalWorkflow, context);
+		const result = await backgroundRemovalWorkflow.run(context);
 
 		// Return standardized command format
 		return {
@@ -61,7 +60,7 @@ export const objectIsolationTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(objectIsolationWorkflow, context);
+		const result = await objectIsolationWorkflow.run(context);
 
 		// Return standardized command format
 		return {
@@ -96,7 +95,7 @@ export const imageReframeTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(imageReframeWorkflow, context);
+		const result = await imageReframeWorkflow.run(context);
 
 		return {
 			command: {
@@ -125,7 +124,7 @@ export const imageUpscaleTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const result = await runWorkflow(imageUpscaleWorkflow, context);
+		const result = await imageUpscaleWorkflow.run(context);
 
 		return {
 			command: {
@@ -151,8 +150,7 @@ export const paletteExtractorTool = createTool({
 		colors: z.number().min(3).max(12).default(6),
 	}),
 	outputSchema: paletteExtractionWorkflow.outputSchema!,
-	execute: async ({ context }) =>
-		runWorkflow(paletteExtractionWorkflow, context),
+	execute: async ({ context }) => paletteExtractionWorkflow.run(context),
 });
 
 export const storyboardTool = createTool({
@@ -161,10 +159,10 @@ export const storyboardTool = createTool({
 	inputSchema: z.object({
 		brief: z.string().min(10),
 		frames: z.number().min(3).max(12).default(6),
-		format: z.enum(["html", "markdown"]).default("html"),
+		output: z.enum(["html", "markdown"]).default("html"),
 	}),
 	outputSchema: storyboardWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(storyboardWorkflow, context),
+	execute: async ({ context }) => storyboardWorkflow.run(context),
 });
 
 export const htmlGeneratorTool = createTool({
@@ -173,7 +171,7 @@ export const htmlGeneratorTool = createTool({
 		"Produce semantic HTML/CSS scaffolds for layouts (hero pages, emails, decks)",
 	inputSchema: htmlGeneratorWorkflow.inputSchema!,
 	outputSchema: htmlGeneratorWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(htmlGeneratorWorkflow, context),
+	execute: async ({ context }) => htmlGeneratorWorkflow.run(context),
 });
 
 export const layoutDesignerTool = createTool({
@@ -182,5 +180,5 @@ export const layoutDesignerTool = createTool({
 		"Create detailed layout plans with sections, KPIs, and testing checklist",
 	inputSchema: layoutDesignerWorkflow.inputSchema!,
 	outputSchema: layoutDesignerWorkflow.outputSchema!,
-	execute: async ({ context }) => runWorkflow(layoutDesignerWorkflow, context),
+	execute: async ({ context }) => layoutDesignerWorkflow.run(context),
 });

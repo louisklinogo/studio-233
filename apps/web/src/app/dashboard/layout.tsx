@@ -2,9 +2,28 @@ import { auth } from "@studio233/auth";
 import { prisma } from "@studio233/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-[#050505]">
+					<div className="h-4 w-4 animate-pulse bg-neutral-400" />
+				</div>
+			}
+		>
+			<AuthenticatedDashboard>{children}</AuthenticatedDashboard>
+		</Suspense>
+	);
+}
+
+async function AuthenticatedDashboard({
 	children,
 }: {
 	children: React.ReactNode;
