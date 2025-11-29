@@ -1,15 +1,31 @@
 import { notFound } from "next/navigation";
+import { Suspense, use } from "react";
 import { OverlayInterface } from "@/components/canvas/OverlayInterface";
 
-export default async function CanvasPage({
-	params,
+type CanvasParams = { id: string };
+
+function CanvasContent({
+	paramsPromise,
 }: {
-	params: Promise<{ id: string }>;
+	paramsPromise: Promise<CanvasParams>;
 }) {
-	const { id } = await params;
+	const { id } = use(paramsPromise);
+
 	if (!id || id === "undefined" || id === "null") {
 		notFound();
 	}
 
 	return <OverlayInterface projectId={id} />;
+}
+
+export default function CanvasPage({
+	params,
+}: {
+	params: Promise<CanvasParams>;
+}) {
+	return (
+		<Suspense fallback={null}>
+			<CanvasContent paramsPromise={params} />
+		</Suspense>
+	);
 }

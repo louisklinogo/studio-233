@@ -26,6 +26,7 @@ import React, {
 	useState,
 } from "react";
 import { CalibrationScreen } from "@/components/canvas/CalibrationScreen";
+import { CanvasLayout } from "@/components/canvas/CanvasLayout";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { ChatTrigger } from "@/components/canvas/ChatTrigger";
 import { DimensionDisplay } from "@/components/canvas/DimensionDisplay";
@@ -1725,19 +1726,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 			</AnimatePresence>
 
 			{/* Main Content - always rendered but hidden until calibrated to allow hydration */}
-			<motion.div
-				initial={{ opacity: 0, scale: 0.98 }}
-				animate={
-					isCalibrated ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.98 }
-				}
-				transition={{ duration: 0.8, ease: "easeOut" }}
-				className="bg-neutral-50 dark:bg-[#050505] text-foreground font-focal relative flex flex-row w-full overflow-hidden h-screen"
-				style={{ height: "100dvh" }}
-				onDrop={handleDrop}
-				onDragOver={(e) => e.preventDefault()}
-				onDragEnter={(e) => e.preventDefault()}
-				onDragLeave={(e) => e.preventDefault()}
-			>
+			<CanvasLayout isCalibrated={isCalibrated} onDrop={handleDrop}>
 				{/* Hidden file input for toolbar */}
 				<input
 					type="file"
@@ -2201,7 +2190,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 					hiddenVideoControlsIds={hiddenVideoControlsIds}
 					setVideos={setVideos}
 				/>
-			</motion.div>
+			</CanvasLayout>
 
 			{isHudReady && (
 				<>

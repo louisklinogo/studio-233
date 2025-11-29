@@ -384,7 +384,7 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 		return (
 			<div
 				ref={ref}
-				className="relative bg-neutral-200 dark:bg-[#050505] overflow-hidden w-full h-full"
+				className="relative bg-transparent overflow-hidden w-full h-full"
 				style={{
 					height: `${canvasSize.height}px`,
 					width: `${canvasSize.width}px`,
