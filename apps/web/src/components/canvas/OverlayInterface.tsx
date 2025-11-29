@@ -18,7 +18,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import Konva from "konva";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { CalibrationScreen } from "@/components/canvas/CalibrationScreen";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { ChatTrigger } from "@/components/canvas/ChatTrigger";
@@ -76,7 +82,7 @@ import {
 	uploadImageDirect,
 } from "@/lib/handlers/generation-handler";
 import { styleModels } from "@/lib/models";
-import { type CanvasState, canvasStorage } from "@/lib/storage";
+import { type CanvasState, createCanvasStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { getVideoModelById } from "@/lib/video-models";
 import { useTRPC } from "@/trpc/client";
@@ -91,10 +97,18 @@ import {
 import { checkOS } from "@/utils/os-utils";
 import { convertImageToVideo } from "@/utils/video-utils";
 
-export function OverlayInterface() {
+interface OverlayInterfaceProps {
+	projectId?: string;
+}
+
+export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 	const { theme, setTheme } = useTheme();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isStorageLoaded, setIsStorageLoaded] = useState(false);
+	const scopedCanvasStorage = useMemo(
+		() => createCanvasStorage(projectId),
+		[projectId],
+	);
 
 	// Use the robust calibration hook
 	const { isCalibrated, shouldShowBoot, handleAnimationComplete } =
@@ -379,7 +393,7 @@ export function OverlayInterface() {
 				lastModified: Date.now(),
 				viewport: viewport,
 			};
-			canvasStorage.saveCanvasState(canvasState);
+			scopedCanvasStorage.saveCanvasState(canvasState);
 
 			// Save actual image data to IndexedDB
 			for (const image of images) {
@@ -388,9 +402,9 @@ export function OverlayInterface() {
 					continue;
 
 				// Check if we already have this image stored
-				const existingImage = await canvasStorage.getImage(image.id);
+				const existingImage = await scopedCanvasStorage.getImage(image.id);
 				if (!existingImage) {
-					await canvasStorage.saveImage(image.src, image.id);
+					await scopedCanvasStorage.saveImage(image.src, image.id);
 				}
 			}
 
@@ -401,14 +415,18 @@ export function OverlayInterface() {
 					continue;
 
 				// Check if we already have this video stored
-				const existingVideo = await canvasStorage.getVideo(video.id);
+				const existingVideo = await scopedCanvasStorage.getVideo(video.id);
 				if (!existingVideo) {
-					await canvasStorage.saveVideo(video.src, video.duration, video.id);
+					await scopedCanvasStorage.saveVideo(
+						video.src,
+						video.duration,
+						video.id,
+					);
 				}
 			}
 
 			// Clean up unused images and videos
-			await canvasStorage.cleanupOldData();
+			await scopedCanvasStorage.cleanupOldData();
 
 			// Brief delay to show the indicator
 			setTimeout(() => setIsSaving(false), 300);
@@ -416,12 +434,12 @@ export function OverlayInterface() {
 			console.error("Failed to save to storage:", error);
 			setIsSaving(false);
 		}
-	}, [images, videos, viewport]);
+	}, [images, videos, viewport, scopedCanvasStorage]);
 
 	// Load state from storage
 	const loadFromStorage = useCallback(async () => {
 		try {
-			const canvasState = canvasStorage.getCanvasState();
+			const canvasState = scopedCanvasStorage.getCanvasState();
 			if (!canvasState) {
 				setIsStorageLoaded(true);
 				return;
@@ -432,7 +450,7 @@ export function OverlayInterface() {
 
 			for (const element of canvasState.elements) {
 				if (element.type === "image" && element.imageId) {
-					const imageData = await canvasStorage.getImage(element.imageId);
+					const imageData = await scopedCanvasStorage.getImage(element.imageId);
 					if (imageData) {
 						loadedImages.push({
 							id: element.id,
@@ -451,7 +469,7 @@ export function OverlayInterface() {
 						});
 					}
 				} else if (element.type === "video" && element.videoId) {
-					const videoData = await canvasStorage.getVideo(element.videoId);
+					const videoData = await scopedCanvasStorage.getVideo(element.videoId);
 					if (videoData) {
 						loadedVideos.push({
 							id: element.id,
@@ -502,7 +520,7 @@ export function OverlayInterface() {
 		} finally {
 			setIsStorageLoaded(true);
 		}
-	}, [toast]);
+	}, [scopedCanvasStorage, toast]);
 
 	// Track previous style when changing styles (but not when reverting from custom)
 	useEffect(() => {
@@ -740,7 +758,10 @@ export function OverlayInterface() {
 	};
 
 	// Handle selection
-	const handleSelect = (id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+	const handleSelect = (
+		id: string,
+		e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+	) => {
 		if (e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey) {
 			setSelectedIds((prev) =>
 				prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
@@ -1693,6 +1714,8 @@ export function OverlayInterface() {
 		],
 	);
 
+	const isHudReady = isCalibrated;
+
 	return (
 		<>
 			<AnimatePresence>
@@ -2174,81 +2197,64 @@ export function OverlayInterface() {
 				<VideoOverlays
 					videos={videos}
 					selectedIds={selectedIds}
+					viewport={viewport}
+					hiddenVideoControlsIds={hiddenVideoControlsIds}
 					setVideos={setVideos}
 				/>
 			</motion.div>
-			{/* System Eject Key (Top Left) */}
-			<SystemEjectKey />
 
-			{/* Chat Trigger (Top Right) */}
-			<ChatTrigger
-				isOpen={isChatOpen}
-				onClick={() => setIsChatOpen(!isChatOpen)}
-			/>
-
-			{/* Studio Bar (Replaces Control Deck) */}
-			<StudioBar
-				selectedIds={selectedIds}
-				images={images}
-				videos={videos}
-				elements={canvasElements}
-				updateElement={updateCanvasElement}
-				isGenerating={isGenerating}
-				generationSettings={generationSettings}
-				onUpdateSettings={(settings) =>
-					setGenerationSettings((prev) => ({ ...prev, ...settings }))
-				}
-				handleRun={handleRun}
-				undo={undo}
-				redo={redo}
-				canUndo={historyIndex > 0}
-				canRedo={historyIndex < history.length - 1}
-				handleDuplicate={handleDuplicate}
-				handleRemoveBackground={() => {
-					if (selectedIds.length === 1) {
-						handleRemoveBackgroundHandler(
-							selectedIds[0],
-							images,
-							setImages,
-							removeBackground,
-							saveToHistory,
-						);
-					}
-				}}
-				handleOpenIsolateDialog={() => setIsIsolateDialogOpen(true)}
-				handleGeminiEdit={() => {
-					if (selectedIds.length === 1) {
-						editWithGemini({
-							imageId: selectedIds[0],
-							prompt: "Enhance this image", // TODO: Get prompt
-						});
-					}
-				}}
-				isGeminiEditing={isGeminiEditing}
-				handleConvertToVideo={handleConvertToVideo}
-				handleCombineImages={() => {}}
-				handleDelete={handleDelete}
-				setCroppingImageId={setCroppingImageId}
-				sendToFront={sendToFront}
-				sendToBack={sendToBack}
-				bringForward={bringForward}
-				sendBackward={sendBackward}
-				activeTool={activeTool}
-				defaultTextProps={defaultTextProps}
-				setDefaultTextProps={setDefaultTextProps}
-				defaultShapeProps={defaultShapeProps}
-				setDefaultShapeProps={setDefaultShapeProps}
-				defaultDrawingProps={defaultDrawingProps}
-				setDefaultDrawingProps={setDefaultDrawingProps}
-				isChatOpen={isChatOpen}
-			/>
-
-			{/* Zoom Controls (Bottom Left) */}
-			<ZoomControls
-				viewport={viewport}
-				setViewport={setViewport}
-				canvasSize={canvasSize}
-			/>
+			{isHudReady && (
+				<>
+					<SystemEjectKey />
+					<ChatTrigger
+						isOpen={isChatOpen}
+						onClick={() => setIsChatOpen(!isChatOpen)}
+					/>
+					<StudioBar
+						selectedIds={selectedIds}
+						images={images}
+						videos={videos}
+						elements={canvasElements}
+						updateElement={updateCanvasElement}
+						isGenerating={isGenerating}
+						generationSettings={generationSettings}
+						onUpdateSettings={(settings) =>
+							setGenerationSettings((prev) => ({ ...prev, ...settings }))
+						}
+						handleRun={handleRun}
+						undo={undo}
+						redo={redo}
+						canUndo={historyIndex > 0}
+						canRedo={historyIndex < history.length - 1}
+						handleDuplicate={handleDuplicate}
+						handleRemoveBackground={handleRemoveBackground}
+						handleOpenIsolateDialog={() => setIsIsolateDialogOpen(true)}
+						handleGeminiEdit={handleGeminiEdit}
+						isGeminiEditing={isGeminiEditing}
+						handleConvertToVideo={handleConvertToVideo}
+						handleCombineImages={() => {}}
+						handleDelete={handleDelete}
+						setCroppingImageId={setCroppingImageId}
+						sendToFront={sendToFront}
+						sendToBack={sendToBack}
+						bringForward={bringForward}
+						sendBackward={sendBackward}
+						activeTool={activeTool}
+						defaultTextProps={defaultTextProps}
+						setDefaultTextProps={setDefaultTextProps}
+						defaultShapeProps={defaultShapeProps}
+						setDefaultShapeProps={setDefaultShapeProps}
+						defaultDrawingProps={defaultDrawingProps}
+						setDefaultDrawingProps={setDefaultDrawingProps}
+						isChatOpen={isChatOpen}
+					/>
+					<ZoomControls
+						viewport={viewport}
+						setViewport={setViewport}
+						canvasSize={canvasSize}
+					/>
+				</>
+			)}
 		</>
 	);
 }

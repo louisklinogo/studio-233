@@ -55,7 +55,7 @@ const ToolRow = forwardRef<
 			disabled={disabled}
 			{...props}
 			className={cn(
-				`h-12 flex items-center relative group transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]`,
+				`h-12 flex items-center relative group transition-colors w-full text-left bg-[#f0ede3] dark:bg-[#111111]`,
 				isActive
 					? "bg-white dark:bg-[#1a1a1a]"
 					: "hover:bg-white dark:hover:bg-[#1a1a1a]",
@@ -203,7 +203,7 @@ export function CanvasPalette({
 
 	return (
 		<motion.div
-			className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-neutral-300 dark:border-neutral-700 rounded-sm overflow-hidden"
+			className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 rounded-sm overflow-hidden shadow-chamfer"
 			initial={{ width: "48px" }}
 			animate={{ width: isHovered ? "200px" : "48px" }}
 			transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -211,7 +211,7 @@ export function CanvasPalette({
 			onMouseLeave={() => setIsHovered(false)}
 		>
 			{/* Chassis Background */}
-			<div className="absolute inset-0 bg-[#f4f4f0] dark:bg-[#111111] -z-10" />
+			<div className="absolute inset-0 bg-[#f0ede3] dark:bg-[#111111] -z-10 bg-noise" />
 
 			{/* Tools Container */}
 			<div className="flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800">
@@ -274,7 +274,7 @@ export function CanvasPalette({
 				{/* Theme Toggle */}
 				<button
 					onClick={toggleTheme}
-					className="h-12 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]"
+					className="h-12 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f0ede3] dark:bg-[#111111]"
 				>
 					<div className="absolute left-0 w-12 flex items-center justify-center">
 						<SwissIcons.Contrast

@@ -1,15 +1,15 @@
+import type { PlacedImage } from "@studio233/canvas";
 import Konva from "konva";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
 import { useStreamingImage } from "@/hooks/useStreamingImage";
-import type { PlacedImage } from "@studio233/canvas";
 import { throttle } from "@/utils/performance";
 
 interface CanvasImageProps {
 	image: PlacedImage;
 	isSelected: boolean;
-	onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+	onSelect: (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => void;
 	onChange: (newAttrs: Partial<PlacedImage>) => void;
 	onDragStart: () => void;
 	onDragEnd: () => void;

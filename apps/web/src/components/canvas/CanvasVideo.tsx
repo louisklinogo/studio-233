@@ -1,3 +1,4 @@
+import type { PlacedVideo } from "@studio233/canvas";
 import Konva from "konva";
 import React, {
 	useCallback,
@@ -13,13 +14,12 @@ import {
 	Rect,
 	Transformer,
 } from "react-konva";
-import type { PlacedVideo } from "@studio233/canvas";
 import { throttle } from "@/utils/performance";
 
 interface CanvasVideoProps {
 	video: PlacedVideo;
 	isSelected: boolean;
-	onSelect: (e: any) => void;
+	onSelect: (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => void;
 	onChange: (newAttrs: Partial<PlacedVideo>) => void;
 	onDragStart: () => void;
 	onDragEnd: () => void;

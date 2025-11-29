@@ -788,7 +788,10 @@ export default function OverlayPage() {
 	};
 
 	// Handle selection
-	const handleSelect = (id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+	const handleSelect = (
+		id: string,
+		e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+	) => {
 		if (e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey) {
 			setSelectedIds((prev) =>
 				prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
@@ -1849,7 +1852,7 @@ export default function OverlayPage() {
 					isCalibrated ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.98 }
 				}
 				transition={{ duration: 0.8, ease: "easeOut" }}
-				className="bg-neutral-50 dark:bg-[#050505] text-foreground font-focal relative flex flex-row w-full overflow-hidden h-screen"
+				className="bg-neutral-200 dark:bg-[#050505] text-foreground font-focal relative flex flex-row w-full h-screen overflow-hidden"
 				style={{ height: "100dvh" }}
 				onDrop={handleDrop}
 				onDragOver={(e) => e.preventDefault()}
@@ -2315,6 +2318,8 @@ export default function OverlayPage() {
 				<VideoOverlays
 					videos={videos}
 					selectedIds={selectedIds}
+					viewport={viewport}
+					hiddenVideoControlsIds={hiddenVideoControlsIds}
 					setVideos={setVideos}
 				/>
 			</motion.div>
@@ -2345,26 +2350,9 @@ export default function OverlayPage() {
 				canUndo={historyIndex > 0}
 				canRedo={historyIndex < history.length - 1}
 				handleDuplicate={handleDuplicate}
-				handleRemoveBackground={() => {
-					if (selectedIds.length === 1) {
-						handleRemoveBackgroundHandler(
-							selectedIds[0],
-							images,
-							setImages,
-							removeBackground,
-							saveToHistory,
-						);
-					}
-				}}
+				handleRemoveBackground={handleRemoveBackground}
 				handleOpenIsolateDialog={() => setIsIsolateDialogOpen(true)}
-				handleGeminiEdit={() => {
-					if (selectedIds.length === 1) {
-						editWithGemini({
-							imageId: selectedIds[0],
-							prompt: "Enhance this image", // TODO: Get prompt
-						});
-					}
-				}}
+				handleGeminiEdit={handleGeminiEdit}
 				isGeminiEditing={isGeminiEditing}
 				handleConvertToVideo={handleConvertToVideo}
 				handleCombineImages={() => {}}

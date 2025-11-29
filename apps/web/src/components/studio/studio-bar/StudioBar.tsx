@@ -8,8 +8,8 @@ import type {
 	ShapeElement,
 	TextElement,
 } from "@studio233/canvas";
-import { AnimatePresence, motion } from "framer-motion";
-import React, { useState } from "react";
+import { motion } from "framer-motion";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 import { StyleSelector } from "../control-deck/StyleSelector"; // Reusing for now
@@ -106,6 +106,14 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 	onExpandInput,
 	onMicInput,
 }) => {
+	const toolbarRef = useRef<HTMLDivElement>(null);
+	const promptInputRef = useRef<HTMLInputElement>(null);
+	const styleTriggerRef = useRef<HTMLButtonElement>(null);
+	const promptHintId = useId();
+	const selectionHintId = useId();
+	const [contextAnnouncement, setContextAnnouncement] =
+		useState("Studio ready");
+
 	// --- CONTEXT LOGIC ---
 	const getSelectionContext = () => {
 		if (selectedIds.length > 1) return "MULTI";
@@ -125,8 +133,80 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 	};
 
 	const context = getSelectionContext();
+	const hasSelection = selectedIds.length > 0;
 	const selectedElement = elements.find((e) => e.id === selectedIds[0]);
 	const isToolMode = selectedIds.length === 0;
+
+	const contextDescription = useMemo(() => {
+		switch (context) {
+			case "IMAGE":
+				return "Image selection controls ready";
+			case "TEXT":
+				return "Text selection controls ready";
+			case "SHAPE":
+				return "Shape selection controls ready";
+			case "VIDEO":
+				return "Video selection controls ready";
+			case "MULTI":
+				return `Multiple elements selected (${selectedIds.length})`;
+			default:
+				return "Studio context active";
+		}
+	}, [context, selectedIds.length]);
+
+	useEffect(() => {
+		setContextAnnouncement(contextDescription);
+	}, [contextDescription]);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			const isMeta = event.metaKey || event.ctrlKey;
+			const isTypingTarget = (() => {
+				const target = event.target as HTMLElement | null;
+				if (!target) return false;
+				const tag = target.tagName?.toLowerCase();
+				return (
+					tag === "input" || tag === "textarea" || target.isContentEditable
+				);
+			})();
+
+			if (isMeta && event.key === "Enter") {
+				event.preventDefault();
+				if (!isGenerating) handleRun();
+				return;
+			}
+
+			if (isMeta && event.key.toLowerCase() === "z" && !event.shiftKey) {
+				event.preventDefault();
+				undo?.();
+				return;
+			}
+
+			if (isMeta && event.key.toLowerCase() === "z" && event.shiftKey) {
+				event.preventDefault();
+				redo?.();
+				return;
+			}
+
+			if (!isMeta && !event.altKey && !event.ctrlKey && !event.repeat) {
+				if (
+					event.key === ";" &&
+					(!isTypingTarget || event.target === promptInputRef.current)
+				) {
+					event.preventDefault();
+					promptInputRef.current?.focus();
+					return;
+				}
+				if (event.key === "/" && !isTypingTarget) {
+					event.preventDefault();
+					styleTriggerRef.current?.focus();
+				}
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [handleRun, isGenerating, redo, undo]);
 
 	const updateProperty = (updates: any) => {
 		if (!isToolMode && selectedIds.length === 1) {
@@ -154,6 +234,7 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 		disabled,
 		isActive,
 		variant = "default",
+		ariaLabel,
 	}: {
 		icon: any;
 		label?: string;
@@ -161,12 +242,17 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 		disabled?: boolean;
 		isActive?: boolean;
 		variant?: "default" | "danger" | "accent";
+		ariaLabel?: string;
 	}) => (
 		<button
+			type="button"
 			onClick={onClick}
 			disabled={disabled}
+			aria-label={ariaLabel || label || "Canvas action"}
+			title={label}
 			className={cn(
-				"h-full px-3 flex items-center gap-2 transition-colors relative group",
+				"h-10 md:h-full px-2 md:px-3 flex items-center gap-2 transition-colors relative group text-xs font-mono uppercase tracking-wide",
+				"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#FF4D00]",
 				disabled
 					? "opacity-30 cursor-not-allowed"
 					: "hover:bg-neutral-100 dark:hover:bg-neutral-800",
@@ -187,7 +273,7 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 			{label && (
 				<span
 					className={cn(
-						"font-mono text-[10px] tracking-wider uppercase",
+						"text-[10px]",
 						variant === "danger"
 							? "text-red-500"
 							: "text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white",
@@ -203,12 +289,23 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 
 	// 1. CONTEXT (Left)
 	const ContextSection = () => (
-		<div className="flex items-center h-full px-4 min-w-[140px] border-r border-neutral-200 dark:border-neutral-800">
-			<span className="font-mono text-[10px] text-neutral-400 dark:text-neutral-600 uppercase tracking-widest">
-				{context === "GLOBAL" ? "STUDIO" : context}
-			</span>
-			{selectedIds.length > 0 && (
-				<span className="ml-2 px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[9px] font-mono text-neutral-500">
+		<div
+			className="flex items-center justify-between px-4 min-w-[160px] border-r border-neutral-200 dark:border-neutral-800"
+			role="group"
+			aria-label="Selection context"
+		>
+			<div>
+				<p className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">
+					{context === "GLOBAL" ? "Studio" : context}
+				</p>
+				<p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+					{hasSelection
+						? `${selectedIds.length} item${selectedIds.length > 1 ? "s" : ""} selected`
+						: "No selection"}
+				</p>
+			</div>
+			{hasSelection && (
+				<span className="ml-2 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[9px] font-mono text-neutral-600 dark:text-neutral-300">
 					{selectedIds.length}
 				</span>
 			)}
@@ -217,155 +314,233 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 
 	// 2. COMMAND (Center)
 	const CommandSection = () => (
-		<div className="flex-1 h-full flex items-center overflow-hidden relative">
-			{context === "GLOBAL" ? (
-				<div className="w-full h-full flex items-center">
-					<StudioBarInput
-						value={generationSettings.prompt || ""}
-						onChange={(val) => onUpdateSettings?.({ prompt: val })}
-						onSubmit={handleRun}
-						isGenerating={isGenerating}
-						onExpand={onExpandInput}
-						onMic={onMicInput}
-					/>
-					<Separator />
-					<div className="px-2">
-						<StyleSelector
-							selectedStyleId={generationSettings.styleId || "simpsons"}
-							onSelectStyle={(id) => onUpdateSettings?.({ styleId: id })}
-						/>
-					</div>
-					<Separator />
-					<ActionButton
-						icon={isGenerating ? SwissIcons.Spinner : SwissIcons.Play}
-						onClick={handleRun}
-						disabled={isGenerating}
-						variant="accent"
-						label="RUN"
-					/>
-				</div>
-			) : (
-				<div className="w-full h-full flex items-center px-2 gap-1 overflow-x-auto no-scrollbar">
-					{/* IMAGE ACTIONS */}
-					{context === "IMAGE" && (
-						<>
-							<ActionButton
-								icon={SwissIcons.Crop}
-								label="CROP"
-								onClick={() => setCroppingImageId(selectedIds[0])}
-							/>
-							<ActionButton
-								icon={SwissIcons.Scissors}
-								label="NO BG"
-								onClick={handleRemoveBackground}
-							/>
-							{handleOpenIsolateDialog && (
-								<ActionButton
-									icon={SwissIcons.Filter}
-									label="ISOLATE"
-									onClick={handleOpenIsolateDialog}
-								/>
-							)}
-							{handleGeminiEdit && (
-								<ActionButton
-									icon={
-										isGeminiEditing ? SwissIcons.Spinner : SwissIcons.Sparkles
-									}
-									label="EDIT"
-									onClick={handleGeminiEdit}
-									disabled={isGeminiEditing}
-								/>
-							)}
-						</>
-					)}
-					{/* TEXT ACTIONS */}
-					{context === "TEXT" && (
-						<>
-							<div className="w-32 scale-90">
-								<FontSelector
-									value={
-										isToolMode
-											? defaultTextProps?.fontFamily
-											: (selectedElement as TextElement)?.fontFamily
-									}
-									onChange={(val) => updateProperty({ fontFamily: val })}
-								/>
-							</div>
-							<Separator />
-							<div className="w-16 scale-90">
-								<FontSizeSelector
-									value={
-										isToolMode
-											? defaultTextProps?.fontSize
-											: (selectedElement as TextElement)?.fontSize
-									}
-									onChange={(val) => updateProperty({ fontSize: val })}
-								/>
-							</div>
-							<Separator />
-							<ColorPickerPopover
-								color={
-									isToolMode
-										? defaultTextProps?.fill
-										: (selectedElement as TextElement)?.fill
-								}
-								onChange={(c) => updateProperty({ fill: c })}
-							/>
-						</>
-					)}
-					{/* SHAPE ACTIONS */}
-					{context === "SHAPE" && (
-						<>
-							<ColorPickerPopover
-								label="Fill"
-								color={
-									isToolMode
-										? defaultShapeProps?.fill
-										: (selectedElement as ShapeElement)?.fill
-								}
-								onChange={(c) => updateProperty({ fill: c })}
-							/>
-							<Separator />
-							<ColorPickerPopover
-								label="Stroke"
-								color={
-									isToolMode
-										? defaultShapeProps?.stroke
-										: (selectedElement as ShapeElement)?.stroke
-								}
-								onChange={(c) => updateProperty({ stroke: c })}
-							/>
-						</>
-					)}
-					{/* COMMON ACTIONS */}
-					<div className="flex-1" /> {/* Spacer */}
-					<Separator />
-					<ActionButton
-						icon={SwissIcons.Copy}
-						onClick={handleDuplicate}
-						label="DUPE"
-					/>
-					<ActionButton
-						icon={SwissIcons.Trash}
-						onClick={handleDelete}
-						variant="danger"
-					/>
-				</div>
-			)}
+		<div
+			className="flex-1 h-full min-w-0 flex items-center overflow-hidden relative px-2"
+			role="group"
+			aria-label="Generation controls"
+			aria-describedby={promptHintId}
+		>
+			<StudioBarInput
+				value={generationSettings.prompt || ""}
+				onChange={(val) => onUpdateSettings?.({ prompt: val })}
+				onSubmit={handleRun}
+				isGenerating={isGenerating}
+				onExpand={onExpandInput}
+				onMic={onMicInput}
+				inputRef={promptInputRef}
+				ariaDescribedBy={promptHintId}
+			/>
+			<Separator />
+			<div className="px-2 flex-shrink-0">
+				<StyleSelector
+					selectedStyleId={generationSettings.styleId || "simpsons"}
+					onSelectStyle={(id) => onUpdateSettings?.({ styleId: id })}
+					triggerRef={styleTriggerRef}
+					ariaLabel="Open style presets"
+				/>
+			</div>
+			<Separator />
+			<ActionButton
+				icon={isGenerating ? SwissIcons.Spinner : SwissIcons.Play}
+				onClick={handleRun}
+				disabled={isGenerating}
+				variant="accent"
+				label="Run"
+				ariaLabel="Run generation"
+			/>
 		</div>
 	);
+
+	const SelectionSection = () => {
+		const primarySelectedId = selectedIds[0];
+		return (
+			<div
+				className="min-w-[320px] h-full border-l border-neutral-200 dark:border-neutral-800 flex items-center px-2 overflow-x-auto no-scrollbar gap-1"
+				role="group"
+				aria-label="Selection actions"
+				aria-describedby={selectionHintId}
+			>
+				{!hasSelection ? (
+					<span className="text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+						Select an element to unlock contextual controls
+					</span>
+				) : (
+					<div className="flex items-center gap-1 min-w-max" aria-live="polite">
+						{context === "IMAGE" && (
+							<>
+								<ActionButton
+									icon={SwissIcons.Crop}
+									label="Crop"
+									onClick={() =>
+										primarySelectedId && setCroppingImageId(primarySelectedId)
+									}
+								/>
+								<ActionButton
+									icon={SwissIcons.Scissors}
+									label="No BG"
+									onClick={handleRemoveBackground}
+								/>
+								{handleOpenIsolateDialog && (
+									<ActionButton
+										icon={SwissIcons.Filter}
+										label="Isolate"
+										onClick={handleOpenIsolateDialog}
+									/>
+								)}
+								{handleGeminiEdit && (
+									<ActionButton
+										icon={
+											isGeminiEditing ? SwissIcons.Spinner : SwissIcons.Sparkles
+										}
+										label="Edit"
+										onClick={handleGeminiEdit}
+										disabled={isGeminiEditing}
+									/>
+								)}
+								{handleConvertToVideo && (
+									<ActionButton
+										icon={SwissIcons.Video}
+										label="Animate"
+										onClick={() =>
+											primarySelectedId &&
+											handleConvertToVideo(primarySelectedId)
+										}
+									/>
+								)}
+							</>
+						)}
+						{context === "TEXT" && (
+							<>
+								<div className="w-32 scale-90">
+									<FontSelector
+										value={
+											isToolMode
+												? defaultTextProps?.fontFamily
+												: (selectedElement as TextElement)?.fontFamily
+										}
+										onChange={(val) => updateProperty({ fontFamily: val })}
+									/>
+								</div>
+								<Separator />
+								<div className="w-16 scale-90">
+									<FontSizeSelector
+										value={
+											isToolMode
+												? defaultTextProps?.fontSize
+												: (selectedElement as TextElement)?.fontSize
+										}
+										onChange={(val) => updateProperty({ fontSize: val })}
+									/>
+								</div>
+								<Separator />
+								<ColorPickerPopover
+									color={
+										isToolMode
+											? defaultTextProps?.fill
+											: (selectedElement as TextElement)?.fill
+									}
+									onChange={(c) => updateProperty({ fill: c })}
+								/>
+							</>
+						)}
+						{context === "SHAPE" && (
+							<>
+								<ColorPickerPopover
+									label="Fill"
+									color={
+										isToolMode
+											? defaultShapeProps?.fill
+											: (selectedElement as ShapeElement)?.fill
+									}
+									onChange={(c) => updateProperty({ fill: c })}
+								/>
+								<Separator />
+								<ColorPickerPopover
+									label="Stroke"
+									color={
+										isToolMode
+											? defaultShapeProps?.stroke
+											: (selectedElement as ShapeElement)?.stroke
+									}
+									onChange={(c) => updateProperty({ stroke: c })}
+								/>
+							</>
+						)}
+						{context === "VIDEO" && handleConvertToVideo && (
+							<ActionButton
+								icon={SwissIcons.Video}
+								label="Extend"
+								onClick={() =>
+									primarySelectedId && handleConvertToVideo(primarySelectedId)
+								}
+							/>
+						)}
+						{selectedIds.length > 1 && (
+							<ActionButton
+								icon={SwissIcons.Layers}
+								label="Combine"
+								onClick={handleCombineImages}
+							/>
+						)}
+						<Separator />
+						<ActionButton
+							icon={SwissIcons.Copy}
+							onClick={handleDuplicate}
+							label="Dupe"
+						/>
+						<ActionButton
+							icon={SwissIcons.Trash}
+							onClick={handleDelete}
+							variant="danger"
+						/>
+						{hasSelection && (
+							<>
+								<Separator />
+								<ActionButton
+									icon={SwissIcons.BringToFront}
+									label="Front"
+									onClick={sendToFront}
+								/>
+								<ActionButton
+									icon={SwissIcons.SendToBack}
+									label="Back"
+									onClick={sendToBack}
+								/>
+								<ActionButton
+									icon={SwissIcons.SkipForward}
+									label="Step +"
+									onClick={bringForward}
+								/>
+								<ActionButton
+									icon={SwissIcons.SkipBack}
+									label="Step -"
+									onClick={sendBackward}
+								/>
+							</>
+						)}
+					</div>
+				)}
+			</div>
+		);
+	};
 	// 3. SYSTEM (Right)
 	const SystemSection = () => (
-		<div className="flex items-center h-full px-2 border-l border-neutral-200 dark:border-neutral-800">
+		<div
+			className="flex items-center h-full px-2 border-l border-neutral-200 dark:border-neutral-800 gap-1"
+			role="group"
+			aria-label="History controls"
+		>
 			<ActionButton
 				icon={SwissIcons.Undo}
 				onClick={undo || (() => {})}
 				disabled={!canUndo}
+				label="Undo"
 			/>
 			<ActionButton
 				icon={SwissIcons.Redo}
 				onClick={redo || (() => {})}
 				disabled={!canRedo}
+				label="Redo"
 			/>
 		</div>
 	);
@@ -373,23 +548,45 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 	// --- RENDER ---
 	const centerOffset = isChatOpen ? -168 : 0; // Adjusted for visual balance
 
+	const promptHintText =
+		"Press ; to focus the prompt, / to open styles, Command or Control plus Enter to run.";
+	const selectionHintText = hasSelection
+		? contextDescription
+		: "Select any canvas layer to reveal contextual actions.";
+
 	return (
 		<motion.div
+			ref={toolbarRef}
+			role="toolbar"
+			aria-label="Studio controls"
 			initial={{ y: 100, opacity: 0 }}
 			animate={{ y: 0, opacity: 1, x: `calc(-50% + ${centerOffset}px)` }}
 			transition={{ type: "spring", stiffness: 300, damping: 30 }}
 			className={cn(
 				"fixed bottom-8 left-1/2 z-[100]",
-				"h-14 min-w-[720px] max-w-[90vw]",
-				"bg-[#f4f4f0] dark:bg-[#111111]",
-				"rounded-sm shadow-2xl",
-				"border border-neutral-200 dark:border-neutral-800",
+				"h-16 min-w-[720px] w-[min(95vw,1200px)]",
+				"rounded-sm shadow-chamfer",
+				"border border-neutral-200/80 dark:border-neutral-800/80",
 				"flex items-center overflow-hidden",
 			)}
 		>
+			<div className="absolute inset-0 bg-[#f0ede3] dark:bg-[#111111] bg-noise opacity-95 -z-10 pointer-events-none" />
+
 			<ContextSection />
-			<CommandSection />
+			<div className="flex flex-1 h-full min-w-0 items-stretch">
+				<CommandSection />
+				<SelectionSection />
+			</div>
 			<SystemSection />
+			<p id={promptHintId} className="sr-only">
+				{promptHintText}
+			</p>
+			<p id={selectionHintId} className="sr-only">
+				{selectionHintText}
+			</p>
+			<span className="sr-only" role="status" aria-live="polite">
+				{contextAnnouncement}
+			</span>
 		</motion.div>
 	);
 };

@@ -1,25 +1,16 @@
 import type { FalClient } from "@fal-ai/client";
 import type {
+	CanvasCommand,
+	TextToImageInput,
+	TextToImageResult,
+} from "@studio233/ai";
+import type {
 	ActiveGeneration,
 	GenerationSettings,
 	PlacedImage,
 } from "@studio233/canvas";
 
 type Placement = { x: number; y: number; width: number; height: number };
-
-type TextToImageParams = {
-	prompt: string;
-	modelId?: string;
-	loraUrl?: string;
-	imageSize?: string;
-	apiKey?: string;
-};
-
-type TextToImageResult = {
-	url: string;
-	width: number;
-	height: number;
-};
 
 type GeminiEditParams = { imageUrl: string; prompt: string };
 type GeminiEditResult = { image: string };
@@ -62,9 +53,7 @@ interface GenerationHandlerDeps {
 		description?: string;
 		variant?: "default" | "destructive";
 	}) => void;
-	generateTextToImage: (
-		params: TextToImageParams,
-	) => Promise<TextToImageResult>;
+	generateTextToImage: (params: TextToImageInput) => Promise<TextToImageResult>;
 	editWithGemini?: (params: GeminiEditParams) => Promise<GeminiEditResult>;
 	getPlacement?: (width?: number, height?: number) => Placement;
 }
@@ -265,32 +254,45 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 				apiKey: customApiKey || undefined,
 			});
 
-			// Add the generated image to the canvas
-			const id = `generated-${Date.now()}-${Math.random()}`;
+			const command = result.command;
+			if (!command || command.type !== "add-image") {
+				throw new Error("Text-to-image workflow returned no image command");
+			}
 
-			const defaultWidth = Math.min(result.width, 512);
-			const defaultHeight = Math.min(result.height, 512);
+			const resolvedCommand: CanvasCommand = {
+				...command,
+				meta: {
+					...command.meta,
+					prompt: generationSettings.prompt,
+					modelId: generationSettings.modelId,
+					loraUrl: generationSettings.loraUrl,
+				},
+			};
+
+			const width = resolvedCommand.width;
+			const height = resolvedCommand.height;
 
 			const placement = getPlacement
-				? getPlacement(result.width, result.height)
+				? getPlacement(width, height)
 				: (() => {
 						const viewportCenterX =
 							(canvasSize.width / 2 - viewport.x) / viewport.scale;
 						const viewportCenterY =
 							(canvasSize.height / 2 - viewport.y) / viewport.scale;
 						return {
-							x: viewportCenterX - defaultWidth / 2,
-							y: viewportCenterY - defaultHeight / 2,
-							width: defaultWidth,
-							height: defaultHeight,
+							x: viewportCenterX - width / 2,
+							y: viewportCenterY - height / 2,
+							width,
+							height,
 						};
 					})();
 
+			const id = `generated-${Date.now()}-${Math.random()}`;
 			setImages((prev) => [
 				...prev,
 				{
 					id,
-					src: result.url,
+					src: resolvedCommand.url,
 					x: placement.x,
 					y: placement.y,
 					width: placement.width,
@@ -300,8 +302,13 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 				},
 			]);
 
-			// Select the new image
 			setSelectedIds([id]);
+			toast({
+				title: "Image generated",
+				description: `Created by ${
+					resolvedCommand.meta?.provider || "Studio+233 AI"
+				}`,
+			});
 		} catch (error) {
 			console.error("Error generating image:", error);
 			toast({

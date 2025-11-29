@@ -12,6 +12,8 @@ interface StudioBarInputProps {
 	placeholder?: string;
 	onExpand?: () => void;
 	onMic?: () => void;
+	inputRef?: React.RefObject<HTMLInputElement | null>;
+	ariaDescribedBy?: string;
 }
 
 const PLACEHOLDERS = [
@@ -30,11 +32,14 @@ export function StudioBarInput({
 	placeholder = "Type to create...",
 	onExpand,
 	onMic,
+	inputRef,
+	ariaDescribedBy,
 }: StudioBarInputProps) {
 	const [isFocused, setIsFocused] = useState(false);
 	const [placeholderIndex, setPlaceholderIndex] = useState(0);
 	const [displayedPlaceholder, setDisplayedPlaceholder] = useState("");
-	const inputRef = useRef<HTMLInputElement>(null);
+	const internalInputRef = useRef<HTMLInputElement>(null);
+	const resolvedInputRef = inputRef ?? internalInputRef;
 
 	// Typewriter Effect
 	useEffect(() => {
@@ -87,7 +92,7 @@ export function StudioBarInput({
 		>
 			{/* Input Field */}
 			<input
-				ref={inputRef}
+				ref={resolvedInputRef}
 				type="text"
 				value={value}
 				onChange={(e) => onChange(e.target.value)}
@@ -99,6 +104,9 @@ export function StudioBarInput({
 				}}
 				onFocus={() => setIsFocused(true)}
 				onBlur={() => setIsFocused(false)}
+				aria-label="Generation prompt"
+				aria-describedby={ariaDescribedBy}
+				autoComplete="off"
 				className="w-full h-full bg-transparent border-none outline-none px-4 pr-24 font-sans text-sm text-neutral-900 dark:text-white placeholder-transparent z-10"
 			/>
 

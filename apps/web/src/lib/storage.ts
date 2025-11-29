@@ -81,15 +81,42 @@ interface CanvasDB extends DBSchema {
 	};
 }
 
+const DEFAULT_SCOPE = null;
+
 class CanvasStorage {
 	private db: IDBPDatabase<CanvasDB> | null = null;
 	private readonly DB_NAME = "studio-233-db";
 	private readonly DB_VERSION = 1;
 	private readonly STATE_KEY = "canvas-state";
 	private readonly MAX_IMAGE_SIZE = 50 * 1024 * 1024; // 50MB max per image
+	private readonly scopeKey: string | null;
+
+	constructor(scopeId?: string) {
+		this.scopeKey = scopeId
+			? CanvasStorage.normalizeScope(scopeId)
+			: DEFAULT_SCOPE;
+	}
+
+	private static normalizeScope(scopeId: string) {
+		return scopeId
+			.trim()
+			.toLowerCase()
+			.replace(/[^a-z0-9-_]/gi, "-");
+	}
+
+	private getDbName() {
+		return this.scopeKey ? `${this.DB_NAME}-${this.scopeKey}` : this.DB_NAME;
+	}
+
+	private getStateKey() {
+		return this.scopeKey
+			? `${this.STATE_KEY}:${this.scopeKey}`
+			: this.STATE_KEY;
+	}
 
 	async init() {
-		this.db = await openDB<CanvasDB>(this.DB_NAME, this.DB_VERSION + 2, {
+		if (this.db) return;
+		this.db = await openDB<CanvasDB>(this.getDbName(), this.DB_VERSION + 2, {
 			upgrade(db: IDBPDatabase<CanvasDB>, oldVersion) {
 				if (!db.objectStoreNames.contains("images")) {
 					db.createObjectStore("images", { keyPath: "id" });
@@ -238,7 +265,7 @@ class CanvasStorage {
 	// Save canvas state to localStorage
 	saveCanvasState(state: CanvasState): void {
 		try {
-			localStorage.setItem(this.STATE_KEY, JSON.stringify(state));
+			localStorage.setItem(this.getStateKey(), JSON.stringify(state));
 		} catch (e) {
 			console.error("Failed to save canvas state:", e);
 			// Handle quota exceeded error
@@ -251,7 +278,7 @@ class CanvasStorage {
 	// Load canvas state from localStorage
 	getCanvasState(): CanvasState | null {
 		try {
-			const stored = localStorage.getItem(this.STATE_KEY);
+			const stored = localStorage.getItem(this.getStateKey());
 			return stored ? JSON.parse(stored) : null;
 		} catch (e) {
 			console.error("Failed to load canvas state:", e);
@@ -261,7 +288,7 @@ class CanvasStorage {
 
 	// Clear all stored data
 	async clearAll(): Promise<void> {
-		localStorage.removeItem(this.STATE_KEY);
+		localStorage.removeItem(this.getStateKey());
 		if (!this.db) await this.init();
 
 		// Clear images
@@ -367,6 +394,8 @@ class CanvasStorage {
 }
 
 export const canvasStorage = new CanvasStorage();
+export const createCanvasStorage = (scopeId?: string) =>
+	scopeId ? new CanvasStorage(scopeId) : canvasStorage;
 export type {
 	CanvasState,
 	CanvasElement,

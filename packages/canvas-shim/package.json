@@ -1,0 +1,7 @@
+{
+	"name": "canvas",
+	"version": "2.11.2-shim",
+	"type": "commonjs",
+	"main": "index.js",
+	"private": true
+}

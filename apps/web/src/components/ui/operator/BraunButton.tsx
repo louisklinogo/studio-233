@@ -1,11 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { type HTMLMotionProps, motion } from "framer-motion";
 import React from "react";
 import { cn } from "@/lib/utils";
 
-interface BraunButtonProps
-	extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface BraunButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
 	variant?: "primary" | "secondary" | "ghost" | "icon";
 	active?: boolean;
 	label?: string;
@@ -17,7 +16,15 @@ export const BraunButton = React.forwardRef<
 	BraunButtonProps
 >(
 	(
-		{ className, variant = "primary", active, label, children, ...props },
+		{
+			className,
+			variant = "primary",
+			active,
+			label,
+			children,
+			onDrag,
+			...props
+		},
 		ref,
 	) => {
 		return (
@@ -25,6 +32,7 @@ export const BraunButton = React.forwardRef<
 				<motion.button
 					ref={ref}
 					whileTap={{ scale: 0.96, y: 1 }}
+					onDrag={onDrag}
 					className={cn(
 						"relative overflow-hidden transition-all duration-200 outline-none",
 						// Base Geometry

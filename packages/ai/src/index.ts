@@ -13,5 +13,6 @@ export * from "./workflows/background-removal";
 export * from "./workflows/layout";
 export * from "./workflows/object-isolation";
 export * from "./workflows/research";
+export * from "./workflows/text-to-image";
 export * from "./workflows/video";
 export * from "./workflows/vision-enhancements";

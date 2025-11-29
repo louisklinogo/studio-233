@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { SwissIcons } from "@/components/ui/SwissIcons";
-import { authClient } from "@/lib/auth-client";
+import { type AuthFetchContext, authClient } from "@/lib/auth-client";
 
 export function LoginFormReceipt() {
 	const [email, setEmail] = useState("");
@@ -36,12 +36,12 @@ export function LoginFormReceipt() {
 			await authClient.signIn.emailOtp(
 				{ email, otp },
 				{
-					fetchOptions: {
-						onSuccess: () => {
-							toast.success("TICKET VALIDATED");
-							router.push("/dashboard");
-						},
-						onError: (ctx) => toast.error(ctx.error.message),
+					onSuccess: () => {
+						toast.success("TICKET VALIDATED");
+						router.push("/dashboard");
+					},
+					onError: ({ error }: AuthFetchContext) => {
+						toast.error(error.message);
 					},
 				},
 			);

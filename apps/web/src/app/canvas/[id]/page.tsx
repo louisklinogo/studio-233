@@ -1,16 +1,15 @@
 import { notFound } from "next/navigation";
-import { use } from "react";
 import { OverlayInterface } from "@/components/canvas/OverlayInterface";
 
-export default function CanvasPage({
+export default async function CanvasPage({
 	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
-	const { id } = use(params);
+	const { id } = await params;
 	if (!id || id === "undefined" || id === "null") {
 		notFound();
 	}
 
-	return <OverlayInterface />;
+	return <OverlayInterface projectId={id} />;
 }

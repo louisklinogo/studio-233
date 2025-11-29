@@ -23,6 +23,8 @@ interface StyleSelectorProps {
 	onSelectStyle: (styleId: string) => void;
 	onUploadReference?: (file: File) => void;
 	className?: string;
+	triggerRef?: React.Ref<HTMLButtonElement>;
+	ariaLabel?: string;
 }
 
 const PRESETS: StylePreset[] = [
@@ -39,6 +41,8 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({
 	onSelectStyle,
 	onUploadReference,
 	className,
+	triggerRef,
+	ariaLabel,
 }) => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,7 +64,12 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({
 		<div className={cn("flex items-center", className)}>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<button className="h-10 px-3 flex items-center gap-2 bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors group outline-none">
+					<button
+						ref={triggerRef}
+						className="h-10 px-3 flex items-center gap-2 bg-[#f4f4f0] dark:bg-[#111111] hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors group outline-none"
+						aria-label={ariaLabel ?? "Select style"}
+						type="button"
+					>
 						<SwissIcons.Zap
 							size={14}
 							className="text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-neutral-100"

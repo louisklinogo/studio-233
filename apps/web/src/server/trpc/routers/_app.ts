@@ -1,13 +1,10 @@
 import { createFalClient } from "@fal-ai/client";
+import { textToImageWorkflow } from "@studio233/ai";
 import { tracked } from "@trpc/server";
 import sharp from "sharp";
 import { z } from "zod";
 import { publicProcedure, rateLimitedProcedure, router } from "../init";
-import {
-	geminiRouter,
-	generateImageFromText,
-	generateImageFromTextWithFallback,
-} from "./gemini";
+import { geminiRouter, generateImageFromTextWithFallback } from "./gemini";
 
 const fal = createFalClient({
 	credentials: () => process.env.FAL_KEY as string,
@@ -905,43 +902,10 @@ export const appRouter = router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				if (input.modelId === "gemini-2.5-flash-image-preview") {
-					return await generateImageFromText(input.prompt, input.apiKey, ctx);
-				}
-
-				const falClient = await getFalClient(input.apiKey, ctx);
-
-				const loras = input.loraUrl ? [{ path: input.loraUrl, scale: 1 }] : [];
-
-				const result = await falClient.subscribe(
-					"fal-ai/flux-kontext-lora/text-to-image",
-					{
-						input: {
-							prompt: input.prompt,
-							image_size: input.imageSize || "square",
-							num_inference_steps: 30,
-							guidance_scale: 2.5,
-							num_images: 1,
-							enable_safety_checker: true,
-							output_format: "png",
-							seed: input.seed,
-							loras,
-						},
-					},
-				);
-
-				// Handle different possible response structures
-				const resultData = (result as any).data || result;
-				if (!resultData.images?.[0]) {
-					throw new Error("No image generated");
-				}
-
-				return {
-					url: resultData.images[0].url,
-					width: resultData.images[0].width,
-					height: resultData.images[0].height,
-					seed: resultData.seed,
-				};
+				return await textToImageWorkflow.run({
+					...input,
+					apiKey: input.apiKey,
+				});
 			} catch (error) {
 				console.error("Error in text-to-image generation:", error);
 				throw new Error(

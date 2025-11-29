@@ -130,48 +130,53 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 						toolCallId &&
 						state &&
 						!FINAL_TOOL_STATES.has(state) &&
-						!ERROR_TOOL_STATES.has(state) &&
-						!pendingToolCallsRef.current.has(toolCallId)
+						!ERROR_TOOL_STATES.has(state)
 					) {
-						pendingToolCallsRef.current.add(toolCallId);
-						try {
-							onCanvasCommand({
-								type: "add-image",
-								url: TRANSPARENT_PIXEL_DATA_URL,
-								width: 512,
-								height: 512,
-								meta: {
-									provider: toolName,
-									status: "pending",
-									toolCallId,
-								},
-							} as CanvasCommand);
-						} catch (error) {
-							console.error("Failed to create optimistic placeholder", error);
+						const callId = toolCallId as string;
+						if (!pendingToolCallsRef.current.has(callId)) {
+							pendingToolCallsRef.current.add(callId);
+							try {
+								onCanvasCommand({
+									type: "add-image",
+									url: TRANSPARENT_PIXEL_DATA_URL,
+									width: 512,
+									height: 512,
+									meta: {
+										provider: toolName,
+										status: "pending",
+										toolCallId: callId,
+									},
+								});
+							} catch (error) {
+								console.error("Failed to create optimistic placeholder", error);
+							}
 						}
 					}
 
 					if (
 						isCanvasImageTool &&
 						toolCallId &&
-						ERROR_TOOL_STATES.has(state) &&
-						pendingToolCallsRef.current.has(toolCallId)
+						state &&
+						ERROR_TOOL_STATES.has(state)
 					) {
-						pendingToolCallsRef.current.delete(toolCallId);
-						try {
-							onCanvasCommand({
-								type: "add-image",
-								url: TRANSPARENT_PIXEL_DATA_URL,
-								width: 1,
-								height: 1,
-								meta: {
-									provider: toolName,
-									status: "error",
-									toolCallId,
-								},
-							} as CanvasCommand);
-						} catch (error) {
-							console.error("Failed to notify placeholder error", error);
+						const callId = toolCallId as string;
+						if (pendingToolCallsRef.current.has(callId)) {
+							pendingToolCallsRef.current.delete(callId);
+							try {
+								onCanvasCommand({
+									type: "add-image",
+									url: TRANSPARENT_PIXEL_DATA_URL,
+									width: 1,
+									height: 1,
+									meta: {
+										provider: toolName,
+										status: "error",
+										toolCallId: callId,
+									},
+								} as CanvasCommand);
+							} catch (error) {
+								console.error("Failed to notify placeholder error", error);
+							}
 						}
 					}
 
@@ -197,15 +202,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 								const normalizedCommand: CanvasCommand = {
 									...command,
 									meta: {
-										...(command as CanvasCommand).meta,
+										...command.meta,
 										toolCallId,
-										provider:
-											(command as CanvasCommand).meta?.provider || toolName,
+										provider: command.meta?.provider || toolName,
 										status: "ready",
 									},
 								};
 								if (toolCallId) {
-									pendingToolCallsRef.current.delete(toolCallId);
+									const callId = toolCallId as string;
+									pendingToolCallsRef.current.delete(callId);
 								}
 								onCanvasCommand(normalizedCommand);
 							} catch (error) {

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
+import { type AuthFetchContext, authClient } from "@/lib/auth-client";
 import { SwissIcons } from "../ui/SwissIcons";
 import { FederatedLoginButton } from "./FederatedLoginButton";
 import { LoginFormReceipt } from "./variants/LoginFormReceipt";
@@ -16,30 +16,39 @@ export function LoginForm() {
 	const [mode, setMode] = useState<"federated" | "email">("federated");
 	const [variant, setVariant] = useState<Variant>("signal");
 	const [isLoading, setIsLoading] = useState(false);
+	const [isSwitchingAccount, setIsSwitchingAccount] = useState(false);
 	const router = useRouter();
 	const { data: session } = authClient.useSession();
+	const isAuthenticated = Boolean(session);
 
 	useEffect(() => {
-		if (session) {
+		if (isAuthenticated) {
 			router.push("/dashboard");
 		}
-	}, [session, router]);
+	}, [isAuthenticated, router]);
 
 	const handleGoogleLogin = async () => {
+		if (isAuthenticated) {
+			toast.message("Already authenticated. Redirecting to dashboard.");
+			router.push("/dashboard");
+			return;
+		}
 		setIsLoading(true);
 		try {
-			await authClient.signIn.social({
-				provider: "google",
-				callbackURL: "/dashboard",
-				fetchOptions: {
+			await authClient.signIn.social(
+				{
+					provider: "google",
+					callbackURL: "/dashboard",
+				},
+				{
 					onSuccess: () => {
 						toast.success("FEDERATION PROTOCOL ESTABLISHED");
 					},
-					onError: (ctx) => {
-						toast.error(ctx.error.message || "FEDERATION FAILED");
+					onError: ({ error }: AuthFetchContext) => {
+						toast.error(error.message || "FEDERATION FAILED");
 					},
 				},
-			});
+			);
 		} catch (error) {
 			console.error(error);
 			toast.error("CONNECTION ERROR");
@@ -48,9 +57,51 @@ export function LoginForm() {
 		}
 	};
 
+	const handleContinue = () => {
+		router.push("/dashboard");
+	};
+
+	const handleSwitchAccount = async () => {
+		setIsSwitchingAccount(true);
+		try {
+			await authClient.signOut();
+			toast.success("Signed out. Choose another account.");
+			router.refresh();
+		} catch (error) {
+			console.error(error);
+			toast.error("Failed to sign out");
+		} finally {
+			setIsSwitchingAccount(false);
+		}
+	};
+
 	return (
 		<div className="flex-1 flex flex-col h-full justify-between">
 			<div className="space-y-6">
+				{isAuthenticated && (
+					<div className="rounded-sm border border-emerald-300/60 bg-emerald-50/60 dark:bg-emerald-900/10 p-4 space-y-3 text-sm text-emerald-900 dark:text-emerald-200">
+						<div className="flex items-center gap-2 font-mono text-[10px] tracking-wider">
+							<span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+							CHANNEL SECURE — SESSION ACTIVE
+						</div>
+						<div className="flex flex-wrap gap-2">
+							<button
+								onClick={handleContinue}
+								className="px-3 py-1 text-xs uppercase font-mono border border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors"
+							>
+								Continue to Dashboard
+							</button>
+							<button
+								onClick={handleSwitchAccount}
+								disabled={isSwitchingAccount}
+								className="px-3 py-1 text-xs uppercase font-mono border border-neutral-300 text-neutral-500 hover:text-neutral-900 disabled:opacity-50"
+							>
+								{isSwitchingAccount ? "Signing out..." : "Switch account"}
+							</button>
+						</div>
+					</div>
+				)}
+
 				{/* Primary Navigation */}
 				<div className="flex items-end justify-between border-b border-neutral-200 dark:border-neutral-800 mb-4">
 					<div className="flex flex-1">
@@ -154,7 +205,7 @@ export function LoginForm() {
 							<FederatedLoginButton
 								provider="google"
 								onClick={handleGoogleLogin}
-								isLoading={isLoading}
+								isLoading={isLoading || isSwitchingAccount || isAuthenticated}
 							/>
 						</motion.div>
 					) : (

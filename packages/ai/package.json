@@ -17,10 +17,11 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@vercel/blob": "^1.1.1",
 		"@ai-sdk/google": "^2.0.38",
 		"@fal-ai/client": "^1.7.0",
+		"@vercel/blob": "^1.1.1",
 		"ai": "^5.0.97",
+		"dotenv": "^17.2.3",
 		"sharp": "^0.33.5",
 		"zod": "catalog:"
 	}

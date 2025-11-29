@@ -1,6 +1,17 @@
 "use client";
 
 import { createFalClient } from "@fal-ai/client";
+// Import types
+import type {
+	ActiveGeneration,
+	ActiveVideoGeneration,
+	GenerationSettings,
+	HistoryState,
+	PlacedImage,
+	PlacedVideo,
+	SelectionBox,
+	VideoGenerationSettings,
+} from "@studio233/canvas";
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Konva from "konva";
@@ -90,17 +101,6 @@ import { type CanvasState, canvasStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { getVideoModelById } from "@/lib/video-models";
 import { useTRPC } from "@/trpc/client";
-// Import types
-import type {
-	ActiveGeneration,
-	ActiveVideoGeneration,
-	GenerationSettings,
-	HistoryState,
-	PlacedImage,
-	PlacedVideo,
-	SelectionBox,
-	VideoGenerationSettings,
-} from "@studio233/canvas";
 import {
 	imageToCanvasElement,
 	videoToCanvasElement,
@@ -1545,7 +1545,10 @@ export default function OverlayPage() {
 	};
 
 	// Handle selection
-	const handleSelect = (id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+	const handleSelect = (
+		id: string,
+		e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+	) => {
 		if (e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey) {
 			setSelectedIds((prev) =>
 				prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],

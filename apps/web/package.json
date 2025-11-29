@@ -23,6 +23,7 @@
 		"@gsap/react": "^2.1.2",
 		"@hookform/resolvers": "^4.1.3",
 		"@phosphor-icons/react": "^2.1.10",
+		"@polar-sh/sdk": "^0.41.4",
 		"@radix-ui/react-accordion": "^1.2.12",
 		"@radix-ui/react-alert-dialog": "^1.1.15",
 		"@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -131,11 +132,12 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.3",
 		"@studio233/config": "workspace:*",
+		"@types/gif.js": "^0.2.5",
 		"@types/node": "^20",
 		"@types/node-fetch": "^2.6.11",
 		"@types/react": "^19.1.6",
+		"@types/react-dom": "^19.1.5",
 		"@types/react-syntax-highlighter": "^15.5.13",
-		"@types/gif.js": "^0.2.5",
 		"postcss": "^8",
 		"tailwindcss": "^3.4.1",
 		"typescript": "^5"

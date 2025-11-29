@@ -37,7 +37,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 	const [isRemoved, setIsRemoved] = useState(false);
 
 	const updateProject = useMutation({
-		...trpc.project.update.mutationOptions(),
+		...trpc.project.update.mutationOptions<void>(),
 		onMutate: () => setActionStatus("updating"),
 		onSuccess: () => {
 			toast.success("System updated");
@@ -53,7 +53,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 	});
 
 	const duplicateProject = useMutation({
-		...trpc.project.duplicate.mutationOptions(),
+		...trpc.project.duplicate.mutationOptions<void>(),
 		onMutate: () => setActionStatus("duplicating"),
 		onSuccess: () => {
 			toast.success("System replicated");
@@ -68,7 +68,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 	});
 
 	const deleteProject = useMutation({
-		...trpc.project.delete.mutationOptions(),
+		...trpc.project.delete.mutationOptions<void>(),
 		onMutate: () => {
 			setActionStatus("deleting");
 			setIsRemoved(true);

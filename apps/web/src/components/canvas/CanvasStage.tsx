@@ -86,7 +86,10 @@ interface CanvasStageProps {
 	onTouchMove: (e: Konva.KonvaEventObject<TouchEvent>) => void;
 	onTouchEnd: (e: Konva.KonvaEventObject<TouchEvent>) => void;
 	onContextMenu?: (e: Konva.KonvaEventObject<PointerEvent>) => void;
-	handleSelect: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void;
+	handleSelect: (
+		id: string,
+		e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+	) => void;
 }
 
 export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
@@ -381,7 +384,7 @@ export const CanvasStage = React.forwardRef<HTMLDivElement, CanvasStageProps>(
 		return (
 			<div
 				ref={ref}
-				className="relative bg-neutral-50 dark:bg-[#050505] overflow-hidden w-full h-full"
+				className="relative bg-neutral-200 dark:bg-[#050505] overflow-hidden w-full h-full"
 				style={{
 					height: `${canvasSize.height}px`,
 					width: `${canvasSize.width}px`,

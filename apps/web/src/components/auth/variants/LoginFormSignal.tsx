@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SwissIcons } from "@/components/ui/SwissIcons";
-import { authClient } from "@/lib/auth-client";
+import { type AuthFetchContext, authClient } from "@/lib/auth-client";
 
 export function LoginFormSignal() {
 	const [email, setEmail] = useState("");
@@ -36,15 +36,13 @@ export function LoginFormSignal() {
 			await authClient.signIn.emailOtp(
 				{ email, otp },
 				{
-					fetchOptions: {
-						onSuccess: () => {
-							toast.success("SIGNAL ESTABLISHED");
-							router.push("/dashboard");
-						},
-						onError: (ctx) => {
-							toast.error(ctx.error.message);
-							setStatus("sent");
-						},
+					onSuccess: () => {
+						toast.success("SIGNAL ESTABLISHED");
+						router.push("/dashboard");
+					},
+					onError: ({ error }: AuthFetchContext) => {
+						toast.error(error.message);
+						setStatus("sent");
 					},
 				},
 			);
