@@ -127,6 +127,7 @@ export const CanvasText: React.FC<CanvasTextProps> = ({
 					anchorFill="#ffffff"
 					borderStroke="#FF4D00"
 					borderStrokeWidth={1}
+					rotateAnchorOffset={10}
 				/>
 			)}
 			{isEditing && (

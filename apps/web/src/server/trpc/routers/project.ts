@@ -194,4 +194,58 @@ export const projectRouter = router({
 				return newProject;
 			});
 		}),
+	getById: publicProcedure
+		.input(
+			z.object({
+				id: z.string(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await auth.api.getSession({ headers });
+
+			if (!session) {
+				return null;
+			}
+
+			const project = await prisma.project.findFirst({
+				where: {
+					id: input.id,
+					userId: session.user.id,
+				},
+				select: {
+					id: true,
+					name: true,
+					description: true,
+					thumbnail: true,
+					createdAt: true,
+					updatedAt: true,
+				},
+			});
+
+			return project;
+		}),
+	getRecent: publicProcedure.query(async ({ ctx }) => {
+		const headers = new Headers(ctx.req?.headers);
+		const session = await auth.api.getSession({ headers });
+
+		if (!session) {
+			return [];
+		}
+
+		return await prisma.project.findMany({
+			where: {
+				userId: session.user.id,
+			},
+			orderBy: {
+				updatedAt: "desc",
+			},
+			take: 3,
+			select: {
+				id: true,
+				name: true,
+				updatedAt: true,
+			},
+		});
+	}),
 });

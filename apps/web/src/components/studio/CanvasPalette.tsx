@@ -217,29 +217,6 @@ export function CanvasPalette({
 			{/* Tools Container */}
 			<div className="flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800">
 				{/* Hub / Dashboard Nav */}
-				<Link
-					href="/dashboard"
-					className="h-14 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]"
-				>
-					<div className="absolute left-0 w-14 flex items-center justify-center">
-						<SwissIcons.Grid
-							size={20}
-							className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
-						/>
-					</div>
-					<AnimatePresence>
-						{isHovered && (
-							<motion.span
-								initial={{ opacity: 0, x: -10 }}
-								animate={{ opacity: 1, x: 0 }}
-								exit={{ opacity: 0, x: -10 }}
-								className="font-mono text-xs tracking-wider ml-14 whitespace-nowrap text-neutral-500"
-							>
-								HUB
-							</motion.span>
-						)}
-					</AnimatePresence>
-				</Link>
 
 				{/* Add Content (Direct) */}
 				<ToolRow

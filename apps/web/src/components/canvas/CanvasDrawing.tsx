@@ -88,6 +88,7 @@ export const CanvasDrawing: React.FC<CanvasDrawingProps> = ({
 					anchorFill="#ffffff"
 					borderStroke="#FF4D00"
 					borderStrokeWidth={1}
+					rotateAnchorOffset={10}
 					boundBoxFunc={(oldBox, newBox) => {
 						if (newBox.width < 5 || newBox.height < 5) {
 							return oldBox;

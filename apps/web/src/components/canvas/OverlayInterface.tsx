@@ -16,7 +16,7 @@ import type {
 	SelectionBox,
 	VideoGenerationSettings,
 } from "@studio233/canvas";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Konva from "konva";
 import Link from "next/link";
@@ -93,10 +93,10 @@ import { checkOS } from "@/utils/os-utils";
 import { convertImageToVideo } from "@/utils/video-utils";
 
 interface OverlayInterfaceProps {
-	projectId?: string;
+	projectId: string;
 }
 
-export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
+export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 	const { theme, setTheme } = useTheme();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isStorageLoaded, setIsStorageLoaded] = useState(false);
@@ -295,6 +295,10 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 	const falClient = useFalClient(customApiKey);
 
 	const trpc = useTRPC();
+
+	const { data: project } = useQuery(
+		trpc.project.getById.queryOptions({ id: projectId }),
+	);
 
 	const { mutateAsync: removeBackground } = useMutation(
 		trpc.removeBackground.mutationOptions(),
@@ -2085,6 +2089,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 						<div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-3 pointer-events-none">
 							<CanvasTitleBlock
 								projectId={projectId}
+								projectName={project?.name}
 								canvasWidth={canvasSize.width}
 								canvasHeight={canvasSize.height}
 								lastSavedAt={lastSavedAt}
