@@ -28,6 +28,7 @@ import { ContextToolbar } from "@/components/canvas/ContextToolbar";
 import { DimensionDisplay } from "@/components/canvas/DimensionDisplay";
 import { GithubBadge } from "@/components/canvas/GithubBadge";
 import { MiniMap } from "@/components/canvas/MiniMap";
+import { OverlayInterface } from "@/components/canvas/OverlayInterface";
 // Import extracted components
 import { ShortcutBadge } from "@/components/canvas/ShortcutBadge";
 import { StreamingImage } from "@/components/canvas/StreamingImage";
@@ -87,7 +88,7 @@ import {
 import { checkOS } from "@/utils/os-utils";
 import { convertImageToVideo } from "@/utils/video-utils";
 
-export default function OverlayPage() {
+export function LegacyOverlayPage() {
 	const { theme, setTheme } = useTheme();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isStorageLoaded, setIsStorageLoaded] = useState(false);
@@ -2281,4 +2282,8 @@ export default function OverlayPage() {
 			</motion.div>
 		</>
 	);
+}
+
+export default function OverlayPage() {
+	return <OverlayInterface projectId="scratch" />;
 }
