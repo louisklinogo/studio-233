@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import React, { forwardRef, useEffect, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
@@ -55,7 +56,7 @@ const ToolRow = forwardRef<
 			disabled={disabled}
 			{...props}
 			className={cn(
-				`h-12 flex items-center relative group transition-colors w-full text-left bg-[#f0ede3] dark:bg-[#111111]`,
+				`h-14 flex items-center relative group transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]`,
 				isActive
 					? "bg-white dark:bg-[#1a1a1a]"
 					: "hover:bg-white dark:hover:bg-[#1a1a1a]",
@@ -73,7 +74,7 @@ const ToolRow = forwardRef<
 			</div>
 
 			{/* Icon */}
-			<div className="absolute left-0 w-12 flex items-center justify-center">
+			<div className="absolute left-0 w-14 flex items-center justify-center">
 				<Icon
 					size={20}
 					className={cn(
@@ -93,7 +94,7 @@ const ToolRow = forwardRef<
 						animate={{ opacity: 1, x: 0 }}
 						exit={{ opacity: 0, x: -10 }}
 						className={cn(
-							"font-mono text-xs tracking-wider ml-12 whitespace-nowrap flex items-center gap-2",
+							"font-mono text-xs tracking-wider ml-14 whitespace-nowrap flex items-center gap-2",
 							isActive
 								? "text-neutral-900 dark:text-white font-bold"
 								: "text-neutral-500",
@@ -203,18 +204,43 @@ export function CanvasPalette({
 
 	return (
 		<motion.div
-			className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 rounded-sm overflow-hidden shadow-chamfer"
-			initial={{ width: "48px" }}
-			animate={{ width: isHovered ? "200px" : "48px" }}
-			transition={{ type: "spring", stiffness: 300, damping: 30 }}
+			className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 shadow-2xl rounded-sm overflow-hidden"
+			initial={{ width: "56px" }}
+			animate={{ width: isHovered ? "220px" : "56px" }}
+			transition={{ type: "spring", stiffness: 400, damping: 30 }}
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
 			{/* Chassis Background */}
-			<div className="absolute inset-0 bg-[#f0ede3] dark:bg-[#111111] -z-10 bg-noise" />
+			<div className="absolute inset-0 bg-[#f4f4f0] dark:bg-[#111111] -z-10" />
 
 			{/* Tools Container */}
 			<div className="flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800">
+				{/* Hub / Dashboard Nav */}
+				<Link
+					href="/dashboard"
+					className="h-14 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]"
+				>
+					<div className="absolute left-0 w-14 flex items-center justify-center">
+						<SwissIcons.Grid
+							size={20}
+							className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
+						/>
+					</div>
+					<AnimatePresence>
+						{isHovered && (
+							<motion.span
+								initial={{ opacity: 0, x: -10 }}
+								animate={{ opacity: 1, x: 0 }}
+								exit={{ opacity: 0, x: -10 }}
+								className="font-mono text-xs tracking-wider ml-14 whitespace-nowrap text-neutral-500"
+							>
+								HUB
+							</motion.span>
+						)}
+					</AnimatePresence>
+				</Link>
+
 				{/* Add Content (Direct) */}
 				<ToolRow
 					icon={SwissIcons.Plus}
@@ -274,9 +300,9 @@ export function CanvasPalette({
 				{/* Theme Toggle */}
 				<button
 					onClick={toggleTheme}
-					className="h-12 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f0ede3] dark:bg-[#111111]"
+					className="h-14 flex items-center relative group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors w-full text-left bg-[#f4f4f0] dark:bg-[#111111]"
 				>
-					<div className="absolute left-0 w-12 flex items-center justify-center">
+					<div className="absolute left-0 w-14 flex items-center justify-center">
 						<SwissIcons.Contrast
 							size={20}
 							className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
@@ -288,7 +314,7 @@ export function CanvasPalette({
 								initial={{ opacity: 0, x: -10 }}
 								animate={{ opacity: 1, x: 0 }}
 								exit={{ opacity: 0, x: -10 }}
-								className="font-mono text-xs tracking-wider ml-12 whitespace-nowrap text-neutral-500 flex items-center gap-3"
+								className="font-mono text-xs tracking-wider ml-14 whitespace-nowrap text-neutral-500 flex items-center gap-3"
 							>
 								{theme === "dark" ? "LIGHT_MODE" : "DARK_MODE"}
 								{mounted && (
@@ -297,13 +323,13 @@ export function CanvasPalette({
 										animate={{ opacity: 1, x: 0 }}
 										exit={{ opacity: 0, x: 8 }}
 										transition={{ duration: 0.2 }}
-										className="relative w-10 h-5 bg-[#e5e5e5] dark:bg-[#2a2a2a] border border-neutral-300 dark:border-neutral-700 shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)]"
+										className="relative w-12 h-6 bg-[#e5e5e5] dark:bg-[#2a2a2a] border border-neutral-300 dark:border-neutral-700 shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)]"
 									>
-										<div className="absolute top-1/2 left-1.5 right-1.5 h-px bg-neutral-300 dark:bg-neutral-600" />
+										<div className="absolute top-1/2 left-2 right-2 h-px bg-neutral-300 dark:bg-neutral-600" />
 										<motion.div
-											className="absolute top-[2px] bottom-[2px] w-4 bg-[#f0f0f0] dark:bg-[#3a3a3a] border border-neutral-300 dark:border-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,0.1)] flex items-center justify-center"
+											className="absolute top-[2px] bottom-[2px] w-5 bg-[#f0f0f0] dark:bg-[#3a3a3a] border border-neutral-300 dark:border-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,0.1)] flex items-center justify-center"
 											animate={{
-												left: theme === "dark" ? "calc(100% - 18px)" : "2px",
+												left: theme === "dark" ? "calc(100% - 22px)" : "2px",
 											}}
 											transition={{
 												type: "spring",
@@ -311,7 +337,7 @@ export function CanvasPalette({
 												damping: 35,
 											}}
 										>
-											<div className="w-[2px] h-2.5 bg-[#FF4D00]" />
+											<div className="w-[2px] h-3 bg-[#FF4D00]" />
 										</motion.div>
 									</motion.div>
 								)}

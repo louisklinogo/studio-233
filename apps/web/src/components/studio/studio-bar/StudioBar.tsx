@@ -351,178 +351,80 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 		</div>
 	);
 
-	const SelectionSection = () => {
-		const primarySelectedId = selectedIds[0];
-		return (
-			<div
-				className="min-w-[320px] h-full border-l border-neutral-200 dark:border-neutral-800 flex items-center px-2 overflow-x-auto no-scrollbar gap-1"
-				role="group"
-				aria-label="Selection actions"
-				aria-describedby={selectionHintId}
-			>
-				{!hasSelection ? (
-					<span className="text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
-						Select an element to unlock contextual controls
-					</span>
-				) : (
-					<div className="flex items-center gap-1 min-w-max" aria-live="polite">
-						{context === "IMAGE" && (
-							<>
-								<ActionButton
-									icon={SwissIcons.Crop}
-									label="Crop"
-									onClick={() =>
-										primarySelectedId && setCroppingImageId(primarySelectedId)
-									}
-								/>
-								<ActionButton
-									icon={SwissIcons.Scissors}
-									label="No BG"
-									onClick={handleRemoveBackground}
-								/>
-								{handleOpenIsolateDialog && (
-									<ActionButton
-										icon={SwissIcons.Filter}
-										label="Isolate"
-										onClick={handleOpenIsolateDialog}
-									/>
-								)}
-								{handleGeminiEdit && (
-									<ActionButton
-										icon={
-											isGeminiEditing ? SwissIcons.Spinner : SwissIcons.Sparkles
-										}
-										label="Edit"
-										onClick={handleGeminiEdit}
-										disabled={isGeminiEditing}
-									/>
-								)}
-								{handleConvertToVideo && (
-									<ActionButton
-										icon={SwissIcons.Video}
-										label="Animate"
-										onClick={() =>
-											primarySelectedId &&
-											handleConvertToVideo(primarySelectedId)
-										}
-									/>
-								)}
-							</>
-						)}
-						{context === "TEXT" && (
-							<>
-								<div className="w-32 scale-90">
-									<FontSelector
-										value={
-											isToolMode
-												? defaultTextProps?.fontFamily
-												: (selectedElement as TextElement)?.fontFamily
-										}
-										onChange={(val) => updateProperty({ fontFamily: val })}
-									/>
-								</div>
-								<Separator />
-								<div className="w-16 scale-90">
-									<FontSizeSelector
-										value={
-											isToolMode
-												? defaultTextProps?.fontSize
-												: (selectedElement as TextElement)?.fontSize
-										}
-										onChange={(val) => updateProperty({ fontSize: val })}
-									/>
-								</div>
-								<Separator />
-								<ColorPickerPopover
-									color={
+	const SelectionSection = () => (
+		<div
+			className="min-w-[320px] h-full border-l border-neutral-200 dark:border-neutral-800 flex items-center px-2 overflow-x-auto no-scrollbar gap-1"
+			role="group"
+			aria-label="Selection actions"
+			aria-describedby={selectionHintId}
+		>
+			{!hasSelection ? (
+				<span className="text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+					Select an element to unlock contextual controls
+				</span>
+			) : (
+				<div className="flex items-center gap-1 min-w-max" aria-live="polite">
+					{context === "TEXT" && (
+						<>
+							<div className="w-32 scale-90">
+								<FontSelector
+									value={
 										isToolMode
-											? defaultTextProps?.fill
-											: (selectedElement as TextElement)?.fill
+											? defaultTextProps?.fontFamily
+											: (selectedElement as TextElement)?.fontFamily
 									}
-									onChange={(c) => updateProperty({ fill: c })}
+									onChange={(val) => updateProperty({ fontFamily: val })}
 								/>
-							</>
-						)}
-						{context === "SHAPE" && (
-							<>
-								<ColorPickerPopover
-									label="Fill"
-									color={
+							</div>
+							<Separator />
+							<div className="w-16 scale-90">
+								<FontSizeSelector
+									value={
 										isToolMode
-											? defaultShapeProps?.fill
-											: (selectedElement as ShapeElement)?.fill
+											? defaultTextProps?.fontSize
+											: (selectedElement as TextElement)?.fontSize
 									}
-									onChange={(c) => updateProperty({ fill: c })}
+									onChange={(val) => updateProperty({ fontSize: val })}
 								/>
-								<Separator />
-								<ColorPickerPopover
-									label="Stroke"
-									color={
-										isToolMode
-											? defaultShapeProps?.stroke
-											: (selectedElement as ShapeElement)?.stroke
-									}
-									onChange={(c) => updateProperty({ stroke: c })}
-								/>
-							</>
-						)}
-						{context === "VIDEO" && handleConvertToVideo && (
-							<ActionButton
-								icon={SwissIcons.Video}
-								label="Extend"
-								onClick={() =>
-									primarySelectedId && handleConvertToVideo(primarySelectedId)
+							</div>
+							<Separator />
+							<ColorPickerPopover
+								color={
+									isToolMode
+										? defaultTextProps?.fill
+										: (selectedElement as TextElement)?.fill
 								}
+								onChange={(c) => updateProperty({ fill: c })}
 							/>
-						)}
-						{selectedIds.length > 1 && (
-							<ActionButton
-								icon={SwissIcons.Layers}
-								label="Combine"
-								onClick={handleCombineImages}
+						</>
+					)}
+					{context === "SHAPE" && (
+						<>
+							<ColorPickerPopover
+								label="Fill"
+								color={
+									isToolMode
+										? defaultShapeProps?.fill
+										: (selectedElement as ShapeElement)?.fill
+								}
+								onChange={(c) => updateProperty({ fill: c })}
 							/>
-						)}
-						<Separator />
-						<ActionButton
-							icon={SwissIcons.Copy}
-							onClick={handleDuplicate}
-							label="Dupe"
-						/>
-						<ActionButton
-							icon={SwissIcons.Trash}
-							onClick={handleDelete}
-							variant="danger"
-						/>
-						{hasSelection && (
-							<>
-								<Separator />
-								<ActionButton
-									icon={SwissIcons.BringToFront}
-									label="Front"
-									onClick={sendToFront}
-								/>
-								<ActionButton
-									icon={SwissIcons.SendToBack}
-									label="Back"
-									onClick={sendToBack}
-								/>
-								<ActionButton
-									icon={SwissIcons.SkipForward}
-									label="Step +"
-									onClick={bringForward}
-								/>
-								<ActionButton
-									icon={SwissIcons.SkipBack}
-									label="Step -"
-									onClick={sendBackward}
-								/>
-							</>
-						)}
-					</div>
-				)}
-			</div>
-		);
-	};
+							<Separator />
+							<ColorPickerPopover
+								label="Stroke"
+								color={
+									isToolMode
+										? defaultShapeProps?.stroke
+										: (selectedElement as ShapeElement)?.stroke
+								}
+								onChange={(c) => updateProperty({ stroke: c })}
+							/>
+						</>
+					)}
+				</div>
+			)}
+		</div>
+	);
 	// 3. SYSTEM (Right)
 	const SystemSection = () => (
 		<div

@@ -1,0 +1,1 @@
+Always read files in .agent/ folder, They contain your instructions.

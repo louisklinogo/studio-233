@@ -1,15 +1,11 @@
 import { notFound } from "next/navigation";
-import { Suspense, use } from "react";
+import { Suspense } from "react";
 import { OverlayInterface } from "@/components/canvas/OverlayInterface";
 
 type CanvasParams = { id: string };
 
-function CanvasContent({
-	paramsPromise,
-}: {
-	paramsPromise: Promise<CanvasParams>;
-}) {
-	const { id } = use(paramsPromise);
+async function CanvasContent({ params }: { params: Promise<CanvasParams> }) {
+	const { id } = await params;
 
 	if (!id || id === "undefined" || id === "null") {
 		notFound();
@@ -25,7 +21,7 @@ export default function CanvasPage({
 }) {
 	return (
 		<Suspense fallback={null}>
-			<CanvasContent paramsPromise={params} />
+			<CanvasContent params={params} />
 		</Suspense>
 	);
 }

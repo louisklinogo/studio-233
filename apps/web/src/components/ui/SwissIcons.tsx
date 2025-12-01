@@ -124,6 +124,48 @@ export const SwissIcons = {
 		</svg>
 	),
 
+	// STUDIO -> The Square (Block)
+	Square: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect
+				x="4"
+				y="4"
+				width="16"
+				height="16"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+		</svg>
+	),
+
+	// STUDIO -> The Triangle (Pointer)
+	Triangle: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M12 4L4 18H20L12 4Z"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinejoin="round"
+			/>
+		</svg>
+	),
+
 	// SETTINGS -> The Slider (Control)
 	Slider: ({ size = 24, ...props }: IconProps) => (
 		<svg

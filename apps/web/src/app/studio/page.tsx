@@ -22,6 +22,7 @@ import {
 	EmptyWorkbenchState,
 	WorkbenchStage,
 } from "@/components/studio+/WorkbenchStage";
+import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { BatchJob } from "@/lib/batch-store";
@@ -44,6 +45,7 @@ interface FileUploadStatus {
 }
 
 import { OperatorHeader } from "@/components/ui/operator/OperatorHeader";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 
 type RightPaneView = "empty" | "configure" | "processing" | "complete";
 type WorkflowType = "mannequin" | "style" | "logo" | "custom";
@@ -112,6 +114,61 @@ export default function StudioPage() {
 		});
 	};
 
+	// Dev-only: Clear library
+	const handleClearLibrary = () => {
+		localStorage.removeItem("studio_assets");
+		localStorage.removeItem("studio_view_state");
+		setUploadedAssets([]);
+		setViewState("staging");
+		toast({
+			title: "Library Cleared",
+			description: "All assets removed (dev mode)",
+		});
+	};
+
+	// Delete assets handler
+	const handleDeleteAssets = async (assetIds: string[]) => {
+		try {
+			// Get URLs to delete from blob storage
+			const assetsToDelete = uploadedAssets.filter((a) =>
+				assetIds.includes(a.id),
+			);
+			const blobUrls = assetsToDelete.map((a) => a.blobUrl);
+
+			// Call delete API
+			if (blobUrls.length > 0) {
+				const response = await fetch("/api/delete-blob", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ urls: blobUrls }),
+				});
+
+				if (!response.ok) {
+					throw new Error("Failed to delete blobs");
+				}
+			}
+
+			// Update local state
+			setUploadedAssets((prev) =>
+				prev.filter((asset) => !assetIds.includes(asset.id)),
+			);
+
+			toast({
+				title: "Assets Deleted",
+				description: `Successfully deleted ${assetIds.length} asset(s)`,
+			});
+		} catch (error) {
+			console.error("Error deleting assets:", error);
+			toast({
+				title: "Error",
+				description: "Failed to delete assets. Please try again.",
+				variant: "destructive",
+			});
+		}
+	};
+
 	// Persist assets to localStorage
 	useEffect(() => {
 		if (uploadedAssets.length > 0) {
@@ -120,6 +177,7 @@ export default function StudioPage() {
 		}
 	}, [uploadedAssets, viewState]);
 
+	// Restore assets from localStorage on mount
 	// Restore assets from localStorage on mount
 	useEffect(() => {
 		const savedAssets = localStorage.getItem("studio_assets");
@@ -138,18 +196,6 @@ export default function StudioPage() {
 			}
 		}
 	}, []);
-
-	// Dev-only: Clear library
-	const handleClearLibrary = () => {
-		localStorage.removeItem("studio_assets");
-		localStorage.removeItem("studio_view_state");
-		setUploadedAssets([]);
-		setViewState("staging");
-		toast({
-			title: "Library Cleared",
-			description: "All assets removed (dev mode)",
-		});
-	};
 
 	// Polling logic
 	useEffect(() => {
@@ -492,13 +538,13 @@ export default function StudioPage() {
 								{/* Dev-only: Clear Library Button */}
 								{process.env.NODE_ENV === "development" &&
 									viewState === "library" && (
-										<div className="absolute top-2 right-2 z-50">
+										<div className="absolute top-3 right-3 z-50">
 											<button
 												onClick={handleClearLibrary}
-												className="px-2 py-1 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded border border-red-500/20 transition-colors"
+												className="w-8 h-8 flex items-center justify-center rounded-sm bg-transparent hover:bg-red-500/10 text-neutral-400 hover:text-red-500 transition-colors group"
 												title="Clear library (dev only)"
 											>
-												🗑️ Clear
+												<SwissIcons.Trash className="w-4 h-4" />
 											</button>
 										</div>
 									)}
@@ -539,6 +585,7 @@ export default function StudioPage() {
 													// Fallback - not used anymore since we handle it internally
 												}}
 												onAssetsUploaded={handleAssetsUploaded}
+												onDeleteAssets={handleDeleteAssets}
 											/>
 										</motion.div>
 									)}
@@ -548,7 +595,8 @@ export default function StudioPage() {
 					)}
 				</AnimatePresence>
 
-				<div className="flex-1 flex flex-col min-w-0 relative bg-[#e5e5e5] dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 shadow-inner">
+				<div className="flex-1 flex flex-col min-w-0 relative bg-neutral-50 dark:bg-[#050505] border border-neutral-200 dark:border-neutral-800 shadow-inner overflow-hidden">
+					<BackgroundGrid />
 					{/* Central Workbench */}
 					<WorkbenchStage>
 						<EmptyWorkbenchState />

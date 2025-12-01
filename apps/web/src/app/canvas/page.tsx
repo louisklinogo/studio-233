@@ -21,9 +21,8 @@ import { useTheme } from "next-themes";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CalibrationScreen } from "@/components/canvas/CalibrationScreen";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
-import { ChatTrigger } from "@/components/canvas/ChatTrigger";
+import { ContextToolbar } from "@/components/canvas/ContextToolbar";
 import { DimensionDisplay } from "@/components/canvas/DimensionDisplay";
-import { FloatingContextMenu } from "@/components/canvas/FloatingContextMenu";
 import { GithubBadge } from "@/components/canvas/GithubBadge";
 import { MiniMap } from "@/components/canvas/MiniMap";
 // Import extracted components
@@ -41,23 +40,11 @@ import {
 	type ToolType as CreativeToolType,
 } from "@/components/studio/CanvasPalette";
 import { ChatPanel } from "@/components/studio/chat/ChatPanel";
-import { ControlDeck } from "@/components/studio/control-deck/ControlDeck";
 import { DialogManager } from "@/components/studio/DialogManager";
 import {
 	ImageGeneratorPanel,
 	ImageGeneratorSettings,
 } from "@/components/studio/ImageGeneratorPanel";
-import { StudioBar } from "@/components/studio/studio-bar/StudioBar";
-import { StudioPromptDialog } from "@/components/studio/studio-bar/StudioPromptDialog";
-import { Button } from "@/components/ui/button";
-import { SwissIcons } from "@/components/ui/SwissIcons";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 // Import additional extracted components
 import { TRANSPARENT_PIXEL_DATA_URL } from "@/constants/canvas";
 import { useToast } from "@/hooks/use-toast";
@@ -323,41 +310,6 @@ export default function OverlayPage() {
 	);
 
 	const [isIsolateDialogOpen, setIsIsolateDialogOpen] = useState(false);
-
-	// Expanded Input & Recording State
-	const [isExpandedInputOpen, setIsExpandedInputOpen] = useState(false);
-	const [isRecordingPrompt, setIsRecordingPrompt] = useState(false);
-	const [promptTranscription, setPromptTranscription] = useState("");
-
-	const togglePromptRecording = useCallback(() => {
-		if (isRecordingPrompt) {
-			setIsRecordingPrompt(false);
-			setPromptTranscription("");
-		} else {
-			setIsRecordingPrompt(true);
-			setPromptTranscription("Listening...");
-			// Mock recording logic
-			const timer = setTimeout(() => {
-				setPromptTranscription((prev) =>
-					prev === "Listening..." ? "A red chair in a white room" : prev,
-				);
-			}, 1000);
-			const stopTimer = setTimeout(() => {
-				setIsRecordingPrompt(false);
-				setGenerationSettings((prev) => ({
-					...prev,
-					prompt:
-						(prev.prompt ? prev.prompt + " " : "") +
-						"A red chair in a white room",
-				}));
-				setPromptTranscription("");
-			}, 2500);
-			return () => {
-				clearTimeout(timer);
-				clearTimeout(stopTimer);
-			};
-		}
-	}, [isRecordingPrompt]);
 
 	useEffect(() => {
 		const currentCount =
@@ -2116,19 +2068,12 @@ export default function OverlayPage() {
 							handleSelect={handleSelect}
 						/>
 
-						<FloatingContextMenu
-							position={contextMenuPosition}
-							onOpenChange={(open) => {
-								if (!open) {
-									setContextMenuPosition(null);
-									// Reset isolate state when context menu closes
-									setIsolateTarget(null);
-									setIsolateInputValue("");
-								}
-							}}
+						<ContextToolbar
 							selectedIds={selectedIds}
 							images={images}
 							videos={videos}
+							elements={canvasElements}
+							updateElement={updateCanvasElement}
 							isGenerating={isGenerating}
 							generationSettings={generationSettings}
 							isolateInputValue={isolateInputValue}
@@ -2160,6 +2105,7 @@ export default function OverlayPage() {
 							sendToBack={sendToBack}
 							bringForward={bringForward}
 							sendBackward={sendBackward}
+							viewport={viewport}
 						/>
 
 						{/* Overlay UI */}
@@ -2322,84 +2268,14 @@ export default function OverlayPage() {
 					hiddenVideoControlsIds={hiddenVideoControlsIds}
 					setVideos={setVideos}
 				/>
+
+				{/* Zoom Controls (Bottom Left) */}
+				<ZoomControls
+					viewport={viewport}
+					setViewport={setViewport}
+					canvasSize={canvasSize}
+				/>
 			</motion.div>
-			{/* System Eject Key (Top Left) */}
-			<SystemEjectKey />
-
-			{/* Chat Trigger (Top Right) */}
-			<ChatTrigger
-				isOpen={isChatOpen}
-				onClick={() => setIsChatOpen(!isChatOpen)}
-			/>
-
-			{/* StudioBar (Replaces Control Deck) */}
-			<StudioBar
-				selectedIds={selectedIds}
-				images={images}
-				videos={videos}
-				elements={canvasElements}
-				updateElement={updateCanvasElement}
-				isGenerating={isGenerating}
-				generationSettings={generationSettings}
-				onUpdateSettings={(settings) =>
-					setGenerationSettings((prev) => ({ ...prev, ...settings }))
-				}
-				handleRun={handleRun}
-				undo={undo}
-				redo={redo}
-				canUndo={historyIndex > 0}
-				canRedo={historyIndex < history.length - 1}
-				handleDuplicate={handleDuplicate}
-				handleRemoveBackground={handleRemoveBackground}
-				handleOpenIsolateDialog={() => setIsIsolateDialogOpen(true)}
-				handleGeminiEdit={handleGeminiEdit}
-				isGeminiEditing={isGeminiEditing}
-				handleConvertToVideo={handleConvertToVideo}
-				handleCombineImages={() => {}}
-				handleDelete={handleDelete}
-				setCroppingImageId={setCroppingImageId}
-				sendToFront={sendToFront}
-				sendToBack={sendToBack}
-				bringForward={bringForward}
-				sendBackward={sendBackward}
-				activeTool={activeTool}
-				defaultTextProps={defaultTextProps}
-				setDefaultTextProps={setDefaultTextProps}
-				defaultShapeProps={defaultShapeProps}
-				setDefaultShapeProps={setDefaultShapeProps}
-				defaultDrawingProps={defaultDrawingProps}
-				setDefaultDrawingProps={setDefaultDrawingProps}
-				isChatOpen={isChatOpen}
-				onExpandInput={() => setIsExpandedInputOpen(true)}
-				onMicInput={() => {
-					setIsExpandedInputOpen(true);
-					// Small delay to allow dialog to open
-					setTimeout(() => {
-						if (!isRecordingPrompt) togglePromptRecording();
-					}, 100);
-				}}
-			/>
-
-			{/* Extended Input Dialog (Rendered at Root) */}
-			<StudioPromptDialog
-				isOpen={isExpandedInputOpen}
-				onClose={() => setIsExpandedInputOpen(false)}
-				value={generationSettings.prompt}
-				onChange={(val) =>
-					setGenerationSettings((prev) => ({ ...prev, prompt: val }))
-				}
-				onSubmit={handleRun}
-				isRecording={isRecordingPrompt}
-				toggleRecording={togglePromptRecording}
-				transcription={promptTranscription}
-			/>
-
-			{/* Zoom Controls (Bottom Left) */}
-			<ZoomControls
-				viewport={viewport}
-				setViewport={setViewport}
-				canvasSize={canvasSize}
-			/>
 		</>
 	);
 }

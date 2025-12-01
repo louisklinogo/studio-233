@@ -28,16 +28,17 @@ import React, {
 import { CalibrationScreen } from "@/components/canvas/CalibrationScreen";
 import { CanvasLayout } from "@/components/canvas/CanvasLayout";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
+import { CanvasTitleBlock } from "@/components/canvas/CanvasTitleBlock";
 import { ChatTrigger } from "@/components/canvas/ChatTrigger";
+import { ContextToolbar } from "@/components/canvas/ContextToolbar";
 import { DimensionDisplay } from "@/components/canvas/DimensionDisplay";
-import { FloatingContextMenu } from "@/components/canvas/FloatingContextMenu";
 import { GithubBadge } from "@/components/canvas/GithubBadge";
 import { MiniMap } from "@/components/canvas/MiniMap";
 // Import extracted components
 import { ShortcutBadge } from "@/components/canvas/ShortcutBadge";
 import { StreamingImage } from "@/components/canvas/StreamingImage";
 import { StreamingVideo } from "@/components/canvas/StreamingVideo";
-import { SystemEjectKey } from "@/components/canvas/SystemEjectKey";
+import { ToolPropertiesBar } from "@/components/canvas/ToolPropertiesBar";
 import { VideoControls } from "@/components/canvas/VideoControls";
 import { VideoOverlays } from "@/components/canvas/VideoOverlays";
 import { ZoomControls } from "@/components/canvas/ZoomControls";
@@ -48,22 +49,12 @@ import {
 	type ToolType as CreativeToolType,
 } from "@/components/studio/CanvasPalette";
 import { ChatPanel } from "@/components/studio/chat/ChatPanel";
-import { ControlDeck } from "@/components/studio/control-deck/ControlDeck";
 import { DialogManager } from "@/components/studio/DialogManager";
 import {
 	ImageGeneratorPanel,
 	ImageGeneratorSettings,
 } from "@/components/studio/ImageGeneratorPanel";
 import { StudioBar } from "@/components/studio/studio-bar/StudioBar";
-import { Button } from "@/components/ui/button";
-import { SwissIcons } from "@/components/ui/SwissIcons";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { TRANSPARENT_PIXEL_DATA_URL } from "@/constants/canvas";
 import { useToast } from "@/hooks/use-toast";
 import { useCalibration } from "@/hooks/useCalibration";
@@ -235,6 +226,31 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 
 	const [_, setIsSaving] = useState(false);
 	const [showSuccess, setShowSuccess] = useState(false);
+	const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+
+	const [isIsolateDialogOpen, setIsIsolateDialogOpen] = useState(false);
+
+	// Tool Properties State
+	const [fontFamily, setFontFamily] = useState("Inter");
+	const [fontSize, setFontSize] = useState(16);
+	const [textColor, setTextColor] = useState("#000000");
+	const [shapeType, setShapeType] = useState<
+		"rectangle" | "circle" | "triangle"
+	>("rectangle");
+	const [fillColor, setFillColor] = useState("#000000");
+	const [strokeColor, setStrokeColor] = useState("transparent");
+	const [brushSize, setBrushSize] = useState(5);
+	const [brushOpacity, setBrushOpacity] = useState(100);
+	const [brushColor, setBrushColor] = useState("#000000");
+
+	// Custom Cursor Logic
+	const getCursorStyle = () => {
+		if (isPanningCanvas || activeTool === "pan") return "grab";
+		if (activeTool === "text") return "text";
+		if (activeTool === "shape") return "crosshair";
+		if (activeTool === "draw") return "none"; // We'll render a custom cursor for draw
+		return "default";
+	};
 
 	// Context menu state
 	const [contextMenuPosition, setContextMenuPosition] = useState<{
@@ -324,8 +340,6 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 		saveToHistory,
 	);
 
-	const [isIsolateDialogOpen, setIsIsolateDialogOpen] = useState(false);
-
 	useEffect(() => {
 		const currentCount =
 			activeGenerations.size +
@@ -395,6 +409,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 				viewport: viewport,
 			};
 			scopedCanvasStorage.saveCanvasState(canvasState);
+			setLastSavedAt(canvasState.lastModified);
 
 			// Save actual image data to IndexedDB
 			for (const image of images) {
@@ -445,6 +460,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 				setIsStorageLoaded(true);
 				return;
 			}
+			setLastSavedAt(canvasState.lastModified ?? Date.now());
 
 			const loadedImages: PlacedImage[] = [];
 			const loadedVideos: PlacedVideo[] = [];
@@ -1835,7 +1851,45 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 				<main
 					ref={containerRef}
 					className="flex-1 relative flex items-center justify-center min-w-0"
+					style={{ cursor: getCursorStyle() }}
 				>
+					{/* Custom Brush Cursor */}
+					{activeTool === "draw" && (
+						<div
+							className="pointer-events-none fixed z-50 rounded-full border border-neutral-900 dark:border-white mix-blend-difference"
+							style={{
+								width: brushSize,
+								height: brushSize,
+								// We'll need mouse position tracking for this to work perfectly
+								// For now, let's rely on Konva's cursor handling or implement a tracker if needed
+								// Actually, let's just use crosshair for now to be safe until we add mouse tracking
+								display: "none",
+							}}
+						/>
+					)}
+
+					<ToolPropertiesBar
+						activeTool={activeTool}
+						fontFamily={fontFamily}
+						setFontFamily={setFontFamily}
+						fontSize={fontSize}
+						setFontSize={setFontSize}
+						textColor={textColor}
+						setTextColor={setTextColor}
+						shapeType={shapeType}
+						setShapeType={setShapeType}
+						fillColor={fillColor}
+						setFillColor={setFillColor}
+						strokeColor={strokeColor}
+						setStrokeColor={setStrokeColor}
+						brushSize={brushSize}
+						setBrushSize={setBrushSize}
+						brushOpacity={brushOpacity}
+						setBrushOpacity={setBrushOpacity}
+						brushColor={brushColor}
+						setBrushColor={setBrushColor}
+					/>
+
 					<div className="relative w-full h-full">
 						{/* Gradient Overlays */}
 						<div
@@ -1984,19 +2038,12 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 							handleSelect={handleSelect}
 						/>
 
-						<FloatingContextMenu
-							position={contextMenuPosition}
-							onOpenChange={(open) => {
-								if (!open) {
-									setContextMenuPosition(null);
-									// Reset isolate state when context menu closes
-									setIsolateTarget(null);
-									setIsolateInputValue("");
-								}
-							}}
+						<ContextToolbar
 							selectedIds={selectedIds}
 							images={images}
 							videos={videos}
+							elements={canvasElements}
+							updateElement={updateCanvasElement}
 							isGenerating={isGenerating}
 							generationSettings={generationSettings}
 							isolateInputValue={isolateInputValue}
@@ -2014,7 +2061,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 								) {
 									setIsolateTarget(selectedIds[0]);
 									setIsolateInputValue("");
-									setIsIsolateDialogOpen(true);
+									setIsolateDialogOpen(true);
 								}
 							}}
 							handleConvertToVideo={handleConvertToVideo}
@@ -2028,13 +2075,19 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 							sendToBack={sendToBack}
 							bringForward={bringForward}
 							sendBackward={sendBackward}
+							viewport={viewport}
 						/>
 
 						{/* Overlay UI */}
-						<div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-4 pointer-events-none pt-[72px]">
-							{/* Desktop Project Anchor REMOVED - Handled by OperatorHeader */}
+						<div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-3 pointer-events-none">
+							<CanvasTitleBlock
+								projectId={projectId}
+								canvasWidth={canvasSize.width}
+								canvasHeight={canvasSize.height}
+								lastSavedAt={lastSavedAt}
+							/>
 
-							{/* Fal logo */}
+							{/* Fal logo (mobile-only) */}
 							<div className="md:hidden border bg-background/80 py-2 px-3 flex flex-row rounded-xl gap-2 items-center pointer-events-auto">
 								<Link
 									href="https://fal.ai"
@@ -2194,7 +2247,6 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 
 			{isHudReady && (
 				<>
-					<SystemEjectKey />
 					<ChatTrigger
 						isOpen={isChatOpen}
 						onClick={() => setIsChatOpen(!isChatOpen)}
@@ -2217,11 +2269,20 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 						canRedo={historyIndex < history.length - 1}
 						handleDuplicate={handleDuplicate}
 						handleRemoveBackground={handleRemoveBackground}
-						handleOpenIsolateDialog={() => setIsIsolateDialogOpen(true)}
+						handleOpenIsolateDialog={() => {
+							if (
+								selectedIds.length === 1 &&
+								!videos.some((v) => v.id === selectedIds[0])
+							) {
+								setIsolateTarget(selectedIds[0]);
+								setIsolateInputValue("");
+								setIsIsolateDialogOpen(true);
+							}
+						}}
 						handleGeminiEdit={handleGeminiEdit}
 						isGeminiEditing={isGeminiEditing}
 						handleConvertToVideo={handleConvertToVideo}
-						handleCombineImages={() => {}}
+						handleCombineImages={handleCombineImages}
 						handleDelete={handleDelete}
 						setCroppingImageId={setCroppingImageId}
 						sendToFront={sendToFront}

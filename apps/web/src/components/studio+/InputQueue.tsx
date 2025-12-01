@@ -177,25 +177,6 @@ export function InputQueue({
 
 	return (
 		<div className="flex flex-col h-full relative">
-			{/* Header */}
-			<div className="p-3 border-b bg-muted/5">
-				<div className="flex items-center justify-between">
-					<span className="text-2xl font-bold">
-						{files.length}{" "}
-						<span className="text-base font-normal text-muted-foreground">
-							files
-						</span>
-					</span>
-
-					{/* Toggle these to test different options */}
-					{/* <UploadButtonMechanical onClick={() => fileInputRef.current?.click()} disabled={isUploading} /> */}
-					{/* <UploadButtonDataSlot onClick={() => fileInputRef.current?.click()} disabled={isUploading} /> */}
-					{files.length > 0 && (
-						<UploadButtonMagnetic onClick={onUpload} disabled={isUploading} />
-					)}
-				</div>
-			</div>
-
 			<div
 				className={cn(
 					"flex-1 flex flex-col relative overflow-hidden transition-colors",
@@ -254,6 +235,22 @@ export function InputQueue({
 									<Plus className="w-4 h-4 mr-1" />
 									Add More
 								</Button>
+								{files.length > 0 && (
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={onUpload}
+										disabled={isUploading}
+										className="ml-2 border-neutral-200 dark:border-neutral-800 hover:border-[#FF4D00] hover:text-[#FF4D00] transition-colors"
+									>
+										{isUploading ? (
+											<Loader2 className="w-3 h-3 animate-spin mr-1" />
+										) : (
+											<Upload className="w-3 h-3 mr-1" />
+										)}
+										Upload to Blob
+									</Button>
+								)}
 							</div>
 							<div className="grid grid-cols-3 gap-2">
 								<AnimatePresence mode="wait">
@@ -353,28 +350,33 @@ export function InputQueue({
 						{/* File Management Table */}
 						<div className="flex-1 overflow-hidden flex flex-col">
 							<div className="flex-1 overflow-y-auto scrollbar-none">
-								<table className="w-full caption-bottom text-sm">
-									<TableHeader className="sticky top-0 z-10 bg-background border-b shadow-sm">
-										<TableRow>
-											<TableHead className="w-12 py-3">
+								<table className="w-full caption-bottom text-[10px] font-mono uppercase tracking-wide">
+									<TableHeader className="sticky top-0 z-10 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 shadow-sm">
+										<TableRow className="hover:bg-transparent border-neutral-200 dark:border-neutral-800">
+											<TableHead className="w-8 py-2 h-8 text-neutral-500">
 												<Checkbox
 													checked={isAllSelected}
 													onCheckedChange={toggleSelectAll}
 													aria-label="Select all"
 													className={cn(
+														"w-3.5 h-3.5 rounded-[2px] border-neutral-400 data-[state=checked]:bg-[#FF4D00] data-[state=checked]:border-[#FF4D00]",
 														isSomeSelected &&
-															"data-[state=checked]:bg-primary/50",
+															"data-[state=checked]:bg-[#FF4D00]/50",
 													)}
 												/>
 											</TableHead>
-											<TableHead className="w-16 py-3">Preview</TableHead>
-											<TableHead className="max-w-[200px] py-3">
-												Filename
+											<TableHead className="w-10 py-2 h-8 text-neutral-500">
+												Prev
 											</TableHead>
-											<TableHead className="w-24 py-3">Size</TableHead>
-											<TableHead className="w-20 py-3">Type</TableHead>
-											<TableHead className="w-24 py-3">Status</TableHead>
-											{/* <TableHead className="w-12 py-3"></TableHead> */}
+											<TableHead className="py-2 h-8 text-neutral-500">
+												File
+											</TableHead>
+											<TableHead className="w-14 py-2 h-8 text-neutral-500 text-right">
+												Size
+											</TableHead>
+											<TableHead className="w-8 py-2 h-8 text-neutral-500 text-center">
+												Stat
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
@@ -384,89 +386,72 @@ export function InputQueue({
 												data-state={
 													selectedIndices.has(i) ? "selected" : undefined
 												}
+												className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors h-10"
 											>
-												<TableCell className="w-12 py-3">
+												<TableCell className="w-8 py-1">
 													<Checkbox
 														checked={selectedIndices.has(i)}
 														onCheckedChange={() => toggleSelection(i)}
 														aria-label={`Select ${file.name}`}
+														className="w-3.5 h-3.5 rounded-[2px] border-neutral-300 data-[state=checked]:bg-[#FF4D00] data-[state=checked]:border-[#FF4D00]"
 													/>
 												</TableCell>
-												<TableCell className="w-16 py-3">
-													<div className="w-12 h-12 bg-muted rounded overflow-hidden">
+												<TableCell className="w-10 py-1">
+													<div className="w-6 h-6 bg-neutral-200 dark:bg-neutral-800 rounded-[1px] overflow-hidden">
 														<img
 															src={URL.createObjectURL(file)}
 															alt={file.name}
-															className="w-full h-full object-cover"
+															className="w-full h-full object-cover grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all"
 														/>
 													</div>
 												</TableCell>
-												<TableCell className="font-medium max-w-[200px] py-3">
-													<div className="truncate" title={file.name}>
+												<TableCell className="py-1 max-w-[120px]">
+													<div
+														className="truncate text-neutral-700 dark:text-neutral-300"
+														title={file.name}
+													>
 														{file.name}
 													</div>
 												</TableCell>
-												<TableCell className="w-24 text-muted-foreground py-3">
+												<TableCell className="w-14 py-1 text-right text-neutral-400">
 													{formatFileSize(file.size)}
 												</TableCell>
-												<TableCell className="w-20 text-muted-foreground text-xs py-3">
-													{file.type.split("/")[1]?.toUpperCase() || "N/A"}
-												</TableCell>
-												<TableCell className="w-24 py-3">
+												<TableCell className="w-8 py-1 text-center">
 													{(() => {
 														const status = fileUploadStatuses.get(file.name);
 														if (!status || status.status === "idle") {
 															return (
-																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/50">
-																	<div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-																	<span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-																		Ready
-																	</span>
-																</div>
+																<div
+																	className="w-1.5 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-700 mx-auto"
+																	title="Ready"
+																/>
 															);
 														}
 														if (status.status === "uploading") {
 															return (
-																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-																	<Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
-																	<span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-																		{Math.round(status.progress)}%
-																	</span>
+																<div className="w-3 h-3 mx-auto flex items-center justify-center">
+																	<Loader2 className="w-2.5 h-2.5 text-[#FF4D00] animate-spin" />
 																</div>
 															);
 														}
 														if (status.status === "uploaded") {
 															return (
-																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30">
-																	<Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-																	<span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-																		Uploaded
-																	</span>
-																</div>
+																<div
+																	className="w-2 h-2 bg-[#FF4D00] mx-auto rounded-[1px]"
+																	title="Uploaded"
+																/>
 															);
 														}
 														if (status.status === "error") {
 															return (
-																<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/30">
-																	<XCircle className="w-3 h-3 text-red-600 dark:text-red-400" />
-																	<span className="text-xs font-medium text-red-600 dark:text-red-400">
-																		Failed
-																	</span>
-																</div>
+																<div
+																	className="w-2 h-2 bg-red-500 mx-auto rounded-full"
+																	title="Error"
+																/>
 															);
 														}
 													})()}
 												</TableCell>
-												{/* <TableCell className="w-12 py-3">
-													<button
-														onClick={() => onRemoveFile(i)}
-														disabled={isUploading}
-														className="p-1 hover:bg-destructive/10 hover:text-destructive rounded transition-colors disabled:opacity-50"
-														aria-label={`Remove ${file.name}`}
-													>
-														<X className="w-4 h-4" />
-													</button>
-												</TableCell> */}
 											</TableRow>
 										))}
 									</TableBody>
