@@ -1,5 +1,8 @@
 "use client";
 
+// Primary project-scoped canvas shell used by /canvas/[id].
+// Encapsulates the modern canvas layout (CanvasLayout, StudioBar, ToolPropertiesBar, etc.).
+
 import { createFalClient } from "@fal-ai/client";
 import type { CanvasCommand } from "@studio233/ai";
 // Import types

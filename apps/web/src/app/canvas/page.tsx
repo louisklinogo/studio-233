@@ -1,5 +1,8 @@
 "use client";
 
+// NOTE: Legacy monolithic canvas page for /canvas.
+// Prefer OverlayInterface via /canvas/[id] for the primary, project-scoped canvas experience.
+
 import { createFalClient } from "@fal-ai/client";
 import type { CanvasCommand } from "@studio233/ai";
 // Import types
