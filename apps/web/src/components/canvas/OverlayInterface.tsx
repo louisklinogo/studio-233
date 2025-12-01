@@ -2064,7 +2064,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps = {}) {
 								) {
 									setIsolateTarget(selectedIds[0]);
 									setIsolateInputValue("");
-									setIsolateDialogOpen(true);
+									setIsIsolateDialogOpen(true);
 								}
 							}}
 							handleConvertToVideo={handleConvertToVideo}
