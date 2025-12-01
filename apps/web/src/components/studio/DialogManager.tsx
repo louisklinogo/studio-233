@@ -10,6 +10,7 @@ import Link from "next/link";
 import React from "react";
 import { ExtendVideoDialog } from "@/components/canvas/ExtendVideoDialog";
 import { ImageToVideoDialog } from "@/components/canvas/ImageToVideoDialog";
+import { IsolateDialog } from "@/components/canvas/IsolateDialog";
 import { RemoveVideoBackgroundDialog } from "@/components/canvas/VideoModelComponents";
 import { VideoToVideoDialog } from "@/components/canvas/VideoToVideoDialog";
 import { SpinnerIcon } from "@/components/icons";
@@ -560,36 +561,14 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 				isProcessing={isRemovingVideoBackground}
 			/>
 
-			<Dialog open={isIsolateDialogOpen} onOpenChange={setIsIsolateDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Isolate Object</DialogTitle>
-						<DialogDescription>
-							Describe the object you want to isolate from the image.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="flex flex-col gap-4 py-4">
-						<div className="flex flex-col gap-2">
-							<Label htmlFor="isolate-prompt">Object Description</Label>
-							<Input
-								id="isolate-prompt"
-								placeholder="e.g. red car, cat, person in blue shirt"
-								value={isolateInputValue}
-								onChange={(e) => setIsolateInputValue(e.target.value)}
-							/>
-						</div>
-						<Button
-							onClick={handleIsolate}
-							disabled={isIsolating || !isolateInputValue.trim()}
-						>
-							{isIsolating && (
-								<SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
-							)}
-							Isolate Object
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
+			<IsolateDialog
+				isOpen={isIsolateDialogOpen}
+				onClose={() => setIsIsolateDialogOpen(false)}
+				onIsolate={handleIsolate}
+				inputValue={isolateInputValue}
+				setInputValue={setIsolateInputValue}
+				isIsolating={isIsolating}
+			/>
 		</>
 	);
 };

@@ -1,3 +1,4 @@
+import type { ShapeElement } from "@studio233/canvas";
 import React, { useEffect, useRef } from "react";
 import {
 	Arrow,
@@ -7,7 +8,6 @@ import {
 	RegularPolygon,
 	Transformer,
 } from "react-konva";
-import type { ShapeElement } from "@studio233/canvas";
 
 interface CanvasShapeProps {
 	element: ShapeElement;
@@ -317,6 +317,18 @@ export const CanvasShape: React.FC<CanvasShapeProps> = ({
 			{isSelected && !["line", "arrow"].includes(element.shapeType) && (
 				<Transformer
 					ref={trRef}
+					enabledAnchors={[
+						"top-left",
+						"top-right",
+						"bottom-left",
+						"bottom-right",
+					]}
+					anchorSize={6}
+					anchorCornerRadius={0}
+					anchorStrokeWidth={0}
+					anchorFill="#ffffff"
+					borderStroke="#FF4D00"
+					borderStrokeWidth={1}
 					boundBoxFunc={(oldBox, newBox) => {
 						if (newBox.width < 5 || newBox.height < 5) {
 							return oldBox;

@@ -438,10 +438,18 @@ export const CanvasVideo: React.FC<CanvasVideoProps> = ({
 			{isSelected && selectedIds.length === 1 && (
 				<Transformer
 					ref={trRef}
-					anchorStroke="#0f172a"
+					enabledAnchors={[
+						"top-left",
+						"top-right",
+						"bottom-left",
+						"bottom-right",
+					]}
+					anchorSize={6}
+					anchorCornerRadius={0}
+					anchorStrokeWidth={0}
 					anchorFill="#ffffff"
-					anchorSize={10}
-					borderStroke="#0f172a"
+					borderStroke="#FF4D00"
+					borderStrokeWidth={1}
 					boundBoxFunc={(oldBox, newBox) => {
 						if (newBox.width < 5 || newBox.height < 5) {
 							return oldBox;

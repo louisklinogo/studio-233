@@ -1,7 +1,7 @@
+import type { TextElement } from "@studio233/canvas";
 import React, { useEffect, useRef, useState } from "react";
 import { Text, Transformer } from "react-konva";
 import { Html } from "react-konva-utils";
-import type { TextElement } from "@studio233/canvas";
 
 interface CanvasTextProps {
 	element: TextElement;
@@ -116,13 +116,17 @@ export const CanvasText: React.FC<CanvasTextProps> = ({
 						return newBox;
 					}}
 					enabledAnchors={[
-						"middle-left",
-						"middle-right",
 						"top-left",
 						"top-right",
 						"bottom-left",
 						"bottom-right",
 					]}
+					anchorSize={6}
+					anchorCornerRadius={0}
+					anchorStrokeWidth={0}
+					anchorFill="#ffffff"
+					borderStroke="#FF4D00"
+					borderStrokeWidth={1}
 				/>
 			)}
 			{isEditing && (
