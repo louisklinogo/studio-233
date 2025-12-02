@@ -89,3 +89,14 @@ This file tracks follow‑up work for the canvas ⇄ Mastra ⇄ AI SDK architect
 ---
 
 This TODO focuses only on the Mastra ⇄ AI SDK ⇄ canvas architecture and related robustness concerns. Other product work (UI polish, new tools/workflows, auth, etc.) should be tracked separately.
+
+
+
+   4. Keep StudioBar logic truly retired
+
+   Right now we’ve removed StudioBar from the canvas HUD, but some of its concerns migrated into `OverlayInterface` (keyboard shortcuts, context-ish logic). Long‑term, I’d:
+
+   •  Treat OverlayInterface as an orchestrator, and:
+     •  Push generic keyboard logic into useCanvasHotkeys.
+     •  Keep only wiring/layout and high‑level orchestration in OverlayInterface.
+   •  Optionally, when you’re happy with ChatBar, delete unused StudioBar/StudioBarInput/StudioPromptDialog to avoid future confusion (or mark them as deprecated clearly).

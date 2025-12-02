@@ -87,37 +87,36 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
 	};
 
 	return (
-		<div className="absolute bottom-6 left-6 z-20">
+		<div className="absolute top-4 right-4 z-20">
 			<div
 				className={cn(
-					// Chassis
-					"flex flex-row items-center h-10",
+					"flex flex-col items-center w-10",
 					"bg-neutral-200 dark:bg-neutral-800 rounded-sm shadow-2xl",
 					"gap-[1px] overflow-hidden",
 					"border border-transparent dark:border-neutral-800",
 				)}
 			>
-				{/* Zoom Out */}
+				{/* Zoom In (top) */}
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={handleZoomOut}
+					onClick={handleZoomIn}
 					className={cn(
-						"w-10 h-full p-0 rounded-none transition-colors group",
+						"w-full h-8 p-0 rounded-none transition-colors group",
 						"bg-[#f4f4f0] dark:bg-[#111111]",
 						"hover:bg-white dark:hover:bg-[#1a1a1a]",
 						"text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
 					)}
-					title="Zoom Out"
+					title="Zoom In"
 				>
-					<SwissIcons.Minus className="h-4 w-4" />
+					<SwissIcons.Plus className="h-4 w-4" />
 				</Button>
 
-				{/* Percentage Indicator (Click to Reset) */}
+				{/* Percentage Indicator (center, click to reset) */}
 				<button
 					onClick={handleResetView}
 					className={cn(
-						"h-full min-w-[52px] px-2 flex items-center justify-center transition-colors",
+						"w-full h-8 px-2 flex items-center justify-center transition-colors",
 						"bg-[#f4f4f0] dark:bg-[#111111]",
 						"hover:bg-white dark:hover:bg-[#1a1a1a]",
 						"text-[10px] font-mono font-bold tracking-wider",
@@ -129,20 +128,20 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
 					{Math.round(viewport.scale * 100)}%
 				</button>
 
-				{/* Zoom In */}
+				{/* Zoom Out (bottom) */}
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={handleZoomIn}
+					onClick={handleZoomOut}
 					className={cn(
-						"w-10 h-full p-0 rounded-none transition-colors group",
+						"w-full h-8 p-0 rounded-none transition-colors group",
 						"bg-[#f4f4f0] dark:bg-[#111111]",
 						"hover:bg-white dark:hover:bg-[#1a1a1a]",
 						"text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
 					)}
-					title="Zoom In"
+					title="Zoom Out"
 				>
-					<SwissIcons.Plus className="h-4 w-4" />
+					<SwissIcons.Minus className="h-4 w-4" />
 				</Button>
 			</div>
 		</div>

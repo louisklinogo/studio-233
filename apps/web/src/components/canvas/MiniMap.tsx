@@ -74,7 +74,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 	return (
 		<div
 			className={cn(
-				"absolute bottom-6 right-6 z-20 bg-[#f4f4f0] dark:bg-[#111111] rounded-sm p-1 shadow-xl",
+				"absolute bottom-6 left-6 z-20 bg-[#f4f4f0] dark:bg-[#111111] rounded-sm p-1 shadow-xl",
 				"border border-neutral-200 dark:border-neutral-800",
 			)}
 		>

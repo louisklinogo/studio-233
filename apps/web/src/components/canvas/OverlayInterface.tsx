@@ -1,7 +1,7 @@
 "use client";
 
 // Primary project-scoped canvas shell used by /canvas/[id].
-// Encapsulates the modern canvas layout (CanvasLayout, StudioBar, ToolPropertiesBar, etc.).
+// Encapsulates the modern canvas layout (CanvasLayout, ChatBar, ToolPropertiesBar, etc.).
 
 import { createFalClient } from "@fal-ai/client";
 import type { CanvasCommand } from "@studio233/ai";
@@ -36,7 +36,6 @@ import { CalibrationScreen } from "@/components/canvas/CalibrationScreen";
 import { CanvasLayout } from "@/components/canvas/CanvasLayout";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { CanvasTitleBlock } from "@/components/canvas/CanvasTitleBlock";
-import { ChatTrigger } from "@/components/canvas/ChatTrigger";
 import { ContextToolbar } from "@/components/canvas/ContextToolbar";
 import { DimensionDisplay } from "@/components/canvas/DimensionDisplay";
 import { GithubBadge } from "@/components/canvas/GithubBadge";
@@ -61,11 +60,13 @@ import {
 	ImageGeneratorPanel,
 	ImageGeneratorSettings,
 } from "@/components/studio/ImageGeneratorPanel";
-import { StudioBar } from "@/components/studio/studio-bar/StudioBar";
+import { ChatBar } from "@/components/studio/studio-bar/ChatBar";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { TRANSPARENT_PIXEL_DATA_URL } from "@/constants/canvas";
 import { useToast } from "@/hooks/use-toast";
 import { useCalibration } from "@/hooks/useCalibration";
 import { useCanvasElements } from "@/hooks/useCanvasElements";
+import { useCanvasHotkeys } from "@/hooks/useCanvasHotkeys";
 import { useCanvasState } from "@/hooks/useCanvasState";
 // Import additional extracted components
 import { useFalClient } from "@/hooks/useFalClient";
@@ -85,6 +86,7 @@ import { type CanvasState, createCanvasStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { getVideoModelById } from "@/lib/video-models";
 import { useTRPC } from "@/trpc/client";
+import { centerInViewport } from "@/utils/canvas-layout";
 import {
 	imageToCanvasElement,
 	videoToCanvasElement,
@@ -713,19 +715,21 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						}
 
 						// Place image at position or center of current viewport
-						let x, y;
+						let x: number;
+						let y: number;
 						if (position) {
 							// Convert screen position to canvas coordinates
 							x = (position.x - viewport.x) / viewport.scale - width / 2;
 							y = (position.y - viewport.y) / viewport.scale - height / 2;
 						} else {
-							// Center of viewport
-							const viewportCenterX =
-								(canvasSize.width / 2 - viewport.x) / viewport.scale;
-							const viewportCenterY =
-								(canvasSize.height / 2 - viewport.y) / viewport.scale;
-							x = viewportCenterX - width / 2;
-							y = viewportCenterY - height / 2;
+							const centered = centerInViewport(
+								viewport,
+								canvasSize,
+								width,
+								height,
+							);
+							x = centered.x;
+							y = centered.y;
 						}
 
 						// Add offset for multiple files
@@ -1451,149 +1455,28 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 		setSelectedIds([combinedImage.id]);
 	};
 
-	// Handle keyboard shortcuts
-	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			// Check if target is an input element
-			const isInputElement =
-				e.target && (e.target as HTMLElement).matches("input, textarea");
-
-			// Undo/Redo
-			if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
-				e.preventDefault();
-				undo();
-			} else if (
-				(e.metaKey || e.ctrlKey) &&
-				((e.key === "z" && e.shiftKey) || e.key === "y")
-			) {
-				e.preventDefault();
-				redo();
-			}
-			// Select all
-			else if ((e.metaKey || e.ctrlKey) && e.key === "a" && !isInputElement) {
-				e.preventDefault();
-				setSelectedIds(images.map((img) => img.id));
-			}
-			// Delete
-			else if (
-				(e.key === "Delete" || e.key === "Backspace") &&
-				!isInputElement
-			) {
-				if (selectedIds.length > 0) {
-					e.preventDefault();
-					handleDelete();
-					// Also delete elements
-					selectedIds.forEach((id) => removeCanvasElement(id));
-				}
-			}
-			// Duplicate
-			else if ((e.metaKey || e.ctrlKey) && e.key === "d" && !isInputElement) {
-				e.preventDefault();
-				if (selectedIds.length > 0) {
-					handleDuplicate();
-				}
-			}
-			// Run generation
-			else if (
-				(e.metaKey || e.ctrlKey) &&
-				e.key === "Enter" &&
-				!isInputElement
-			) {
-				e.preventDefault();
-				if (!isGenerating && generationSettings.prompt.trim()) {
-					handleRun();
-				}
-			}
-			// Layer ordering shortcuts
-			else if (e.key === "]" && !isInputElement) {
-				e.preventDefault();
-				if (selectedIds.length > 0) {
-					if (e.metaKey || e.ctrlKey) {
-						sendToFront();
-					} else {
-						bringForward();
-					}
-				}
-			} else if (e.key === "[" && !isInputElement) {
-				e.preventDefault();
-				if (selectedIds.length > 0) {
-					if (e.metaKey || e.ctrlKey) {
-						sendToBack();
-					} else {
-						sendBackward();
-					}
-				}
-			}
-			// Escape to exit crop mode
-			else if (e.key === "Escape" && croppingImageId) {
-				e.preventDefault();
-				setCroppingImageId(null);
-			}
-			// Zoom in
-			else if ((e.key === "+" || e.key === "=") && !isInputElement) {
-				e.preventDefault();
-				const newScale = Math.min(5, viewport.scale * 1.2);
-				const centerX = canvasSize.width / 2;
-				const centerY = canvasSize.height / 2;
-
-				const mousePointTo = {
-					x: (centerX - viewport.x) / viewport.scale,
-					y: (centerY - viewport.y) / viewport.scale,
-				};
-
-				setViewport({
-					x: centerX - mousePointTo.x * newScale,
-					y: centerY - mousePointTo.y * newScale,
-					scale: newScale,
-				});
-			}
-			// Zoom out
-			else if (e.key === "-" && !isInputElement) {
-				e.preventDefault();
-				const newScale = Math.max(0.1, viewport.scale / 1.2);
-				const centerX = canvasSize.width / 2;
-				const centerY = canvasSize.height / 2;
-
-				const mousePointTo = {
-					x: (centerX - viewport.x) / viewport.scale,
-					y: (centerY - viewport.y) / viewport.scale,
-				};
-
-				setViewport({
-					x: centerX - mousePointTo.x * newScale,
-					y: centerY - mousePointTo.y * newScale,
-					scale: newScale,
-				});
-			}
-			// Reset zoom
-			else if (e.key === "0" && (e.metaKey || e.ctrlKey)) {
-				e.preventDefault();
-				setViewport({ x: 0, y: 0, scale: 1 });
-			}
-		};
-
-		const handleKeyUp = (e: KeyboardEvent) => {
-			// Currently no key up handlers needed
-		};
-
-		window.addEventListener("keydown", handleKeyDown);
-		window.addEventListener("keyup", handleKeyUp);
-		return () => {
-			window.removeEventListener("keydown", handleKeyDown);
-			window.removeEventListener("keyup", handleKeyUp);
-		};
-	}, [
+	useCanvasHotkeys({
 		selectedIds,
 		images,
+		isGenerating,
 		generationSettings,
 		undo,
 		redo,
+		setSelectedIds,
 		handleDelete,
+		removeCanvasElement,
 		handleDuplicate,
 		handleRun,
-		croppingImageId,
+		sendToFront,
+		sendToBack,
+		bringForward,
 		sendBackward,
-	]);
+		croppingImageId,
+		setCroppingImageId,
+		zoomIn,
+		zoomOut,
+		resetZoom,
+	});
 
 	// Handle canvas commands from AI agents
 	const handleCanvasCommand = useCallback(
@@ -1601,21 +1484,20 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 			console.log("🎯 handleCanvasCommand called with:", command);
 			try {
 				if (command.type === "add-image") {
-					// Calculate center position in canvas coordinates with safety checks
-					const scale = viewport?.scale || 1;
-					const viewportX = viewport?.x || 0;
-					const viewportY = viewport?.y || 0;
-					const canvasW = canvasSize?.width || 1920;
-					const canvasH = canvasSize?.height || 1080;
-
-					const viewportCenterX = (canvasW / 2 - viewportX) / scale;
-					const viewportCenterY = (canvasH / 2 - viewportY) / scale;
+					const centered = centerInViewport(
+						viewport,
+						canvasSize.width && canvasSize.height
+							? canvasSize
+							: { width: 1920, height: 1080 },
+						command.width,
+						command.height,
+					);
 
 					const newImage: PlacedImage = {
 						id: `ai-${Date.now()}-${Math.random()}`,
 						src: command.url,
-						x: viewportCenterX - command.width / 2,
-						y: viewportCenterY - command.height / 2,
+						x: centered.x,
+						y: centered.y,
 						width: command.width,
 						height: command.height,
 						rotation: 0,
@@ -1662,21 +1544,20 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						description: `${command.meta?.operation || "Operation"} completed`,
 					});
 				} else if (command.type === "add-video") {
-					// Calculate center position with safety checks
-					const scale = viewport?.scale || 1;
-					const viewportX = viewport?.x || 0;
-					const viewportY = viewport?.y || 0;
-					const canvasW = canvasSize?.width || 1920;
-					const canvasH = canvasSize?.height || 1080;
-
-					const viewportCenterX = (canvasW / 2 - viewportX) / scale;
-					const viewportCenterY = (canvasH / 2 - viewportY) / scale;
+					const centered = centerInViewport(
+						viewport,
+						canvasSize.width && canvasSize.height
+							? canvasSize
+							: { width: 1920, height: 1080 },
+						command.width,
+						command.height,
+					);
 
 					const newVideo: PlacedVideo = {
 						id: `ai-video-${Date.now()}-${Math.random()}`,
 						src: command.url,
-						x: viewportCenterX - command.width / 2,
-						y: viewportCenterY - command.height / 2,
+						x: centered.x,
+						y: centered.y,
 						width: command.width,
 						height: command.height,
 						rotation: 0,
@@ -2253,7 +2134,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 
 						{/* Prompt bar removed - Moved to AssistantPanel */}
 
-						{/* Mini-map */}
+						{/* Mini-map (bottom-left) */}
 						{showMinimap && (
 							<MiniMap
 								images={images}
@@ -2281,6 +2162,36 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 							)}
 							viewport={viewport}
 						/>
+
+						{/* History controls (bottom-right) */}
+						<div className="absolute bottom-6 right-6 z-20 flex items-center gap-[1px] bg-[#f4f4f0] dark:bg-[#111111] rounded-sm shadow-xl border border-neutral-200 dark:border-neutral-800">
+							<button
+								type="button"
+								onClick={undo}
+								disabled={historyIndex <= 0}
+								className={cn(
+									"w-9 h-9 flex items-center justify-center text-neutral-500 dark:text-neutral-400",
+									"hover:bg-white dark:hover:bg-[#1a1a1a]",
+									"disabled:opacity-30 disabled:cursor-not-allowed",
+								)}
+								title="Undo"
+							>
+								<SwissIcons.Undo size={14} />
+							</button>
+							<button
+								type="button"
+								onClick={redo}
+								disabled={historyIndex >= history.length - 1}
+								className={cn(
+									"w-9 h-9 flex items-center justify-center text-neutral-500 dark:text-neutral-400",
+									"hover:bg-white dark:hover:bg-[#1a1a1a]",
+									"disabled:opacity-30 disabled:cursor-not-allowed",
+								)}
+								title="Redo"
+							>
+								<SwissIcons.Redo size={14} />
+							</button>
+						</div>
 					</div>
 				</main>
 
@@ -2397,50 +2308,9 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 
 			{isHudReady && (
 				<>
-					<ChatTrigger
-						isOpen={isChatOpen}
-						onClick={() => setIsChatOpen(!isChatOpen)}
-					/>
-					<StudioBar
-						selectedIds={selectedIds}
-						images={images}
-						videos={videos}
-						elements={canvasElements}
-						updateElement={updateCanvasElement}
-						isGenerating={isGenerating}
-						generationSettings={generationSettings}
-						onUpdateSettings={(settings) =>
-							setGenerationSettings((prev) => ({ ...prev, ...settings }))
-						}
-						handleRun={handleRun}
-						undo={undo}
-						redo={redo}
-						canUndo={historyIndex > 0}
-						canRedo={historyIndex < history.length - 1}
-						handleDuplicate={handleDuplicate}
-						handleRemoveBackground={handleRemoveBackground}
-						handleOpenIsolateDialog={() => {
-							if (
-								selectedIds.length === 1 &&
-								!videos.some((v) => v.id === selectedIds[0])
-							) {
-								setIsolateTarget(selectedIds[0]);
-								setIsolateInputValue("");
-								setIsIsolateDialogOpen(true);
-							}
-						}}
-						handleGeminiEdit={handleGeminiEdit}
-						isGeminiEditing={isGeminiEditing}
-						handleConvertToVideo={handleConvertToVideo}
-						handleCombineImages={handleCombineImages}
-						handleDelete={handleDelete}
-						setCroppingImageId={setCroppingImageId}
-						sendToFront={sendToFront}
-						sendToBack={sendToBack}
-						bringForward={bringForward}
-						sendBackward={sendBackward}
-						activeTool={activeTool}
+					<ChatBar
 						isChatOpen={isChatOpen}
+						onToggleChat={() => setIsChatOpen(!isChatOpen)}
 					/>
 					<ZoomControls
 						viewport={viewport}
