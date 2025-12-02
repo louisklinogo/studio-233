@@ -9,11 +9,15 @@ import type { CanvasCommand } from "@studio233/ai";
 import type {
 	ActiveGeneration,
 	ActiveVideoGeneration,
+	CanvasElement,
+	DrawingElement,
 	GenerationSettings,
 	HistoryState,
 	PlacedImage,
 	PlacedVideo,
 	SelectionBox,
+	ShapeElement,
+	TextElement,
 	VideoGenerationSettings,
 } from "@studio233/canvas";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -232,19 +236,6 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 	const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
 
 	const [isIsolateDialogOpen, setIsIsolateDialogOpen] = useState(false);
-
-	// Tool Properties State
-	const [fontFamily, setFontFamily] = useState("Inter");
-	const [fontSize, setFontSize] = useState(16);
-	const [textColor, setTextColor] = useState("#000000");
-	const [shapeType, setShapeType] = useState<
-		"rectangle" | "circle" | "triangle"
-	>("rectangle");
-	const [fillColor, setFillColor] = useState("#000000");
-	const [strokeColor, setStrokeColor] = useState("transparent");
-	const [brushSize, setBrushSize] = useState(5);
-	const [brushOpacity, setBrushOpacity] = useState(100);
-	const [brushColor, setBrushColor] = useState("#000000");
 
 	// Custom Cursor Logic
 	const getCursorStyle = () => {
@@ -1738,6 +1729,159 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 		],
 	);
 
+	// --- Tool properties: derive current values & bridge updates ---
+	const selectedElement: CanvasElement | undefined =
+		selectedIds.length === 1
+			? (canvasElements.find((el) => el.id === selectedIds[0]) as
+					| CanvasElement
+					| undefined)
+			: undefined;
+
+	const selectedTextElement =
+		selectedElement && selectedElement.type === "text"
+			? (selectedElement as TextElement)
+			: undefined;
+
+	const selectedShapeElement =
+		selectedElement && selectedElement.type === "shape"
+			? (selectedElement as ShapeElement)
+			: undefined;
+
+	const selectedDrawingElement =
+		selectedElement && selectedElement.type === "drawing"
+			? (selectedElement as DrawingElement)
+			: undefined;
+
+	// Determine which tool's properties should be shown.
+	// For creation tools, use the active tool; for single selections, derive from element type.
+	const effectiveToolForProps = useMemo(() => {
+		const isCreationTool =
+			activeTool === "text" || activeTool === "shape" || activeTool === "draw";
+
+		if (isCreationTool) return activeTool;
+
+		if (selectedIds.length !== 1) {
+			return "select" as const;
+		}
+
+		if (selectedTextElement) return "text" as const;
+		if (selectedShapeElement) return "shape" as const;
+		if (selectedDrawingElement) return "draw" as const;
+
+		return "select" as const;
+	}, [
+		activeTool,
+		selectedIds,
+		selectedTextElement,
+		selectedShapeElement,
+		selectedDrawingElement,
+	]);
+
+	// Text UI values
+	const uiFontFamily =
+		selectedTextElement?.fontFamily ?? defaultTextProps.fontFamily ?? "Inter";
+
+	const uiTextColor =
+		selectedTextElement?.fill ?? defaultTextProps.fill ?? "#000000";
+
+	// Shape UI values
+	const resolveUiShapeType = (): "rectangle" | "circle" | "triangle" => {
+		const rawType =
+			selectedShapeElement?.shapeType ||
+			(defaultShapeProps.shapeType as string | undefined);
+		if (rawType === "circle") return "circle";
+		if (rawType === "triangle") return "triangle";
+		return "rectangle";
+	};
+
+	const uiShapeType = resolveUiShapeType();
+
+	const uiFillColor =
+		selectedShapeElement?.fill ?? defaultShapeProps.fill ?? "#000000";
+
+	const uiStrokeColor =
+		selectedShapeElement?.stroke ?? defaultShapeProps.stroke ?? "transparent";
+
+	// Brush UI values
+	const uiBrushSize =
+		selectedDrawingElement?.strokeWidth ?? defaultDrawingProps.strokeWidth ?? 5;
+
+	const uiBrushColor =
+		selectedDrawingElement?.stroke ?? defaultDrawingProps.stroke ?? "#000000";
+
+	const uiBrushOpacity = 100;
+
+	// Bridge updates from ToolPropertiesBar into elements or defaults
+	const handleSetFontFamily = (font: string) => {
+		if (selectedTextElement) {
+			updateCanvasElement(selectedTextElement.id, { fontFamily: font });
+		} else {
+			setDefaultTextProps({ ...defaultTextProps, fontFamily: font });
+		}
+	};
+
+	const handleSetTextColor = (color: string) => {
+		if (selectedTextElement) {
+			updateCanvasElement(selectedTextElement.id, { fill: color });
+		} else {
+			setDefaultTextProps({ ...defaultTextProps, fill: color });
+		}
+	};
+
+	const handleSetShapeType = (type: "rectangle" | "circle" | "triangle") => {
+		const canvasShapeType: ShapeElement["shapeType"] =
+			type === "rectangle" ? "rect" : type;
+		if (selectedShapeElement) {
+			updateCanvasElement(selectedShapeElement.id, {
+				shapeType: canvasShapeType,
+			});
+		} else {
+			setDefaultShapeProps({
+				...defaultShapeProps,
+				shapeType: canvasShapeType,
+			});
+		}
+	};
+
+	const handleSetFillColor = (color: string) => {
+		if (selectedShapeElement) {
+			updateCanvasElement(selectedShapeElement.id, { fill: color });
+		} else {
+			setDefaultShapeProps({ ...defaultShapeProps, fill: color });
+		}
+	};
+
+	const handleSetStrokeColor = (color: string) => {
+		if (selectedShapeElement) {
+			updateCanvasElement(selectedShapeElement.id, { stroke: color });
+		} else {
+			setDefaultShapeProps({ ...defaultShapeProps, stroke: color });
+		}
+	};
+
+	const handleSetBrushSize = (size: number) => {
+		if (selectedDrawingElement) {
+			updateCanvasElement(selectedDrawingElement.id, { strokeWidth: size });
+		} else {
+			setDefaultDrawingProps({
+				...defaultDrawingProps,
+				strokeWidth: size,
+			});
+		}
+	};
+
+	const handleSetBrushColor = (color: string) => {
+		if (selectedDrawingElement) {
+			updateCanvasElement(selectedDrawingElement.id, { stroke: color });
+		} else {
+			setDefaultDrawingProps({ ...defaultDrawingProps, stroke: color });
+		}
+	};
+
+	const handleSetBrushOpacity = (opacity: number) => {
+		setDefaultDrawingProps({ ...defaultDrawingProps, opacity });
+	};
+
 	const isHudReady = isCalibrated;
 
 	return (
@@ -1865,8 +2009,8 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						<div
 							className="pointer-events-none fixed z-50 rounded-full border border-neutral-900 dark:border-white mix-blend-difference"
 							style={{
-								width: brushSize,
-								height: brushSize,
+								width: uiBrushSize,
+								height: uiBrushSize,
 								// We'll need mouse position tracking for this to work perfectly
 								// For now, let's rely on Konva's cursor handling or implement a tracker if needed
 								// Actually, let's just use crosshair for now to be safe until we add mouse tracking
@@ -1876,25 +2020,23 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					)}
 
 					<ToolPropertiesBar
-						activeTool={activeTool}
-						fontFamily={fontFamily}
-						setFontFamily={setFontFamily}
-						fontSize={fontSize}
-						setFontSize={setFontSize}
-						textColor={textColor}
-						setTextColor={setTextColor}
-						shapeType={shapeType}
-						setShapeType={setShapeType}
-						fillColor={fillColor}
-						setFillColor={setFillColor}
-						strokeColor={strokeColor}
-						setStrokeColor={setStrokeColor}
-						brushSize={brushSize}
-						setBrushSize={setBrushSize}
-						brushOpacity={brushOpacity}
-						setBrushOpacity={setBrushOpacity}
-						brushColor={brushColor}
-						setBrushColor={setBrushColor}
+						activeTool={effectiveToolForProps}
+						fontFamily={uiFontFamily}
+						setFontFamily={handleSetFontFamily}
+						textColor={uiTextColor}
+						setTextColor={handleSetTextColor}
+						shapeType={uiShapeType}
+						setShapeType={handleSetShapeType}
+						fillColor={uiFillColor}
+						setFillColor={handleSetFillColor}
+						strokeColor={uiStrokeColor}
+						setStrokeColor={handleSetStrokeColor}
+						brushSize={uiBrushSize}
+						setBrushSize={handleSetBrushSize}
+						brushOpacity={uiBrushOpacity}
+						setBrushOpacity={handleSetBrushOpacity}
+						brushColor={uiBrushColor}
+						setBrushColor={handleSetBrushColor}
 					/>
 
 					<div className="relative w-full h-full">
@@ -2298,12 +2440,6 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						bringForward={bringForward}
 						sendBackward={sendBackward}
 						activeTool={activeTool}
-						defaultTextProps={defaultTextProps}
-						setDefaultTextProps={setDefaultTextProps}
-						defaultShapeProps={defaultShapeProps}
-						setDefaultShapeProps={setDefaultShapeProps}
-						defaultDrawingProps={defaultDrawingProps}
-						setDefaultDrawingProps={setDefaultDrawingProps}
 						isChatOpen={isChatOpen}
 					/>
 					<ZoomControls

@@ -242,7 +242,7 @@ export const VideoModelOptions: React.FC<VideoModelOptionsProps> = ({
 						</div>
 						<div className="relative mt-1">
 							<Select
-								value={value}
+								value={value != null ? String(value) : undefined}
 								onValueChange={(val) => onChange(key, val)}
 								disabled={disabled}
 							>
@@ -251,7 +251,10 @@ export const VideoModelOptions: React.FC<VideoModelOptionsProps> = ({
 								</SelectTrigger>
 								<SelectContent>
 									{option.options?.map((opt) => (
-										<SelectItem key={opt.value} value={opt.value}>
+										<SelectItem
+											key={String(opt.value)}
+											value={String(opt.value)}
+										>
 											{opt.label}
 										</SelectItem>
 									))}

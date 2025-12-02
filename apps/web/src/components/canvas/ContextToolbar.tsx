@@ -20,9 +20,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { exportVideoAsGif } from "@/utils/gif-export";
-import { ColorPickerPopover } from "../properties/ColorPickerPopover";
-import { FontSelector } from "../properties/FontSelector";
-import { FontSizeSelector } from "../properties/FontSizeSelector";
 import { ShortcutBadge } from "./ShortcutBadge";
 
 interface ContextToolbarProps {

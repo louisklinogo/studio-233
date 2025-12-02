@@ -13,9 +13,6 @@ import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 import { StyleSelector } from "../control-deck/StyleSelector"; // Reusing for now
-import { ColorPickerPopover } from "../properties/ColorPickerPopover";
-import { FontSelector } from "../properties/FontSelector";
-import { FontSizeSelector } from "../properties/FontSizeSelector";
 import { StudioBarInput } from "./StudioBarInput";
 
 interface StudioBarProps {
@@ -53,14 +50,8 @@ interface StudioBarProps {
 	bringForward: () => void;
 	sendBackward: () => void;
 
-	// Tool Defaults
+	// Tool Defaults (now managed by ToolPropertiesBar)
 	activeTool?: string;
-	defaultTextProps?: any;
-	setDefaultTextProps?: (props: any) => void;
-	defaultShapeProps?: any;
-	setDefaultShapeProps?: (props: any) => void;
-	defaultDrawingProps?: any;
-	setDefaultDrawingProps?: (props: any) => void;
 	isChatOpen?: boolean;
 
 	// Expanded Input Control
@@ -96,12 +87,6 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 	bringForward,
 	sendBackward,
 	activeTool,
-	defaultTextProps,
-	setDefaultTextProps,
-	defaultShapeProps,
-	setDefaultShapeProps,
-	defaultDrawingProps,
-	setDefaultDrawingProps,
 	isChatOpen,
 	onExpandInput,
 	onMicInput,
@@ -134,8 +119,6 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 
 	const context = getSelectionContext();
 	const hasSelection = selectedIds.length > 0;
-	const selectedElement = elements.find((e) => e.id === selectedIds[0]);
-	const isToolMode = selectedIds.length === 0;
 
 	const contextDescription = useMemo(() => {
 		switch (context) {
@@ -207,19 +190,6 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [handleRun, isGenerating, redo, undo]);
-
-	const updateProperty = (updates: any) => {
-		if (!isToolMode && selectedIds.length === 1) {
-			updateElement(selectedIds[0], updates);
-		} else {
-			if (context === "TEXT" && setDefaultTextProps)
-				setDefaultTextProps({ ...defaultTextProps, ...updates });
-			if (context === "SHAPE" && setDefaultShapeProps)
-				setDefaultShapeProps({ ...defaultShapeProps, ...updates });
-			if (context === "DRAWING" && setDefaultDrawingProps)
-				setDefaultDrawingProps({ ...defaultDrawingProps, ...updates });
-		}
-	};
 
 	// --- COMPONENTS ---
 
@@ -364,63 +334,9 @@ export const StudioBar: React.FC<StudioBarProps> = ({
 				</span>
 			) : (
 				<div className="flex items-center gap-1 min-w-max" aria-live="polite">
-					{context === "TEXT" && (
-						<>
-							<div className="w-32 scale-90">
-								<FontSelector
-									value={
-										isToolMode
-											? defaultTextProps?.fontFamily
-											: (selectedElement as TextElement)?.fontFamily
-									}
-									onChange={(val) => updateProperty({ fontFamily: val })}
-								/>
-							</div>
-							<Separator />
-							<div className="w-16 scale-90">
-								<FontSizeSelector
-									value={
-										isToolMode
-											? defaultTextProps?.fontSize
-											: (selectedElement as TextElement)?.fontSize
-									}
-									onChange={(val) => updateProperty({ fontSize: val })}
-								/>
-							</div>
-							<Separator />
-							<ColorPickerPopover
-								color={
-									isToolMode
-										? defaultTextProps?.fill
-										: (selectedElement as TextElement)?.fill
-								}
-								onChange={(c) => updateProperty({ fill: c })}
-							/>
-						</>
-					)}
-					{context === "SHAPE" && (
-						<>
-							<ColorPickerPopover
-								label="Fill"
-								color={
-									isToolMode
-										? defaultShapeProps?.fill
-										: (selectedElement as ShapeElement)?.fill
-								}
-								onChange={(c) => updateProperty({ fill: c })}
-							/>
-							<Separator />
-							<ColorPickerPopover
-								label="Stroke"
-								color={
-									isToolMode
-										? defaultShapeProps?.stroke
-										: (selectedElement as ShapeElement)?.stroke
-								}
-								onChange={(c) => updateProperty({ stroke: c })}
-							/>
-						</>
-					)}
+					<span className="text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+						{context} selection active
+					</span>
 				</div>
 			)}
 		</div>

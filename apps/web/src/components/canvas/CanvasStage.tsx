@@ -53,7 +53,7 @@ interface CanvasStageProps {
 		stroke: string;
 		strokeWidth: number;
 		cornerRadius: number;
-		shapeType: "rect" | "circle" | "star" | "polygon";
+		shapeType: ShapeElement["shapeType"];
 	};
 	defaultDrawingProps?: {
 		stroke: string;

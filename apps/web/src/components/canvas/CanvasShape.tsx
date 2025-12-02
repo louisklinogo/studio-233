@@ -319,9 +319,13 @@ export const CanvasShape: React.FC<CanvasShapeProps> = ({
 					ref={trRef}
 					enabledAnchors={[
 						"top-left",
+						"top-center",
 						"top-right",
-						"bottom-left",
+						"middle-right",
 						"bottom-right",
+						"bottom-center",
+						"bottom-left",
+						"middle-left",
 					]}
 					anchorSize={6}
 					anchorCornerRadius={0}

@@ -117,9 +117,13 @@ export const CanvasText: React.FC<CanvasTextProps> = ({
 					}}
 					enabledAnchors={[
 						"top-left",
+						"top-center",
 						"top-right",
-						"bottom-left",
+						"middle-right",
 						"bottom-right",
+						"bottom-center",
+						"bottom-left",
+						"middle-left",
 					]}
 					anchorSize={6}
 					anchorCornerRadius={0}
