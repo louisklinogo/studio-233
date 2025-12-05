@@ -23,8 +23,8 @@
 			"dotenv": "^17.2.0",
 			"zod": "^4.1.12",
 			"next": "^16.0.1",
-			"react": "^19.2.0",
-			"react-dom": "^19.2.0"
+			"react": "^19.2.1",
+			"react-dom": "^19.2.1"
 		}
 	},
 	"scripts": {
@@ -43,8 +43,8 @@
 		"prepare": "husky"
 	},
 	"resolutions": {
-		"react": "^19.2.0",
-		"react-dom": "^19.2.0",
+		"react": "^19.2.1",
+		"react-dom": "^19.2.1",
 		"@polar-sh/sdk": "^0.41.4",
 		"canvas": "workspace:canvas"
 	},

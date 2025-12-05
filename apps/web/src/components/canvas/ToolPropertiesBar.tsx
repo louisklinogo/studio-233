@@ -1,35 +1,31 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import React from "react";
-import { cn } from "@/lib/utils";
-import { StudioBrushSelector } from "./tool-options/StudioBrushSelector";
-import { StudioColorPicker } from "./tool-options/StudioColorPicker";
-import { StudioFontSelector } from "./tool-options/StudioFontSelector";
+import { StudioBrushSelector } from "@/components/canvas/tool-options/StudioBrushSelector";
+import { StudioColorPicker } from "@/components/canvas/tool-options/StudioColorPicker";
+import { StudioFontSelector } from "@/components/canvas/tool-options/StudioFontSelector";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import {
-	type ShapeType,
-	StudioShapeSelector,
-} from "./tool-options/StudioShapeSelector";
-
-export type ToolType = "select" | "pan" | "text" | "shape" | "draw" | "add";
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface ToolPropertiesBarProps {
-	activeTool: ToolType;
-	// Text Props
+	activeTool: "select" | "text" | "shape" | "draw";
 	fontFamily?: string;
 	setFontFamily?: (font: string) => void;
-	fontSize?: number;
-	setFontSize?: (size: number) => void;
 	textColor?: string;
 	setTextColor?: (color: string) => void;
-	// Shape Props
-	shapeType?: ShapeType;
-	setShapeType?: (type: ShapeType) => void;
+	shapeType?: "rectangle" | "circle" | "triangle";
+	setShapeType?: (type: "rectangle" | "circle" | "triangle") => void;
 	fillColor?: string;
 	setFillColor?: (color: string) => void;
 	strokeColor?: string;
 	setStrokeColor?: (color: string) => void;
-	// Brush Props
 	brushSize?: number;
 	setBrushSize?: (size: number) => void;
 	brushOpacity?: number;
@@ -38,115 +34,176 @@ interface ToolPropertiesBarProps {
 	setBrushColor?: (color: string) => void;
 }
 
+const Separator = () => (
+	<div className="w-[1px] h-6 bg-neutral-300 dark:bg-neutral-700 mx-[1px]" />
+);
+
+const Label = ({ children }: { children: React.ReactNode }) => (
+	<div className="h-10 px-3 flex items-center justify-center bg-[#f4f4f0] dark:bg-[#111111] text-[10px] font-mono uppercase tracking-wider text-neutral-400 select-none">
+		{children}
+	</div>
+);
+
 export const ToolPropertiesBar: React.FC<ToolPropertiesBarProps> = ({
 	activeTool,
-	fontFamily = "Inter",
+	fontFamily,
 	setFontFamily,
-	fontSize = 16,
-	setFontSize,
-	textColor = "#000000",
+	textColor,
 	setTextColor,
-	shapeType = "rectangle",
+	shapeType,
 	setShapeType,
-	fillColor = "#000000",
+	fillColor,
 	setFillColor,
-	strokeColor = "transparent",
+	strokeColor,
 	setStrokeColor,
-	brushSize = 5,
+	brushSize,
 	setBrushSize,
-	brushOpacity = 100,
+	brushOpacity,
 	setBrushOpacity,
-	brushColor = "#000000",
+	brushColor,
 	setBrushColor,
 }) => {
-	// Only show for creation tools
-	if (!["text", "shape", "draw"].includes(activeTool)) return null;
+	if (activeTool === "select") return null;
 
 	return (
-		<div className="fixed top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
-			<AnimatePresence mode="wait">
-				<motion.div
-					key={activeTool}
-					initial={{ opacity: 0, y: -20, scale: 0.95 }}
-					animate={{ opacity: 1, y: 0, scale: 1 }}
-					exit={{ opacity: 0, y: -10, scale: 0.95 }}
-					transition={{ type: "spring", stiffness: 400, damping: 30 }}
-					className={cn(
-						"pointer-events-auto",
-						"flex items-center p-1 gap-2",
-						"bg-[#f4f4f0] dark:bg-[#111111]",
-						"border border-neutral-200 dark:border-neutral-800",
-						"rounded-md shadow-sm backdrop-blur-sm",
-					)}
-				>
+		<div className="fixed top-6 left-1/2 -translate-x-1/2 z-40">
+			<motion.div
+				initial={{ opacity: 0, y: -20 }}
+				animate={{ opacity: 1, y: 0 }}
+				exit={{ opacity: 0, y: -20 }}
+				transition={{ type: "spring", stiffness: 400, damping: 30 }}
+				className={cn(
+					"flex items-center gap-[1px]",
+					"bg-neutral-200 dark:bg-neutral-800", // Grid lines
+					"border border-neutral-300 dark:border-neutral-700",
+					"rounded-sm shadow-xl overflow-hidden",
+				)}
+			>
+				{/* Inner container for solid background of items */}
+				<div className="flex items-center gap-[1px] bg-neutral-200 dark:bg-neutral-800">
 					{/* Tool Label */}
-					<div className="px-3 py-1 bg-neutral-200 dark:bg-neutral-800 rounded-sm">
-						<span className="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
-							{activeTool}
-						</span>
-					</div>
+					<Label>{activeTool}</Label>
 
-					<div className="w-[1px] h-4 bg-neutral-200 dark:bg-neutral-800" />
+					<Separator />
 
-					{/* Text Options */}
-					{activeTool === "text" && setFontFamily && setTextColor && (
+					{activeTool === "text" && (
 						<>
-							<StudioFontSelector value={fontFamily} onChange={setFontFamily} />
-							<div className="w-[1px] h-4 bg-neutral-200 dark:bg-neutral-800" />
-							<StudioColorPicker
-								color={textColor}
-								onChange={setTextColor}
-								label="COLOR"
-							/>
+							<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 flex items-center px-1">
+								<StudioFontSelector
+									value={fontFamily || "Inter"}
+									onChange={setFontFamily || (() => {})}
+								/>
+							</div>
+							<Separator />
+							<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 flex items-center px-1">
+								<StudioColorPicker
+									color={textColor || "#000000"}
+									onChange={setTextColor || (() => {})}
+								/>
+							</div>
 						</>
 					)}
 
-					{/* Shape Options */}
-					{activeTool === "shape" &&
-						setShapeType &&
-						setFillColor &&
-						setStrokeColor && (
-							<>
-								<StudioShapeSelector
-									value={shapeType}
-									onChange={setShapeType}
-								/>
+					{activeTool === "shape" && (
+						<>
+							<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 flex items-center px-1 gap-1">
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<button
+												onClick={() => setShapeType?.("rectangle")}
+												className={cn(
+													"p-2 rounded-sm hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors",
+													shapeType === "rectangle" &&
+														"bg-neutral-200 dark:bg-neutral-800",
+												)}
+											>
+												<div className="w-4 h-4 border-2 border-current rounded-[1px]" />
+											</button>
+										</TooltipTrigger>
+										<TooltipContent>Rectangle</TooltipContent>
+									</Tooltip>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<button
+												onClick={() => setShapeType?.("circle")}
+												className={cn(
+													"p-2 rounded-sm hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors",
+													shapeType === "circle" &&
+														"bg-neutral-200 dark:bg-neutral-800",
+												)}
+											>
+												<div className="w-4 h-4 border-2 border-current rounded-full" />
+											</button>
+										</TooltipTrigger>
+										<TooltipContent>Circle</TooltipContent>
+									</Tooltip>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<button
+												onClick={() => setShapeType?.("triangle")}
+												className={cn(
+													"p-2 rounded-sm hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors",
+													shapeType === "triangle" &&
+														"bg-neutral-200 dark:bg-neutral-800",
+												)}
+											>
+												<div
+													className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[14px] border-b-current"
+													style={{ transform: "translateY(-1px)" }}
+												/>
+											</button>
+										</TooltipTrigger>
+										<TooltipContent>Triangle</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							</div>
+							<Separator />
+							<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 flex items-center px-3 gap-3">
+								<div className="flex items-center gap-2">
+									<span className="text-[10px] uppercase font-mono text-neutral-400">
+										Fill
+									</span>
+									<StudioColorPicker
+										color={fillColor || "#000000"}
+										onChange={setFillColor || (() => {})}
+									/>
+								</div>
 								<div className="w-[1px] h-4 bg-neutral-200 dark:bg-neutral-800" />
-								<StudioColorPicker
-									color={fillColor}
-									onChange={setFillColor}
-									label="FILL"
-								/>
-								<StudioColorPicker
-									color={strokeColor}
-									onChange={setStrokeColor}
-									label="STROKE"
-								/>
-							</>
-						)}
+								<div className="flex items-center gap-2">
+									<span className="text-[10px] uppercase font-mono text-neutral-400">
+										Stroke
+									</span>
+									<StudioColorPicker
+										color={strokeColor || "transparent"}
+										onChange={setStrokeColor || (() => {})}
+									/>
+								</div>
+							</div>
+						</>
+					)}
 
-					{/* Draw Options */}
-					{activeTool === "draw" &&
-						setBrushSize &&
-						setBrushOpacity &&
-						setBrushColor && (
-							<>
+					{activeTool === "draw" && (
+						<>
+							<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 flex items-center px-1">
 								<StudioBrushSelector
-									size={brushSize}
-									onSizeChange={setBrushSize}
-									opacity={brushOpacity}
-									onOpacityChange={setBrushOpacity}
+									size={brushSize || 5}
+									setSize={setBrushSize || (() => {})}
+									opacity={brushOpacity || 100}
+									setOpacity={setBrushOpacity || (() => {})}
 								/>
-								<div className="w-[1px] h-4 bg-neutral-200 dark:bg-neutral-800" />
+							</div>
+							<Separator />
+							<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 flex items-center px-1">
 								<StudioColorPicker
-									color={brushColor}
-									onChange={setBrushColor}
-									label="COLOR"
+									color={brushColor || "#000000"}
+									onChange={setBrushColor || (() => {})}
 								/>
-							</>
-						)}
-				</motion.div>
-			</AnimatePresence>
+							</div>
+						</>
+					)}
+				</div>
+			</motion.div>
 		</div>
 	);
 };

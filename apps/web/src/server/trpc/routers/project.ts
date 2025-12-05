@@ -10,6 +10,8 @@ export const projectRouter = router({
 			z.object({
 				name: z.string().optional(),
 				description: z.string().optional(),
+				workspaceId: z.string().optional(),
+				type: z.enum(["CANVAS", "STUDIO"]).optional().default("CANVAS"),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -34,17 +36,21 @@ export const projectRouter = router({
 						name,
 						description: input.description,
 						userId: session.user.id,
+						workspaceId: input.workspaceId,
+						type: input.type,
 					},
 				});
 
-				// Create default canvas
-				await tx.canvas.create({
-					data: {
-						name: "Main Canvas",
-						projectId: newProject.id,
-						data: {}, // Empty canvas data
-					},
-				});
+				// Only create default canvas for CANVAS type projects
+				if (input.type === "CANVAS") {
+					await tx.canvas.create({
+						data: {
+							name: "Main Canvas",
+							projectId: newProject.id,
+							data: {}, // Empty canvas data
+						},
+					});
+				}
 
 				return newProject;
 			});

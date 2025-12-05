@@ -45,6 +45,7 @@ import { ShortcutBadge } from "@/components/canvas/ShortcutBadge";
 import { StreamingImage } from "@/components/canvas/StreamingImage";
 import { StreamingVideo } from "@/components/canvas/StreamingVideo";
 import { ToolPropertiesBar } from "@/components/canvas/ToolPropertiesBar";
+import { UndoRedoControls } from "@/components/canvas/UndoRedoControls";
 import { VideoControls } from "@/components/canvas/VideoControls";
 import { VideoOverlays } from "@/components/canvas/VideoOverlays";
 import { ZoomControls } from "@/components/canvas/ZoomControls";
@@ -2164,34 +2165,12 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						/>
 
 						{/* History controls (bottom-right) */}
-						<div className="absolute bottom-6 right-6 z-20 flex items-center gap-[1px] bg-[#f4f4f0] dark:bg-[#111111] rounded-sm shadow-xl border border-neutral-200 dark:border-neutral-800">
-							<button
-								type="button"
-								onClick={undo}
-								disabled={historyIndex <= 0}
-								className={cn(
-									"w-9 h-9 flex items-center justify-center text-neutral-500 dark:text-neutral-400",
-									"hover:bg-white dark:hover:bg-[#1a1a1a]",
-									"disabled:opacity-30 disabled:cursor-not-allowed",
-								)}
-								title="Undo"
-							>
-								<SwissIcons.Undo size={14} />
-							</button>
-							<button
-								type="button"
-								onClick={redo}
-								disabled={historyIndex >= history.length - 1}
-								className={cn(
-									"w-9 h-9 flex items-center justify-center text-neutral-500 dark:text-neutral-400",
-									"hover:bg-white dark:hover:bg-[#1a1a1a]",
-									"disabled:opacity-30 disabled:cursor-not-allowed",
-								)}
-								title="Redo"
-							>
-								<SwissIcons.Redo size={14} />
-							</button>
-						</div>
+						<UndoRedoControls
+							undo={undo}
+							redo={redo}
+							canUndo={historyIndex > 0}
+							canRedo={historyIndex < history.length - 1}
+						/>
 					</div>
 				</main>
 

@@ -76,42 +76,69 @@ enum UsageSource {
   WORKFLOW
 }
 
+enum ProjectType {
+  CANVAS
+  STUDIO
+}
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  projects Project[]
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@map("workspace")
+}
+
 model Project {
-  id          String        @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String?
   thumbnail   String?
+  type        ProjectType @default(CANVAS)
   userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
   // Relations
-  canvases        Canvas[]
-  assets          Asset[]
-  generationRuns  GenerationRun[]
-  batchJobs       BatchJob[]
-  workflowRuns    WorkflowRun[]
-  threads         AgentThread[]
-  usageSamples    UsageSample[]
-  auditLogs       AuditLog[]
+  canvases       Canvas[]
+  assets         Asset[]
+  generationRuns GenerationRun[]
+  batchJobs      BatchJob[]
+  workflowRuns   WorkflowRun[]
+  threads        AgentThread[]
+  usageSamples   UsageSample[]
+  auditLogs      AuditLog[]
 
   @@index([userId])
+  @@index([workspaceId, type])
   @@map("project")
 }
 
 model Canvas {
-  id          String     @id @default(cuid())
-  name        String
-  width       Int        @default(1920)
-  height      Int        @default(1080)
-  data        Json       @db.Json
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  snapshots   CanvasSnapshot[]
-  elements    CanvasElement[]
+  id             String           @id @default(cuid())
+  name           String
+  width          Int              @default(1920)
+  height         Int              @default(1080)
+  data           Json             @db.Json
+  projectId      String
+  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  snapshots      CanvasSnapshot[]
+  elements       CanvasElement[]
   generationRuns GenerationRun[]
 
   @@index([projectId])
@@ -119,14 +146,14 @@ model Canvas {
 }
 
 model CanvasSnapshot {
-  id          String    @id @default(cuid())
+  id          String          @id @default(cuid())
   canvasId    String
-  canvas      Canvas    @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  data        Json      @db.Json
+  canvas      Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  data        Json            @db.Json
   version     Int
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime        @default(now())
   createdById String?
-  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy   User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
   elements    CanvasElement[]
 
   @@index([canvasId, version])
@@ -134,16 +161,16 @@ model CanvasSnapshot {
 }
 
 model CanvasElement {
-  id          String          @id @default(cuid())
-  canvasId    String
-  canvas      Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  snapshotId  String?
-  snapshot    CanvasSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
-  kind        String
-  data        Json            @db.Json
-  zIndex      Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id         String          @id @default(cuid())
+  canvasId   String
+  canvas     Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  snapshotId String?
+  snapshot   CanvasSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
+  kind       String
+  data       Json            @db.Json
+  zIndex     Int             @default(0)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
   @@index([canvasId])
   @@index([snapshotId])
@@ -151,38 +178,38 @@ model CanvasElement {
 }
 
 model Asset {
-  id           String         @id @default(cuid())
-  name         String
-  type         AssetType      @default(IMAGE)
-  url          String
-  size         Int
-  mimeType     String
-  metadata     Json?          @db.Json
-  projectId    String
-  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  versions     AssetVersion[]
-  inputRuns    GenerationRun[] @relation("GenerationInputAsset")
-  outputRuns   GenerationRun[] @relation("GenerationOutputAsset")
+  id         String          @id @default(cuid())
+  name       String
+  type       AssetType       @default(IMAGE)
+  url        String
+  size       Int
+  mimeType   String
+  metadata   Json?           @db.Json
+  projectId  String
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  versions   AssetVersion[]
+  inputRuns  GenerationRun[] @relation("GenerationInputAsset")
+  outputRuns GenerationRun[] @relation("GenerationOutputAsset")
 
   @@index([projectId, type])
   @@map("asset")
 }
 
 model AssetVersion {
-  id            String        @id @default(cuid())
-  assetId       String
-  asset         Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  generationId  String?
-  generation    GenerationRun? @relation(fields: [generationId], references: [id], onDelete: SetNull)
-  url           String
-  checksum      String?
-  mimeType      String?
-  size          Int?
-  metadata      Json?         @db.Json
-  isPrimary     Boolean       @default(false)
-  createdAt     DateTime      @default(now())
+  id           String         @id @default(cuid())
+  assetId      String
+  asset        Asset          @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  generationId String?
+  generation   GenerationRun? @relation(fields: [generationId], references: [id], onDelete: SetNull)
+  url          String
+  checksum     String?
+  mimeType     String?
+  size         Int?
+  metadata     Json?          @db.Json
+  isPrimary    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
 
   @@index([assetId, createdAt])
   @@index([generationId])
@@ -207,7 +234,7 @@ model GenerationRun {
   inputAsset    Asset?           @relation("GenerationInputAsset", fields: [inputAssetId], references: [id], onDelete: SetNull)
   outputAssetId String?
   outputAsset   Asset?           @relation("GenerationOutputAsset", fields: [outputAssetId], references: [id], onDelete: SetNull)
-  startedAt     DateTime?        
+  startedAt     DateTime?
   completedAt   DateTime?
   error         Json?            @db.Json
   createdAt     DateTime         @default(now())
@@ -221,23 +248,23 @@ model GenerationRun {
 }
 
 model BatchJob {
-  id            String      @id @default(cuid())
+  id            String          @id @default(cuid())
   userId        String?
-  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user          User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   projectId     String?
-  project       Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
   label         String?
-  status        BatchStatus @default(QUEUED)
-  config        Json        @db.Json
-  resultSummary Json?       @db.Json
-  error         Json?       @db.Json
-  concurrency   Int         @default(1)
-  attempts      Int         @default(0)
+  status        BatchStatus     @default(QUEUED)
+  config        Json            @db.Json
+  resultSummary Json?           @db.Json
+  error         Json?           @db.Json
+  concurrency   Int             @default(1)
+  attempts      Int             @default(0)
   startedAt     DateTime?
   completedAt   DateTime?
   canceledAt    DateTime?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   items         BatchJobItem[]
   events        BatchJobEvent[]
 
@@ -247,50 +274,50 @@ model BatchJob {
 }
 
 model BatchJobItem {
-  id          String      @id @default(cuid())
-  jobId       String
-  job         BatchJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  inputUrl    String
-  outputUrl   String?
-  status      BatchStatus @default(QUEUED)
-  attempts    Int         @default(0)
-  metadata    Json?       @db.Json
-  error       Json?       @db.Json
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String      @id @default(cuid())
+  jobId     String
+  job       BatchJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  inputUrl  String
+  outputUrl String?
+  status    BatchStatus @default(QUEUED)
+  attempts  Int         @default(0)
+  metadata  Json?       @db.Json
+  error     Json?       @db.Json
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@index([jobId, status])
   @@map("batch_job_item")
 }
 
 model BatchJobEvent {
-  id          String   @id @default(cuid())
-  jobId       String
-  job         BatchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  type        String
-  payload     Json?    @db.Json
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  jobId     String
+  job       BatchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  type      String
+  payload   Json?    @db.Json
+  createdAt DateTime @default(now())
 
   @@index([jobId, createdAt])
   @@map("batch_job_event")
 }
 
 model WorkflowRun {
-  id          String       @id @default(cuid())
-  workflow    String
-  state       WorkflowState @default(PENDING)
-  userId      String?
-  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId   String?
-  project     Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  input       Json?        @db.Json
-  output      Json?        @db.Json
-  error       Json?        @db.Json
-  startedAt   DateTime?
-  finishedAt  DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  steps       WorkflowStep[]
+  id         String         @id @default(cuid())
+  workflow   String
+  state      WorkflowState  @default(PENDING)
+  userId     String?
+  user       User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  projectId  String?
+  project    Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  input      Json?          @db.Json
+  output     Json?          @db.Json
+  error      Json?          @db.Json
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  steps      WorkflowStep[]
 
   @@index([workflow, state])
   @@index([userId])
@@ -298,35 +325,35 @@ model WorkflowRun {
 }
 
 model WorkflowStep {
-  id          String        @id @default(cuid())
-  runId       String
-  run         WorkflowRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
-  name        String
-  state       WorkflowState @default(PENDING)
-  order       Int           @default(0)
-  toolName    String?
-  input       Json?         @db.Json
-  output      Json?         @db.Json
-  error       Json?         @db.Json
-  startedAt   DateTime?
-  finishedAt  DateTime?
+  id         String        @id @default(cuid())
+  runId      String
+  run        WorkflowRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  name       String
+  state      WorkflowState @default(PENDING)
+  order      Int           @default(0)
+  toolName   String?
+  input      Json?         @db.Json
+  output     Json?         @db.Json
+  error      Json?         @db.Json
+  startedAt  DateTime?
+  finishedAt DateTime?
 
   @@index([runId, order])
   @@map("workflow_step")
 }
 
 model AgentThread {
-  id          String        @id @default(cuid())
-  userId      String?
-  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId   String?
-  project     Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  title       String?
-  metadata    Json?         @db.Json
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  messages    AgentMessage[]
-  toolCalls   AgentToolCall[]
+  id        String          @id @default(cuid())
+  userId    String?
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title     String?
+  metadata  Json?           @db.Json
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  messages  AgentMessage[]
+  toolCalls AgentToolCall[]
 
   @@index([userId])
   @@index([projectId])
@@ -334,17 +361,17 @@ model AgentThread {
 }
 
 model AgentMessage {
-  id          String           @id @default(cuid())
-  threadId    String
-  thread      AgentThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  role        AgentMessageRole
-  type        AgentMessageType @default(TEXT)
-  content     Json             @db.Json
-  inputTokens Int?
+  id           String           @id @default(cuid())
+  threadId     String
+  thread       AgentThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role         AgentMessageRole
+  type         AgentMessageType @default(TEXT)
+  content      Json             @db.Json
+  inputTokens  Int?
   outputTokens Int?
-  toolCallId  String?
-  toolCall    AgentToolCall?   @relation(fields: [toolCallId], references: [id], onDelete: SetNull)
-  createdAt   DateTime         @default(now())
+  toolCallId   String?
+  toolCall     AgentToolCall?   @relation(fields: [toolCallId], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
 
   @@index([threadId, createdAt])
   @@map("agent_message")
@@ -368,16 +395,16 @@ model AgentToolCall {
 }
 
 model UsageSample {
-  id          String          @id @default(cuid())
-  userId      String?
-  user        User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId   String?
-  project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  source      UsageSource     @default(BATCH)
-  metric      UsageMetricType
-  amount      Int
-  metadata    Json?           @db.Json
-  createdAt   DateTime        @default(now())
+  id        String          @id @default(cuid())
+  userId    String?
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  source    UsageSource     @default(BATCH)
+  metric    UsageMetricType
+  amount    Int
+  metadata  Json?           @db.Json
+  createdAt DateTime        @default(now())
 
   @@index([userId, metric])
   @@index([projectId])
@@ -385,17 +412,17 @@ model UsageSample {
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId   String?
-  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  action      String
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  action       String
   resourceType String
-  resourceId  String?
-  metadata    Json?    @db.Json
-  ipAddress   String?
-  createdAt   DateTime @default(now())
+  resourceId   String?
+  metadata     Json?    @db.Json
+  ipAddress    String?
+  createdAt    DateTime @default(now())
 
   @@index([userId])
   @@index([projectId])

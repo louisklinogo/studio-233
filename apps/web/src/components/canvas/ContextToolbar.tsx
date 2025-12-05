@@ -5,12 +5,9 @@ import type {
 	GenerationSettings,
 	PlacedImage,
 	PlacedVideo,
-	ShapeElement,
-	TextElement,
 } from "@studio233/canvas";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import { SpinnerIcon } from "@/components/icons";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import {
 	Tooltip,
@@ -20,7 +17,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { exportVideoAsGif } from "@/utils/gif-export";
-import { ShortcutBadge } from "./ShortcutBadge";
 
 interface ContextToolbarProps {
 	selectedIds: string[];
@@ -54,7 +50,7 @@ interface ContextToolbarProps {
 }
 
 const Separator = () => (
-	<div className="w-[1px] h-4 bg-neutral-200 dark:bg-neutral-800 mx-1" />
+	<div className="w-[1px] h-6 bg-neutral-300 dark:bg-neutral-700 mx-[1px]" />
 );
 
 export const ContextToolbar: React.FC<ContextToolbarProps> = ({
@@ -62,10 +58,7 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 	images,
 	videos = [],
 	elements = [],
-	updateElement,
 	isGenerating,
-	generationSettings,
-	handleRun,
 	handleGeminiEdit,
 	isGeminiEditing,
 	handleDuplicate,
@@ -74,7 +67,6 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 	handleDelete,
 	handleOpenIsolateDialog,
 	handleConvertToVideo,
-	handleVideoToVideo,
 	handleExtendVideo,
 	handleRemoveVideoBackground,
 	setCroppingImageId,
@@ -147,8 +139,6 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 		const topY = minY;
 
 		// Convert to screen coords
-		// screenX = (canvasX * scale) + viewportX
-		// screenY = (canvasY * scale) + viewportY
 		const screenX = centerX * viewport.scale + viewport.x;
 		const screenY = topY * viewport.scale + viewport.y;
 
@@ -163,8 +153,8 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 			return;
 		}
 
-		// Offset upwards by some amount (e.g. 50px)
-		setPosition({ x: screenX, y: screenY - 50 });
+		// Offset upwards by some amount (e.g. 60px)
+		setPosition({ x: screenX, y: screenY - 60 });
 	}, [selectedIds, images, videos, elements, viewport]);
 
 	if (!position || selectedIds.length === 0) return null;
@@ -200,21 +190,22 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 					onClick={onClick}
 					disabled={disabled}
 					className={cn(
-						"h-8 px-2 flex items-center gap-2 transition-all relative group rounded-sm",
+						"h-10 px-3 flex items-center gap-2 transition-colors relative group",
 						"text-[10px] font-mono uppercase tracking-wider",
 						disabled
-							? "opacity-30 cursor-not-allowed"
-							: "hover:bg-neutral-200 dark:hover:bg-neutral-800",
-						isActive && "bg-neutral-200 dark:bg-neutral-800",
+							? "opacity-40 cursor-not-allowed"
+							: "hover:bg-white dark:hover:bg-[#1a1a1a]",
+						isActive && "bg-white dark:bg-[#1a1a1a]",
 						variant === "danger" &&
-							"text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20",
+							"text-neutral-500 hover:text-red-500 dark:text-neutral-400 dark:hover:text-red-400",
 						variant === "accent" && "text-[#FF4D00]",
 					)}
 				>
 					<Icon
-						size={14}
+						size={16}
+						strokeWidth={1.5}
 						className={cn(
-							"stroke-[1.5px]",
+							"transition-colors",
 							variant === "default" &&
 								"text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white",
 							variant === "danger" && "text-current",
@@ -253,136 +244,167 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 				}}
 			>
 				<motion.div
-					initial={{ opacity: 0, y: 10, scale: 0.95 }}
+					initial={{ opacity: 0, y: 10, scale: 0.98 }}
 					animate={{ opacity: 1, y: 0, scale: 1 }}
-					exit={{ opacity: 0, y: 5, scale: 0.95 }}
+					exit={{ opacity: 0, y: 5, scale: 0.98 }}
 					transition={{ type: "spring", stiffness: 400, damping: 30 }}
 					className={cn(
 						"pointer-events-auto",
-						"flex items-center p-1 gap-0.5",
-						"bg-[#f4f4f0] dark:bg-[#111111]",
-						"border border-neutral-200 dark:border-neutral-800",
-						"rounded-md shadow-sm", // Precision geometry
-						"backdrop-blur-sm", // Subtle glass effect if needed, but keeping it solid per specs
+						"flex items-center gap-[1px]",
+						"bg-neutral-200 dark:bg-neutral-800", // Grid lines color
+						"border border-neutral-300 dark:border-neutral-700",
+						"rounded-sm shadow-xl overflow-hidden",
 					)}
 				>
-					{/* Context Actions */}
-					{isImage && (
-						<>
-							<ToolbarButton
-								icon={SwissIcons.Crop}
-								label="Crop"
-								onClick={() => setCroppingImageId(selectedIds[0])}
-							/>
-							<ToolbarButton
-								icon={SwissIcons.Scissors}
-								label="No BG"
-								onClick={handleRemoveBackground}
-							/>
-							<ToolbarButton
-								icon={SwissIcons.Filter}
-								label="Isolate"
-								onClick={handleOpenIsolateDialog}
-							/>
-							{handleGeminiEdit && (
-								<ToolbarButton
-									icon={
-										isGeminiEditing ? SwissIcons.Spinner : SwissIcons.Sparkles
-									}
-									label="Edit"
-									onClick={handleGeminiEdit}
-									disabled={isGeminiEditing}
-								/>
-							)}
-							{handleConvertToVideo && (
-								<>
-									<Separator />
+					{/* Inner container for solid background of items */}
+					<div className="flex items-center gap-[1px] bg-neutral-200 dark:bg-neutral-800">
+						{/* Context Actions */}
+						{isImage && (
+							<>
+								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+									<ToolbarButton
+										icon={SwissIcons.Crop}
+										label="Crop"
+										onClick={() => setCroppingImageId(selectedIds[0])}
+									/>
+								</div>
+								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+									<ToolbarButton
+										icon={SwissIcons.Scissors}
+										label="No BG"
+										onClick={handleRemoveBackground}
+									/>
+								</div>
+								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+									<ToolbarButton
+										icon={SwissIcons.Filter}
+										label="Isolate"
+										onClick={handleOpenIsolateDialog}
+									/>
+								</div>
+								{handleGeminiEdit && (
+									<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+										<ToolbarButton
+											icon={
+												isGeminiEditing
+													? SwissIcons.Spinner
+													: SwissIcons.Sparkles
+											}
+											label="Edit"
+											onClick={handleGeminiEdit}
+											disabled={isGeminiEditing}
+										/>
+									</div>
+								)}
+								{handleConvertToVideo && (
+									<>
+										<Separator />
+										<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+											<ToolbarButton
+												icon={SwissIcons.Video}
+												label="Animate"
+												onClick={() => handleConvertToVideo(selectedIds[0])}
+											/>
+										</div>
+									</>
+								)}
+							</>
+						)}
+
+						{isVideo && (
+							<>
+								{handleExtendVideo && (
+									<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+										<ToolbarButton
+											icon={SwissIcons.FilePlus}
+											label="Extend"
+											onClick={() => handleExtendVideo(selectedIds[0])}
+										/>
+									</div>
+								)}
+								{handleRemoveVideoBackground && (
+									<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+										<ToolbarButton
+											icon={SwissIcons.Scissors}
+											label="No BG"
+											onClick={() =>
+												handleRemoveVideoBackground(selectedIds[0])
+											}
+										/>
+									</div>
+								)}
+								<Separator />
+								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
 									<ToolbarButton
 										icon={SwissIcons.Video}
-										label="Animate"
-										onClick={() => handleConvertToVideo(selectedIds[0])}
+										label="GIF"
+										onClick={async () => {
+											const video = videos.find((v) => v.id === selectedIds[0]);
+											if (video) {
+												try {
+													await exportVideoAsGif(video.src);
+												} catch (error) {
+													console.error("Failed to export GIF:", error);
+												}
+											}
+										}}
 									/>
-								</>
-							)}
-						</>
-					)}
+								</div>
+							</>
+						)}
 
-					{isVideo && (
-						<>
-							{handleExtendVideo && (
-								<ToolbarButton
-									icon={SwissIcons.FilePlus}
-									label="Extend"
-									onClick={() => handleExtendVideo(selectedIds[0])}
-								/>
-							)}
-							{handleRemoveVideoBackground && (
-								<ToolbarButton
-									icon={SwissIcons.Scissors}
-									label="No BG"
-									onClick={() => handleRemoveVideoBackground(selectedIds[0])}
-								/>
-							)}
-							<Separator />
+						{isMulti && (
+							<>
+								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+									<ToolbarButton
+										icon={SwissIcons.Combine}
+										label="Combine"
+										onClick={handleCombineImages}
+									/>
+								</div>
+								<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 px-3 flex items-center">
+									<span className="text-[10px] font-mono text-neutral-400">
+										{selectedIds.length} ITEMS
+									</span>
+								</div>
+							</>
+						)}
+
+						{/* Common Actions */}
+						<Separator />
+						<div className="bg-[#f4f4f0] dark:bg-[#111111]">
 							<ToolbarButton
-								icon={SwissIcons.Video}
-								label="GIF"
-								onClick={async () => {
-									const video = videos.find((v) => v.id === selectedIds[0]);
-									if (video) {
-										try {
-											await exportVideoAsGif(video.src);
-										} catch (error) {
-											console.error("Failed to export GIF:", error);
-										}
-									}
-								}}
+								icon={SwissIcons.Copy}
+								onClick={handleDuplicate}
+								shortcut="Ctrl+D"
 							/>
-						</>
-					)}
+						</div>
 
-					{isMulti && (
-						<>
+						{/* Layering */}
+						<div className="bg-[#f4f4f0] dark:bg-[#111111] flex items-center">
 							<ToolbarButton
-								icon={SwissIcons.Combine}
-								label="Combine"
-								onClick={handleCombineImages}
+								icon={SwissIcons.ArrowUp}
+								onClick={bringForward}
+								shortcut="]"
 							/>
-							<div className="px-2 text-[10px] font-mono text-neutral-400">
-								{selectedIds.length} ITEMS
-							</div>
-						</>
-					)}
+							<ToolbarButton
+								icon={SwissIcons.ArrowDown}
+								onClick={sendBackward}
+								shortcut="["
+							/>
+						</div>
 
-					{/* Common Actions */}
-					<Separator />
-					<ToolbarButton
-						icon={SwissIcons.Copy}
-						onClick={handleDuplicate}
-						shortcut="Ctrl+D"
-					/>
-
-					{/* Layering */}
-					<div className="flex items-center">
-						<ToolbarButton
-							icon={SwissIcons.ArrowUp}
-							onClick={bringForward}
-							shortcut="]"
-						/>
-						<ToolbarButton
-							icon={SwissIcons.ArrowDown}
-							onClick={sendBackward}
-							shortcut="["
-						/>
+						{/* Delete */}
+						<Separator />
+						<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+							<ToolbarButton
+								icon={SwissIcons.Trash}
+								onClick={handleDelete}
+								variant="danger"
+								shortcut="Del"
+							/>
+						</div>
 					</div>
-
-					<Separator />
-					<ToolbarButton
-						icon={SwissIcons.Trash}
-						onClick={handleDelete}
-						variant="danger"
-						shortcut="Del"
-					/>
 				</motion.div>
 			</div>
 		</TooltipProvider>

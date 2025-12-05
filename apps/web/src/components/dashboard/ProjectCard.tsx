@@ -251,7 +251,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 	);
 }
 
-export function CreateProjectCard() {
+export function CreateProjectCard({ workspaceId }: { workspaceId?: string }) {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const trpc = useTRPC();
 	const router = useRouter();
@@ -260,7 +260,11 @@ export function CreateProjectCard() {
 		...trpc.project.create.mutationOptions(),
 		onSuccess: (project) => {
 			toast.success("System initialized successfully");
-			router.push(`/canvas/${project.id}`);
+			router.push(
+				project.type === "STUDIO"
+					? `/studio/${project.id}`
+					: `/canvas/${project.id}`,
+			);
 			setIsDialogOpen(false);
 		},
 		onError: (error) => {
@@ -289,11 +293,11 @@ export function CreateProjectCard() {
 			</button>
 
 			<BraunDialog
-				variant="cassette"
+				variant="sheet"
 				open={isDialogOpen}
 				onOpenChange={setIsDialogOpen}
 				mode="create"
-				onSubmit={(data) => createProject.mutate(data)}
+				onSubmit={(data) => createProject.mutate({ ...data, workspaceId })}
 				isPending={createProject.isPending}
 			/>
 		</>

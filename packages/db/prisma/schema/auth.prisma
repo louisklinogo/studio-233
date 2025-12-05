@@ -21,30 +21,31 @@ enum CreditEntryType {
 }
 
 model User {
-  id            String          @id
-  name          String
-  email         String
-  emailVerified Boolean         @default(false)
-  image         String?
-  hasCompletedOnboarding Boolean @default(false)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  
+  id                     String   @id
+  name                   String
+  email                  String
+  emailVerified          Boolean  @default(false)
+  image                  String?
+  hasCompletedOnboarding Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
   // Relations
-  sessions      Session[]
-  accounts      Account[]
-  projects      Project[]
-  settings      UserSetting?
-  apiKeys       ApiKey[]
-  subscriptions Subscription[]
-  creditEntries CreditLedger[]
+  sessions        Session[]
+  accounts        Account[]
+  workspaces      Workspace[]
+  projects        Project[]
+  settings        UserSetting?
+  apiKeys         ApiKey[]
+  subscriptions   Subscription[]
+  creditEntries   CreditLedger[]
   canvasSnapshots CanvasSnapshot[]
-  generationRuns GenerationRun[]
-  batchJobs     BatchJob[]
-  workflowRuns  WorkflowRun[]
-  threads       AgentThread[]
-  usageSamples  UsageSample[]
-  auditLogs     AuditLog[]
+  generationRuns  GenerationRun[]
+  batchJobs       BatchJob[]
+  workflowRuns    WorkflowRun[]
+  threads         AgentThread[]
+  usageSamples    UsageSample[]
+  auditLogs       AuditLog[]
 
   @@unique([email])
   @@map("user")
@@ -99,13 +100,13 @@ model Verification {
 }
 
 model UserSetting {
-  id              String  @id @default(cuid())
-  userId          String  @unique
-  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  timezone        String? @default("UTC")
-  locale          String? @default("en")
-  theme           String? @default("system")
-  notificationOpt Json?   @db.Json
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timezone        String?  @default("UTC")
+  locale          String?  @default("en")
+  theme           String?  @default("system")
+  notificationOpt Json?    @db.Json
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -113,56 +114,56 @@ model UserSetting {
 }
 
 model ApiKey {
-  id           String       @id @default(cuid())
-  userId       String
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name         String
-  tokenHash    String
-  status       ApiKeyStatus @default(ACTIVE)
-  scopes       String[]     @default([])
-  lastUsedAt   DateTime?
-  expiresAt    DateTime?
-  revokedAt    DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  tokenHash  String
+  status     ApiKeyStatus @default(ACTIVE)
+  scopes     String[]     @default([])
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  @@index([userId, status])
   @@unique([tokenHash])
+  @@index([userId, status])
   @@map("api_key")
 }
 
 model Subscription {
-  id              String             @id @default(cuid())
-  userId          String
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider        String             @default("polar")
-  externalId      String
-  productId       String
-  planSlug        String?
-  status          SubscriptionStatus @default(TRIALING)
+  id               String             @id @default(cuid())
+  userId           String
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider         String             @default("polar")
+  externalId       String
+  productId        String
+  planSlug         String?
+  status           SubscriptionStatus @default(TRIALING)
   currentPeriodEnd DateTime?
-  cancelAt        DateTime?
-  canceledAt      DateTime?
-  meta            Json?              @db.Json
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  cancelAt         DateTime?
+  canceledAt       DateTime?
+  meta             Json?              @db.Json
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
-  @@index([userId, status])
   @@unique([provider, externalId])
+  @@index([userId, status])
   @@map("subscription")
 }
 
 model CreditLedger {
-  id            String          @id @default(cuid())
-  userId        String
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  entryType     CreditEntryType
-  amount        Int
-  balanceAfter  Int
-  reference     String?
-  description   String?
-  metadata      Json?           @db.Json
-  createdAt     DateTime        @default(now())
+  id           String          @id @default(cuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryType    CreditEntryType
+  amount       Int
+  balanceAfter Int
+  reference    String?
+  description  String?
+  metadata     Json?           @db.Json
+  createdAt    DateTime        @default(now())
 
   @@index([userId, createdAt])
   @@map("credit_ledger")
