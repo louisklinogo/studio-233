@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { type CoreMessage, generateText, streamText } from "ai";
+import { type CoreMessage, generateText, stepCountIs, streamText } from "ai";
 
 import { getEnv } from "../config";
 import { getModelConfig } from "../model-config";
@@ -18,7 +18,7 @@ export {
 	getAgentName,
 	resolveAgentKeyByName,
 } from "./agent-config";
-export type { AgentMessage, AgentRunOptions } from "./types";
+export type { AgentMessage, AgentRunOptions, ToolCallInfo } from "./types";
 
 const env = getEnv();
 
@@ -49,6 +49,27 @@ function getModel(agentKey: AgentKey) {
 		prompt: agent.prompt,
 		tools: agent.tools.length > 0 ? buildToolset(agent.tools) : undefined,
 	};
+}
+
+/**
+ * Resolve the maximum number of reasoning steps for an agent.
+ * Uses sensible defaults per agent type but allows explicit overrides.
+ */
+export function resolveStepLimit(
+	agentKey: AgentKey,
+	maxStepsOverride?: number,
+): number {
+	const agent = AGENT_DEFINITIONS[agentKey];
+	const limits: Record<string, number> = {
+		orchestrator: 10, // Needs room for delegation and coordination
+		research: 8, // Multiple search + extract + analyze steps
+		vision: 5, // Typically 1-2 tool chains
+		motion: 5, // Video workflows are usually linear
+		batch: 3, // Simple planning steps
+		general: 5, // Default fallback
+	};
+	const defaultLimit = limits[agent.model] ?? limits.general;
+	return typeof maxStepsOverride === "number" ? maxStepsOverride : defaultLimit;
 }
 
 export async function generateAgentResponse(
@@ -93,6 +114,7 @@ export function streamAgentResponse(
 
 	const model = getModel(agentKey);
 	const messages = buildMessages(options);
+	const maxSteps = resolveStepLimit(agentKey, options.maxSteps);
 
 	return streamText({
 		model: model.model,
@@ -100,6 +122,28 @@ export function streamAgentResponse(
 		system: model.prompt,
 		messages,
 		tools: model.tools,
+		stopWhen: stepCountIs(maxSteps),
+		onStepFinish: async ({ toolCalls, toolResults }) => {
+			// Invoke callback for each tool call if provided
+			if (options.onToolCall && toolCalls.length > 0) {
+				for (const toolCall of toolCalls) {
+					const matchingResult = toolResults.find(
+						(r) => r.toolCallId === toolCall.toolCallId,
+					);
+					await options.onToolCall({
+						toolCallId: toolCall.toolCallId,
+						name: toolCall.toolName,
+						// Use type assertion for args property (may be 'args' or 'input' depending on AI SDK version)
+						arguments:
+							(toolCall as { args?: unknown }).args ??
+							(toolCall as { input?: unknown }).input,
+						result: matchingResult
+							? (matchingResult as { result?: unknown }).result
+							: undefined,
+					});
+				}
+			}
+		},
 		experimental_context: options.metadata?.context,
 	});
 }

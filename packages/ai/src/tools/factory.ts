@@ -2,6 +2,7 @@ import type { z } from "zod";
 
 export type ToolExecuteArgs<TInput> = {
 	context: TInput;
+	runtimeContext?: any;
 };
 
 export type ToolExecuteFn<TInput, TOutput> = (

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { batchJobPlannerTool } from "../tools/batch";
 import { canvasTextToImageTool } from "../tools/canvas";
 import type { ToolDefinition } from "../tools/factory";
+import { delegateToAgentTool } from "../tools/orchestration";
 import {
 	imageAnalyzerTool,
 	moodboardTool,
@@ -28,6 +29,7 @@ import {
 } from "../tools/vision";
 
 const TOOL_DEFINITIONS = {
+	delegateToAgent: delegateToAgentTool,
 	canvasTextToImage: canvasTextToImageTool,
 	backgroundRemoval: backgroundRemovalTool,
 	objectIsolation: objectIsolationTool,
@@ -58,8 +60,8 @@ function wrapTool<
 	return factory({
 		description: def.description,
 		parameters: def.inputSchema as unknown as z.ZodTypeAny,
-		execute: async (parameters: z.infer<TInputSchema>) =>
-			def.execute({ context: parameters }),
+		execute: async (parameters: z.infer<TInputSchema>, runtimeContext?: any) =>
+			def.execute({ context: parameters, runtimeContext }),
 	}) as ReturnType<typeof createAiTool>;
 }
 

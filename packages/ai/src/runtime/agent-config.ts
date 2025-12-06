@@ -34,6 +34,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		prompt: ORCHESTRATOR_PROMPT,
 		model: "orchestrator",
 		tools: [
+			"delegateToAgent",
 			"canvasTextToImage",
 			"imageReframe",
 			"imageUpscale",

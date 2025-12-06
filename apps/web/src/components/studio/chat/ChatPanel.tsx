@@ -36,8 +36,13 @@ export function ChatPanel({
 			// Process tool invocations for canvas commands
 			if (message.parts) {
 				for (const part of message.parts) {
-					if (part.type === "tool-invocation" && "result" in part) {
-						const result = part.result as any;
+					if (
+						typeof part.type === "string" &&
+						part.type.startsWith("tool-") &&
+						"result" in part
+					) {
+						const toolPart = part as any;
+						const result = toolPart.result as any;
 
 						// Helper to process a potential command result
 						const processResult = (res: any) => {
@@ -57,8 +62,11 @@ export function ChatPanel({
 						processResult(result);
 
 						// 2. Delegated tool result (e.g. Orchestrator calls delegateToAgent)
-						if (part.toolName === "delegateToAgent" && result?.toolResults) {
-							for (const subResult of result.toolResults) {
+						const toolName = toolPart.toolName as string | undefined;
+						const toolResults = result?.toolResults;
+
+						if (toolName === "delegateToAgent" && Array.isArray(toolResults)) {
+							for (const subResult of toolResults) {
 								if (subResult.result) {
 									processResult(subResult.result);
 								}
