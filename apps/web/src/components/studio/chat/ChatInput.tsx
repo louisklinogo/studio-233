@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 interface ChatInputProps {
 	onSubmit: (message: string, files: File[]) => void;
 	isLoading?: boolean;
+	onStop?: () => void;
 	className?: string;
 }
 
@@ -51,6 +52,7 @@ const AttachButton = () => {
 export const ChatInput: React.FC<ChatInputProps> = ({
 	onSubmit,
 	isLoading,
+	onStop,
 	className,
 }) => {
 	return (
@@ -120,17 +122,31 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 							</Tooltip>
 							<Tooltip>
 								<TooltipTrigger asChild>
-									<Button
-										type="submit"
-										size="icon-sm"
-										className="h-8 w-8 rounded-sm bg-[#3B4B59] text-white hover:bg-[#3B4B59]/90 shadow-sm"
-										disabled={isLoading}
-									>
-										<SwissIcons.ArrowUp className="h-4 w-4" />
-										<span className="sr-only">Send</span>
-									</Button>
+									{isLoading && onStop ? (
+										<Button
+											type="button"
+											size="icon-sm"
+											className="h-8 w-8 rounded-sm bg-[#3B4B59] text-white hover:bg-[#3B4B59]/90 shadow-sm"
+											onClick={onStop}
+										>
+											<SwissIcons.Square className="h-3 w-3 fill-current" />
+											<span className="sr-only">Stop Generating</span>
+										</Button>
+									) : (
+										<Button
+											type="submit"
+											size="icon-sm"
+											className="h-8 w-8 rounded-sm bg-[#3B4B59] text-white hover:bg-[#3B4B59]/90 shadow-sm"
+											disabled={isLoading}
+										>
+											<SwissIcons.ArrowUp className="h-4 w-4" />
+											<span className="sr-only">Send</span>
+										</Button>
+									)}
 								</TooltipTrigger>
-								<TooltipContent>Execute Command</TooltipContent>
+								<TooltipContent>
+									{isLoading ? "Stop Generating" : "Execute Command"}
+								</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
 					</PromptInputTools>

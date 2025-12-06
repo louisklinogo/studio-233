@@ -17,6 +17,7 @@ const AGENT_MAP: Record<string, AgentKey> = {
 type Payload = {
 	prompt?: string;
 	messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+	maxSteps?: number;
 	metadata?: {
 		threadId?: string;
 		resourceId?: string;
@@ -49,6 +50,7 @@ export async function POST(
 	if (body.messages?.length) {
 		const stream = streamAgentResponse(agentKey, {
 			messages: body.messages,
+			maxSteps: body.maxSteps,
 			metadata: {
 				context: {
 					threadId,
@@ -69,6 +71,7 @@ export async function POST(
 
 	const result = await generateAgentResponse(agentKey, {
 		prompt: body.prompt!,
+		maxSteps: body.maxSteps,
 		metadata: {
 			context: {
 				threadId,

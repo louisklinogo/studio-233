@@ -1,5 +1,8 @@
 import { useState } from "react";
-import type { ToolType } from "@/components/studio/BottomToolbar";
+import type { ToolType } from "@/components/studio/CanvasPalette";
+
+// Re-export ToolType for consumers that import from this hook
+export type { ToolType } from "@/components/studio/CanvasPalette";
 
 type TextToolDefaults = {
 	fontFamily: string;

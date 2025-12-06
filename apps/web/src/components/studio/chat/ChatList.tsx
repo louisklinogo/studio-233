@@ -28,6 +28,13 @@ export const ChatList: React.FC<ChatListProps> = ({
 	className,
 	emptyState,
 }) => {
+	// Helper to cleaner internal orchestration JSON
+	const cleanText = (text: string) => {
+		return text
+			.replace(/```json\s*\{[\s\S]*?"intent"[\s\S]*?\}[\s\S]*?```/g, "")
+			.trim();
+	};
+
 	return (
 		<Conversation className={className}>
 			<ConversationContent className="h-full">
@@ -40,38 +47,41 @@ export const ChatList: React.FC<ChatListProps> = ({
 							/>
 						)
 					: messages.map((message) => {
-						const attachmentParts = message.parts?.filter(isFilePart) ?? [];
+							const attachmentParts = message.parts?.filter(isFilePart) ?? [];
 
-						return (
-							<Message
-								key={message.id}
-								from={message.role === "user" ? "user" : "assistant"}
-							>
-								<MessageContent>
-									{message.parts?.map((part, index) => {
-										if (part.type === "text") {
-											return (
-												<MessageResponse key={`${message.id}-text-${index}`}>
-													{part.text}
-												</MessageResponse>
-											);
-										}
-										return null;
-									})}
-									{attachmentParts.length > 0 && (
-										<MessageAttachments>
-											{attachmentParts.map((part, index) => (
-												<MessageAttachment
-													key={`${message.id}-attachment-${index}`}
-													data={part}
-												/>
-											))}
-										</MessageAttachments>
-									)}
-								</MessageContent>
-							</Message>
-						);
-					})}
+							return (
+								<Message
+									key={message.id}
+									from={message.role === "user" ? "user" : "assistant"}
+								>
+									<MessageContent>
+										{message.parts?.map((part, index) => {
+											if (part.type === "text") {
+												const text = cleanText(part.text);
+												if (!text) return null;
+
+												return (
+													<MessageResponse key={`${message.id}-text-${index}`}>
+														{text}
+													</MessageResponse>
+												);
+											}
+											return null;
+										})}
+										{attachmentParts.length > 0 && (
+											<MessageAttachments>
+												{attachmentParts.map((part, index) => (
+													<MessageAttachment
+														key={`${message.id}-attachment-${index}`}
+														data={part}
+													/>
+												))}
+											</MessageAttachments>
+										)}
+									</MessageContent>
+								</Message>
+							);
+						})}
 			</ConversationContent>
 		</Conversation>
 	);

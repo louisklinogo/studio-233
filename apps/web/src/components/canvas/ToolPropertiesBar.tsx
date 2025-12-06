@@ -188,9 +188,9 @@ export const ToolPropertiesBar: React.FC<ToolPropertiesBarProps> = ({
 							<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 flex items-center px-1">
 								<StudioBrushSelector
 									size={brushSize || 5}
-									setSize={setBrushSize || (() => {})}
+									onSizeChange={setBrushSize || (() => {})}
 									opacity={brushOpacity || 100}
-									setOpacity={setBrushOpacity || (() => {})}
+									onOpacityChange={setBrushOpacity || (() => {})}
 								/>
 							</div>
 							<Separator />
