@@ -7,6 +7,7 @@ import {
 	PromptInputBody,
 	PromptInputButton,
 	PromptInputFooter,
+	PromptInputHeader,
 	PromptInputProvider,
 	PromptInputTextarea,
 	PromptInputTools,
@@ -122,6 +123,7 @@ const MentionButton = () => {
 					className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
 					type="button"
 					onClick={handleMention}
+					disabled={!selectedAssets || selectedAssets.length === 0}
 				>
 					<SwissIcons.Target className="h-4 w-4" />
 					<span className="sr-only">Tag asset</span>
@@ -185,12 +187,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 						}}
 						className="relative flex flex-col rounded-md border border-neutral-300/80 dark:border-neutral-800 bg-neutral-50 dark:bg-[#0e0e0e] shadow-inner transition-colors focus-within:border-[#FF4D00]/60"
 					>
+						<PromptInputHeader className="px-3 pt-3 pb-1">
+							<PromptInputAttachments>
+								{(attachment) => <PromptInputAttachment data={attachment} />}
+							</PromptInputAttachments>
+						</PromptInputHeader>
 						<PromptInputBody className="relative z-10">
-							<div className="px-3 pt-3 pb-1">
-								<PromptInputAttachments>
-									{(attachment) => <PromptInputAttachment data={attachment} />}
-								</PromptInputAttachments>
-							</div>
 							<PromptInputTextarea
 								className="min-h-[44px] max-h-[200px] bg-transparent border-0 focus-visible:ring-0 px-3 pb-3 pt-1.5 resize-none shadow-none text-base placeholder:text-neutral-400 font-mono"
 								placeholder={

@@ -275,13 +275,14 @@ export function PromptInputAttachment({
 	const filename = data.filename || "";
 	const isImage = data.mediaType?.startsWith("image/");
 	const thumb = isImage ? data.url : undefined;
+	const label = isImage ? "Image" : "Attachment";
 
 	return (
 		<HoverCard openDelay={200}>
 			<HoverCardTrigger asChild>
 				<div
 					className={cn(
-						"flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] bg-white/90 dark:bg-[#141414] border border-neutral-200/80 dark:border-neutral-800 text-[11px] font-mono select-none group hover:border-[#FF4D00] dark:hover:border-[#FF4D00] transition-colors cursor-default shadow-sm",
+						"flex items-center gap-2 px-2.5 py-1.5 rounded-[10px] bg-[#f5f3ef] dark:bg-[#101010] border border-neutral-300/80 dark:border-neutral-800 text-[11px] font-mono select-none group hover:border-[#FF4D00] dark:hover:border-[#FF4D00] transition-colors cursor-default shadow-sm",
 						className,
 					)}
 					key={data.id}
@@ -289,7 +290,7 @@ export function PromptInputAttachment({
 				>
 					<div className="flex items-center gap-1.5 overflow-hidden max-w-[160px]">
 						{thumb ? (
-							<div className="size-6 rounded-[4px] overflow-hidden border border-neutral-200/80 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
+							<div className="size-7 rounded-[6px] overflow-hidden border border-neutral-300/80 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
 								<img
 									alt={filename}
 									src={thumb}
@@ -299,8 +300,8 @@ export function PromptInputAttachment({
 						) : (
 							<PaperclipIcon className="size-4 text-neutral-500 shrink-0" />
 						)}
-						<span className="truncate text-neutral-700 dark:text-neutral-300">
-							{filename || "Attachment"}
+						<span className="truncate text-neutral-800 dark:text-neutral-200">
+							{label}
 						</span>
 					</div>
 

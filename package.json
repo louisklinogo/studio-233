@@ -69,7 +69,8 @@
 	},
 	"dependencies": {
 		"@prisma/client": "^7.0.0",
-		"pg": "^8.14.1",
-		"canvas": "workspace:*"
+		"canvas": "workspace:*",
+		"its-fine": "2.0.0",
+		"pg": "^8.14.1"
 	}
 }

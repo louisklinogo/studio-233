@@ -1,4 +1,4 @@
-import type { FileUIPart, UIMessage } from "ai";
+import type { FileUIPart, ToolUIPart, UIMessage } from "ai";
 import React from "react";
 import {
 	Conversation,
@@ -12,21 +12,36 @@ import {
 	MessageContent,
 	MessageResponse,
 } from "@/components/ai-elements/message";
+import { Shimmer } from "@/components/ai-elements/shimmer";
+import {
+	Tool,
+	ToolContent,
+	ToolHeader,
+	ToolInput,
+	ToolOutput,
+} from "@/components/ai-elements/tool";
 import { Logo } from "@/components/icons";
 
 interface ChatListProps {
 	messages: UIMessage[];
 	className?: string;
 	emptyState?: React.ReactNode;
+	isStreaming?: boolean;
 }
 
 const isFilePart = (part: UIMessage["parts"][number]): part is FileUIPart =>
 	part.type === "file";
 
+const isToolPart = (
+	part: UIMessage["parts"][number],
+): part is ToolUIPart<Record<string, any>> =>
+	typeof part.type === "string" && part.type.startsWith("tool-");
+
 export const ChatList: React.FC<ChatListProps> = ({
 	messages,
 	className,
 	emptyState,
+	isStreaming,
 }) => {
 	// Helper to cleaner internal orchestration JSON
 	const cleanText = (text: string) => {
@@ -37,7 +52,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 
 	return (
 		<Conversation className={className}>
-			<ConversationContent className="h-full">
+			<ConversationContent className="h-full w-full overflow-x-hidden">
 				{messages.length === 0
 					? emptyState || (
 							<ConversationEmptyState
@@ -53,8 +68,9 @@ export const ChatList: React.FC<ChatListProps> = ({
 								<Message
 									key={message.id}
 									from={message.role === "user" ? "user" : "assistant"}
+									className="max-w-full"
 								>
-									<MessageContent>
+									<MessageContent className="max-w-full break-words space-y-2">
 										{message.parts?.map((part, index) => {
 											if (part.type === "text") {
 												const text = cleanText(part.text);
@@ -66,6 +82,25 @@ export const ChatList: React.FC<ChatListProps> = ({
 													</MessageResponse>
 												);
 											}
+
+											if (isToolPart(part)) {
+												return (
+													<Tool
+														key={`${message.id}-tool-${index}`}
+														defaultOpen={part.state !== "hidden"}
+													>
+														<ToolHeader type={part.type} state={part.state} />
+														<ToolContent>
+															{part.input && <ToolInput input={part.input} />}
+															<ToolOutput
+																output={renderToolOutput(part.output)}
+																errorText={part.errorText}
+															/>
+														</ToolContent>
+													</Tool>
+												);
+											}
+
 											return null;
 										})}
 										{attachmentParts.length > 0 && (
@@ -82,7 +117,43 @@ export const ChatList: React.FC<ChatListProps> = ({
 								</Message>
 							);
 						})}
+
+				{isStreaming && (
+					<Message
+						key="streaming-placeholder"
+						from="assistant"
+						className="max-w-full"
+					>
+						<MessageContent className="max-w-full break-words space-y-2">
+							<MessageResponse>
+								<Shimmer className="text-sm text-neutral-500 dark:text-neutral-400">
+									Thinking…
+								</Shimmer>
+							</MessageResponse>
+						</MessageContent>
+					</Message>
+				)}
 			</ConversationContent>
 		</Conversation>
 	);
 };
+
+function renderToolOutput(output: unknown) {
+	if (output == null) return null;
+	if (typeof output === "string") {
+		return <MessageResponse>{output}</MessageResponse>;
+	}
+	try {
+		return (
+			<MessageResponse>
+				<div className="max-w-full overflow-x-auto">
+					<pre className="min-w-0 whitespace-pre-wrap break-words text-xs">
+						{JSON.stringify(output, null, 2)}
+					</pre>
+				</div>
+			</MessageResponse>
+		);
+	} catch (e) {
+		return null;
+	}
+}

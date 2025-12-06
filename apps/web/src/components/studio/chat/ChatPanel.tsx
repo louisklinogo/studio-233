@@ -137,12 +137,13 @@ export function ChatPanel({
 	}, [messages, onStartGeneration]);
 
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const isLoading = status === "streaming" || status === "submitted";
 
 	useEffect(() => {
 		if (scrollRef.current) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
 		}
-	}, [messages]);
+	}, [messages, isLoading]);
 
 	const handleSubmit = useCallback(
 		(
@@ -207,8 +208,6 @@ export function ChatPanel({
 		setShowFiles((prev) => !prev);
 	}, []);
 
-	const isLoading = status === "streaming" || status === "submitted";
-
 	return (
 		<div
 			className={cn(
@@ -231,7 +230,10 @@ export function ChatPanel({
 					{messages.length === 0 ? (
 						<ChatWelcome onSelectTemplate={handleSelectTemplate} />
 					) : (
-						<ChatList messages={messages as UIMessage[]} />
+						<ChatList
+							messages={messages as UIMessage[]}
+							isStreaming={isLoading}
+						/>
 					)}
 				</div>
 			</div>
