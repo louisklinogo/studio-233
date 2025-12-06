@@ -173,7 +173,7 @@ export const CanvasImage: React.FC<CanvasImageProps> = ({
 					}
 					onDragEnd();
 				}}
-				opacity={image.isGenerated ? 0.9 : 1}
+				opacity={1}
 				stroke={isSelected ? "#0f172a" : isHovered ? "#0f172a" : "transparent"}
 				strokeWidth={isSelected || isHovered ? 2 : 0}
 			/>

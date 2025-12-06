@@ -272,88 +272,73 @@ export function PromptInputAttachment({
 	...props
 }: PromptInputAttachmentProps) {
 	const attachments = usePromptInputAttachments();
-
 	const filename = data.filename || "";
-
-	const mediaType =
-		data.mediaType?.startsWith("image/") && data.url ? "image" : "file";
-	const isImage = mediaType === "image";
-
-	const attachmentLabel = filename || (isImage ? "Image" : "Attachment");
+	const isImage = data.mediaType?.startsWith("image/");
+	const thumb = isImage ? data.url : undefined;
 
 	return (
-		<PromptInputHoverCard>
+		<HoverCard openDelay={200}>
 			<HoverCardTrigger asChild>
 				<div
 					className={cn(
-						"group relative flex h-8 cursor-default select-none items-center gap-1.5 rounded-md border border-border px-1.5 font-medium text-sm transition-all hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+						"flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] bg-white/90 dark:bg-[#141414] border border-neutral-200/80 dark:border-neutral-800 text-[11px] font-mono select-none group hover:border-[#FF4D00] dark:hover:border-[#FF4D00] transition-colors cursor-default shadow-sm",
 						className,
 					)}
 					key={data.id}
 					{...props}
 				>
-					<div className="relative size-5 shrink-0">
-						<div className="absolute inset-0 flex size-5 items-center justify-center overflow-hidden rounded bg-background transition-opacity group-hover:opacity-0">
-							{isImage ? (
+					<div className="flex items-center gap-1.5 overflow-hidden max-w-[160px]">
+						{thumb ? (
+							<div className="size-6 rounded-[4px] overflow-hidden border border-neutral-200/80 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
 								<img
-									alt={filename || "attachment"}
-									className="size-5 object-cover"
-									height={20}
-									src={data.url}
-									width={20}
+									alt={filename}
+									src={thumb}
+									className="h-full w-full object-cover"
 								/>
-							) : (
-								<div className="flex size-5 items-center justify-center text-muted-foreground">
-									<PaperclipIcon className="size-3" />
-								</div>
-							)}
-						</div>
-						<Button
-							aria-label="Remove attachment"
-							className="absolute inset-0 size-5 cursor-pointer rounded p-0 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 [&>svg]:size-2.5"
-							onClick={(e) => {
-								e.stopPropagation();
-								attachments.remove(data.id);
-							}}
-							type="button"
-							variant="ghost"
-						>
-							<XIcon />
-							<span className="sr-only">Remove</span>
-						</Button>
+							</div>
+						) : (
+							<PaperclipIcon className="size-4 text-neutral-500 shrink-0" />
+						)}
+						<span className="truncate text-neutral-700 dark:text-neutral-300">
+							{filename || "Attachment"}
+						</span>
 					</div>
 
-					<span className="flex-1 truncate">{attachmentLabel}</span>
+					<button
+						type="button"
+						onClick={(e) => {
+							e.stopPropagation();
+							attachments.remove(data.id);
+						}}
+						className="text-neutral-400 hover:text-[#FF4D00] transition-colors"
+					>
+						<XIcon className="size-3" />
+						<span className="sr-only">Remove</span>
+					</button>
 				</div>
 			</HoverCardTrigger>
-			<PromptInputHoverCardContent className="w-auto p-2">
-				<div className="w-auto space-y-3">
-					{isImage && (
-						<div className="flex max-h-96 w-96 items-center justify-center overflow-hidden rounded-md border">
-							<img
-								alt={filename || "attachment preview"}
-								className="max-h-full max-w-full object-contain"
-								height={384}
-								src={data.url}
-								width={448}
-							/>
-						</div>
-					)}
-					<div className="flex items-center gap-2.5">
-						<div className="min-w-0 flex-1 space-y-1 px-0.5">
-							<h4 className="truncate font-semibold text-sm leading-none">
-								{filename || (isImage ? "Image" : "Attachment")}
-							</h4>
-							{data.mediaType && (
-								<p className="truncate font-mono text-muted-foreground text-xs">
-									{data.mediaType}
-								</p>
-							)}
-						</div>
+			{isImage && (
+				<HoverCardContent
+					side="top"
+					align="start"
+					sideOffset={8}
+					className="w-48 p-1 bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-sm shadow-xl"
+				>
+					<div className="relative aspect-square w-full overflow-hidden rounded-[1px] bg-neutral-100 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+						<img
+							alt={filename}
+							src={data.url}
+							className="object-cover w-full h-full"
+						/>
 					</div>
-				</div>
-			</PromptInputHoverCardContent>
-		</PromptInputHoverCard>
+					<div className="px-1 py-1.5">
+						<p className="text-[10px] font-mono text-neutral-500 truncate">
+							{filename}
+						</p>
+					</div>
+				</HoverCardContent>
+			)}
+		</HoverCard>
 	);
 }
 

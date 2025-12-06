@@ -233,6 +233,9 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 	const [activeGenerations, setActiveGenerations] = useState<
 		Map<string, ActiveGeneration>
 	>(new Map());
+	const [chatSeedAttachments, setChatSeedAttachments] = useState<
+		{ filename: string; url: string; mimeType?: string }[]
+	>([]);
 
 	const [_, setIsSaving] = useState(false);
 	const [showSuccess, setShowSuccess] = useState(false);
@@ -1056,6 +1059,28 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 		}
 	};
 
+	const handleSendSelectionToChat = useCallback(() => {
+		const seeds: { filename: string; url: string; mimeType?: string }[] = [];
+
+		for (const id of selectedIds) {
+			const image = images.find((img) => img.id === id);
+			if (image?.src) {
+				const match = image.src.match(/^data:(.*?);/);
+				const mimeType = match?.[1];
+				seeds.push({
+					filename: `${id}.png`,
+					url: image.src,
+					mimeType,
+				});
+			}
+		}
+
+		if (!seeds.length) return;
+
+		setChatSeedAttachments(seeds);
+		setIsChatOpen(true);
+	}, [images, selectedIds, setIsChatOpen]);
+
 	const handleIsolate = async () => {
 		// Close the dialog first
 		setIsIsolateDialogOpen(false);
@@ -1479,19 +1504,96 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 		resetZoom,
 	});
 
+	// Exposed to ChatPanel to trigger visual feedback for generation (simulated streaming)
+	const handleStartGeneration = useCallback(
+		(id: string, prompt: string, modelId?: string) => {
+			const { width, height } = { width: 512, height: 512 }; // Default placeholder size
+			const centered = centerInViewport(
+				viewport,
+				canvasSize.width && canvasSize.height
+					? canvasSize
+					: { width: 1920, height: 1080 },
+				width,
+				height,
+			);
+
+			const placeholderImage: PlacedImage = {
+				id,
+				// Using a clean placeholder spinner SVG
+				src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHJlY3Qgd2lkdGg1MTIiIGhlaWdodD0iNTEyIiBmaWxsPSIjZjFmMWYxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOTk5OTk5Ij5HZW5lcmF0aW5nLi4uPC90ZXh0Pjwvc3ZnPg==",
+				x: centered.x,
+				y: centered.y,
+				width,
+				height,
+				rotation: 0,
+				isGenerated: true,
+			};
+
+			setImages((prev) => [...prev, placeholderImage]);
+			setSelectedIds([id]);
+			// Note: We do NOT add to activeGenerations if we are using the "passive" flow
+		},
+		[viewport, canvasSize, centerInViewport, setImages, setSelectedIds],
+	);
+
 	// Handle canvas commands from AI agents
 	const handleCanvasCommand = useCallback(
-		(command: CanvasCommand) => {
+		(command: CanvasCommand, options?: { replaceId?: string }) => {
 			console.log("🎯 handleCanvasCommand called with:", command);
 			try {
 				if (command.type === "add-image") {
+					// If replacing a placeholder
+					if (options?.replaceId) {
+						const existing = images.find((i) => i.id === options.replaceId);
+						/*
+			  We need to check images from state, but 'images' in dependency array might be stale 
+			  if not handled carefully, but setImages updater function handles it.
+			  However, 'images' in find() is from closure. 
+			  Let's allow the updater to handle the logic or assume 'images' is fresh enough.
+			  Actually, simpler to just dispatch the update regardless.
+			*/
+						console.log("Replacing placeholder with generated image:", {
+							id: options.replaceId,
+							newUrl: command.url,
+						});
+
+						setImages((prev) =>
+							prev.map((img) =>
+								img.id === options.replaceId
+									? {
+											...img,
+											src: command.url,
+											width: command.width || img.width,
+											height: command.height || img.height,
+										}
+									: img,
+							),
+						);
+
+						toast({
+							title: "Image generated",
+							description: `Created by ${command.meta?.provider || "AI"}`,
+						});
+						return;
+					}
+
+					const aspectRatio = command.width / command.height;
+					const maxSize = 300;
+					let width = maxSize;
+					let height = maxSize / aspectRatio;
+
+					if (height > maxSize) {
+						height = maxSize;
+						width = maxSize * aspectRatio;
+					}
+
 					const centered = centerInViewport(
 						viewport,
 						canvasSize.width && canvasSize.height
 							? canvasSize
 							: { width: 1920, height: 1080 },
-						command.width,
-						command.height,
+						width,
+						height,
 					);
 
 					const newImage: PlacedImage = {
@@ -1499,8 +1601,8 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						src: command.url,
 						x: centered.x,
 						y: centered.y,
-						width: command.width,
-						height: command.height,
+						width,
+						height,
 						rotation: 0,
 						isGenerated: true,
 					};
@@ -2102,6 +2204,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 							setCroppingImageId={setCroppingImageId}
 							setIsolateInputValue={setIsolateInputValue}
 							setIsolateTarget={setIsolateTarget}
+							onSendToChat={handleSendSelectionToChat}
 							sendToFront={sendToFront}
 							sendToBack={sendToBack}
 							bringForward={bringForward}
@@ -2190,6 +2293,9 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 								onChat={handleChat}
 								selectedImageIds={selectedIds}
 								onCanvasCommand={handleCanvasCommand}
+								onStartGeneration={handleStartGeneration}
+								seedAttachments={chatSeedAttachments}
+								onSeedConsumed={() => setChatSeedAttachments([])}
 								className="h-full w-full"
 							/>
 						</motion.div>

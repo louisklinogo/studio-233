@@ -42,6 +42,7 @@ interface ContextToolbarProps {
 	isolateInputValue?: string;
 	setIsolateInputValue?: (value: string) => void;
 	setIsolateTarget?: (id: string | null) => void;
+	onSendToChat?: () => void;
 	sendToFront: () => void;
 	sendToBack: () => void;
 	bringForward: () => void;
@@ -75,6 +76,7 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 	bringForward,
 	sendBackward,
 	viewport,
+	onSendToChat,
 }) => {
 	const [position, setPosition] = useState<{ x: number; y: number } | null>(
 		null,
@@ -165,6 +167,7 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 	const isVideo =
 		selectedIds.length === 1 && videos.some((vid) => vid.id === selectedIds[0]);
 	const isMulti = selectedIds.length > 1;
+	const hasSelectedImages = images.some((img) => selectedIds.includes(img.id));
 
 	const ToolbarButton = ({
 		icon: Icon,
@@ -366,6 +369,19 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 									<span className="text-[10px] font-mono text-neutral-400">
 										{selectedIds.length} ITEMS
 									</span>
+								</div>
+							</>
+						)}
+
+						{hasSelectedImages && onSendToChat && (
+							<>
+								<Separator />
+								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+									<ToolbarButton
+										icon={SwissIcons.Link}
+										label="To Chat"
+										onClick={onSendToChat}
+									/>
 								</div>
 							</>
 						)}
