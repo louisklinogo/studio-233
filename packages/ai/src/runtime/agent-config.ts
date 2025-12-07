@@ -36,6 +36,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		tools: [
 			"delegateToAgent",
 			"canvasTextToImage",
+			"htmlToCanvas",
 			"imageReframe",
 			"imageUpscale",
 			"paletteExtractor",
@@ -58,6 +59,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 			"imageUpscale",
 			"paletteExtractor",
 			"storyboard",
+			"htmlToCanvas",
 			"htmlGenerator",
 			"layoutDesigner",
 		],

@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createFalClient } from "@fal-ai/client";
 import { generateText } from "ai";
+import sharp from "sharp";
 import { z } from "zod";
 
 import { getEnv } from "../config";
@@ -79,6 +80,18 @@ export async function runTextToImageWorkflow(
 		}
 
 		const imageBuffer = Buffer.from(file.uint8Array);
+		let width = 1024;
+		let height = 1024;
+
+		try {
+			const meta = await sharp(imageBuffer).metadata();
+			width = meta.width ?? width;
+			height = meta.height ?? height;
+		} catch (error) {
+			console.error("Failed to read Gemini image dimensions", {
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
 		const blobUrl = await uploadImageBufferToBlob(imageBuffer, {
 			contentType: file.mediaType,
 			prefix: "gemini/text-to-image",
@@ -88,8 +101,8 @@ export async function runTextToImageWorkflow(
 			command: {
 				type: "add-image",
 				url: blobUrl,
-				width: 1024,
-				height: 1024,
+				width,
+				height,
 				meta: {
 					provider: "gemini",
 					prompt,

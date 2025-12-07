@@ -347,6 +347,67 @@ export function LegacyOverlayPage() {
 		previousGenerationCount,
 	]);
 
+	const handleCropConfirm = async () => {
+		if (!croppingImageId) return;
+		const croppingImage = images.find((img) => img.id === croppingImageId);
+		if (croppingImage) {
+			const cropWidth = croppingImage.cropWidth || 1;
+			const cropHeight = croppingImage.cropHeight || 1;
+			const cropX = croppingImage.cropX || 0;
+			const cropY = croppingImage.cropY || 0;
+
+			try {
+				const croppedImageSrc = await createCroppedImage(
+					croppingImage.src,
+					cropX,
+					cropY,
+					cropWidth,
+					cropHeight,
+				);
+
+				setImages((prev) =>
+					prev.map((img) =>
+						img.id === croppingImageId
+							? {
+									...img,
+									src: croppedImageSrc,
+									x: img.x + cropX * img.width,
+									y: img.y + cropY * img.height,
+									width: cropWidth * img.width,
+									height: cropHeight * img.height,
+									cropX: undefined,
+									cropY: undefined,
+									cropWidth: undefined,
+									cropHeight: undefined,
+								}
+							: img,
+					),
+				);
+			} catch (error) {
+				console.error("Failed to create cropped image:", error);
+			}
+		}
+		setCroppingImageId(null);
+		saveToHistory();
+	};
+
+	const handleCropCancel = () => {
+		setImages((prev) =>
+			prev.map((img) =>
+				img.id === croppingImageId
+					? {
+							...img,
+							cropX: undefined,
+							cropY: undefined,
+							cropWidth: undefined,
+							cropHeight: undefined,
+						}
+					: img,
+			),
+		);
+		setCroppingImageId(null);
+	};
+
 	// Function to handle video generation progress
 	const handleVideoGenerationProgress = (
 		videoId: string,
@@ -2105,6 +2166,8 @@ export function LegacyOverlayPage() {
 							setCroppingImageId={setCroppingImageId}
 							setIsolateInputValue={setIsolateInputValue}
 							setIsolateTarget={setIsolateTarget}
+							onCropConfirm={handleCropConfirm}
+							onCropCancel={handleCropCancel}
 							sendToFront={sendToFront}
 							sendToBack={sendToBack}
 							bringForward={bringForward}
@@ -2171,7 +2234,7 @@ export function LegacyOverlayPage() {
 							animate={{ width: 450, opacity: 1, marginRight: 16 }}
 							exit={{ width: 0, opacity: 0, marginRight: 0 }}
 							transition={{ duration: 0.3, ease: "easeInOut" }}
-							className="h-[calc(100%-2rem)] my-4 rounded-2xl border border-border z-[9999] relative flex-shrink-0 bg-background shadow-2xl overflow-hidden"
+							className="h-[calc(100%-2rem)] my-4 rounded-2xl border border-border z-[9999] relative flex-shrink-0 bg-transparent shadow-2xl overflow-hidden"
 						>
 							<ChatPanel
 								isOpen={isChatOpen}

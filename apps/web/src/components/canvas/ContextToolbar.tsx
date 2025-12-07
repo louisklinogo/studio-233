@@ -48,6 +48,9 @@ interface ContextToolbarProps {
 	bringForward: () => void;
 	sendBackward: () => void;
 	viewport: { x: number; y: number; scale: number };
+	croppingImageId?: string | null;
+	onCropConfirm?: () => void;
+	onCropCancel?: () => void;
 }
 
 const Separator = () => (
@@ -77,6 +80,9 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 	sendBackward,
 	viewport,
 	onSendToChat,
+	croppingImageId,
+	onCropConfirm,
+	onCropCancel,
 }) => {
 	const [position, setPosition] = useState<{ x: number; y: number } | null>(
 		null,
@@ -261,165 +267,197 @@ export const ContextToolbar: React.FC<ContextToolbarProps> = ({
 				>
 					{/* Inner container for solid background of items */}
 					<div className="flex items-center gap-[1px] bg-neutral-200 dark:bg-neutral-800">
-						{/* Context Actions */}
-						{isImage && (
+						{croppingImageId ? (
+							// Crop Mode Controls
 							<>
 								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
 									<ToolbarButton
-										icon={SwissIcons.Crop}
-										label="Crop"
-										onClick={() => setCroppingImageId(selectedIds[0])}
+										icon={SwissIcons.Check}
+										label="Apply"
+										onClick={onCropConfirm || (() => setCroppingImageId(null))}
+										variant="accent"
 									/>
 								</div>
 								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
 									<ToolbarButton
-										icon={SwissIcons.Scissors}
-										label="No BG"
-										onClick={handleRemoveBackground}
+										icon={SwissIcons.Close}
+										label="Cancel"
+										onClick={onCropCancel || (() => setCroppingImageId(null))}
 									/>
 								</div>
-								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
-									<ToolbarButton
-										icon={SwissIcons.Filter}
-										label="Isolate"
-										onClick={handleOpenIsolateDialog}
-									/>
-								</div>
-								{handleGeminiEdit && (
-									<div className="bg-[#f4f4f0] dark:bg-[#111111]">
-										<ToolbarButton
-											icon={
-												isGeminiEditing
-													? SwissIcons.Spinner
-													: SwissIcons.Sparkles
-											}
-											label="Edit"
-											onClick={handleGeminiEdit}
-											disabled={isGeminiEditing}
-										/>
-									</div>
-								)}
-								{handleConvertToVideo && (
+							</>
+						) : (
+							// Standard Controls
+							<>
+								{/* Context Actions */}
+								{isImage && (
 									<>
-										<Separator />
+										{/* Generative Actions Group */}
 										<div className="bg-[#f4f4f0] dark:bg-[#111111]">
 											<ToolbarButton
-												icon={SwissIcons.Video}
-												label="Animate"
-												onClick={() => handleConvertToVideo(selectedIds[0])}
+												icon={SwissIcons.Scissors}
+												label="No BG"
+												onClick={handleRemoveBackground}
+											/>
+										</div>
+										<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+											<ToolbarButton
+												icon={SwissIcons.Filter}
+												label="Isolate"
+												onClick={handleOpenIsolateDialog}
+											/>
+										</div>
+										{handleGeminiEdit && (
+											<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+												<ToolbarButton
+													icon={
+														isGeminiEditing
+															? SwissIcons.Spinner
+															: SwissIcons.Sparkles
+													}
+													label="Edit"
+													onClick={handleGeminiEdit}
+													disabled={isGeminiEditing}
+												/>
+											</div>
+										)}
+										{handleConvertToVideo && (
+											<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+												<ToolbarButton
+													icon={SwissIcons.Video}
+													label="Animate"
+													onClick={() => handleConvertToVideo(selectedIds[0])}
+												/>
+											</div>
+										)}
+
+										<Separator />
+
+										{/* Canvas Actions Group */}
+										<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+											<ToolbarButton
+												icon={SwissIcons.Crop}
+												label="Crop"
+												onClick={() => setCroppingImageId(selectedIds[0])}
 											/>
 										</div>
 									</>
 								)}
-							</>
-						)}
 
-						{isVideo && (
-							<>
-								{handleExtendVideo && (
-									<div className="bg-[#f4f4f0] dark:bg-[#111111]">
-										<ToolbarButton
-											icon={SwissIcons.FilePlus}
-											label="Extend"
-											onClick={() => handleExtendVideo(selectedIds[0])}
-										/>
-									</div>
+								{isVideo && (
+									<>
+										{/* Generative Video Actions */}
+										{handleExtendVideo && (
+											<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+												<ToolbarButton
+													icon={SwissIcons.FilePlus}
+													label="Extend"
+													onClick={() => handleExtendVideo(selectedIds[0])}
+												/>
+											</div>
+										)}
+										{handleRemoveVideoBackground && (
+											<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+												<ToolbarButton
+													icon={SwissIcons.Scissors}
+													label="No BG"
+													onClick={() =>
+														handleRemoveVideoBackground(selectedIds[0])
+													}
+												/>
+											</div>
+										)}
+
+										<Separator />
+
+										{/* Canvas Video Actions */}
+										<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+											<ToolbarButton
+												icon={SwissIcons.Video}
+												label="GIF"
+												onClick={async () => {
+													const video = videos.find(
+														(v) => v.id === selectedIds[0],
+													);
+													if (video) {
+														try {
+															await exportVideoAsGif(video.src);
+														} catch (error) {
+															console.error("Failed to export GIF:", error);
+														}
+													}
+												}}
+											/>
+										</div>
+									</>
 								)}
-								{handleRemoveVideoBackground && (
-									<div className="bg-[#f4f4f0] dark:bg-[#111111]">
-										<ToolbarButton
-											icon={SwissIcons.Scissors}
-											label="No BG"
-											onClick={() =>
-												handleRemoveVideoBackground(selectedIds[0])
-											}
-										/>
-									</div>
+
+								{isMulti && (
+									<>
+										<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+											<ToolbarButton
+												icon={SwissIcons.Combine}
+												label="Combine"
+												onClick={handleCombineImages}
+											/>
+										</div>
+										<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 px-3 flex items-center">
+											<span className="text-[10px] font-mono text-neutral-400">
+												{selectedIds.length} ITEMS
+											</span>
+										</div>
+									</>
 								)}
+
+								{hasSelectedImages && onSendToChat && (
+									<>
+										<Separator />
+										<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+											<ToolbarButton
+												icon={SwissIcons.Link}
+												label="To Chat"
+												onClick={onSendToChat}
+											/>
+										</div>
+									</>
+								)}
+
+								{/* Common Actions */}
 								<Separator />
 								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
 									<ToolbarButton
-										icon={SwissIcons.Video}
-										label="GIF"
-										onClick={async () => {
-											const video = videos.find((v) => v.id === selectedIds[0]);
-											if (video) {
-												try {
-													await exportVideoAsGif(video.src);
-												} catch (error) {
-													console.error("Failed to export GIF:", error);
-												}
-											}
-										}}
+										icon={SwissIcons.Copy}
+										onClick={handleDuplicate}
+										shortcut="Ctrl+D"
 									/>
 								</div>
-							</>
-						)}
 
-						{isMulti && (
-							<>
-								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
+								{/* Layering */}
+								<div className="bg-[#f4f4f0] dark:bg-[#111111] flex items-center">
 									<ToolbarButton
-										icon={SwissIcons.Combine}
-										label="Combine"
-										onClick={handleCombineImages}
+										icon={SwissIcons.ArrowUp}
+										onClick={bringForward}
+										shortcut="]"
+									/>
+									<ToolbarButton
+										icon={SwissIcons.ArrowDown}
+										onClick={sendBackward}
+										shortcut="["
 									/>
 								</div>
-								<div className="bg-[#f4f4f0] dark:bg-[#111111] h-10 px-3 flex items-center">
-									<span className="text-[10px] font-mono text-neutral-400">
-										{selectedIds.length} ITEMS
-									</span>
-								</div>
-							</>
-						)}
 
-						{hasSelectedImages && onSendToChat && (
-							<>
+								{/* Delete */}
 								<Separator />
 								<div className="bg-[#f4f4f0] dark:bg-[#111111]">
 									<ToolbarButton
-										icon={SwissIcons.Link}
-										label="To Chat"
-										onClick={onSendToChat}
+										icon={SwissIcons.Trash}
+										onClick={handleDelete}
+										variant="danger"
+										shortcut="Del"
 									/>
 								</div>
 							</>
 						)}
-
-						{/* Common Actions */}
-						<Separator />
-						<div className="bg-[#f4f4f0] dark:bg-[#111111]">
-							<ToolbarButton
-								icon={SwissIcons.Copy}
-								onClick={handleDuplicate}
-								shortcut="Ctrl+D"
-							/>
-						</div>
-
-						{/* Layering */}
-						<div className="bg-[#f4f4f0] dark:bg-[#111111] flex items-center">
-							<ToolbarButton
-								icon={SwissIcons.ArrowUp}
-								onClick={bringForward}
-								shortcut="]"
-							/>
-							<ToolbarButton
-								icon={SwissIcons.ArrowDown}
-								onClick={sendBackward}
-								shortcut="["
-							/>
-						</div>
-
-						{/* Delete */}
-						<Separator />
-						<div className="bg-[#f4f4f0] dark:bg-[#111111]">
-							<ToolbarButton
-								icon={SwissIcons.Trash}
-								onClick={handleDelete}
-								variant="danger"
-								shortcut="Del"
-							/>
-						</div>
 					</div>
 				</motion.div>
 			</div>

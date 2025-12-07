@@ -28,31 +28,72 @@ export const htmlGeneratorOutputSchema = z.object({
 export type HtmlGeneratorInput = z.infer<typeof htmlGeneratorInputSchema>;
 export type HtmlGeneratorResult = z.infer<typeof htmlGeneratorOutputSchema>;
 
+type HtmlGeneratorDeps = {
+	generateTextFn?: typeof generateText;
+	createGoogleFn?: typeof createGoogleGenerativeAI;
+};
+
 export async function runHtmlGeneratorWorkflow(
 	input: HtmlGeneratorInput,
+	deps: HtmlGeneratorDeps = {},
 ): Promise<HtmlGeneratorResult> {
 	const key = env.googleApiKey;
 	if (!key) {
 		throw new Error("Google API key required for HTML generation");
 	}
-	const google = createGoogleGenerativeAI({ apiKey: key });
+
+	const generateTextFn = deps.generateTextFn ?? generateText;
+	const createGoogleFn = deps.createGoogleFn ?? createGoogleGenerativeAI;
+
+	const sections =
+		Array.isArray(input.sections) && input.sections.length > 0
+			? input.sections
+			: ["Hero", "Body", "CTA"];
+
+	const colorPalette =
+		Array.isArray(input.colorPalette) && input.colorPalette.length > 0
+			? input.colorPalette
+			: undefined;
+
 	const prompt = `You are a senior UI engineer. Create semantic HTML and ${input.detailLevel === "full" ? "fully detailed" : "minimal"} CSS for the following layout.
 Brief: ${input.brief}
 Brand tone: ${input.brandTone}
 Layout: ${input.layout}
-Sections: ${input.sections.join(", ")}
-Color palette: ${input.colorPalette?.join(", ") ?? "designer's choice"}
+Sections: ${sections.join(", ")}
+Color palette: ${colorPalette?.join(", ") ?? "designer's choice"}
 Return only JSON with keys html, css, rationale, components (component names).`;
-	const result = await generateText({
-		model: google(GEMINI_TEXT_MODEL),
-		prompt,
-	});
-	const parsed = JSON.parse(result.text ?? "{}");
+
+	const google = createGoogleFn({ apiKey: key });
+
+	let responseText = "{}";
+	try {
+		const result = await generateTextFn({
+			model: google(GEMINI_TEXT_MODEL),
+			prompt,
+		});
+		responseText = result.text ?? "{}";
+	} catch (error) {
+		const message =
+			error instanceof Error
+				? error.message
+				: "Unknown error from generateText";
+		throw new Error(`html-generator: model request failed: ${message}`);
+	}
+
+	let parsed: any;
+	try {
+		parsed = JSON.parse(responseText);
+	} catch (error) {
+		throw new Error("html-generator: failed to parse model response as JSON");
+	}
+
 	return {
-		html: parsed.html ?? "",
-		css: parsed.css ?? "",
-		components: parsed.components ?? [],
-		rationale: parsed.rationale ?? "",
+		html: typeof parsed.html === "string" ? parsed.html : "",
+		css: typeof parsed.css === "string" ? parsed.css : "",
+		components: Array.isArray(parsed.components)
+			? parsed.components.filter((c: unknown) => typeof c === "string")
+			: [],
+		rationale: typeof parsed.rationale === "string" ? parsed.rationale : "",
 	};
 }
 

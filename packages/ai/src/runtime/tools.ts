@@ -1,6 +1,5 @@
 import { tool as createAiTool } from "ai";
 import { z } from "zod";
-
 import { batchJobPlannerTool } from "../tools/batch";
 import { canvasTextToImageTool } from "../tools/canvas";
 import type { ToolDefinition } from "../tools/factory";
@@ -20,6 +19,7 @@ import {
 import {
 	backgroundRemovalTool,
 	htmlGeneratorTool,
+	htmlToCanvasTool,
 	imageReframeTool,
 	imageUpscaleTool,
 	layoutDesignerTool,
@@ -27,6 +27,7 @@ import {
 	paletteExtractorTool,
 	storyboardTool,
 } from "../tools/vision";
+import { logger } from "../utils/logger";
 
 const TOOL_DEFINITIONS = {
 	delegateToAgent: delegateToAgentTool,
@@ -37,6 +38,7 @@ const TOOL_DEFINITIONS = {
 	imageUpscale: imageUpscaleTool,
 	paletteExtractor: paletteExtractorTool,
 	storyboard: storyboardTool,
+	htmlToCanvas: htmlToCanvasTool,
 	htmlGenerator: htmlGeneratorTool,
 	layoutDesigner: layoutDesignerTool,
 	textToVideo: textToVideoTool,
@@ -60,11 +62,32 @@ function wrapTool<
 	return factory({
 		description: def.description,
 		parameters: def.inputSchema as unknown as z.ZodTypeAny,
-		execute: async (parameters: z.infer<TInputSchema>, runtimeContext?: any) =>
-			def.execute({ context: parameters, runtimeContext }),
+		execute: async (
+			parameters: z.infer<TInputSchema>,
+			runtimeContext?: any,
+		) => {
+			const startedAt = Date.now();
+			const parsed = def.inputSchema.safeParse(parameters);
+			if (!parsed.success) {
+				const issues = parsed.error.issues
+					.map((issue) => issue.message)
+					.join("; ");
+				throw new Error(`Invalid tool input: ${issues}`);
+			}
+
+			try {
+				return await def.execute({ context: parsed.data, runtimeContext });
+			} catch (error) {
+				logger.error(`tool.${def.id}.failed`, {
+					durationMs: Date.now() - startedAt,
+					message: error instanceof Error ? error.message : String(error),
+					parameterKeys: Object.keys(parameters ?? {}),
+				});
+				throw error;
+			}
+		},
 	}) as ReturnType<typeof createAiTool>;
 }
-
 const toolkitEntries: Array<[ToolId, ReturnType<typeof createAiTool>]> = [];
 
 for (const [key, def] of Object.entries(TOOL_DEFINITIONS) as Array<

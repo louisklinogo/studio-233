@@ -1,33 +1,297 @@
-## Error Type
-Build Error
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
 
-## Error Message
-Parsing ecmascript source code failed
+https://nextjs.org/docs/messages/module-not-found
 
-## Build Output
-./apps/web/src/components/studio/CanvasPalette.tsx:359:22
-Parsing ecmascript source code failed
-  357 | 				/>
-  358 | 				<ToolRow
-> 359 | 					icon={SwissIcons.Hand}
-      | 					                ^
-  360 | 					label="PAN"
-  361 | 					isActive={activeTool === "pan"}
-  362 | 					onClick={() => handleToolClick(() => setActiveTool("pan"))}
 
-Expected a semicolon
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router-context.shared-runtime.js:11:34
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_default'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_default' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router-context.shared-runtime.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js:27:34
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_default'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_default' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/router.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/script.js:29:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/script.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js:25:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
 
 Import traces:
-  Client Component Browser:
-    ./apps/web/src/components/studio/CanvasPalette.tsx [Client Component Browser]
-    ./apps/web/src/components/canvas/OverlayInterface.tsx [Client Component Browser]
-    ./apps/web/src/components/canvas/OverlayInterface.tsx [Server Component]
-    ./apps/web/src/app/canvas/[id]/page.tsx [Server Component]
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
 
-  Client Component SSR:
-    ./apps/web/src/components/studio/CanvasPalette.tsx [Client Component SSR]
-    ./apps/web/src/components/canvas/OverlayInterface.tsx [Client Component SSR]
-    ./apps/web/src/components/canvas/OverlayInterface.tsx [Server Component]
-    ./apps/web/src/app/canvas/[id]/page.tsx [Server Component]
+  SSR:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
 
-Next.js version: 16.0.4 (Turbopack)
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js:25:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import traces:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
+
+  SSR:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/adapters.js:31:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/adapters.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js:28:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/router.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/utils/format-url.js:48:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/utils/format-url.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/router.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/react-dom@19.2.1+6ccf2a00d98a8a5e/node_modules/react-dom/cjs/react-dom-client.development.js:24190:21
+Module not found: Can't resolve 'scheduler'
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/react-dom@19.2.1+6ccf2a00d98a8a5e/node_modules/react-dom/cjs/react-dom-client.development.js
+    ./node_modules/.bun/react-dom@19.2.1+6ccf2a00d98a8a5e/node_modules/react-dom/client.js       
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+Warning: data for page "/_error" (path "/canvas/cmit49r5i000218crf5crkzaj") is 1.06 MB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data
+ GE    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router-context.shared-runtime.js:11:34
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_default'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_default' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router-context.shared-runtime.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js:27:34
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_default'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_default' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/router.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/script.js:29:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/script.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js:25:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import traces:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
+
+  SSR:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js:25:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import traces:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
+
+  SSR:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/head.js   
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/pages/_error.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/error.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/adapters.js:31:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/adapters.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js:28:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/router.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/utils/format-url.js:48:35
+Module not found: Can't resolve '@swc/helpers/_/_interop_require_wildcard'
+Import map: aliased to module '@swc/helpers' with subpath '/_/_interop_require_wildcard' inside of [project]/node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/utils/format-url.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/shared/lib/router/router.js
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/router.js     
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./node_modules/.bun/react-dom@19.2.1+6ccf2a00d98a8a5e/node_modules/react-dom/cjs/react-dom-client.development.js:24190:21
+Module not found: Can't resolve 'scheduler'
+
+
+Import trace:
+  Browser:
+    ./node_modules/.bun/react-dom@19.2.1+6ccf2a00d98a8a5e/node_modules/react-dom/cjs/react-dom-client.development.js
+    ./node_modules/.bun/react-dom@19.2.1+6ccf2a00d98a8a5e/node_modules/react-dom/client.js       
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/index.js      
+    ./node_modules/.bun/next@16.0.7+8f708e3022b846db/node_modules/next/dist/client/next-dev-turbopack.js
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+Warning: data for page "/_error" (path "/canvas/cmit49r5i000218crf5crkzaj") is 1.06 MB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data
+ GE
