@@ -1,4 +1,4 @@
-import { auth } from "@studio233/auth";
+import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma } from "@studio233/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -16,9 +16,7 @@ export const projectRouter = router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({
-				headers,
-			});
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				throw new TRPCError({
@@ -68,7 +66,7 @@ export const projectRouter = router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				throw new TRPCError({
@@ -102,7 +100,7 @@ export const projectRouter = router({
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				throw new TRPCError({
@@ -132,7 +130,7 @@ export const projectRouter = router({
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				throw new TRPCError({
@@ -208,7 +206,7 @@ export const projectRouter = router({
 		)
 		.query(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				return null;
@@ -233,7 +231,7 @@ export const projectRouter = router({
 		}),
 	getRecent: publicProcedure.query(async ({ ctx }) => {
 		const headers = new Headers(ctx.req?.headers);
-		const session = await auth.api.getSession({ headers });
+		const session = await getSessionWithRetry(headers);
 
 		if (!session) {
 			return [];

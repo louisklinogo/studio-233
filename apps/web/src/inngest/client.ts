@@ -1,4 +1,8 @@
 import { Inngest } from "inngest";
+import type { WorkflowRequested } from "@/inngest/events";
 
-// Create a client to send and receive events
-export const inngest = new Inngest({ id: "studio-233" });
+type EventMap = {
+	"studio.workflow.requested": WorkflowRequested;
+};
+
+export const inngest = new Inngest<EventMap>({ id: "studio-233" });

@@ -2,7 +2,7 @@ import { serve } from "inngest/next";
 import type { NextRequest } from "next/server";
 import { inngest } from "@/inngest/client";
 
-import { processFashionItem } from "@/inngest/functions/process-fashion-item";
+import { processStudioWorkflow } from "@/inngest/functions/studio/process-workflow";
 
 type RouteContext = { params: Promise<Record<string, string>> };
 type AppRouteHandler = (
@@ -12,12 +12,15 @@ type AppRouteHandler = (
 
 const handlers = serve({
 	client: inngest,
-	functions: [processFashionItem],
+	functions: [processStudioWorkflow],
 });
 
 const adapt = <T extends keyof typeof handlers>(method: T) => {
-	const handler = handlers[method] as (...args: any[]) => Promise<Response> | Response;
-	return ((request, context) => handler(request, context)) satisfies AppRouteHandler;
+	const handler = handlers[method] as (
+		...args: any[]
+	) => Promise<Response> | Response;
+	return ((request, context) =>
+		handler(request, context)) satisfies AppRouteHandler;
 };
 
 export const GET = adapt("GET");

@@ -1,8 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
+import { usageService } from "@studio233/auth";
+import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { nanoid } from "nanoid";
-import { auth, usageService } from "@studio233/auth";
+import { headers } from "next/headers";
 import { inngest } from "@/inngest/client";
 import { batchStore } from "@/lib/batch-store";
 
@@ -10,18 +11,22 @@ export async function startBatchProcessing(imageUrls: string[]) {
 	const jobs: string[] = [];
 	const requestHeaders = await headers();
 	const headerRecord = Object.fromEntries(requestHeaders.entries());
-	const session = await auth.api.getSession({ headers: headerRecord });
+	const session = await getSessionWithRetry(headerRecord);
 	const userId = session?.user.id;
 	if (!userId) {
 		throw new Error("Authentication required to start batch jobs.");
 	}
 
 	const reference = `batch:${Date.now()}`;
-	const debitedAmount = await usageService.consumeForBatch(userId, imageUrls.length, {
-		reference,
-		description: `Batch run with ${imageUrls.length} images`,
-		metadata: { kind: "batch" },
-	});
+	const debitedAmount = await usageService.consumeForBatch(
+		userId,
+		imageUrls.length,
+		{
+			reference,
+			description: `Batch run with ${imageUrls.length} images`,
+			metadata: { kind: "batch" },
+		},
+	);
 
 	// Create jobs in Postgres and prepare events
 	try {

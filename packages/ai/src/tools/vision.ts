@@ -14,6 +14,8 @@ import {
 } from "../workflows/vision-enhancements";
 import { createTool } from "./factory";
 
+export { htmlToCanvasTool } from "./html-to-canvas";
+
 export const backgroundRemovalTool = createTool({
 	id: "background-removal",
 	description:

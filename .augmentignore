@@ -1,0 +1,6 @@
+# Include .gitignore excluded files with ! prefix
+!node_modules
+!workflow-builder-template/
+
+# Exclude other files with .gitignore syntax
+data/test.json

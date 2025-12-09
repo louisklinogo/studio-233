@@ -1,4 +1,4 @@
-import { auth } from "@studio233/auth";
+import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma } from "@studio233/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -31,7 +31,7 @@ export const workspaceRouter = router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				throw new TRPCError({
@@ -81,7 +81,7 @@ export const workspaceRouter = router({
 	 */
 	list: publicProcedure.query(async ({ ctx }) => {
 		const headers = new Headers(ctx.req?.headers);
-		const session = await auth.api.getSession({ headers });
+		const session = await getSessionWithRetry(headers);
 
 		if (!session) {
 			return [];
@@ -105,8 +105,7 @@ export const workspaceRouter = router({
 		.input(z.object({ id: z.string() }))
 		.query(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
-
+			const session = await getSessionWithRetry(headers);
 			if (!session) {
 				return null;
 			}
@@ -145,7 +144,7 @@ export const workspaceRouter = router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				throw new TRPCError({
@@ -204,7 +203,7 @@ export const workspaceRouter = router({
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			const headers = new Headers(ctx.req?.headers);
-			const session = await auth.api.getSession({ headers });
+			const session = await getSessionWithRetry(headers);
 
 			if (!session) {
 				throw new TRPCError({

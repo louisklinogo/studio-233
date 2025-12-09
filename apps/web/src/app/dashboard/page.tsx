@@ -1,4 +1,4 @@
-import { auth } from "@studio233/auth";
+import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma } from "@studio233/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -7,7 +7,7 @@ import { DashboardClient } from "@/components/dashboard/DashboardClient";
 export default async function DashboardPage() {
 	const headerList = await headers();
 	const headerRecord = Object.fromEntries(headerList.entries());
-	const session = await auth.api.getSession({ headers: headerRecord });
+	const session = await getSessionWithRetry(headerRecord);
 
 	// Note: Redirects are handled by layout.tsx, but typesafety needs this check
 	if (!session) return null;

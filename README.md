@@ -1,175 +1,128 @@
 # studio+233
 
-studio+233 is the creative operations cockpit we wish we had: a fast, multiplayer canvas, an agentic AI studio, and a production-grade batch pipeline that keeps brand teams shipping work instead of wrangling tools. Think “Figma for moodboards” meets “Render farm for marketers” – all supercharged by our own orchestrator agents and workflow library.
+**The AI-Native Creative Operating System for High-Volume Production**
 
-## Why teams use studio+233
+studio+233 is an experimental creative platform that combines an infinite canvas with AI-powered workflows and batch processing capabilities. Built for creators who need to scale from one-off concepts to industrial-grade production pipelines.
 
-| Goal | How we help |
-| --- | --- |
-| Ship new concepts in minutes | Sketch on an infinite canvas, drop references, then let our routing agent spin up moodboards, shots, and copy variations in one pass. |
-| Keep every stakeholder in flow | Real-time canvas updates, streaming tool output, and memory-aware agents keep the team aligned without Slack archaeology. |
-| Automate repetitive production | Define a spec once and run batch jobs (resize, background removal, object isolation, video stitching) across hundreds of assets with audit trails. |
-| Stay on-brand with AI | Tools carry prompts, LoRAs, and palette metadata through each step so creative direction survives every generation. |
+## What you can do today
 
-## Feature highlights
+### 🎨 **Infinite Canvas**
+- **React Konva-powered canvas** with smooth pan/zoom, multi-select, and real-time collaboration
+- **Persistent workspace** - Auto-saves to IndexedDB with undo/redo history
+- **AI-powered image generation** - Text-to-image, background removal, object isolation
+- **Streaming updates** - Watch AI generate assets in real-time on the canvas
 
-- **Infinite AI Canvas** – React Konva + IndexedDB gives us buttery pan/zoom, multi-select, versioning, and offline persistence.
-- **Orchestrator Agents** – Our Mastra/AI-SDK hybrid agents route between Vision Forge, Motion Director, and Research sub-agents, triggering the right workflow at the right time.
-- **Real-Time Streaming** – Tool calls emit `data-canvas-command` parts, so users watch assets materialize stroke-by-stroke.
-- **Batch Ops Designer** – Describe the dataset, presets, and delivery rules; we queue and monitor the entire run for you.
-- **Proxy-friendly Uploads** – Fal.ai storage proxy sidesteps Vercel limits while keeping uploads secure.
-- **Rate-limited Free Tier** – Built-in quotas for anonymous users, auto-upgraded when they bring their own API keys.
+### 🤖 **AI Workflows** 
+- **Vision tools** - Background removal, object isolation, image upscaling, palette extraction
+- **Text-to-image generation** with Flux models and custom LoRA support
+- **Video generation** - Text-to-video, video stitching, GIF creation
+- **Research agents** - Web search, site extraction, moodboard creation
 
-## Technical Details
+### ⚡ **Batch Processing** (Alpha)
+- **Upload multiple assets** for batch processing
+- **Queue management** with Inngest-powered job execution
+- **Real-time status tracking** and progress monitoring
+- **Usage-based billing** with rate limiting for free users
 
-### Canvas
+### 🔧 **Workflow Designer** (Experimental)
+- **Visual workflow builder** using React Flow
+- **Node-based AI tool composition** 
+- **Save and execute custom workflows**
+- **Real-time collaboration** on workflow design
 
-React Konva for 2D canvas rendering with viewport culling for performance.
+## Application Structure
 
-### fal.ai Integration
+### Core Pages
+- **Landing** (`/`) - Interactive landing page with manifesto and navigation
+- **Dashboard** (`/dashboard`) - Project management and workspace overview
+- **Canvas** (`/canvas`) - Main infinite canvas interface for creative work
+- **Studio+** (`/studio+`) - Batch processing pipeline interface
+- **Workflow Designer** (`/studio-experiments/[id]`) - Visual workflow builder
 
-The app integrates with fal.ai's API in several clever ways:
+### Authentication & Onboarding
+- **Login** (`/login`) - Authentication with Better Auth
+- **Onboarding** (`/onboarding`) - User setup and workspace creation
 
-#### 1. Proxy Architecture
+## Technical Architecture
 
-To bypass Vercel's 4.5MB request body limit, we implement a proxy pattern:
+### Frontend Stack
+- **Next.js 16** with App Router and React 19
+- **React Konva** for high-performance 2D canvas rendering
+- **tRPC** for type-safe API communication
+- **Tailwind CSS** for styling
+- **Framer Motion** for animations
+- **IndexedDB** for client-side persistence
 
-```typescript
-// Client uploads through proxy
-const uploadResult = await falClient.storage.upload(blob);
+### AI & Workflows
+- **Vercel AI SDK** for model routing, streaming, and tool execution
+- **Google Gemini** models (Gemini 3 Pro, Gemini 2.5 Pro/Flash) for agent intelligence
+- **Custom agent system** with specialized agents:
+  - **Studio Orchestrator** - Main routing and coordination agent
+  - **Vision Forge** - Image processing and generation
+  - **Motion Director** - Video creation and editing
+  - **Insight Researcher** - Web search and analysis
+  - **Batch Ops** - Batch processing coordination
+- **fal.ai** for image/video generation models
 
-// Proxy endpoint at /api/fal handles the request
-export const POST = route.POST; // fal.ai's Next.js proxy
-```
+### Backend Services
+- **Prisma** with PostgreSQL for data persistence
+- **Inngest** for background job processing
+- **Better Auth** for authentication
+- **Vercel Blob** for file storage
+- **Rate limiting** with KV store
 
-This allows users to upload large images that would otherwise be rejected by Vercel's edge runtime.
-
-#### 2. Rate Limiting
-
-The application implements a three-tier rate limiting system for users without API keys:
-
-```typescript
-const limiter = {
-  perMinute: createRateLimiter(5, "60 s"), // 10 requests per minute
-  perHour: createRateLimiter(15, "60 m"), // 30 requests per hour
-  perDay: createRateLimiter(50, "24 h"), // 100 requests per day
-};
-```
-
-Users can bypass rate limits by adding their own fal.ai API key, which switches them to their own quota.
-
-#### 3. Real-time Streaming
-
-Image generation uses fal.ai's streaming API to provide live updates:
-
-```typescript
-// Server-side streaming with tRPC
-const stream = await falClient.stream("fal-ai/flux-kontext-lora", {
-  input: { image_url, prompt, loras },
-});
-
-for await (const event of stream) {
-  yield tracked(eventId, { type: "progress", data: event });
-}
-```
-
-The client receives these updates via a tRPC subscription and updates the canvas in real-time, creating a smooth user experience where images gradually appear as they're being generated.
-
-### State Management
-
-The application uses a combination of React state and IndexedDB for persistence:
-
-- **Canvas State**: Images, positions, and transformations stored in React state
-- **History**: Undo/redo stack maintained in memory
-- **Persistence**: Auto-saves to IndexedDB with debouncing
-- **Image Storage**: Original image data stored separately in IndexedDB to handle large files
-
-### API Architecture
-
-Built with tRPC for type-safe API calls:
-
-- `removeBackground`: Uses fal.ai's Bria background removal model
-- `isolateObject`: Leverages EVF-SAM for semantic object segmentation
-- `generateTextToImage`: Text-to-image generation with Flux
-- `generateImageStream`: Streaming image-to-image transformations
-
-## How AI Features Work
-
-### Image Generation
-
-Uses fal.ai's Flux Kontext LoRA model to generate and transform images:
-
-1. User selects an image and a style (or provides custom LoRA URL)
-2. Image is uploaded to fal.ai storage via proxy
-3. Streaming transformation begins, updating canvas in real-time
-4. Final high-quality result replaces the preview
-
-### Object Isolation
-
-Powered by EVF-SAM (Enhanced Visual Foundation Segment Anything Model):
-
-1. User describes object in natural language (e.g., "the red car")
-2. EVF-SAM generates a segmentation mask
-3. Server applies mask to original image using Sharp
-4. Isolated object with transparent background returned to canvas
-
-### Background Removal
-
-Uses Bria's specialized background removal model:
-
-1. Automatic subject detection
-2. Clean edge preservation
-3. Transparent PNG output
-
-## Performance Optimizations
-
-- **Viewport Culling**: Only renders visible images
-- **Streaming Images**: Custom hook prevents flickering during updates
-- **Debounced Saving**: Reduces IndexedDB writes
-- **Image Resizing**: Automatically resizes large images before upload
-- **Lazy Loading**: Default images load asynchronously
+### Key Features Implemented
+- ✅ Infinite canvas with real-time collaboration
+- ✅ AI image generation with streaming updates
+- ✅ Background removal and object isolation
+- ✅ Batch processing pipeline (alpha)
+- ✅ Visual workflow designer (experimental)
+- ✅ User authentication and workspace management
+- ✅ Usage tracking and rate limiting
 
 ## Development
 
-### Setup
+### Prerequisites
+- Node.js 20+
+- Bun 1.3.0+
+- PostgreSQL database
+- Google Gemini API key
+- fal.ai API key
 
+### Setup
 1. Clone the repository
 2. Install dependencies: `bun install`
-3. Add your fal.ai API key to `.env.local`:
-
+3. Set up environment variables in `.env.local`:
    ```
+   # Required
+   GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key_here
    FAL_KEY=your_fal_api_key_here
    NEXT_PUBLIC_APP_URL=http://localhost:3000
+   DATABASE_URL=your_postgres_connection_string
 
    # Optional
    KV_REST_API_URL=
    KV_REST_API_TOKEN=
    ```
+4. Run database migrations: `bun run db:push`
+5. Start development server: `bun run dev`
 
-4. Run development server: `bun run dev`
+### Project Structure
+- `apps/web` - Main Next.js application
+- `packages/ai` - AI agents and workflow definitions
+- `packages/canvas` - Canvas types and utilities
+- `packages/db` - Database schema and client
+- `packages/auth` - Authentication utilities
+- `packages/ui` - Shared UI components
 
-```
+## Current Status
 
-### Tech Stack
+This is an **experimental platform** under active development. Features are being built iteratively with a focus on:
 
-- **Next.js 16**: React framework with App Router
-- **React Konva**: Canvas rendering engine
-- **tRPC**: Type-safe API layer
-- **fal.ai SDK**: AI model integration
-- **AI-SDK**: Unified model gateway
-- **Mastra AI**: Agentic Framework
-- **Tailwind CSS**: Styling
-- **IndexedDB**: Client-side storage
-- **Sharp**: Server-side image processing
-
-## Deployment
-
-The app is optimized for Vercel deployment:
-
-- Uses edge-compatible APIs
-- Implements request proxying for large files
-- Automatic image optimization disabled for canvas compatibility
-- Bot protection via BotId integration
+1. **Canvas stability** - Improving performance and user experience
+2. **AI workflow reliability** - Enhancing agent responses and tool execution
+3. **Batch processing** - Scaling from prototype to production-ready pipeline
+4. **Workflow designer** - Making visual workflow creation more intuitive
 
 ## License
 
