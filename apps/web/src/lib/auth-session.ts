@@ -13,8 +13,8 @@ function isTransientNetworkError(error: unknown): boolean {
 	return (
 		code === "EAI_AGAIN" ||
 		code === "ETIMEDOUT" ||
-		message?.includes("EAI_AGAIN") ||
-		message?.includes("ETIMEDOUT")
+		(message?.includes("EAI_AGAIN") ?? false) ||
+		(message?.includes("ETIMEDOUT") ?? false)
 	);
 }
 

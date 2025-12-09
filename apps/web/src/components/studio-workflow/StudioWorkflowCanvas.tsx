@@ -19,7 +19,6 @@ import {
 	addNodeAtom,
 	clearWorkflowAtom,
 	deleteSelectedAtom,
-	deleteSelectedEdgeAtom,
 	edgesAtom,
 	nodesAtom,
 	onConnectAtom,
@@ -33,7 +32,7 @@ import {
 	showMinimapAtom,
 	undoAtom,
 	type WorkflowNodeData,
-} from "@/lib/studio-workflow/store";
+} from "@/lib/studio-workflow/enhanced-store";
 import { nodeTypes } from "./nodes";
 import { WorkflowToolbar } from "./WorkflowToolbar";
 
@@ -108,7 +107,6 @@ function WorkflowCanvasInner({
 	const undo = useSetAtom(undoAtom);
 	const redo = useSetAtom(redoAtom);
 	const deleteSelected = useSetAtom(deleteSelectedAtom);
-	const deleteSelectedEdge = useSetAtom(deleteSelectedEdgeAtom);
 	const clearWorkflow = useSetAtom(clearWorkflowAtom);
 	const [panelCollapsed] = useAtom(panelCollapsedAtom);
 	const [panelWidth] = useAtom(panelWidthAtom);
@@ -204,7 +202,6 @@ function WorkflowCanvasInner({
 			onRedo: () => redo(),
 			onDelete: () => {
 				deleteSelected();
-				deleteSelectedEdge();
 			},
 			onClear: () => clearWorkflow(),
 			onFit: () => fitView({ padding: 0.2, duration: 300 }),
@@ -221,7 +218,6 @@ function WorkflowCanvasInner({
 		[
 			clearWorkflow,
 			deleteSelected,
-			deleteSelectedEdge,
 			fitView,
 			hasUnsavedChanges,
 			isRunning,

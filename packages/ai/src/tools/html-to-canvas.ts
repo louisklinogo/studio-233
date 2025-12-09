@@ -34,19 +34,19 @@ export const htmlToCanvasTool = createTool({
 
 		return {
 			command: {
-				type: "add-image",
+				type: "add-image" as const,
 				url: renderResult.imageUrl,
 				width: renderResult.width,
 				height: renderResult.height,
 				meta: {
-					source: "html-to-canvas",
 					provider: "html-render",
-					components: htmlResult.components,
 				},
 			},
 			data: {
 				bytes: renderResult.bytes,
 				rationale: htmlResult.rationale,
+				source: "html-to-canvas",
+				components: htmlResult.components,
 			},
 			message: "Rendered HTML added to canvas",
 		};

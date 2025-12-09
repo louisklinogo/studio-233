@@ -1,4 +1,4 @@
-import { prisma } from "@studio233/db";
+import { Prisma, prisma } from "@studio233/db";
 import { inngest } from "@/inngest/client";
 import {
 	workflowRequestedEvent,
@@ -23,7 +23,11 @@ export const processStudioWorkflow = inngest.createFunction(
 		await step.run("mark-running", async () => {
 			await prisma.workflowRun.update({
 				where: { id: payload.runId },
-				data: { state: "RUNNING", startedAt: new Date(), error: null },
+				data: {
+					state: "RUNNING",
+					startedAt: new Date(),
+					error: Prisma.JsonNull,
+				},
 			});
 		});
 

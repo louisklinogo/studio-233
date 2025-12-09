@@ -20,10 +20,13 @@ export function emitLangfuseEvent(
 	const c = getClient();
 	if (!c) return;
 
+	const mappedLevel =
+		level === "info" ? "DEFAULT" : level === "warn" ? "WARNING" : "ERROR";
+
 	try {
 		c.event({
 			name: event,
-			type: level,
+			level: mappedLevel,
 			metadata: meta,
 		});
 	} catch (error) {

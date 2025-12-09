@@ -13,13 +13,13 @@ function isTransientNetworkError(error: unknown): boolean {
 	return (
 		code === "EAI_AGAIN" ||
 		code === "ETIMEDOUT" ||
-		message?.includes("EAI_AGAIN") ||
-		message?.includes("ETIMEDOUT")
+		(message?.includes("EAI_AGAIN") ?? false) ||
+		(message?.includes("ETIMEDOUT") ?? false)
 	);
 }
 
 export async function getSessionWithRetry(
-	headersSource: HeaderSource,
+	headersSource: HeaderSource = undefined,
 	options: { retries?: number; delayMs?: number } = {},
 ) {
 	const maxRetries = options.retries ?? 2;

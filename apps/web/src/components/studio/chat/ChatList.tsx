@@ -12,7 +12,6 @@ import {
 	MessageContent,
 	MessageResponse,
 } from "@/components/ai-elements/message";
-import { Shimmer } from "@/components/ai-elements/shimmer";
 import {
 	Tool,
 	ToolContent,
@@ -87,13 +86,16 @@ export const ChatList: React.FC<ChatListProps> = ({
 												return (
 													<Tool
 														key={`${message.id}-tool-${index}`}
-														defaultOpen={part.state !== "hidden"}
+														defaultOpen={part.state !== "input-streaming"}
 													>
 														<ToolHeader type={part.type} state={part.state} />
 														<ToolContent>
-															{part.input && <ToolInput input={part.input} />}
+															{part.input !== undefined &&
+															part.input !== null ? (
+																<ToolInput input={part.input} />
+															) : null}
 															<ToolOutput
-																output={renderToolOutput(part.output)}
+																output={part.output}
 																errorText={part.errorText}
 															/>
 														</ToolContent>
@@ -125,11 +127,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 						className="max-w-full"
 					>
 						<MessageContent className="max-w-full break-words space-y-2">
-							<MessageResponse>
-								<Shimmer className="text-sm text-neutral-500 dark:text-neutral-400">
-									Thinking…
-								</Shimmer>
-							</MessageResponse>
+							<MessageResponse>Thinking…</MessageResponse>
 						</MessageContent>
 					</Message>
 				)}
@@ -137,23 +135,3 @@ export const ChatList: React.FC<ChatListProps> = ({
 		</Conversation>
 	);
 };
-
-function renderToolOutput(output: unknown) {
-	if (output == null) return null;
-	if (typeof output === "string") {
-		return <MessageResponse>{output}</MessageResponse>;
-	}
-	try {
-		return (
-			<MessageResponse>
-				<div className="max-w-full overflow-x-auto">
-					<pre className="min-w-0 whitespace-pre-wrap break-words text-xs">
-						{JSON.stringify(output, null, 2)}
-					</pre>
-				</div>
-			</MessageResponse>
-		);
-	} catch (e) {
-		return null;
-	}
-}

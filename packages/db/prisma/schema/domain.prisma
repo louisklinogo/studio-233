@@ -113,14 +113,15 @@ model Project {
   updatedAt   DateTime    @updatedAt
 
   // Relations
-  canvases       Canvas[]
-  assets         Asset[]
-  generationRuns GenerationRun[]
-  batchJobs      BatchJob[]
-  workflowRuns   WorkflowRun[]
-  threads        AgentThread[]
-  usageSamples   UsageSample[]
-  auditLogs      AuditLog[]
+  canvases            Canvas[]
+  assets              Asset[]
+  generationRuns      GenerationRun[]
+  batchJobs           BatchJob[]
+  workflowDefinitions WorkflowDefinition[]
+  workflowRuns        WorkflowRun[]
+  threads             AgentThread[]
+  usageSamples        UsageSample[]
+  auditLogs           AuditLog[]
 
   @@index([userId])
   @@index([workspaceId, type])
@@ -302,24 +303,48 @@ model BatchJobEvent {
   @@map("batch_job_event")
 }
 
+model WorkflowDefinition {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  nodes       Json      @db.Json
+  edges       Json      @db.Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  runs        WorkflowRun[]
+
+  @@index([userId, projectId])
+  @@index([projectId])
+  @@map("workflow_definition")
+}
+
 model WorkflowRun {
-  id         String         @id @default(cuid())
-  workflow   String
-  state      WorkflowState  @default(PENDING)
-  userId     String?
-  user       User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId  String?
-  project    Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  input      Json?          @db.Json
-  output     Json?          @db.Json
-  error      Json?          @db.Json
-  startedAt  DateTime?
-  finishedAt DateTime?
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-  steps      WorkflowStep[]
+  id                   String               @id @default(cuid())
+  workflowDefinitionId String?
+  workflowDefinition   WorkflowDefinition?  @relation(fields: [workflowDefinitionId], references: [id], onDelete: SetNull)
+  workflow             String               // Legacy field for backward compatibility
+  state                WorkflowState        @default(PENDING)
+  userId               String?
+  user                 User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  projectId            String?
+  project              Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  input                Json?                @db.Json
+  output               Json?                @db.Json
+  error                Json?                @db.Json
+  startedAt            DateTime?
+  finishedAt           DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  steps                WorkflowStep[]
 
   @@index([workflow, state])
+  @@index([workflowDefinitionId])
   @@index([userId])
   @@map("workflow_run")
 }

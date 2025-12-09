@@ -5,4 +5,4 @@ type EventMap = {
 	"studio.workflow.requested": WorkflowRequested;
 };
 
-export const inngest = new Inngest<EventMap>({ id: "studio-233" });
+export const inngest = new Inngest({ id: "studio-233" });

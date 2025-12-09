@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, UIMessage } from "ai";
+import { DefaultChatTransport, type FileUIPart, UIMessage } from "ai";
 import React from "react";
 import { ChatInput } from "@/components/studio/chat/ChatInput";
 import { ChatList } from "@/components/studio/chat/ChatList";
@@ -30,10 +30,23 @@ export const StudioChatPanel: React.FC<StudioChatPanelProps> = ({
 	// The 'ai' package's Message type is very compatible with UIMessage.
 	const uiMessages = messages as unknown as UIMessage[];
 
-	const handleSubmit = (text: string, _files: File[]) => {
-		if (text.trim()) {
-			void sendMessage({ text });
+	const handleSubmit = (text: string, attachments: FileUIPart[]) => {
+		const hasText = text.trim().length > 0;
+		const hasAttachments = attachments.length > 0;
+		if (!hasText && !hasAttachments) return;
+
+		if (hasAttachments) {
+			const parts: UIMessage["parts"] = [
+				...(hasText ? [{ type: "text" as const, text }] : []),
+				...attachments.map((file) => ({ ...file, type: "file" as const })),
+			];
+			void sendMessage({
+				parts,
+			});
+			return;
 		}
+
+		void sendMessage({ text });
 	};
 
 	const handleSuggestionSelect = (suggestion: string) => {

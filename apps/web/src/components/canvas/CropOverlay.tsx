@@ -200,12 +200,27 @@ export const CropOverlay: React.FC<CropOverlayProps> = ({
 			{/* Transformer */}
 			<Transformer
 				ref={cropTransformerRef}
-				boundBoxFunc={(oldBox: Konva.Box, newBox: Konva.Box) => {
+				boundBoxFunc={(
+					oldBox: {
+						x: number;
+						y: number;
+						width: number;
+						height: number;
+						rotation: number;
+					},
+					newBox: {
+						x: number;
+						y: number;
+						width: number;
+						height: number;
+						rotation: number;
+					},
+				) => {
 					// Limit minimum size
 					if (newBox.width < 20 || newBox.height < 20) {
 						return oldBox;
 					}
-					return newBox;
+					return { ...newBox, rotation: newBox.rotation ?? oldBox.rotation };
 				}}
 				enabledAnchors={[
 					"top-left",

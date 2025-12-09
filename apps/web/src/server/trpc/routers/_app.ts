@@ -71,12 +71,14 @@ async function downloadImage(url: string): Promise<Buffer> {
 import { getVideoModelById, VIDEO_MODELS } from "@/lib/video-models";
 import { projectRouter } from "./project";
 import { workflowRouter } from "./workflow";
+import { workflowDefinitionRouter } from "./workflow-definition";
 import { workspaceRouter } from "./workspace";
 
 export const appRouter = router({
 	project: projectRouter,
 	workspace: workspaceRouter,
 	workflow: workflowRouter,
+	workflowDefinition: workflowDefinitionRouter,
 	gemini: geminiRouter,
 	transformVideo: publicProcedure
 		.input(

@@ -25,6 +25,28 @@ interface ChatPanelProps {
 	className?: string;
 }
 
+type ToolInvocationPart = {
+	type: "tool-invocation";
+	toolInvocation: { toolName: string; toolCallId: string };
+	state?: string;
+	output?: unknown;
+};
+
+const isToolInvocationPart = (
+	part: UIMessage["parts"][number],
+): part is UIMessage["parts"][number] & ToolInvocationPart => {
+	if (typeof part !== "object" || part === null) {
+		return false;
+	}
+
+	const candidate = part as unknown as Partial<ToolInvocationPart>;
+	return (
+		candidate.type === "tool-invocation" &&
+		typeof candidate.toolInvocation?.toolName === "string" &&
+		typeof candidate.toolInvocation?.toolCallId === "string"
+	);
+};
+
 export function ChatPanel({
 	isOpen,
 	onClose,
@@ -48,12 +70,13 @@ export function ChatPanel({
 			if (message.parts) {
 				for (const part of message.parts) {
 					// Handle Vercel AI SDK tool parts
+					const toolPart = part as any;
 					if (
-						typeof part.type === "string" &&
-						part.type.startsWith("tool-") &&
-						part.state === "output-available"
+						typeof toolPart?.type === "string" &&
+						toolPart.type.startsWith("tool-") &&
+						toolPart.state === "output-available"
 					) {
-						const output = part.output;
+						const output = toolPart.output;
 
 						// Helper to process a potential command result
 						const processResult = (res: any) => {
@@ -76,7 +99,7 @@ export function ChatPanel({
 						processResult(output);
 
 						// 2. Delegated tool result
-						const toolName = part.toolName;
+						const toolName = toolPart.toolName;
 						const toolResults = output?.toolResults;
 
 						if (toolName === "delegateToAgent" && Array.isArray(toolResults)) {
@@ -103,7 +126,7 @@ export function ChatPanel({
 				// But we generate a new ID each time.
 				// If status is 'streaming', and we see the tool call...
 				if (
-					part.type === "tool-invocation" &&
+					isToolInvocationPart(part) &&
 					(part.toolInvocation.toolName === "canvas-text-to-image" ||
 						part.toolInvocation.toolName === "delegateToAgent")
 				) {

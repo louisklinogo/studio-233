@@ -19,7 +19,7 @@ export const workflowRequestedSchema = z.object({
 						label: z.string().optional(),
 						description: z.string().optional(),
 						status: z.string().optional(),
-						config: z.record(z.unknown()).optional(),
+						config: z.record(z.string(), z.unknown()).optional(),
 						icon: z.string().optional(),
 					})
 					.passthrough()
@@ -33,11 +33,11 @@ export const workflowRequestedSchema = z.object({
 				source: z.string(),
 				target: z.string(),
 				animated: z.boolean().optional(),
-				markerEnd: z.record(z.unknown()).optional(),
+				markerEnd: z.record(z.string(), z.unknown()).optional(),
 			}),
 		)
 		.default([]),
-	input: z.record(z.unknown()).optional(),
+	input: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type WorkflowRequested = z.infer<typeof workflowRequestedSchema>;

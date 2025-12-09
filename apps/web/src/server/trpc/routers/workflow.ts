@@ -1,5 +1,5 @@
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
-import { prisma } from "@studio233/db";
+import { Prisma, prisma } from "@studio233/db";
 import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import { nanoid } from "nanoid";
@@ -14,7 +14,7 @@ const nodeSchema = z
 		id: z.string(),
 		type: z.string().optional(),
 		position: z.object({ x: z.number(), y: z.number() }),
-		data: z.record(z.any()).optional(),
+		data: z.record(z.string(), z.any()).optional(),
 	})
 	.passthrough();
 
@@ -24,7 +24,7 @@ const edgeSchema = z
 		source: z.string(),
 		target: z.string(),
 		animated: z.boolean().optional(),
-		markerEnd: z.record(z.any()).optional(),
+		markerEnd: z.record(z.string(), z.any()).optional(),
 	})
 	.passthrough();
 
@@ -280,7 +280,7 @@ export const workflowRouter = router({
 			z.object({
 				projectId: z.string(),
 				workflowId: z.string(),
-				payload: z.record(z.any()).optional(),
+				payload: z.record(z.string(), z.any()).optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -306,9 +306,9 @@ export const workflowRouter = router({
 					workflow: def.id,
 					projectId: input.projectId,
 					userId: session.user.id,
-					input: input.payload ?? {},
+					input: (input.payload ?? Prisma.JsonNull) as Prisma.InputJsonValue,
 					state: "PENDING",
-					output: { definition: def },
+					output: { definition: def } as Prisma.InputJsonValue,
 				},
 				select: {
 					id: true,

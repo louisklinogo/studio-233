@@ -31,21 +31,22 @@ model User {
   updatedAt              DateTime @updatedAt
 
   // Relations
-  sessions        Session[]
-  accounts        Account[]
-  workspaces      Workspace[]
-  projects        Project[]
-  settings        UserSetting?
-  apiKeys         ApiKey[]
-  subscriptions   Subscription[]
-  creditEntries   CreditLedger[]
-  canvasSnapshots CanvasSnapshot[]
-  generationRuns  GenerationRun[]
-  batchJobs       BatchJob[]
-  workflowRuns    WorkflowRun[]
-  threads         AgentThread[]
-  usageSamples    UsageSample[]
-  auditLogs       AuditLog[]
+  sessions            Session[]
+  accounts            Account[]
+  workspaces          Workspace[]
+  projects            Project[]
+  settings            UserSetting?
+  apiKeys             ApiKey[]
+  subscriptions       Subscription[]
+  creditEntries       CreditLedger[]
+  canvasSnapshots     CanvasSnapshot[]
+  generationRuns      GenerationRun[]
+  batchJobs           BatchJob[]
+  workflowDefinitions WorkflowDefinition[]
+  workflowRuns        WorkflowRun[]
+  threads             AgentThread[]
+  usageSamples        UsageSample[]
+  auditLogs           AuditLog[]
 
   @@unique([email])
   @@map("user")
