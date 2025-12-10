@@ -1,8 +1,16 @@
 import { backgroundRemovalPlugin } from "./background-removal";
+import { formatConversionPlugin } from "./format-conversion";
+import { imageResizePlugin } from "./image-resize";
 import { mediaInputPlugin } from "./media-input";
 import { mediaOutputPlugin } from "./media-output";
 import { pluginRegistry } from "./registry";
-import type { MediaPlugin } from "./types";
+import type {
+	MediaFile,
+	MediaPlugin,
+	MediaProcessingResult,
+	PluginConfig,
+	PluginExecutionContext,
+} from "./types";
 
 // List of all available plugins
 const availablePlugins: MediaPlugin[] = [
@@ -11,6 +19,8 @@ const availablePlugins: MediaPlugin[] = [
 
 	// Processing plugins
 	backgroundRemovalPlugin,
+	imageResizePlugin,
+	formatConversionPlugin,
 
 	// Output plugins
 	mediaOutputPlugin,
@@ -95,10 +105,10 @@ export function getRecommendedPlugins(files: any[]): MediaPlugin[] {
 // Plugin execution wrapper with error handling and logging
 export async function executePlugin(
 	pluginId: string,
-	inputFiles: any[],
-	config: any,
-	context: any,
-): Promise<any> {
+	inputFiles: MediaFile[],
+	config: PluginConfig,
+	context: PluginExecutionContext,
+): Promise<MediaProcessingResult> {
 	const plugin = getPluginForNode(pluginId);
 	if (!plugin) {
 		throw new Error(`Plugin "${pluginId}" not found or disabled`);

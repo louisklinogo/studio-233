@@ -1,11 +1,14 @@
 import type { Edge, Node } from "@xyflow/react";
+import type { WorkflowNodeData } from "./enhanced-store";
 import {
 	createPluginExecutionContext,
 	type ExtendedPluginExecutionContext,
+	type TrpcClient,
 } from "./execution-context";
 import { executePlugin, getPluginForNode } from "./plugins";
 import type {
 	MediaFile,
+	MediaProcessingResult,
 	PluginConfig,
 	ProcessingProgress,
 } from "./plugins/types";
@@ -14,7 +17,7 @@ export interface WorkflowExecutionOptions {
 	workflowId: string;
 	userId: string;
 	projectId: string;
-	trpcClient: any; // TRPC client
+	trpcClient?: TrpcClient;
 	inputFiles?: MediaFile[]; // Initial input files for the workflow
 	onProgress?: (nodeId: string, progress: ProcessingProgress) => void;
 	onLog?: (
@@ -22,7 +25,7 @@ export interface WorkflowExecutionOptions {
 		message: string,
 		level?: "info" | "warn" | "error",
 	) => void;
-	onNodeComplete?: (nodeId: string, result: any) => void;
+	onNodeComplete?: (nodeId: string, result: MediaProcessingResult) => void;
 	onNodeError?: (nodeId: string, error: string) => void;
 	signal?: AbortSignal;
 }
@@ -31,7 +34,7 @@ export interface WorkflowExecutionResult {
 	success: boolean;
 	completedNodes: string[];
 	failedNodes: string[];
-	results: Record<string, any>;
+	results: Record<string, MediaProcessingResult>;
 	errors: Record<string, string>;
 	totalTime: number;
 }
@@ -60,16 +63,17 @@ export class WorkflowExecutionEngine {
 	 * Execute the entire workflow
 	 */
 	async executeWorkflow(
-		nodes: Node[],
+		nodes: Node<WorkflowNodeData>[],
 		edges: Edge[],
 	): Promise<WorkflowExecutionResult> {
 		const startTime = Date.now();
 		const completedNodes: string[] = [];
 		const failedNodes: string[] = [];
-		const results: Record<string, any> = {};
+		const results: Record<string, MediaProcessingResult> = {};
 		const errors: Record<string, string> = {};
 
 		try {
+			this.validateNodes(nodes);
 			// Build execution order using topological sort
 			const executionOrder = this.getExecutionOrder(nodes, edges);
 
@@ -169,17 +173,24 @@ export class WorkflowExecutionEngine {
 	 * Execute a single node
 	 */
 	private async executeNode(
-		node: Node,
+		node: Node<WorkflowNodeData>,
 		edges: Edge[],
-		nodes: Node[],
-	): Promise<any> {
+		nodes: Node<WorkflowNodeData>[],
+	): Promise<MediaProcessingResult> {
 		const pluginId = node.data?.pluginId;
 		if (!pluginId) {
-			throw new Error(`Node ${node.id} has no plugin ID`);
+			throw new Error(
+				`Node "${node.data?.label ?? node.id}" has no plugin selected. Choose a plugin in the configuration panel.`,
+			);
 		}
 
 		// Get input files from connected nodes
 		const inputFiles = this.getInputFiles(node.id, edges, nodes);
+		if (inputFiles.length === 0 && node.data?.type !== "input") {
+			throw new Error(
+				`Node "${node.data?.label ?? node.id}" has no input files. Connect it to a previous node or upload files.`,
+			);
+		}
 
 		// Get node configuration
 		const config: PluginConfig = (node.data?.config as PluginConfig) || {};
@@ -197,12 +208,7 @@ export class WorkflowExecutionEngine {
 		);
 
 		// Execute the plugin
-		return await (executePlugin as any)(
-			pluginId,
-			inputFiles,
-			config as any,
-			context as any,
-		);
+		return await executePlugin(pluginId, inputFiles, config, context);
 	}
 
 	/**
@@ -211,7 +217,7 @@ export class WorkflowExecutionEngine {
 	private getInputFiles(
 		nodeId: string,
 		edges: Edge[],
-		nodes: Node[],
+		nodes: Node<WorkflowNodeData>[],
 	): MediaFile[] {
 		const inputFiles: MediaFile[] = [];
 
@@ -239,7 +245,10 @@ export class WorkflowExecutionEngine {
 	/**
 	 * Get execution order using topological sort
 	 */
-	private getExecutionOrder(nodes: Node[], edges: Edge[]): string[] {
+	private getExecutionOrder(
+		nodes: Node<WorkflowNodeData>[],
+		edges: Edge[],
+	): string[] {
 		const nodeIds = nodes.map((n) => n.id);
 		const inDegree = new Map<string, number>();
 		const adjacencyList = new Map<string, string[]>();
@@ -292,5 +301,32 @@ export class WorkflowExecutionEngine {
 		}
 
 		return result;
+	}
+
+	private validateNodes(nodes: Node<WorkflowNodeData>[]): void {
+		for (const node of nodes) {
+			const pluginId = node.data?.pluginId;
+			if (!pluginId) {
+				throw new Error(
+					`Node "${node.data?.label ?? node.id}" is missing a plugin. Select one in the right panel.`,
+				);
+			}
+
+			const plugin = getPluginForNode(pluginId);
+			if (!plugin) {
+				throw new Error(
+					`Plugin "${pluginId}" for node "${node.data?.label ?? node.id}" is not available or is disabled.`,
+				);
+			}
+
+			const config =
+				(node.data?.config as PluginConfig) ?? plugin.defaultConfig ?? {};
+			const configValidation = plugin.validateConfig(config);
+			if (!configValidation.valid) {
+				throw new Error(
+					`Node "${node.data?.label ?? node.id}" has invalid settings: ${configValidation.errors.join(", ")}`,
+				);
+			}
+		}
 	}
 }

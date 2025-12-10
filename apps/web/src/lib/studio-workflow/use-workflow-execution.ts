@@ -1,6 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useRef, useState } from "react";
-import { useTRPC } from "@/trpc/client";
+import { useTRPCClient } from "@/trpc/client";
 import {
 	edgesAtom,
 	inputFilesAtom,
@@ -36,7 +36,7 @@ export function useWorkflowExecution() {
 	const workflowId = useAtomValue(workflowIdAtom);
 	const projectId = useAtomValue(projectIdAtom);
 	const inputFiles = useAtomValue(inputFilesAtom);
-	const trpc = useTRPC();
+	const trpcClient = useTRPCClient();
 	const updateNodeStatus = useSetAtom(updateNodeStatusAtom);
 	const setOutputFiles = useSetAtom(setOutputFilesAtom);
 
@@ -81,7 +81,7 @@ export function useWorkflowExecution() {
 				workflowId: effectiveWorkflowId,
 				userId: "current-user", // TODO: Get from session
 				projectId,
-				trpcClient: trpc,
+				trpcClient,
 				inputFiles, // Pass input files to execution engine
 				signal: abortController.signal,
 
@@ -171,7 +171,7 @@ export function useWorkflowExecution() {
 		nodes,
 		edges,
 		inputFiles,
-		trpc,
+		trpcClient,
 		executionState.isRunning,
 		updateNodeStatus,
 	]);

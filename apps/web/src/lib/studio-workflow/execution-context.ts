@@ -1,11 +1,14 @@
-import type { AppRouter } from "@/server/trpc/routers/_app";
 import type {
 	PluginExecutionContext,
 	ProcessingProgress,
 } from "./plugins/types";
 
-// Type for the TRPC client - using any for flexibility
-type TRPCClient = any;
+export type TrpcClient = {
+	removeBackground?: { mutate: (input: any) => Promise<unknown> };
+	generateTextToImage?: { mutate: (input: any) => Promise<unknown> };
+	isolateObject?: { mutate: (input: any) => Promise<unknown> };
+	[key: string]: unknown;
+};
 
 /**
  * Creates a real execution context for plugins with TRPC integration
@@ -15,7 +18,7 @@ export function createPluginExecutionContext(
 	stepId: string,
 	userId: string,
 	projectId: string,
-	trpcClient: TRPCClient,
+	trpcClient?: TrpcClient,
 	onProgress?: (progress: ProcessingProgress) => void,
 	onLog?: (message: string, level?: "info" | "warn" | "error") => void,
 	signal?: AbortSignal,
@@ -43,10 +46,12 @@ export function createPluginExecutionContext(
 			try {
 				onLog?.(`Starting background removal for image: ${imageUrl}`);
 
-				const result = await (trpcClient as any).removeBackground.mutate({
-					imageUrl,
-					apiKey,
-				});
+				const mutate = trpcClient?.removeBackground?.mutate;
+				if (!mutate || typeof mutate !== "function") {
+					throw new Error("removeBackground endpoint is unavailable");
+				}
+
+				const result = await mutate({ imageUrl, apiKey });
 
 				onLog?.(`Background removal completed successfully`);
 				return result;
@@ -71,10 +76,12 @@ export function createPluginExecutionContext(
 			try {
 				onLog?.(`Starting text-to-image generation: ${prompt}`);
 
-				const result = await (trpcClient as any).generateTextToImage.mutate({
-					prompt,
-					...options,
-				});
+				const mutate = trpcClient?.generateTextToImage?.mutate;
+				if (!mutate || typeof mutate !== "function") {
+					throw new Error("text-to-image endpoint is unavailable");
+				}
+
+				const result = await mutate({ prompt, ...options });
 
 				onLog?.(`Text-to-image generation completed successfully`);
 				return result;
@@ -92,11 +99,12 @@ export function createPluginExecutionContext(
 			try {
 				onLog?.(`Starting object isolation: ${textInput}`);
 
-				const result = await (trpcClient as any).isolateObject.mutate({
-					imageUrl,
-					textInput,
-					apiKey,
-				});
+				const mutate = trpcClient?.isolateObject?.mutate;
+				if (!mutate || typeof mutate !== "function") {
+					throw new Error("isolateObject endpoint is unavailable");
+				}
+
+				const result = await mutate({ imageUrl, textInput, apiKey });
 
 				onLog?.(`Object isolation completed successfully`);
 				return result;
@@ -183,7 +191,7 @@ export function createPluginExecutionContext(
  * Extended execution context interface with helper methods
  */
 export interface ExtendedPluginExecutionContext extends PluginExecutionContext {
-	trpc: TRPCClient;
+	trpc?: TrpcClient;
 	removeBackground: (imageUrl: string, apiKey?: string) => Promise<any>;
 	generateTextToImage: (prompt: string, options?: any) => Promise<any>;
 	isolateObject: (

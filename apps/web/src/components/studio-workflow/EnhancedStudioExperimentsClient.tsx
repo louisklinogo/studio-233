@@ -1,7 +1,5 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -17,16 +15,10 @@ import type { MediaFile } from "@/lib/studio-workflow/plugins/types";
 import type { WorkflowDefinition } from "@/lib/studio-workflow/types";
 import { useWorkflowExecution } from "@/lib/studio-workflow/use-workflow-execution";
 import { useWorkflowPersistence } from "@/lib/studio-workflow/use-workflow-persistence";
-import { TRPCProvider, useTRPC } from "@/trpc/client";
+import { EnhancedRightPanel } from "./EnhancedRightPanel";
 import { FileUploadDropzone } from "./FileUploadDropzone";
 import { StudioWorkflowCanvas } from "./StudioWorkflowCanvas";
 import { WorkflowResultsPanel } from "./WorkflowResultsPanel";
-
-function getBaseUrl() {
-	if (typeof window !== "undefined") return "";
-	if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-	return `http://localhost:${process.env.PORT ?? 3000}`;
-}
 
 interface EnhancedStudioExperimentsClientProps {
 	projectId: string;
@@ -240,7 +232,7 @@ function StudioExperimentsInner({
 				</div>
 
 				{/* Main Canvas */}
-				<div className="flex-1">
+				<div className="flex-1 relative">
 					<StudioWorkflowCanvas
 						onRun={handleRun}
 						onSave={handleSave}
@@ -251,6 +243,8 @@ function StudioExperimentsInner({
 						onRename={handleRename}
 					/>
 				</div>
+
+				<EnhancedRightPanel />
 			</div>
 
 			{/* Results Panel */}
