@@ -1224,6 +1224,179 @@ export const SwissIcons = {
 		</svg>
 	),
 
+	// TOOLS -> Code (Development)
+	Code: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M16 18L22 12L16 6"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M8 6L2 12L8 18"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
+	// ACTIONS -> Refresh (Reload/Randomize)
+	Refresh: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M23 4v6h-6"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M1 20v-6h6"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+			<path
+				d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
+	// TOOLS -> The Eye (Vision/View)
+	Eye: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<circle
+				cx="12"
+				cy="12"
+				r="3"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+		</svg>
+	),
+
+	// TOOLS -> The Box (Component/Package)
+	Box: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M21 16V8L12 3L3 8V16L12 21L21 16Z"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path
+				d="M3.27 6.96L12 12.01L20.73 6.96"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path
+				d="M12 22.08V12"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+		</svg>
+	),
+
+	// TOOLS -> The File (Document)
+	File: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path d="M13 2v7h7" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// NAV -> Git Branch (Split)
+	GitBranch: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path d="M6 3v12" stroke="currentColor" strokeWidth="2" />
+			<circle cx="6" cy="18" r="3" stroke="currentColor" strokeWidth="2" />
+			<path d="M18 9a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="2" />
+			<circle cx="18" cy="6" r="3" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// NAV -> Shuffle (Random/Gate)
+	Shuffle: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path d="M16 3h5v5" stroke="currentColor" strokeWidth="2" />
+			<path d="M4 20L21 3" stroke="currentColor" strokeWidth="2" />
+			<path d="M21 16v5h-5" stroke="currentColor" strokeWidth="2" />
+			<path d="M15 15l6 6" stroke="currentColor" strokeWidth="2" />
+			<path d="M4 4l5 5" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
 	// ALIASES (Duplicated for safety)
 	Target: ({ size = 24, ...props }: IconProps) => (
 		<svg
@@ -1239,6 +1412,27 @@ export const SwissIcons = {
 			<path d="M12 18V22" stroke="currentColor" strokeWidth="2" />
 			<path d="M2 12H6" stroke="currentColor" strokeWidth="2" />
 			<path d="M18 12H22" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// SYSTEM -> Settings (Config)
+	Settings: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path
+				d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.18-.08a2 2 0 0 0-2 0l-.45.26a2 2 0 0 0-1 1.73v.44a2 2 0 0 0 1 1.73l.43.25a2 2 0 0 1 1 1.73l-.43.25a2 2 0 0 0-1 1.73v.44a2 2 0 0 0 1 1.73l.43.25a2 2 0 0 1 1 1.73l-.43.25a2 2 0 0 0-1 1.73v.44a2 2 0 0 0 1 1.73l.43.25a2 2 0 0 1 1 1.73l-.43.25a2 2 0 0 0-1 1.73v.44a2 2 0 0 0 1 1.73l.43.25a2 2 0 0 1 1 1.73l-.43.25a2 2 0 0 0-1 1.73v.44a2 2 0 0 0 1 1.73l.43.25a2 2 0 0 1 1 1.73l-.43.25a2 2 0 0 0-1 1.73"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
 		</svg>
 	),
 

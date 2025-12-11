@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
-import { StudioExperimentsClient } from "@/components/studio-workflow/StudioExperimentsClient";
+import { EnhancedStudioExperimentsClient } from "@/components/studio-workflow/EnhancedStudioExperimentsClient";
 
 type Params = { id: string };
 
@@ -11,7 +11,7 @@ function PageContent({ params }: { params: Promise<Params> }) {
 		notFound();
 	}
 
-	return <StudioExperimentsClient projectId={id} />;
+	return <EnhancedStudioExperimentsClient projectId={id} />;
 }
 
 export default function StudioExperimentsPage({

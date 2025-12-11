@@ -158,7 +158,7 @@ function StudioExperimentsInner({
 	}
 
 	return (
-		<div className="h-full w-full flex flex-col">
+		<div className="min-h-screen w-full flex flex-col">
 			{/* Workflow List Panel (if multiple workflows) */}
 			{workflows.length > 1 && (
 				<div className="border-b bg-muted/30 p-2">
