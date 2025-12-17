@@ -1,6 +1,6 @@
+import { motion } from "framer-motion";
 import React from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 interface WorkbenchStageProps {
 	children?: React.ReactNode;
@@ -16,7 +16,8 @@ export function WorkbenchStage({ children, className }: WorkbenchStageProps) {
 			)}
 		>
 			{/* Dot Pattern Background */}
-			<div className="absolute inset-0 z-0 opacity-[0.4]"
+			<div
+				className="absolute inset-0 z-0 opacity-[0.4]"
 				style={{
 					backgroundImage: "radial-gradient(#e5e7eb 1px, transparent 1px)",
 					backgroundSize: "24px 24px",
@@ -24,9 +25,7 @@ export function WorkbenchStage({ children, className }: WorkbenchStageProps) {
 			/>
 
 			{/* Content Layer */}
-			<div className="relative z-10 flex-1 flex flex-col">
-				{children}
-			</div>
+			<div className="relative z-10 flex-1 flex flex-col">{children}</div>
 		</div>
 	);
 }
@@ -34,7 +33,7 @@ export function WorkbenchStage({ children, className }: WorkbenchStageProps) {
 export function EmptyWorkbenchState() {
 	return (
 		<div className="flex-1 flex flex-col items-center justify-center p-8 text-center perspective-[1000px]">
-			<motion.div 
+			<motion.div
 				initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
 				animate={{ opacity: 1, scale: 1, rotateX: 0 }}
 				transition={{ delay: 0.2, type: "spring", stiffness: 100, damping: 20 }}
@@ -50,20 +49,23 @@ export function EmptyWorkbenchState() {
 						<div className="absolute inset-0 border border-white/20 bg-white/5 backdrop-blur-md rounded-xl rotate-y-90 translate-z-[-32px]" />
 						<div className="absolute inset-0 border border-white/20 bg-white/5 backdrop-blur-md rounded-xl rotate-x-90 translate-z-[32px]" />
 						<div className="absolute inset-0 border border-white/20 bg-white/5 backdrop-blur-md rounded-xl rotate-x-90 translate-z-[-32px]" />
-						
+
 						{/* Inner Glow */}
 						<div className="absolute inset-4 bg-primary/20 rounded-full blur-xl animate-pulse translate-z-0" />
 					</div>
 				</div>
-				
+
 				<div className="space-y-2">
-					<h3 className="text-xl font-semibold text-foreground tracking-tight">Ready to Create</h3>
+					<h3 className="text-xl font-semibold text-foreground tracking-tight">
+						Ready to Create
+					</h3>
 					<p className="text-muted-foreground max-w-xs mx-auto leading-relaxed">
-						Select assets from the library or use the chat to start a new workflow.
+						Select assets from the library or use the chat to start a new
+						workflow.
 					</p>
 				</div>
 			</motion.div>
-			
+
 			<style jsx global>{`
 				.transform-style-3d {
 					transform-style: preserve-3d;

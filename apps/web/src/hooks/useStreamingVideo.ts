@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Hook for handling streaming video
@@ -6,55 +6,55 @@ import { useState, useEffect } from "react";
  * @returns [videoElement, isLoading, error]
  */
 export const useStreamingVideo = (
-  src: string,
+	src: string,
 ): [HTMLVideoElement | null, boolean, Error | null] => {
-  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(
-    null,
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
+	const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(
+		null,
+	);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!src) {
-      setVideoElement(null);
-      setIsLoading(false);
-      return;
-    }
+	useEffect(() => {
+		if (!src) {
+			setVideoElement(null);
+			setIsLoading(false);
+			return;
+		}
 
-    setIsLoading(true);
-    setError(null);
+		setIsLoading(true);
+		setError(null);
 
-    // Create video element
-    const video = document.createElement("video");
-    video.crossOrigin = "anonymous";
-    video.src = src;
-    video.muted = true;
+		// Create video element
+		const video = document.createElement("video");
+		video.crossOrigin = "anonymous";
+		video.src = src;
+		video.muted = true;
 
-    // Ensure we're at the first frame for display
-    video.currentTime = 0;
+		// Ensure we're at the first frame for display
+		video.currentTime = 0;
 
-    // Handle video loading
-    video.onloadedmetadata = () => {
-      setVideoElement(video);
-      setIsLoading(false);
-    };
+		// Handle video loading
+		video.onloadedmetadata = () => {
+			setVideoElement(video);
+			setIsLoading(false);
+		};
 
-    // Handle errors
-    video.onerror = () => {
-      setError(new Error("Failed to load video"));
-      setIsLoading(false);
-    };
+		// Handle errors
+		video.onerror = () => {
+			setError(new Error("Failed to load video"));
+			setIsLoading(false);
+		};
 
-    // Start loading
-    video.load();
+		// Start loading
+		video.load();
 
-    // Cleanup
-    return () => {
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-    };
-  }, [src]);
+		// Cleanup
+		return () => {
+			video.pause();
+			video.removeAttribute("src");
+			video.load();
+		};
+	}, [src]);
 
-  return [videoElement, isLoading, error];
+	return [videoElement, isLoading, error];
 };

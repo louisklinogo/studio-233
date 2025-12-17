@@ -1,6 +1,6 @@
 "use client";
 
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
@@ -9,17 +9,19 @@ import { cn } from "@/lib/utils";
 export type StandardNodeData = {
 	label: string;
 	status?: "idle" | "running" | "success" | "error";
-	config?: Record<string, any>;
-	category?: "input" | "process" | "generation" | "output";
+	config?: Record<string, unknown>;
+	category?: string;
 	onDelete?: () => void;
 	onDuplicate?: () => void;
 };
+
+export type StandardFlowNode = Node<StandardNodeData, "standard">;
 
 export function StandardNode({
 	id,
 	data,
 	selected,
-}: NodeProps<StandardNodeData>) {
+}: NodeProps<StandardFlowNode>) {
 	const [isHovered, setIsHovered] = useState(false);
 
 	// Status Colors

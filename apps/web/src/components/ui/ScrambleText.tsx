@@ -38,7 +38,7 @@ export function ScrambleText({
 			intervalRef.current = null;
 		}
 		setDisplayText(text);
-		
+
 		// Restore original color
 		if (spanRef.current) {
 			spanRef.current.style.color = originalColorRef.current;

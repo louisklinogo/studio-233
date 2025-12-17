@@ -1,11 +1,11 @@
 export {
-  LoaderCircleIcon as SpinnerIcon,
-  XIcon as XMarkIcon,
-  AlertCircleIcon,
-  AlertTriangleIcon,
-  CheckCircleIcon,
-  InfoIcon,
-  LightbulbIcon,
+	AlertCircleIcon,
+	AlertTriangleIcon,
+	CheckCircleIcon,
+	InfoIcon,
+	LightbulbIcon,
+	LoaderCircleIcon as SpinnerIcon,
+	XIcon as XMarkIcon,
 } from "lucide-react";
 
 export { Logo } from "./logo";

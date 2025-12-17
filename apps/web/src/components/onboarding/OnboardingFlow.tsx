@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { SwissIcons } from "../ui/SwissIcons";
 import { SwissInput } from "./SwissInput";
 import { SwissRoleCard } from "./SwissRoleCard";
 import { SwissToggle } from "./SwissToggle";
@@ -13,24 +13,24 @@ interface OnboardingFlowProps {
 	action: (formData: FormData) => void;
 }
 
-const ROLES = [
+const BLUEPRINTS = [
 	{
-		id: "ARCHITECT",
-		label: "Architect",
-		description: "Design systems and visual hierarchies.",
-		icon: "A",
+		id: "CANVAS",
+		label: "Blank Canvas",
+		description: "Start with an empty project for maximum freedom.",
+		icon: SwissIcons.Frame,
 	},
 	{
-		id: "ENGINEER",
-		label: "Engineer",
-		description: "Build pipelines and automation flows.",
-		icon: "E",
+		id: "CAMPAIGN",
+		label: "Campaign Pipeline",
+		description: "Pre-configured node graph for asset generation.",
+		icon: SwissIcons.GitBranch,
 	},
 	{
-		id: "OBSERVER",
-		label: "Observer",
-		description: "Monitor analytics and outputs.",
-		icon: "O",
+		id: "BATCH",
+		label: "Batch Processor",
+		description: "Optimized for processing large datasets.",
+		icon: SwissIcons.Layers,
 	},
 ];
 
@@ -41,19 +41,19 @@ export function OnboardingFlow({
 }: OnboardingFlowProps) {
 	const [step, setStep] = useState(1);
 	const [name, setName] = useState(initialName);
-	const [role, setRole] = useState<string | null>(null);
+	const [blueprint, setBlueprint] = useState<string | null>(null);
 	const [isComplete, setIsComplete] = useState(false);
 
 	const handleContinue = () => {
 		if (step === 1 && name.length > 1) setStep(2);
-		if (step === 2 && role) setStep(3);
+		if (step === 2 && blueprint) setStep(3);
 	};
 
 	const handleSubmit = () => {
 		setIsComplete(true);
 		const formData = new FormData();
 		formData.append("name", name);
-		// We aren't saving role to DB yet, but passing it conceptually
+		if (blueprint) formData.append("mode", blueprint);
 		action(formData);
 	};
 
@@ -83,7 +83,7 @@ export function OnboardingFlow({
 						<div
 							className={`flex items-center justify-between transition-opacity duration-300 ${step === 2 ? "opacity-100" : "opacity-40"}`}
 						>
-							<span>02 / MODULE</span>
+							<span>02 / BLUEPRINT</span>
 							{step > 2 && <span className="text-[#FF4D00]">[OK]</span>}
 						</div>
 						<div
@@ -134,12 +134,12 @@ export function OnboardingFlow({
 								className="group flex items-center gap-2 font-mono text-xs tracking-widest uppercase hover:text-[#FF4D00] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
 							>
 								Confirm Identity
-								<ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+								<SwissIcons.ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
 							</button>
 						</motion.div>
 					)}
 
-					{/* STEP 2: ROLE */}
+					{/* STEP 2: BLUEPRINT */}
 					{step === 2 && (
 						<motion.div
 							key="step2"
@@ -151,28 +151,28 @@ export function OnboardingFlow({
 						>
 							<div className="space-y-2">
 								<p className="font-mono text-[10px] tracking-[0.2em] uppercase text-neutral-500">
-									Select Driver Module
+									Select Blueprint
 								</p>
 							</div>
 
 							<div className="grid grid-cols-1 gap-4">
-								{ROLES.map((r) => (
+								{BLUEPRINTS.map((b) => (
 									<SwissRoleCard
-										key={r.id}
-										role={r}
-										isSelected={role === r.id}
-										onSelect={() => setRole(r.id)}
+										key={b.id}
+										role={b}
+										isSelected={blueprint === b.id}
+										onSelect={() => setBlueprint(b.id)}
 									/>
 								))}
 							</div>
 
 							<button
 								onClick={handleContinue}
-								disabled={!role}
+								disabled={!blueprint}
 								className="group flex items-center gap-2 font-mono text-xs tracking-widest uppercase hover:text-[#FF4D00] transition-colors disabled:opacity-30 disabled:cursor-not-allowed mt-4"
 							>
-								Install Driver
-								<ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+								Initialize Workspace
+								<SwissIcons.ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
 							</button>
 						</motion.div>
 					)}

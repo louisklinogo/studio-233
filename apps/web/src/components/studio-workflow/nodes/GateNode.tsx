@@ -1,6 +1,6 @@
 "use client";
 
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,9 @@ export type GateNodeData = {
 	onDuplicate?: () => void;
 };
 
-export function GateNode({ data, selected }: NodeProps<GateNodeData>) {
+export type GateFlowNode = Node<GateNodeData, "gate">;
+
+export function GateNode({ data, selected }: NodeProps<GateFlowNode>) {
 	return (
 		<div
 			className={cn(

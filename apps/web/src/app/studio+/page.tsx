@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { History, Loader2, Play, Settings } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { startBatchProcessing } from "@/app/actions/batch-actions";
+import { StudioOperatorClient } from "@/components/studio-workflow/StudioOperatorClient";
 import { AssetLibrary } from "@/components/studio+/AssetLibrary";
 import { CompletionView } from "@/components/studio+/CompletionView";
 import { ConfigurationPanel } from "@/components/studio+/ConfigurationPanel";
@@ -50,7 +51,11 @@ import { SwissIcons } from "@/components/ui/SwissIcons";
 type RightPaneView = "empty" | "configure" | "processing" | "complete";
 type WorkflowType = "mannequin" | "style" | "logo" | "custom";
 
-export default function StudioPage() {
+export default function StudioPlusPage() {
+	return <StudioOperatorClient projectId="studio-plus" />;
+}
+
+export function LegacyStudioPlusPage() {
 	// View state management
 	const [viewState, setViewState] = useState<ViewState>("staging");
 	const [uploadedAssets, setUploadedAssets] = useState<UploadedAsset[]>([]);

@@ -8,8 +8,8 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "biome lint src",
-		"format:check": "biome format --check",
-		"format:write": "biome format --write",
+		"format:check": "biome format src",
+		"format:write": "biome format --write src",
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {

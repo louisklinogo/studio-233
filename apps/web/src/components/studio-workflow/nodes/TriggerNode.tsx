@@ -1,6 +1,6 @@
 "use client";
 
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,9 @@ export type TriggerNodeData = {
 	onDuplicate?: () => void;
 };
 
-export function TriggerNode({ data, selected }: NodeProps<TriggerNodeData>) {
+export type TriggerFlowNode = Node<TriggerNodeData, "input" | "trigger">;
+
+export function TriggerNode({ data, selected }: NodeProps<TriggerFlowNode>) {
 	const isCron = data.triggerType === "cron";
 
 	return (

@@ -1,4 +1,4 @@
-import { prisma, BatchStatus, Prisma } from "@studio233/db";
+import { BatchStatus, Prisma, prisma } from "@studio233/db";
 
 export type BatchJobStatus =
 	| "queued"
@@ -40,9 +40,10 @@ const mapDbJob = (job: DbBatchJob): BatchJob => {
 	const config = (job.config as Prisma.JsonObject | null) ?? null;
 	const summary = (job.resultSummary as Prisma.JsonObject | null) ?? null;
 	const error = job.error as Prisma.JsonValue | null;
-	const imageUrlFromConfig = config && typeof config["imageUrl"] === "string"
-		? (config["imageUrl"] as string)
-		: "";
+	const imageUrlFromConfig =
+		config && typeof config["imageUrl"] === "string"
+			? (config["imageUrl"] as string)
+			: "";
 	const resultUrlFromSummary =
 		summary && typeof summary["resultUrl"] === "string"
 			? (summary["resultUrl"] as string)
@@ -60,10 +61,14 @@ const mapDbJob = (job: DbBatchJob): BatchJob => {
 };
 
 export const batchStore = {
-	async createJob(id: string, imageUrl: string, opts?: {
-		userId?: string;
-		projectId?: string;
-	}): Promise<BatchJob> {
+	async createJob(
+		id: string,
+		imageUrl: string,
+		opts?: {
+			userId?: string;
+			projectId?: string;
+		},
+	): Promise<BatchJob> {
 		const job = await prisma.batchJob.create({
 			data: {
 				id,
@@ -91,19 +96,16 @@ export const batchStore = {
 		const data: Prisma.BatchJobUpdateInput = {
 			status: statusToDb[status],
 			attempts:
-				typeof updates.attempts === "number"
-					? updates.attempts
-					: undefined,
+				typeof updates.attempts === "number" ? updates.attempts : undefined,
 			error:
 				updates.error !== undefined
 					? updates.error
 						? { message: updates.error }
 						: Prisma.JsonNull
 					: undefined,
-			resultSummary:
-				updates.resultUrl
-					? { resultUrl: updates.resultUrl }
-					: undefined,
+			resultSummary: updates.resultUrl
+				? { resultUrl: updates.resultUrl }
+				: undefined,
 		};
 
 		try {
@@ -113,14 +115,14 @@ export const batchStore = {
 					...data,
 					items: updates.resultUrl
 						? {
-							updateMany: {
-								where: { jobId: id },
-								data: {
-									outputUrl: updates.resultUrl,
-									status: statusToDb[status],
+								updateMany: {
+									where: { jobId: id },
+									data: {
+										outputUrl: updates.resultUrl,
+										status: statusToDb[status],
+									},
 								},
-							},
-						}
+							}
 						: undefined,
 				},
 				include: { items: { orderBy: { createdAt: "asc" }, take: 1 } },

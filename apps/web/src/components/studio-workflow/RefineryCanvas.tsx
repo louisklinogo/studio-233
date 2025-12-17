@@ -5,7 +5,9 @@ import {
 	Background,
 	Connection,
 	Controls,
-	Node,
+	type Edge,
+	type Node,
+	type OnSelectionChangeParams,
 	ReactFlow,
 	ReactFlowInstance,
 	useEdgesState,
@@ -27,9 +29,22 @@ const initialEdges: any[] = [];
 let id = 0;
 const getId = () => `node_${id++}`;
 
+type RefineryNodeData = {
+	label: string;
+	category?: string;
+	triggerType?: string;
+	condition?: string;
+	routes?: string[];
+	onDelete?: () => void;
+	onDuplicate?: () => void;
+};
+
+type RefineryFlowNode = Node<RefineryNodeData>;
+type RefineryFlowEdge = Edge;
+
 interface RefineryCanvasProps {
-	nodes: Node[];
-	edges: any[];
+	nodes: RefineryFlowNode[];
+	edges: RefineryFlowEdge[];
 	onNodesChange: any;
 	onEdgesChange: any;
 	onConnect: any;
@@ -55,8 +70,10 @@ export function RefineryCanvas({
 	onDeleteNode,
 	onDuplicateNode,
 }: RefineryCanvasProps) {
-	const [reactFlowInstance, setReactFlowInstance] =
-		useState<ReactFlowInstance | null>(null);
+	const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<
+		RefineryFlowNode,
+		RefineryFlowEdge
+	> | null>(null);
 	const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
 	// Register custom nodes
@@ -106,7 +123,7 @@ export function RefineryCanvas({
 
 			// Determine Node Component & Data based on dropped type
 			let nodeType = "standard";
-			let nodeData = { label: "New Node" };
+			let nodeData: RefineryNodeData = { label: "New Node" };
 
 			if (type.startsWith("input.")) {
 				nodeType = "trigger";
@@ -145,8 +162,8 @@ export function RefineryCanvas({
 					onNodeSelect(
 						newNode.id,
 						newNode.type,
-						newNode.data.label as string,
-						newNode.data.category as string,
+						newNode.data.label,
+						newNode.data.category,
 					);
 				}
 			}, 50);
@@ -206,16 +223,13 @@ export function RefineryCanvas({
 
 	// Selection Handler (Consolidated)
 	const onSelectionChange = useCallback(
-		({ nodes }: { nodes: Node[] }) => {
+		({
+			nodes,
+		}: OnSelectionChangeParams<RefineryFlowNode, RefineryFlowEdge>) => {
 			if (onNodeSelect) {
 				if (nodes.length === 1) {
 					const node = nodes[0];
-					onNodeSelect(
-						node.id,
-						node.type,
-						node.data.label as string,
-						node.data.category as string,
-					);
+					onNodeSelect(node.id, node.type, node.data.label, node.data.category);
 				} else {
 					onNodeSelect(undefined);
 				}
@@ -226,14 +240,9 @@ export function RefineryCanvas({
 
 	// Node Click Handler (Backup for direct interaction)
 	const onNodeClick = useCallback(
-		(event: React.MouseEvent, node: Node) => {
+		(event: React.MouseEvent, node: RefineryFlowNode) => {
 			if (onNodeSelect) {
-				onNodeSelect(
-					node.id,
-					node.type,
-					node.data.label as string,
-					node.data.category as string,
-				);
+				onNodeSelect(node.id, node.type, node.data.label, node.data.category);
 			}
 		},
 		[onNodeSelect],
@@ -241,7 +250,7 @@ export function RefineryCanvas({
 
 	return (
 		<div className="w-full h-full relative">
-			<ReactFlow
+			<ReactFlow<RefineryFlowNode, RefineryFlowEdge>
 				nodes={nodesWithHandlers}
 				edges={edges}
 				nodeTypes={nodeTypes}

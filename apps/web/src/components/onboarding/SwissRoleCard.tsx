@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import React from "react";
 
-interface Role {
+export interface Role {
 	id: string;
 	label: string;
 	description: string;
-	icon: string;
+	icon: React.ComponentType<{ className?: string }>;
 }
 
 interface SwissRoleCardProps {
@@ -19,6 +19,8 @@ export function SwissRoleCard({
 	isSelected,
 	onSelect,
 }: SwissRoleCardProps) {
+	const Icon = role.icon;
+
 	return (
 		<button
 			onClick={onSelect}
@@ -39,6 +41,13 @@ export function SwissRoleCard({
           ${isSelected ? "bg-[#FF4D00] border-[#FF4D00]" : "border-neutral-400 bg-transparent"}
         `}
 			/>
+
+			{/* Icon */}
+			<div
+				className={`p-2 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black ${isSelected ? "text-[#FF4D00]" : "text-neutral-500"}`}
+			>
+				<Icon className="w-5 h-5" />
+			</div>
 
 			{/* Content */}
 			<div className="flex-1">

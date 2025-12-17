@@ -1,6 +1,6 @@
 "use client";
 
-import { NodeToolbar } from "@xyflow/react";
+import { NodeToolbar, Position } from "@xyflow/react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 
 interface NodeActionsMenuProps {
@@ -19,7 +19,7 @@ export function NodeActionsMenu({
 	return (
 		<NodeToolbar
 			isVisible={isVisible}
-			position="top"
+			position={Position.Top}
 			offset={16}
 			className="flex items-center gap-1 bg-white dark:bg-[#1a1a1a] p-1 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-xl"
 		>

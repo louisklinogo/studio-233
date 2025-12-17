@@ -1,6 +1,6 @@
 "use client";
 
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,9 @@ export type RouterNodeData = {
 	onDuplicate?: () => void;
 };
 
-export function RouterNode({ data, selected }: NodeProps<RouterNodeData>) {
+export type RouterFlowNode = Node<RouterNodeData, "router">;
+
+export function RouterNode({ data, selected }: NodeProps<RouterFlowNode>) {
 	const routes = data.routes || ["True", "False"];
 
 	return (

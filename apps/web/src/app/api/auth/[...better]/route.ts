@@ -3,8 +3,8 @@ import { toNextJsHandler } from "better-auth/next-js";
 import {
 	createRateLimiter,
 	RATE_LIMIT_PERIOD_LABELS,
-	shouldLimitRequest,
 	type RateLimiter,
+	shouldLimitRequest,
 } from "@/lib/ratelimit";
 
 const AUTH_BASE_PATH = "/api/auth";
@@ -40,7 +40,8 @@ const handler = async (request: Request): Promise<Response> => {
 			const retryAfter = RETRY_AFTER_SECONDS[period].toString();
 			return new Response(
 				JSON.stringify({
-					error: "Too many password reset attempts. Please wait before trying again.",
+					error:
+						"Too many password reset attempts. Please wait before trying again.",
 					period: RATE_LIMIT_PERIOD_LABELS[period],
 				}),
 				{

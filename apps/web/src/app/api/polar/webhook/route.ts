@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
-import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
-import { polarWebhookHandler } from "@studio233/auth";
+import {
+	validateEvent,
+	WebhookVerificationError,
+} from "@polar-sh/sdk/webhooks";
 import type { PolarSubscriptionEvent } from "@studio233/auth";
+import { polarWebhookHandler } from "@studio233/auth";
+import { NextResponse } from "next/server";
 
 const SUPPORTED_EVENTS = new Set<PolarSubscriptionEvent["type"]>([
 	"subscription.created",
@@ -33,6 +36,9 @@ export async function POST(request: Request) {
 			return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 		}
 		console.error("Polar webhook error", error);
-		return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+		return NextResponse.json(
+			{ error: "Webhook processing failed" },
+			{ status: 500 },
+		);
 	}
 }

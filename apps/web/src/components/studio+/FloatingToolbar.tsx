@@ -1,14 +1,13 @@
-
-import { motion } from "framer-motion";
 import {
-	House,
-	SquaresFour,
 	ChatCircle,
-	Plus,
-	Gear,
-	Lightning,
 	Command,
+	Gear,
+	House,
+	Lightning,
+	Plus,
+	SquaresFour,
 } from "@phosphor-icons/react";
+import { motion } from "framer-motion";
 import React from "react";
 import {
 	Tooltip,
@@ -51,21 +50,31 @@ export function FloatingToolbar({
 					<ToolbarButton
 						icon={<House weight="duotone" className="w-5 h-5" />}
 						label="Home"
-						onClick={() => { }} // TODO: Navigate home
+						onClick={() => {}} // TODO: Navigate home
 					/>
 
 					<div className="w-[1px] h-6 bg-border/20 mx-1" />
 
 					{/* View Toggles Group */}
 					<ToolbarButton
-						icon={<SquaresFour weight={showLeftPanel ? "fill" : "duotone"} className="w-5 h-5" />}
+						icon={
+							<SquaresFour
+								weight={showLeftPanel ? "fill" : "duotone"}
+								className="w-5 h-5"
+							/>
+						}
 						label={showLeftPanel ? "Hide Assets" : "Show Assets"}
 						isActive={showLeftPanel}
 						onClick={onToggleLeftPanel}
 					/>
 
 					<ToolbarButton
-						icon={<ChatCircle weight={showRightPanel ? "fill" : "duotone"} className="w-5 h-5" />}
+						icon={
+							<ChatCircle
+								weight={showRightPanel ? "fill" : "duotone"}
+								className="w-5 h-5"
+							/>
+						}
 						label={showRightPanel ? "Hide Chat" : "Show Chat"}
 						isActive={showRightPanel}
 						onClick={onToggleRightPanel}
@@ -84,7 +93,7 @@ export function FloatingToolbar({
 					<ToolbarButton
 						icon={<Command weight="duotone" className="w-5 h-5" />}
 						label="Batch Actions"
-						onClick={() => { }} // TODO: Trigger batch
+						onClick={() => {}} // TODO: Trigger batch
 					/>
 
 					<div className="w-[1px] h-6 bg-border/20 mx-1" />
@@ -93,7 +102,7 @@ export function FloatingToolbar({
 					<ToolbarButton
 						icon={<Gear weight="duotone" className="w-5 h-5" />}
 						label="Settings"
-						onClick={() => { }} // TODO: Open settings
+						onClick={() => {}} // TODO: Open settings
 					/>
 				</div>
 			</motion.div>
@@ -128,9 +137,10 @@ function ToolbarButton({
 						variant === "primary"
 							? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 rounded-xl"
 							: cn(
-								"hover:bg-muted/50 text-muted-foreground hover:text-foreground",
-								isActive && "bg-muted/80 text-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/5",
-							),
+									"hover:bg-muted/50 text-muted-foreground hover:text-foreground",
+									isActive &&
+										"bg-muted/80 text-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/5",
+								),
 					)}
 				>
 					{icon}
@@ -143,7 +153,11 @@ function ToolbarButton({
 					)}
 				</motion.button>
 			</TooltipTrigger>
-			<TooltipContent side="top" sideOffset={16} className="font-medium bg-background/80 backdrop-blur-xl border-white/10">
+			<TooltipContent
+				side="top"
+				sideOffset={16}
+				className="font-medium bg-background/80 backdrop-blur-xl border-white/10"
+			>
 				{label}
 			</TooltipContent>
 		</Tooltip>

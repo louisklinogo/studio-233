@@ -704,6 +704,20 @@ export const SwissIcons = {
 		</svg>
 	),
 
+	// UI -> The Chevron Right (Collapse/Expand)
+	ChevronRight: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path d="M10 6L16 12L10 18" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
 	// UI -> The History (Time)
 	History: ({ size = 24, ...props }: IconProps) => (
 		<svg
@@ -1394,6 +1408,61 @@ export const SwissIcons = {
 			<path d="M21 16v5h-5" stroke="currentColor" strokeWidth="2" />
 			<path d="M15 15l6 6" stroke="currentColor" strokeWidth="2" />
 			<path d="M4 4l5 5" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// TOOLS -> The Database (Storage)
+	Database: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<ellipse
+				cx="12"
+				cy="5"
+				rx="9"
+				ry="3"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path
+				d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path
+				d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+		</svg>
+	),
+
+	// TOOLS -> The Layout (Template)
+	Layout: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect
+				x="3"
+				y="3"
+				width="18"
+				height="18"
+				rx="2"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path d="M3 9h18" stroke="currentColor" strokeWidth="2" />
+			<path d="M9 21V9" stroke="currentColor" strokeWidth="2" />
 		</svg>
 	),
 

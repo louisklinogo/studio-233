@@ -11,23 +11,23 @@ import { appRouter } from "@/server/trpc/routers/_app";
 export const getQueryClient = cache(makeQueryClient);
 
 export const trpcQueryOptions = createTRPCOptionsProxy({
-  router: appRouter,
-  queryClient: getQueryClient,
-  ctx: createContext,
+	router: appRouter,
+	queryClient: getQueryClient,
+	ctx: createContext,
 });
 
 export const createCaller = createCallerFactory(appRouter);
 
 export const trpcServerCaller = cache(async () => {
-  const ctx = await createContext();
-  return createCaller(ctx);
+	const ctx = await createContext();
+	return createCaller(ctx);
 });
 
 export function HydrateClient(props: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      {props.children}
-    </HydrationBoundary>
-  );
+	const queryClient = getQueryClient();
+	return (
+		<HydrationBoundary state={dehydrate(queryClient)}>
+			{props.children}
+		</HydrationBoundary>
+	);
 }
