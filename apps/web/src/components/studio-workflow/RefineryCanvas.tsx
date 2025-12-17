@@ -280,7 +280,7 @@ export function RefineryCanvas({
 				</div>
 
 				<Controls
-					className="bg-white/80 dark:bg-[#1A1A1A]/80 backdrop-blur border border-neutral-200 dark:border-neutral-800 rounded-[4px] shadow-sm !left-4 !bottom-24 m-0"
+					className="bg-[#f4f4f0] dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 rounded-sm shadow-xl !left-6 !bottom-6 m-0 [&>button]:!border-b-neutral-200 dark:[&>button]:!border-b-neutral-800 [&>button]:!bg-transparent hover:[&>button]:!bg-neutral-200 dark:hover:[&>button]:!bg-neutral-800 [&>button]:!text-neutral-500 dark:[&>button]:!text-neutral-400 [&>button]:!transition-colors"
 					showInteractive={false}
 				/>
 			</ReactFlow>

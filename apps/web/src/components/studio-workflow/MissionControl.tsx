@@ -45,54 +45,40 @@ export function MissionControl({
 		},
 	];
 
-	// Technical Stats
-	const stats = {
-		active: recentWorkflows.filter((w) => w.status === "active").length,
-		credits: 450,
-		status: "ONLINE",
-	};
-
 	return (
-		<div className="fixed top-[60px] left-4 z-[60]">
+		<div className="fixed top-[60px] left-6 z-[60]">
 			{/* Backdrop for closing */}
 			{isOpen && <div className="fixed inset-0 z-[-1]" onClick={onClose} />}
 
 			<div
 				className={cn(
-					"flex flex-col gap-[1px]",
-					"bg-neutral-200 dark:bg-neutral-800",
-					"rounded-sm",
-					"min-w-[280px] max-w-xs",
-					"border border-transparent dark:border-neutral-800 shadow-xl",
+					"bg-[#f4f4f0] dark:bg-[#0a0a0a]",
+					"min-w-[320px] max-w-sm",
+					"border border-neutral-200 dark:border-neutral-800 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)]",
 				)}
 			>
 				{/* Header / Title Plate */}
 				<button
-					onClick={isOpen ? onClose : () => {}} // If it's closed, the parent opens it. If open, this closes it.
-					className={cn(
-						"w-full text-left bg-[#f4f4f0] dark:bg-[#111111] px-4 py-3 flex flex-col gap-0.5 transition-colors",
-						"hover:bg-white dark:hover:bg-[#1a1a1a]",
-						isOpen && "bg-white dark:bg-[#1a1a1a]",
-					)}
+					onClick={isOpen ? onClose : () => {}}
+					className="w-full text-left px-6 py-5 flex items-center justify-between group"
 				>
-					<div className="flex items-center justify-between gap-3 w-full">
-						<span className="font-mono text-[10px] tracking-widest uppercase text-neutral-500 flex items-center gap-1">
-							MISSION CONTROL
+					<div className="flex flex-col gap-1">
+						<span className="font-mono text-[9px] tracking-[0.2em] uppercase text-[#FF4D00]">
+							SYS_CONTROL
+						</span>
+						<div className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
+							OPERATIONS
 							<SwissIcons.ChevronDown
 								className={cn(
-									"w-3 h-3 transition-transform duration-200",
+									"w-3 h-3 text-neutral-400 transition-transform duration-300",
 									isOpen && "rotate-180",
 								)}
 							/>
-						</span>
-						{/* Status Indicator - Precision LED look */}
-						<div className="flex items-center gap-1.5">
-							<div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[inset_0_1px_1px_rgba(0,0,0,0.1),0_0_4px_rgba(16,185,129,0.4)]" />
 						</div>
 					</div>
-					<div className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight truncate w-full">
-						Operations Console
-					</div>
+
+					{/* Status LED */}
+					<div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
 				</button>
 
 				{/* Dropdown Content */}
@@ -102,96 +88,121 @@ export function MissionControl({
 							initial={{ opacity: 0, height: 0 }}
 							animate={{ opacity: 1, height: "auto" }}
 							exit={{ opacity: 0, height: 0 }}
-							transition={{ duration: 0.2, ease: "easeInOut" }}
-							className="bg-[#f4f4f0] dark:bg-[#111111] overflow-hidden"
+							transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+							className="overflow-hidden"
 						>
-							{mode === "menu" ? (
-								<div className="flex flex-col">
-									{/* Primary Actions */}
-									<div className="p-2 flex flex-col gap-1">
-										<button
-											onClick={() => setMode("create")}
-											className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm transition-colors w-full text-left"
-										>
-											<SwissIcons.Plus size={14} />
-											Initialize Protocol
-										</button>
-										<button className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm transition-colors w-full text-left">
-											<SwissIcons.Grid size={14} />
-											View All Tapes
-										</button>
-									</div>
-
-									<div className="h-[1px] bg-neutral-200 dark:bg-neutral-800 mx-2" />
-
-									{/* Recent Tapes */}
-									<div className="p-2 flex flex-col gap-1">
-										<div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-neutral-400">
-											Active Tapes
-										</div>
-										{recentWorkflows.map((wf) => (
+							<div className="px-6 pb-6 pt-2">
+								{mode === "menu" ? (
+									<div className="flex flex-col gap-6">
+										{/* Primary Actions */}
+										<div className="flex flex-col gap-2">
 											<button
-												key={wf.id}
+												onClick={() => setMode("create")}
+												className="flex items-center justify-between p-3 bg-white dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 hover:border-[#FF4D00] transition-colors group"
+											>
+												<span className="text-xs font-medium text-neutral-900 dark:text-white">
+													Initialize Protocol
+												</span>
+												<SwissIcons.Plus
+													className="text-neutral-400 group-hover:text-[#FF4D00] transition-colors"
+													size={12}
+												/>
+											</button>
+											<button className="flex items-center justify-between p-3 bg-white dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 transition-colors group">
+												<span className="text-xs font-medium text-neutral-900 dark:text-white">
+													Archive Index
+												</span>
+												<SwissIcons.Grid
+													className="text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors"
+													size={12}
+												/>
+											</button>
+										</div>
+
+										{/* Recent Tapes */}
+										<div className="flex flex-col gap-3">
+											<div className="flex items-center gap-2">
+												<div className="h-px w-4 bg-neutral-300 dark:bg-neutral-700" />
+												<span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500">
+													Recent Sessions
+												</span>
+												<div className="h-px flex-1 bg-neutral-300 dark:bg-neutral-700" />
+											</div>
+
+											<div className="flex flex-col gap-1">
+												{recentWorkflows.map((wf) => (
+													<button
+														key={wf.id}
+														onClick={() => {
+															onSelectWorkflow(wf.id);
+															onClose();
+														}}
+														className="group flex items-center justify-between p-2 hover:bg-neutral-100 dark:hover:bg-[#151515] transition-colors"
+													>
+														<div className="flex flex-col items-start gap-0.5">
+															<span className="text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors">
+																{wf.name}
+															</span>
+															<span className="text-[9px] font-mono text-neutral-400">
+																UPD: {wf.updated}
+															</span>
+														</div>
+														<div
+															className={`w-1.5 h-1.5 rounded-full ${wf.status === "active" ? "bg-[#FF4D00]" : "bg-neutral-300 dark:bg-neutral-700"}`}
+														/>
+													</button>
+												))}
+											</div>
+										</div>
+									</div>
+								) : (
+									/* Creation Mode */
+									<div className="flex flex-col gap-4">
+										<div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-2">
+											<span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+												Select Template
+											</span>
+											<button
+												onClick={() => setMode("menu")}
+												className="text-[9px] font-mono text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+											>
+												[ BACK ]
+											</button>
+										</div>
+
+										<div className="flex flex-col gap-2">
+											<ProtocolOption
+												label="Blank Manifest"
+												desc="Start from zero state"
+												icon={<SwissIcons.FilePlus size={14} />}
 												onClick={() => {
-													onSelectWorkflow(wf.id);
+													onCreateNew("blank");
 													onClose();
 												}}
-												className="group px-3 py-1.5 flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm transition-colors w-full text-left"
-											>
-												<span className="text-xs text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-white truncate">
-													{wf.name}
-												</span>
-												{wf.status === "active" && (
-													<div className="w-1 h-1 bg-[#FF4D00] rounded-full" />
-												)}
-											</button>
-										))}
+											/>
+											<ProtocolOption
+												label="AI Architect"
+												desc="Generative workflow builder"
+												icon={<SwissIcons.Sparkles size={14} />}
+												onClick={() => {
+													onCreateNew("ai");
+													onClose();
+												}}
+												accent
+											/>
+											<ProtocolOption
+												label="Load Recipe"
+												desc="Use pre-configured chain"
+												icon={<SwissIcons.Layers size={14} />}
+												onClick={() => {
+													onCreateNew("template");
+													onClose();
+												}}
+											/>
+										</div>
 									</div>
-								</div>
-							) : (
-								/* Creation Mode */
-								<div className="p-3 flex flex-col gap-3">
-									<div className="flex items-center justify-between">
-										<span className="font-mono text-[10px] uppercase tracking-wider text-neutral-500">
-											Select Protocol
-										</span>
-										<button
-											onClick={() => setMode("menu")}
-											className="text-[10px] text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-										>
-											BACK
-										</button>
-									</div>
-
-									<div className="flex flex-col gap-1">
-										<ProtocolOption
-											label="Blank Manifest"
-											icon={<SwissIcons.FilePlus size={14} />}
-											onClick={() => {
-												onCreateNew("blank");
-												onClose();
-											}}
-										/>
-										<ProtocolOption
-											label="AI Architect"
-											icon={<SwissIcons.Sparkles size={14} />}
-											onClick={() => {
-												onCreateNew("ai");
-												onClose();
-											}}
-											accent
-										/>
-										<ProtocolOption
-											label="Load Recipe"
-											icon={<SwissIcons.Layers size={14} />}
-											onClick={() => {
-												onCreateNew("template");
-												onClose();
-											}}
-										/>
-									</div>
-								</div>
-							)}
+								)}
+							</div>
 						</motion.div>
 					)}
 				</AnimatePresence>
@@ -202,11 +213,13 @@ export function MissionControl({
 
 function ProtocolOption({
 	label,
+	desc,
 	icon,
 	onClick,
 	accent,
 }: {
 	label: string;
+	desc: string;
 	icon: React.ReactNode;
 	onClick: () => void;
 	accent?: boolean;
@@ -214,14 +227,25 @@ function ProtocolOption({
 	return (
 		<button
 			onClick={onClick}
-			className={`flex items-center gap-3 px-3 py-2 rounded-sm transition-colors w-full text-left border ${
+			className={`flex items-start gap-4 p-3 border transition-all duration-200 group text-left ${
 				accent
-					? "bg-[#FF4D00]/5 border-[#FF4D00]/20 text-[#FF4D00] hover:bg-[#FF4D00]/10"
-					: "bg-white dark:bg-[#1a1a1a] border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-300"
+					? "bg-[#FF4D00]/5 border-[#FF4D00]/30 hover:border-[#FF4D00]"
+					: "bg-white dark:bg-[#111] border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
 			}`}
 		>
-			{icon}
-			<span className="text-xs font-bold font-mono uppercase">{label}</span>
+			<div
+				className={`mt-0.5 ${accent ? "text-[#FF4D00]" : "text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white"}`}
+			>
+				{icon}
+			</div>
+			<div className="flex flex-col gap-0.5">
+				<span
+					className={`text-xs font-bold font-mono uppercase ${accent ? "text-[#FF4D00]" : "text-neutral-900 dark:text-white"}`}
+				>
+					{label}
+				</span>
+				<span className="text-[9px] text-neutral-500 font-mono">{desc}</span>
+			</div>
 		</button>
 	);
 }

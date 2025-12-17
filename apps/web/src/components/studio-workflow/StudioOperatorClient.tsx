@@ -184,7 +184,7 @@ export function StudioOperatorClient({
 	// BETTER APPROACH: Pass these to RefineryCanvas and let it map them to node data.
 
 	return (
-		<div className="flex flex-col h-screen w-screen bg-[#f4f4f0] dark:bg-[#111111] overflow-hidden relative text-neutral-900 dark:text-neutral-100 font-sans selection:bg-[#FF4D00] selection:text-white">
+		<div className="flex flex-col h-screen w-screen bg-neutral-50 dark:bg-[#050505] overflow-hidden relative text-neutral-900 dark:text-neutral-100 font-sans selection:bg-[#FF4D00] selection:text-white">
 			{/* Mission Control Overlay */}
 			<AnimatePresence>
 				{isMissionControlOpen && (

@@ -114,6 +114,14 @@ module.exports = {
 			},
 			animation: {
 				"logo-spin": "logoSpin 4s ease-in-out infinite",
+				shine: "shine 1.5s ease-out infinite",
+				"spin-slow": "spin 3s linear infinite",
+			},
+			keyframes: {
+				shine: {
+					"0%": { transform: "translateX(-100%)" },
+					"100%": { transform: "translateX(100%)" },
+				},
 			},
 		},
 	},

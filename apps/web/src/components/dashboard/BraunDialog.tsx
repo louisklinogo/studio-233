@@ -153,11 +153,19 @@ export function BraunDialog({
 								<div className="p-6 border-t border-neutral-200 dark:border-neutral-800 bg-[#E5E5E5] dark:bg-[#111]">
 									<Button
 										onClick={handleSubmit}
-										disabled={isPending}
-										className="w-full bg-[#FF4D00] hover:bg-[#CC3D00] text-white font-mono text-xs uppercase h-12 rounded-sm shadow-sm active:translate-y-[1px] transition-all"
+										disabled={isPending || !name.trim()}
+										className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black font-mono text-xs uppercase h-12 rounded-sm shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group"
 									>
+										{/* Scanline Effect */}
+										<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 dark:via-black/10 to-transparent -translate-x-[100%] group-hover:animate-shine pointer-events-none" />
+
 										{isPending ? (
-											<SwissIcons.Spinner className="w-4 h-4 animate-spin" />
+											<div className="flex items-center gap-2">
+												<span className="animate-pulse">PROCESSING</span>
+												<div className="w-1 h-1 bg-current rounded-full animate-bounce" />
+												<div className="w-1 h-1 bg-current rounded-full animate-bounce delay-75" />
+												<div className="w-1 h-1 bg-current rounded-full animate-bounce delay-150" />
+											</div>
 										) : mode === "create" ? (
 											"Initialize System"
 										) : (
@@ -169,7 +177,7 @@ export function BraunDialog({
 						</>
 					)}
 
-					{/* SHEET VARIANT - NEW MIDDAY INSPIRED */}
+					{/* SHEET VARIANT - PRISM / GLASS AESTHETIC */}
 					{variant === "sheet" && (
 						<>
 							<motion.div
@@ -177,204 +185,116 @@ export function BraunDialog({
 								animate={{ opacity: 1 }}
 								exit={{ opacity: 0 }}
 								onClick={() => onOpenChange(false)}
-								className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px] z-[9998]"
+								className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[4px] z-[9998]"
 							/>
 							<motion.div
 								initial={{ x: "100%" }}
 								animate={{ x: 0 }}
 								transition={{
 									type: "spring",
-									damping: 30,
-									stiffness: 300,
-									mass: 0.8,
+									damping: 35,
+									stiffness: 350,
+									mass: 1,
 								}}
-								className="fixed right-4 top-4 bottom-4 w-[480px] bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-neutral-900 z-[9999] shadow-2xl flex flex-col"
+								className="fixed right-4 top-4 bottom-4 w-[480px] bg-white dark:bg-[#050505] border border-neutral-200 dark:border-neutral-800 z-[9999] shadow-2xl flex flex-col overflow-hidden rounded-lg"
 							>
-								{/* Header Image/Preview Area - STRICT GRID */}
-								<div className="h-[220px] bg-neutral-100 dark:bg-neutral-900/30 relative overflow-hidden group border-b border-neutral-200 dark:border-neutral-900">
-									<div className="absolute inset-0 flex items-center justify-center">
-										{type === "CANVAS" ? (
-											// Canvas Visual - INFINITE POSSIBILITY
-											<div className="relative w-full h-full flex items-center justify-center">
-												<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-neutral-200/50 via-transparent to-transparent dark:from-neutral-800/50" />
-
-												{/* Floating Nodes */}
-												<motion.div
-													animate={{ rotate: 360 }}
-													transition={{
-														duration: 60,
-														repeat: Infinity,
-														ease: "linear",
-													}}
-													className="absolute inset-0"
-												>
-													<div className="absolute top-1/4 left-1/4 w-2 h-2 bg-[#FF4D00] rounded-full shadow-[0_0_15px_#FF4D00]" />
-													<div className="absolute bottom-1/3 right-1/4 w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-600 rounded-full" />
-													<div className="absolute top-1/2 right-1/3 w-1 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full" />
-												</motion.div>
-
-												{/* Central Hub */}
-												<div className="relative z-10 w-24 h-24 rounded-full border border-neutral-200 dark:border-neutral-800 flex items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-sm">
-													<div className="w-16 h-16 rounded-full border border-neutral-300 dark:border-neutral-700 flex items-center justify-center">
-														<SwissIcons.Grid className="w-6 h-6 text-[#FF4D00]" />
-													</div>
-												</div>
-
-												{/* Connecting Lines (Decorators) */}
-												<svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
-													<circle
-														cx="50%"
-														cy="50%"
-														r="120"
-														stroke="currentColor"
-														strokeWidth="1"
-														strokeDasharray="4 4"
-														className="text-neutral-300 dark:text-neutral-700"
-													/>
-												</svg>
-											</div>
-										) : (
-											// Studio Visual - STRUCTURED PIPELINE
-											<div className="relative w-full h-full flex items-center justify-center gap-4">
-												{/* Input Node */}
-												<div className="flex flex-col items-center gap-2 opacity-50">
-													<div className="w-12 h-16 border border-neutral-300 dark:border-neutral-700 rounded-sm bg-neutral-50 dark:bg-[#111]" />
-													<div className="w-1 h-8 border-l border-dashed border-neutral-400" />
-												</div>
-
-												{/* Processing Node (Active) */}
-												<div className="relative z-10 flex flex-col items-center gap-2">
-													<div className="w-20 h-24 border border-[#FF4D00]/30 bg-[#FF4D00]/5 rounded-sm flex flex-col items-center justify-center gap-1 shadow-[0_0_30px_-10px_rgba(255,77,0,0.3)]">
-														<SwissIcons.Layers className="w-6 h-6 text-[#FF4D00]" />
-														<div className="w-12 h-0.5 bg-[#FF4D00]/50" />
-														<div className="w-8 h-0.5 bg-[#FF4D00]/30" />
-													</div>
-												</div>
-
-												{/* Output Node */}
-												<div className="flex flex-col items-center gap-2 opacity-50">
-													<div className="w-12 h-16 border border-neutral-300 dark:border-neutral-700 rounded-sm bg-neutral-50 dark:bg-[#111]" />
-													<div className="w-1 h-8 border-l border-dashed border-neutral-400" />
-												</div>
-
-												{/* Flow Line */}
-												<div className="absolute top-1/2 left-10 right-10 h-[1px] bg-neutral-200 dark:bg-neutral-800 -z-10" />
-											</div>
-										)}
+								{/* Header - MATTE BEZEL */}
+								<div className="h-28 bg-[#f4f4f0] dark:bg-[#111] border-b border-neutral-200 dark:border-neutral-800 p-8 flex flex-col justify-between relative">
+									<div className="flex justify-between items-start">
+										<div className="flex items-center gap-2">
+											<div className="w-2 h-2 bg-emerald-500 rounded-full" />
+											<span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+												SYSTEM_READY
+											</span>
+										</div>
 									</div>
-
-									{/* Gradient & Scanlines */}
-									<div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0c0c0c] via-transparent to-transparent z-10" />
-
-									<button
-										onClick={() => onOpenChange(false)}
-										className="absolute top-6 right-6 text-neutral-400 dark:text-neutral-600 hover:text-[#FF4D00] transition-colors z-50"
-									>
-										<SwissIcons.Close className="w-5 h-5" />
-									</button>
+									<div className="flex items-end justify-between">
+										<h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+											{type === "CANVAS" ? "CANVAS" : "STUDIO"}
+										</h1>
+										<div className="text-neutral-400">
+											{type === "CANVAS" ? (
+												<SwissIcons.Frame size={24} />
+											) : (
+												<SwissIcons.Sequence size={24} />
+											)}
+										</div>
+									</div>
 								</div>
 
-								{/* Content - FORM FOLLOWS FUNCTION */}
-								<div className="flex-1 flex flex-col">
-									<div className="p-8 space-y-8 flex-1 overflow-y-auto">
-										{/* Title Block */}
+								{/* Content - CLEAN FORM */}
+								<div className="flex-1 p-8 space-y-8 overflow-y-auto">
+									<div className="space-y-6">
+										{/* Type Toggle - MECHANICAL SWITCH */}
+										<div className="bg-neutral-100 dark:bg-[#111] p-1 rounded-md flex">
+											<button
+												onClick={() => setType("CANVAS")}
+												className={`flex-1 h-10 flex items-center justify-center gap-2 rounded transition-all font-mono text-[10px] uppercase tracking-widest font-bold ${
+													type === "CANVAS"
+														? "bg-white dark:bg-[#1A1A1A] text-black dark:text-white shadow-sm"
+														: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
+												}`}
+											>
+												<SwissIcons.Frame className="w-3 h-3" />
+												Canvas
+											</button>
+											<button
+												onClick={() => setType("STUDIO")}
+												className={`flex-1 h-10 flex items-center justify-center gap-2 rounded transition-all font-mono text-[10px] uppercase tracking-widest font-bold ${
+													type === "STUDIO"
+														? "bg-white dark:bg-[#1A1A1A] text-black dark:text-white shadow-sm"
+														: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
+												}`}
+											>
+												<SwissIcons.Sequence className="w-3 h-3" />
+												Studio
+											</button>
+										</div>
+
 										<div className="space-y-2">
-											<div className="flex items-center gap-3">
-												<div className="w-1.5 h-1.5 bg-[#FF4D00]" />
-												<span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FF4D00]">
-													System Initialization
-												</span>
-											</div>
-											<h2 className="text-3xl font-medium text-neutral-900 dark:text-white tracking-tight">
-												{type === "CANVAS" ? "New Canvas" : "New Studio"}
-											</h2>
-											<p className="text-sm text-neutral-500 max-w-[90%]">
-												{type === "CANVAS"
-													? "Initialize an infinite workspace for unstructured generation."
-													: "Initialize a structured environment for batch processing."}
-											</p>
+											<Label className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+												Project Designation
+											</Label>
+											<input
+												value={name}
+												onChange={(e) => setName(e.target.value)}
+												placeholder="UNTITLED_PROJECT"
+												className="w-full bg-neutral-100 dark:bg-[#111] border-none rounded-md px-4 py-3 font-sans text-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:ring-0 focus:bg-neutral-50 dark:focus:bg-[#151515] transition-colors shadow-inner"
+											/>
 										</div>
 
-										{/* Config Form */}
-										<div className="space-y-8 pt-4">
-											{/* Type Toggle - MECHANICAL */}
-											<div className="grid grid-cols-2 gap-0 border border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900/20 p-1">
-												<button
-													onClick={() => setType("CANVAS")}
-													className={`relative h-12 flex items-center justify-center gap-3 transition-all duration-200 ${
-														type === "CANVAS"
-															? "bg-white dark:bg-[#1A1A1A] text-neutral-900 dark:text-white shadow-sm"
-															: "text-neutral-500 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-400"
-													}`}
-												>
-													<SwissIcons.Grid className="w-4 h-4" />
-													<span className="font-mono text-[10px] uppercase tracking-widest">
-														Canvas
-													</span>
-													{type === "CANVAS" && (
-														<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4D00]" />
-													)}
-												</button>
-												<button
-													onClick={() => setType("STUDIO")}
-													className={`relative h-12 flex items-center justify-center gap-3 transition-all duration-200 ${
-														type === "STUDIO"
-															? "bg-white dark:bg-[#1A1A1A] text-neutral-900 dark:text-white shadow-sm"
-															: "text-neutral-500 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-400"
-													}`}
-												>
-													<SwissIcons.Layers className="w-4 h-4" />
-													<span className="font-mono text-[10px] uppercase tracking-widest">
-														Studio
-													</span>
-													{type === "STUDIO" && (
-														<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4D00]" />
-													)}
-												</button>
-											</div>
-
-											{/* Inputs - STRICT LINES (No Boxes) */}
-											<div className="space-y-6">
-												<div className="group relative pt-4">
-													<label className="absolute top-0 left-0 text-[9px] font-mono uppercase tracking-widest text-neutral-500 transition-colors group-focus-within:text-[#FF4D00]">
-														Project Designation
-													</label>
-													<input
-														value={name}
-														onChange={(e) => setName(e.target.value)}
-														placeholder="UNTITLED_PROJECT"
-														className="w-full bg-transparent border-b border-neutral-300 dark:border-neutral-800 py-2 font-sans text-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-700 outline-none focus:border-[#FF4D00] transition-colors rounded-none"
-													/>
-												</div>
-
-												<div className="group relative pt-4">
-													<label className="absolute top-0 left-0 text-[9px] font-mono uppercase tracking-widest text-neutral-500 transition-colors group-focus-within:text-[#FF4D00]">
-														Operational Context
-													</label>
-													<textarea
-														value={description}
-														onChange={(e) => setDescription(e.target.value)}
-														placeholder="Add system notes..."
-														className="w-full bg-transparent border-b border-neutral-300 dark:border-neutral-800 py-2 font-sans text-sm text-neutral-600 dark:text-neutral-400 placeholder:text-neutral-400 dark:placeholder:text-neutral-700 outline-none focus:border-[#FF4D00] transition-colors rounded-none min-h-[80px] resize-none"
-													/>
-												</div>
-											</div>
+										<div className="space-y-2">
+											<Label className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+												Operational Context
+											</Label>
+											<textarea
+												value={description}
+												onChange={(e) => setDescription(e.target.value)}
+												placeholder="Add system notes..."
+												className="w-full bg-neutral-100 dark:bg-[#111] border-none rounded-md px-4 py-3 font-sans text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:ring-0 focus:bg-neutral-50 dark:focus:bg-[#151515] transition-colors shadow-inner min-h-[120px] resize-none"
+											/>
 										</div>
 									</div>
+								</div>
 
-									{/* Bottom Action Bar - WEIGHTY */}
-									<div className="p-8 border-t border-neutral-200 dark:border-neutral-900 bg-neutral-50 dark:bg-[#0a0a0a]">
-										<button
-											onClick={handleSubmit}
-											disabled={isPending}
-											className="w-full h-14 bg-neutral-900 dark:bg-white hover:bg-[#FF4D00] disabled:opacity-50 disabled:hover:bg-neutral-900 dark:disabled:hover:bg-white text-white dark:text-black hover:text-white transition-all duration-300 flex items-center justify-between px-6 group"
-										>
-											<span className="font-mono text-xs uppercase tracking-[0.2em] group-hover:tracking-[0.3em] transition-all">
-												{isPending ? "Initializing..." : "Initialize System"}
-											</span>
-											<SwissIcons.ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-										</button>
-									</div>
+								{/* Footer - MECHANICAL ACTION */}
+								<div className="p-8 border-t border-neutral-100 dark:border-neutral-800">
+									<button
+										onClick={handleSubmit}
+										disabled={isPending || !name.trim()}
+										className="w-full h-14 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black rounded-md font-mono text-xs uppercase tracking-widest font-bold shadow-[0_4px_0_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-1 transition-all disabled:opacity-50 disabled:shadow-none disabled:translate-y-0 flex items-center justify-center gap-3"
+									>
+										{isPending ? (
+											<span className="animate-pulse">INITIALIZING...</span>
+										) : (
+											<>
+												{mode === "create"
+													? "Initialize System"
+													: "Update System"}
+												<SwissIcons.ArrowRight className="w-3 h-3" />
+											</>
+										)}
+									</button>
 								</div>
 							</motion.div>
 						</>
@@ -448,11 +368,15 @@ export function BraunDialog({
 											</Button>
 											<Button
 												onClick={handleSubmit}
-												disabled={isPending}
-												className="flex-1 bg-[#FF4D00] hover:bg-[#CC3D00] text-white font-mono text-xs uppercase rounded-full"
+												disabled={isPending || !name.trim()}
+												className="flex-1 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black font-mono text-xs uppercase rounded-full shadow-md hover:scale-105 active:scale-95 transition-all"
 											>
 												{isPending ? (
-													<SwissIcons.Spinner className="w-4 h-4 animate-spin" />
+													<div className="flex items-center gap-1">
+														<span className="w-1 h-1 bg-current rounded-full animate-bounce" />
+														<span className="w-1 h-1 bg-current rounded-full animate-bounce delay-75" />
+														<span className="w-1 h-1 bg-current rounded-full animate-bounce delay-150" />
+													</div>
 												) : mode === "create" ? (
 													"Boot"
 												) : (
@@ -539,11 +463,14 @@ export function BraunDialog({
 												</button>
 												<button
 													onClick={handleSubmit}
-													disabled={isPending}
-													className="h-10 bg-[#FF4D00] hover:bg-[#CC3D00] text-white flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest rounded-sm transition-colors"
+													disabled={isPending || !name.trim()}
+													className="h-10 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest rounded-sm shadow-sm transition-colors"
 												>
 													{isPending ? (
-														<SwissIcons.Spinner className="w-3 h-3 animate-spin" />
+														<div className="flex gap-1">
+															<div className="w-1 h-1 bg-current rounded-full animate-bounce" />
+															<div className="w-1 h-1 bg-current rounded-full animate-bounce delay-75" />
+														</div>
 													) : (
 														<>
 															{mode === "create" ? "Insert" : "Save"}{" "}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Image } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
 	Bloom,
 	ChromaticAberration,
@@ -16,6 +16,7 @@ import {
 	Component,
 	type MutableRefObject,
 	type ReactNode,
+	Suspense,
 	useEffect,
 	useLayoutEffect,
 	useMemo,
@@ -149,19 +150,39 @@ function TunnelGroup({
 	);
 }
 
-function Effects() {
+// Stable Effects Wrapper - Prevents context loss crashes on navigation
+function StableEffects() {
+	const { gl, scene, camera } = useThree();
+	const [ready, setReady] = useState(false);
+
+	useEffect(() => {
+		// Small delay to ensure GL context is fully stabilized
+		const timeout = setTimeout(() => setReady(true), 100);
+		return () => {
+			clearTimeout(timeout);
+			setReady(false);
+		};
+	}, []);
+
+	// Only render EffectComposer when context is guaranteed
+	if (!ready || !gl) return null;
+
 	return (
-		<EffectComposer enableNormalPass={false}>
+		<EffectComposer
+			disableNormalPass
+			multisampling={0} // Disable MSAA for performance
+			autoClear={false}
+		>
 			<Bloom
 				luminanceThreshold={0.2}
 				mipmapBlur={false}
-				intensity={0.2}
-				radius={0.5}
+				intensity={0.4}
+				radius={0.6}
 			/>
-			<Noise opacity={0.12} />
+			<Noise opacity={0.15} />
 			<Vignette eskil={false} offset={0.1} darkness={1.1} />
-			<Scanline density={1.2} opacity={0.12} />
-			<ChromaticAberration offset={[0.0008, 0.001]} radialModulation={false} />
+			<Scanline density={1.5} opacity={0.15} />
+			<ChromaticAberration offset={[0.001, 0.001]} radialModulation={false} />
 		</EffectComposer>
 	);
 }
@@ -199,14 +220,16 @@ export const InfiniteArchive = () => {
 	}, [mounted]);
 
 	return (
-		<div ref={containerRef} className="relative h-[200vh] w-full bg-black">
-			<div className="sticky top-0 h-screen w-full">
+		<div ref={containerRef} className="relative h-[150vh] w-full bg-black">
+			<div className="sticky top-0 h-screen w-full overflow-hidden">
 				{mounted ? (
 					<ArchiveErrorBoundary>
 						<Canvas gl={{ antialias: false }} dpr={[1, 1.5]}>
 							<fog attach="fog" args={["#000000", 3, 12]} />
-							<TunnelGroup scrollProgress={scrollProgress} />
-							<Effects />
+							<Suspense fallback={null}>
+								<TunnelGroup scrollProgress={scrollProgress} />
+								<StableEffects />
+							</Suspense>
 						</Canvas>
 					</ArchiveErrorBoundary>
 				) : null}

@@ -75,69 +75,70 @@ export function LoginForm() {
 		}
 	};
 
+	// Braun Industrial Toggle Component
+	const ToggleSwitch = ({
+		active,
+		onClick,
+		label,
+	}: {
+		active: boolean;
+		onClick: () => void;
+		label: string;
+	}) => (
+		<button
+			onClick={onClick}
+			className="flex flex-col gap-2 group cursor-pointer"
+		>
+			<div
+				className={`h-1 w-8 transition-colors duration-300 ${active ? "bg-[#FF4D00]" : "bg-neutral-800 group-hover:bg-neutral-700"}`}
+			/>
+			<span
+				className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${active ? "text-white" : "text-neutral-600 group-hover:text-neutral-400"}`}
+			>
+				{label}
+			</span>
+		</button>
+	);
+
 	return (
 		<div className="flex-1 flex flex-col h-full justify-between">
-			<div className="space-y-6">
+			<div className="space-y-8">
 				{isAuthenticated && (
-					<div className="rounded-sm border border-emerald-300/60 bg-emerald-50/60 dark:bg-emerald-900/10 p-4 space-y-3 text-sm text-emerald-900 dark:text-emerald-200">
-						<div className="flex items-center gap-2 font-mono text-[10px] tracking-wider">
-							<span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+					<div className="border border-emerald-900/30 bg-emerald-950/10 p-4 space-y-3">
+						<div className="flex items-center gap-2 font-mono text-[10px] tracking-wider text-emerald-500">
+							<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
 							CHANNEL SECURE — SESSION ACTIVE
 						</div>
 						<div className="flex flex-wrap gap-2">
 							<button
 								onClick={handleContinue}
-								className="px-3 py-1 text-xs uppercase font-mono border border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors"
+								className="px-4 py-2 text-xs uppercase font-mono bg-emerald-500 text-black hover:bg-emerald-400 transition-colors font-bold"
 							>
-								Continue to Dashboard
+								Proceed to Console
 							</button>
 							<button
 								onClick={handleSwitchAccount}
 								disabled={isSwitchingAccount}
-								className="px-3 py-1 text-xs uppercase font-mono border border-neutral-300 text-neutral-500 hover:text-neutral-900 disabled:opacity-50"
+								className="px-4 py-2 text-xs uppercase font-mono border border-neutral-800 text-neutral-500 hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
 							>
-								{isSwitchingAccount ? "Signing out..." : "Switch account"}
+								{isSwitchingAccount ? "Terminating..." : "Switch Identity"}
 							</button>
 						</div>
 					</div>
 				)}
 
-				{/* Primary Navigation */}
-				<div className="flex items-end justify-between border-b border-neutral-200 dark:border-neutral-800 mb-4">
-					<div className="flex flex-1">
-						<button
-							onClick={() => setMode("federated")}
-							className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
-								mode === "federated"
-									? "text-[#FF4D00]"
-									: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
-							}`}
-						>
-							FEDERATED_AUTH
-							{mode === "federated" && (
-								<motion.div
-									layoutId="activeTab"
-									className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
-								/>
-							)}
-						</button>
-						<button
-							onClick={() => setMode("email")}
-							className={`flex-1 pb-2 font-mono text-xs transition-colors relative ${
-								mode === "email"
-									? "text-[#FF4D00]"
-									: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
-							}`}
-						>
-							EMAIL_ACCESS
-							{mode === "email" && (
-								<motion.div
-									layoutId="activeTab"
-									className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4D00]"
-								/>
-							)}
-						</button>
-					</div>
+				{/* Mode Selection (Industrial Toggles) */}
+				<div className="flex items-start gap-8 border-b border-neutral-900 pb-6 mb-8">
+					<ToggleSwitch
+						active={mode === "federated"}
+						onClick={() => setMode("federated")}
+						label="Federated_Auth"
+					/>
+					<ToggleSwitch
+						active={mode === "email"}
+						onClick={() => setMode("email")}
+						label="Direct_Access"
+					/>
 				</div>
 
 				{/* Secondary Interface Mode Toggle (Only visible in Email Mode) */}
@@ -147,41 +148,22 @@ export function LoginForm() {
 							initial={{ opacity: 0, height: 0 }}
 							animate={{ opacity: 1, height: "auto" }}
 							exit={{ opacity: 0, height: 0 }}
-							className="flex justify-end"
+							className="flex justify-end -mt-4 mb-4"
 						>
-							<div className="inline-flex bg-neutral-100 dark:bg-neutral-900 p-0.5 rounded-none border border-neutral-200 dark:border-neutral-800">
-								<button
-									onClick={() => setVariant("signal")}
-									className={`relative px-3 py-1 font-mono text-[9px] transition-colors ${
-										variant === "signal"
-											? "text-[#FF4D00]"
-											: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
-									}`}
-								>
-									SIGNAL
-									{variant === "signal" && (
-										<motion.div
-											layoutId="variantHighlight"
-											className="absolute inset-0 bg-white dark:bg-black shadow-sm border border-neutral-200 dark:border-neutral-800 -z-10"
-										/>
-									)}
-								</button>
-								<button
-									onClick={() => setVariant("receipt")}
-									className={`relative px-3 py-1 font-mono text-[9px] transition-colors ${
-										variant === "receipt"
-											? "text-[#FF4D00]"
-											: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
-									}`}
-								>
-									RECEIPT
-									{variant === "receipt" && (
-										<motion.div
-											layoutId="variantHighlight"
-											className="absolute inset-0 bg-white dark:bg-black shadow-sm border border-neutral-200 dark:border-neutral-800 -z-10"
-										/>
-									)}
-								</button>
+							<div className="flex gap-1 bg-[#0f0f0f] p-1 border border-neutral-800">
+								{["signal", "receipt"].map((v) => (
+									<button
+										key={v}
+										onClick={() => setVariant(v as Variant)}
+										className={`px-3 py-1 font-mono text-[9px] uppercase tracking-wider transition-colors ${
+											variant === v
+												? "bg-[#222] text-white border border-neutral-700"
+												: "text-neutral-600 hover:text-neutral-400"
+										}`}
+									>
+										{v}
+									</button>
+								))}
 							</div>
 						</motion.div>
 					)}
@@ -194,12 +176,14 @@ export function LoginForm() {
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -10 }}
-							className="py-4 space-y-4"
+							className="py-4 space-y-6"
 						>
-							<div className="text-center mb-6">
-								<p className="font-mono text-[10px] text-neutral-500">
-									SELECT IDENTITY PROVIDER
+							<div className="flex items-center gap-4 text-neutral-600">
+								<div className="h-px flex-1 bg-neutral-900" />
+								<p className="font-mono text-[10px] uppercase tracking-widest">
+									Select Identity Provider
 								</p>
+								<div className="h-px flex-1 bg-neutral-900" />
 							</div>
 
 							<FederatedLoginButton
@@ -224,13 +208,15 @@ export function LoginForm() {
 			</div>
 
 			{/* Footer Status */}
-			<div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-				<div className="flex justify-between items-center font-mono text-[9px] text-neutral-400">
-					<span>SECURE_CHANNEL: TLS_1.3</span>
-					<span className="flex items-center gap-1">
-						STATUS:
+			<div className="pt-6 mt-8 border-t border-neutral-900">
+				<div className="flex justify-between items-center font-mono text-[9px] text-neutral-600 uppercase tracking-widest">
+					<div className="flex items-center gap-2">
+						<SwissIcons.Lock size={10} />
+						<span>TLS_1.3 /// ENCRYPTED</span>
+					</div>
+					<span className="flex items-center gap-2">
+						GATEWAY_STATUS
 						<span className="w-1.5 h-1.5 rounded-full bg-[#FF4D00] animate-pulse" />
-						ACTIVE
 					</span>
 				</div>
 			</div>
