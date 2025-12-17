@@ -141,14 +141,7 @@ export const ManifestoGSAP = () => {
 			   PHASE 4: OUTRO (85% - 100%)
 			   The final "SYSTEM READY" screen fades in.
 			   ========================================= */
-			tl.addLabel("manifestoOutro", "paragraph2Enter+=2.5");
-
-			tl.fromTo(
-				".manifesto-outro",
-				{ opacity: 0, y: 80 },
-				{ opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
-				"manifestoOutro",
-			);
+			// Removed redundant Outro phase to seamlessly flow into Product Hologram
 		}, containerRef);
 
 		return () => ctx.revert();
@@ -157,40 +150,41 @@ export const ManifestoGSAP = () => {
 	return (
 		<section
 			ref={containerRef}
-			className="relative z-30 min-h-[200vh] flex flex-col items-center justify-start pt-[5vh] overflow-hidden"
+			// Reduced height significantly from 200vh to 150vh to remove the "long wait"
+			className="relative z-30 min-h-[150vh] flex flex-col items-center justify-start pt-[10vh] overflow-hidden"
 		>
 			<div
 				ref={textRef}
-				className="flex flex-col gap-2 md:gap-4 font-black text-[7vw] tracking-tighter leading-[0.8] select-none text-neutral-900 dark:text-white opacity-90 w-full max-w-[90vw] mx-auto"
+				className="flex flex-col gap-0 font-black text-[9vw] tracking-tighter leading-[0.85] select-none text-neutral-900 dark:text-white w-full max-w-[95vw] mx-auto uppercase"
 			>
 				<div className="manifesto-line whitespace-nowrap pl-4 w-full">
 					INFINITE CANVAS.
 				</div>
-				<div className="manifesto-line whitespace-nowrap text-right pr-4 text-[#FF4D00] w-full">
+				<div className="manifesto-line whitespace-nowrap text-right pr-4 text-[#FF4D00] w-full indent-[10vw]">
 					AGENTIC INTELLIGENCE.
 				</div>
-				<div className="manifesto-line whitespace-nowrap pl-4 w-full">
+				<div className="manifesto-line whitespace-nowrap pl-4 w-full text-center">
 					YOUR CREATIVE ENGINE.
 				</div>
 			</div>
 
-			<div className="mt-[40vh] mb-[40vh] z-20 w-full max-w-5xl px-6 md:px-12 mx-auto grid grid-cols-1 grid-rows-1 items-center justify-center pointer-events-none">
+			<div className="mt-[20vh] mb-[20vh] z-20 w-full max-w-4xl px-6 md:px-12 mx-auto grid grid-cols-1 grid-rows-1 items-center justify-center pointer-events-none">
 				{/* Grid Stacking: Both occupy row 1 / col 1 */}
 				<div
 					ref={paragraph1Ref}
 					className="col-start-1 row-start-1 opacity-0 w-full"
 				>
-					<p className="font-mono text-2xl md:text-4xl lg:text-5xl text-neutral-800 dark:text-neutral-200 leading-tight text-justify tracking-tight uppercase font-bold">
+					<p className="font-mono text-xl md:text-3xl lg:text-4xl text-neutral-800 dark:text-neutral-200 leading-tight text-left tracking-tight uppercase font-medium">
 						Studio+233 is not just a tool. It is a{" "}
-						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1">
+						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1 decoration-clone">
 							production environment
 						</span>{" "}
 						for the next generation of creators. Combine the freedom of an{" "}
-						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1">
+						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1 decoration-clone">
 							infinite canvas
 						</span>{" "}
 						with the power of{" "}
-						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1">
+						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1 decoration-clone">
 							autonomous AI agents
 						</span>{" "}
 						to scale your workflow from one to one thousand.
@@ -201,18 +195,18 @@ export const ManifestoGSAP = () => {
 					ref={paragraph2Ref}
 					className="col-start-1 row-start-1 opacity-0 w-full"
 				>
-					<p className="font-mono text-2xl md:text-4xl lg:text-5xl text-neutral-800 dark:text-neutral-200 leading-tight text-justify tracking-tight uppercase font-bold">
+					<p className="font-mono text-xl md:text-3xl lg:text-4xl text-neutral-800 dark:text-neutral-200 leading-tight text-left tracking-tight uppercase font-medium">
 						Stop generating one-offs.{" "}
-						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1">
+						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1 decoration-clone">
 							Orchestrate entire campaigns
 						</span>{" "}
 						on an infinite canvas that thinks. Drag, drop, and chain neural
 						models to{" "}
-						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1">
+						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1 decoration-clone">
 							batch process 1,000+ assets
 						</span>{" "}
 						in minutes. This isn't just a tool; it's your new{" "}
-						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1">
+						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1 decoration-clone">
 							industrial-grade creative operating system
 						</span>
 						.
@@ -220,27 +214,7 @@ export const ManifestoGSAP = () => {
 				</div>
 			</div>
 
-			{/* 3D Grid Outro */}
-			<div className="manifesto-outro absolute bottom-0 left-0 right-0 h-[50vh] flex flex-col items-center justify-end pb-20 opacity-0 pointer-events-none">
-				{/* Wireframe Floor */}
-				<div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:linear-gradient(to_bottom,transparent,black)] opacity-50" />
-
-				{/* Floating Windows (Decor) */}
-				<div className="absolute inset-0 flex items-center justify-center perspective-[1000px] pointer-events-none opacity-30">
-					<div className="w-[200px] h-[150px] border border-neutral-500/30" />
-				</div>
-
-				{/* Prompt */}
-				<div className="relative z-10 flex flex-col items-center gap-2">
-					<span className="text-[10px] font-mono text-neutral-500 tracking-[0.5em]">
-						SYSTEM_READY
-					</span>
-					<h2 className="text-4xl md:text-6xl font-black text-neutral-900 dark:text-white tracking-tighter">
-						INITIATE SEQUENCE
-						<span className="animate-pulse text-orange-500">_</span>
-					</h2>
-				</div>
-			</div>
+			{/* 3D Grid Outro - REMOVED */}
 		</section>
 	);
 };

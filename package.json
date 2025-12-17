@@ -69,12 +69,18 @@
 	},
 	"dependencies": {
 		"@prisma/client": "^7.0.0",
+		"@react-three/drei": "^10.7.7",
+		"@react-three/fiber": "^9.4.2",
+		"@react-three/postprocessing": "^3.0.4",
+		"@types/three": "^0.182.0",
 		"canvas": "workspace:*",
+		"framer-motion-3d": "^12.4.13",
 		"its-fine": "2.0.0",
 		"jotai": "^2.15.2",
 		"langfuse": "^3.38.6",
 		"pg": "^8.14.1",
 		"playwright": "^1.57.0",
+		"three": "^0.182.0",
 		"zod": "4.1.13"
 	}
 }

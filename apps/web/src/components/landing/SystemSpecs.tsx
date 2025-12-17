@@ -115,23 +115,7 @@ export const SystemSpecs = () => {
 				</AnimatePresence>
 			</div>
 
-			{/* Manual Advance (Mechanical Button) */}
-			<button
-				onClick={next}
-				className="absolute bottom-8 right-8 w-12 h-12 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center hover:bg-[#FF4D00] hover:border-[#FF4D00] hover:text-white transition-colors active:scale-95 group bg-white dark:bg-black"
-			>
-				<svg
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2"
-					className="group-hover:rotate-90 transition-transform duration-300"
-				>
-					<path d="M5 12h14M12 5l7 7-7 7" />
-				</svg>
-			</button>
+			{/* Manual Advance (Mechanical Button) REMOVED */}
 
 			{/* Static Decor */}
 			<div className="absolute top-8 right-8 font-mono text-[9px] text-neutral-400 tracking-widest">
