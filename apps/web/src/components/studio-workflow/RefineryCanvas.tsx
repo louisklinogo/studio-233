@@ -35,6 +35,10 @@ type RefineryNodeData = {
 	triggerType?: string;
 	condition?: string;
 	routes?: string[];
+	pluginId?: string;
+	pluginVersion?: string;
+	config?: Record<string, unknown>;
+	executor?: "native" | "inngest" | "python-e2b";
 	onDelete?: () => void;
 	onDuplicate?: () => void;
 };
@@ -70,6 +74,77 @@ export function RefineryCanvas({
 	onDeleteNode,
 	onDuplicateNode,
 }: RefineryCanvasProps) {
+	const resolveModule = useCallback((moduleType: string) => {
+		switch (moduleType) {
+			case "input.upload":
+				return {
+					nodeType: "trigger",
+					data: {
+						label: "FILE UPLOAD",
+						category: "input",
+						triggerType: "manual",
+						pluginId: "media-input",
+						config: {},
+					} satisfies RefineryNodeData,
+				};
+			case "vision.removeBg":
+				return {
+					nodeType: "standard",
+					data: {
+						label: "REMOVE BG",
+						category: "vision",
+						pluginId: "background-removal",
+						config: { provider: "auto" },
+					} satisfies RefineryNodeData,
+				};
+			case "vision.crop":
+				return {
+					nodeType: "standard",
+					data: {
+						label: "SMART CROP",
+						category: "vision",
+						pluginId: "image-reframe",
+						config: {
+							targetWidth: 1080,
+							targetHeight: 1080,
+							strategy: "attention",
+						},
+					} satisfies RefineryNodeData,
+				};
+			case "vision.upscale":
+				return {
+					nodeType: "standard",
+					data: {
+						label: "UPSCALE",
+						category: "vision",
+						pluginId: "image-upscale",
+						config: { scale: 2, maxDimension: 2048 },
+					} satisfies RefineryNodeData,
+				};
+			case "vision.detect":
+				return {
+					nodeType: "standard",
+					data: {
+						label: "ANALYZE",
+						category: "vision",
+						pluginId: "palette-extraction",
+						config: { colors: 6 },
+					} satisfies RefineryNodeData,
+				};
+			default:
+				return {
+					nodeType: moduleType.startsWith("input.") ? "trigger" : "standard",
+					data: {
+						label: moduleType.split(".")[1]?.toUpperCase() ?? "NODE",
+						category: moduleType.startsWith("gen.")
+							? "generation"
+							: moduleType.startsWith("logic.")
+								? "logic"
+								: "vision",
+					} satisfies RefineryNodeData,
+				};
+		}
+	}, []);
 	const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<
 		RefineryFlowNode,
 		RefineryFlowEdge
@@ -125,25 +200,16 @@ export function RefineryCanvas({
 			let nodeType = "standard";
 			let nodeData: RefineryNodeData = { label: "New Node" };
 
-			if (type.startsWith("input.")) {
-				nodeType = "trigger";
-				nodeData = {
-					label: type.split(".")[1].toUpperCase(),
-					triggerType: type === "input.cron" ? "cron" : "manual",
-					category: "input",
-				};
-			} else if (type === "logic.gate") {
+			if (type === "logic.gate") {
 				nodeType = "gate";
 				nodeData = { label: "Quality Gate", category: "logic" };
 			} else if (type === "logic.router") {
 				nodeType = "router";
 				nodeData = { label: "Router", category: "logic" };
 			} else {
-				nodeType = "standard";
-				nodeData = {
-					label: type.split(".")[1].toUpperCase(),
-					category: type.startsWith("gen.") ? "generation" : "vision", // Differentiate vision vs generation
-				};
+				const resolved = resolveModule(type);
+				nodeType = resolved.nodeType;
+				nodeData = resolved.data;
 			}
 
 			const newNode = {
@@ -168,7 +234,7 @@ export function RefineryCanvas({
 				}
 			}, 50);
 		},
-		[reactFlowInstance, setNodes, nodes, onNodeSelect],
+		[reactFlowInstance, setNodes, nodes, onNodeSelect, resolveModule],
 	);
 
 	// Handle Blueprint Selection

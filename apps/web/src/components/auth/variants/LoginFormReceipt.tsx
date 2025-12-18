@@ -56,23 +56,36 @@ export function LoginFormReceipt() {
 		<div className="space-y-8 py-4">
 			<form onSubmit={hasTicket ? handleVerifyOtp : handleSendOtp}>
 				{/* INPUT AREA */}
-				<div className="flex gap-2">
-					<input
-						type="email"
-						required
-						disabled={hasTicket}
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						className="flex-1 bg-transparent border-b border-neutral-300 dark:border-neutral-700 py-2 font-mono text-sm focus:outline-none focus:border-black dark:focus:border-white transition-colors disabled:opacity-50"
-						placeholder="EMAIL_ADDRESS"
-					/>
-					<button
-						type="submit"
-						disabled={isLoading || hasTicket}
-						className="bg-neutral-100 dark:bg-neutral-800 px-4 py-2 font-mono text-xs uppercase hover:bg-[#FF4D00] hover:text-white transition-colors disabled:opacity-0"
-					>
-						{isLoading ? "PRINTING..." : "PRINT_TICKET"}
-					</button>
+				<div className="flex flex-col gap-6">
+					<div className="space-y-2">
+						<label className="font-mono text-[9px] text-neutral-500 block uppercase tracking-wider">
+							EMAIL_ADDRESS
+						</label>
+						<div className="flex gap-2 items-end">
+							<input
+								type="email"
+								required
+								disabled={hasTicket}
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								className="flex-1 bg-transparent border-b-2 border-border py-3 font-mono text-lg text-neutral-100 focus:outline-none focus:border-accent-critical transition-colors disabled:text-neutral-500 rounded-none placeholder:text-neutral-700"
+								placeholder="USER@DOMAIN.COM"
+							/>
+							<button
+								type="submit"
+								disabled={isLoading || hasTicket}
+								className={`relative px-5 h-11 font-mono text-[10px] uppercase tracking-[0.2em] transition-all duration-300 ${
+									isLoading || hasTicket
+										? "opacity-0"
+										: "bg-[#1a1a1a] text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.5)] border-t border-l border-white/5 border-b border-black hover:bg-black"
+								}`}
+							>
+								{/* Orange indicator on top of key */}
+								<div className="absolute top-0 left-0 w-full h-[1px] bg-accent-critical/50" />
+								<span className="relative z-10">PRINT_TICKET</span>
+							</button>
+						</div>
+					</div>
 				</div>
 
 				{/* TICKET OUTPUT */}
@@ -85,7 +98,7 @@ export function LoginFormReceipt() {
 							className="mt-6 relative perspective-1000"
 						>
 							{/* TICKET BODY */}
-							<div className="bg-white text-black p-6 shadow-lg border-t-4 border-[#FF4D00] font-mono relative">
+							<div className="bg-white text-black p-6 shadow-lg border-t-4 border-accent-critical font-mono relative">
 								{/* Perforated Edge Effect */}
 								<div className="absolute -top-3 left-0 right-0 h-3 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgdmlld0JveD0iMCAwIDEyIDEyIj48Y2lyY2xlIGN4PSI2IiBjeT0iNiIgcj0iNCIgZmlsbD0iIzExMSIgLz48L3N2Zz4=')] opacity-10" />
 
@@ -125,21 +138,21 @@ export function LoginFormReceipt() {
 									/>
 								</div>
 
-								<div className="flex gap-2">
+								<div className="flex gap-3">
 									<button
 										type="button"
 										onClick={() => {
 											setHasTicket(false);
 											setOtp("");
 										}}
-										className="flex-1 py-3 text-[10px] uppercase border border-neutral-200 hover:bg-neutral-50"
+										className="flex-1 py-3 text-[10px] font-mono uppercase border border-neutral-300 hover:bg-neutral-50 transition-colors tracking-widest"
 									>
 										DISCARD
 									</button>
 									<button
 										type="submit"
 										disabled={isLoading}
-										className="flex-[2] py-3 text-[10px] font-bold uppercase bg-black text-white hover:bg-[#FF4D00] transition-colors"
+										className="flex-[2] py-3 text-[10px] font-mono font-bold uppercase bg-black text-white hover:bg-accent-critical transition-all tracking-[0.2em] shadow-md border-t border-l border-white/10"
 									>
 										{isLoading ? "VALIDATING..." : "ADMIT_ONE"}
 									</button>

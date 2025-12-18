@@ -1,42 +1,60 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { SwissIcons } from "@/components/ui/SwissIcons";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/trpc/client";
 
-// Mock Data (Scoped to current workflow)
-const workflowRuns = [
-	{
-		id: "RUN-0042",
-		status: "running",
-		progress: 45,
-		total: 500,
-		yield: 98.2,
-		avgTime: 1.2,
-		timestamp: "NOW",
-	},
-	{
-		id: "RUN-0041",
-		status: "completed",
-		progress: 500,
-		total: 500,
-		yield: 99.5,
-		avgTime: 1.1,
-		timestamp: "09:42:11",
-	},
-	{
-		id: "RUN-0040",
-		status: "failed",
-		progress: 42,
-		total: 500,
-		yield: 0,
-		avgTime: 0,
-		timestamp: "08:15:00",
-	},
-];
+export function BatchMonitor({
+	projectId,
+	runId,
+}: {
+	projectId: string;
+	runId?: string | null;
+}) {
+	const trpc = useTRPC();
+	const runsQuery = useQuery({
+		...trpc.workflow.listRuns.queryOptions({ projectId }),
+		refetchInterval: 4000,
+		refetchOnWindowFocus: false,
+	});
+	const statusQuery = useQuery({
+		...trpc.workflow.runStatus.queryOptions({ runId: runId ?? "" }),
+		enabled: Boolean(runId),
+		refetchInterval: runId ? 2500 : false,
+		refetchOnWindowFocus: false,
+	});
 
-export function BatchMonitor() {
-	const activeRun = workflowRuns.find((r) => r.status === "running");
+	const activeRun = statusQuery.data;
+	const activeProgress = useMemo(() => {
+		if (!activeRun?.steps?.length) {
+			return { completed: 0, total: 0, percent: 0 };
+		}
+		const total = activeRun.steps.length;
+		const completed = activeRun.steps.filter(
+			(s: any) => s.state === "COMPLETED",
+		).length;
+		const percent = total ? Math.round((completed / total) * 100) : 0;
+		return { completed, total, percent };
+	}, [activeRun?.steps]);
+
+	const rows = useMemo(() => {
+		return (runsQuery.data ?? []).map((run: any) => {
+			const timestamp = run.createdAt
+				? new Date(run.createdAt).toLocaleTimeString([], {
+						hour: "2-digit",
+						minute: "2-digit",
+						second: "2-digit",
+					})
+				: "";
+			return {
+				id: run.id,
+				status: String(run.state).toLowerCase(),
+				timestamp,
+			};
+		});
+	}, [runsQuery.data]);
 
 	return (
 		<div className="w-full h-full bg-[#f4f4f0] dark:bg-[#111] flex flex-col font-mono relative overflow-hidden">
@@ -63,9 +81,9 @@ export function BatchMonitor() {
 								Processing_Queue
 							</div>
 							<div className="text-8xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tighter leading-none">
-								{activeRun.progress}
+								{activeProgress.completed}
 								<span className="text-2xl text-neutral-400 ml-2">
-									/ {activeRun.total}
+									/ {activeProgress.total}
 								</span>
 							</div>
 							{/* Progress Bar (Industrial) */}
@@ -73,7 +91,7 @@ export function BatchMonitor() {
 								<motion.div
 									initial={{ width: 0 }}
 									animate={{
-										width: `${(activeRun.progress / activeRun.total) * 100}%`,
+										width: `${activeProgress.percent}%`,
 									}}
 									className="absolute inset-y-0 left-0 bg-[#FF4D00]"
 								/>
@@ -94,19 +112,19 @@ export function BatchMonitor() {
 							<div>
 								<div className="flex justify-between text-[10px] uppercase tracking-widest text-neutral-500 mb-1">
 									<span>Yield_Rate</span>
-									<span className="text-[#00C040]">{activeRun.yield}%</span>
+									<span className="text-[#00C040]">100%</span>
 								</div>
 								<div className="h-1 w-full bg-neutral-200 dark:bg-neutral-800">
-									<div className="h-full w-[98%] bg-[#00C040]" />
+									<div className="h-full w-full bg-[#00C040]" />
 								</div>
 							</div>
 							<div>
 								<div className="flex justify-between text-[10px] uppercase tracking-widest text-neutral-500 mb-1">
 									<span>Avg_Latency</span>
-									<span>{activeRun.avgTime}s</span>
+									<span>—</span>
 								</div>
 								<div className="h-1 w-full bg-neutral-200 dark:bg-neutral-800">
-									<div className="h-full w-[40%] bg-neutral-400" />
+									<div className="h-full w-[35%] bg-neutral-400" />
 								</div>
 							</div>
 						</div>
@@ -141,7 +159,7 @@ export function BatchMonitor() {
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-							{workflowRuns.map((run) => (
+							{rows.map((run) => (
 								<tr
 									key={run.id}
 									className="group hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors cursor-default"
@@ -156,10 +174,10 @@ export function BatchMonitor() {
 										<StatusBadge status={run.status} />
 									</td>
 									<td className="px-4 py-3 text-right tabular-nums text-neutral-600 dark:text-neutral-300">
-										{run.total}
+										—
 									</td>
 									<td className="px-4 py-3 text-right tabular-nums text-neutral-600 dark:text-neutral-300">
-										{run.yield}%
+										—
 									</td>
 								</tr>
 							))}
@@ -173,16 +191,19 @@ export function BatchMonitor() {
 
 function StatusBadge({ status }: { status: string }) {
 	const styles = {
+		pending: "bg-transparent text-neutral-500 border-neutral-400 border-dashed",
 		running: "bg-[#FFB800] text-black border-[#FFB800]",
 		completed: "bg-[#00C040] text-white border-[#00C040]",
 		failed: "bg-transparent text-[#E03C31] border-[#E03C31] border-dashed",
+		canceled:
+			"bg-transparent text-neutral-500 border-neutral-400 border-dashed",
 	};
 
 	return (
 		<span
 			className={cn(
 				"inline-flex items-center px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-bold border rounded-[1px]",
-				styles[status as keyof typeof styles],
+				styles[status as keyof typeof styles] ?? styles.pending,
 			)}
 		>
 			{status}

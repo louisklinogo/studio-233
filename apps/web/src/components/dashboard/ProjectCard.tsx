@@ -23,6 +23,7 @@ interface ProjectCardProps {
 		description?: string | null;
 		updatedAt: Date;
 		thumbnail: string | null;
+		type?: "CANVAS" | "STUDIO";
 	};
 }
 
@@ -144,7 +145,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
 						</AnimatePresence>
 
 						<Link
-							href={`/canvas/${project.id}`}
+							href={
+								project.type === "STUDIO"
+									? `/studio/${project.id}`
+									: `/canvas/${project.id}`
+							}
 							className="flex-1 flex flex-col overflow-hidden"
 						>
 							{/* Monitor / Thumbnail Area */}

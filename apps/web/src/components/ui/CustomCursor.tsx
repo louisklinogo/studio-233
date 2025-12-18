@@ -98,16 +98,17 @@ export function CustomCursor() {
 					y: cursorYSpring,
 				}}
 				animate={{
-					width: isHovering ? 48 : 24,
-					height: isHovering ? 48 : 24,
-					scale: isClicking ? 0.8 : 1,
+					width: isHovering ? 64 : 24,
+					height: isHovering ? 64 : 24,
+					scale: isClicking ? 0.9 : 1,
 					borderWidth: isHovering ? 2 : 1,
-					opacity: isHovering ? 1 : 0.5,
+					opacity: isHovering ? 1 : 0.4,
 				}}
 				transition={{
 					type: "spring",
-					damping: 25,
-					stiffness: 300,
+					damping: 30,
+					stiffness: 200,
+					mass: 0.8,
 				}}
 			/>
 		</div>

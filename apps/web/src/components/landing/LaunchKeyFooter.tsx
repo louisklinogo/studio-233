@@ -8,6 +8,7 @@ import {
 } from "framer-motion";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { Magnetic } from "@/components/ui/Magnetic";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 
 export const LaunchKeyFooter = () => {
@@ -86,31 +87,49 @@ export const LaunchKeyFooter = () => {
 					/>
 
 					{/* The Handle (Physical Switch) */}
-					<motion.div
-						drag="x"
-						dragConstraints={{ left: 0, right: CONSTRAINT }}
-						dragElastic={0.05}
-						dragMomentum={false}
-						onDragEnd={handleDragEnd}
-						animate={controls}
-						style={{ x }}
-						className="relative z-20 w-[64px] h-[72px] bg-[#1a1a1a] rounded-[2px] border-t border-l border-[#333] border-b border-r border-black shadow-[0_4px_12px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] cursor-grab active:cursor-grabbing flex items-center justify-center group"
-					>
-						{/* Ribbed Texture (Grip) */}
-						<div className="flex gap-1.5">
-							<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
-							<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
-							<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
-						</div>
+					<Magnetic strength={0.4} range={120}>
+						<motion.div
+							drag="x"
+							dragConstraints={{ left: 0, right: CONSTRAINT }}
+							dragElastic={0.05}
+							dragMomentum={false}
+							onDragStart={() => {
+								if ("vibrate" in navigator) navigator.vibrate(10);
+							}}
+							onDrag={(e, info) => {
+								// Haptic "clicks" every 20px
+								if (Math.round(info.offset.x) % 40 === 0) {
+									if ("vibrate" in navigator) navigator.vibrate(5);
+								}
+							}}
+							onDragEnd={handleDragEnd}
+							animate={controls}
+							style={{ x }}
+							className="relative z-20 w-[64px] h-[72px] bg-[#1a1a1a] rounded-[2px] border-t border-l border-[#333] border-b border-r border-black shadow-[0_4px_12px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] cursor-grab active:cursor-grabbing flex items-center justify-center group"
+						>
+							{/* Ribbed Texture (Grip) */}
+							<div className="flex gap-1.5 pointer-events-none">
+								<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
+								<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
+								<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
+							</div>
 
-						{/* Status LED on Handle */}
-						<div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-neutral-800 overflow-hidden">
-							<motion.div
-								className="w-full h-full"
-								style={{ backgroundColor: ledColor }}
-							/>
-						</div>
-					</motion.div>
+							{/* Status LED on Handle */}
+							<div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-neutral-800 overflow-hidden shadow-[0_0_8px_rgba(0,0,0,0.5)]">
+								<motion.div
+									className="w-full h-full"
+									style={{
+										backgroundColor: ledColor,
+										boxShadow: useTransform(
+											progress,
+											[0.8, 1],
+											["0 0 0px #ea580c", "0 0 10px #10b981"],
+										),
+									}}
+								/>
+							</div>
+						</motion.div>
+					</Magnetic>
 
 					{/* Destination Label */}
 					<div className="absolute right-6 text-[10px] font-mono text-neutral-500 tracking-widest pointer-events-none">

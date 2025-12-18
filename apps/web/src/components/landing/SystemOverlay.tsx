@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 
-type OverlayType = "modules" | "pricing" | "protocols" | null;
+type OverlayType = "modules" | "pricing" | "protocols" | "manifesto" | null;
 
 interface SystemOverlayProps {
 	activeOverlay: OverlayType;

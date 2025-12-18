@@ -7,9 +7,13 @@ import type { OperatorMode } from "./StudioOperatorClient";
 
 interface FloatingCommandBarProps {
 	mode: OperatorMode;
+	onTestRun?: () => void;
 }
 
-export function FloatingCommandBar({ mode }: FloatingCommandBarProps) {
+export function FloatingCommandBar({
+	mode,
+	onTestRun,
+}: FloatingCommandBarProps) {
 	if (mode !== "build") return null;
 
 	return (
@@ -48,6 +52,7 @@ export function FloatingCommandBar({ mode }: FloatingCommandBarProps) {
 				label="Test Run"
 				shortcut="R"
 				accent
+				onClick={onTestRun}
 			/>
 		</motion.div>
 	);
@@ -59,6 +64,7 @@ interface CommandButtonProps {
 	shortcut?: string;
 	primary?: boolean;
 	accent?: boolean;
+	onClick?: () => void;
 }
 
 function CommandButton({
@@ -67,9 +73,11 @@ function CommandButton({
 	shortcut,
 	primary,
 	accent,
+	onClick,
 }: CommandButtonProps) {
 	return (
 		<button
+			onClick={onClick}
 			className={cn(
 				"group relative flex items-center justify-center w-9 h-9 rounded-[4px] transition-all duration-200",
 				primary

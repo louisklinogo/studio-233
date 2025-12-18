@@ -10,6 +10,12 @@ interface MissionControlProps {
 	onClose: () => void;
 	onSelectWorkflow: (id: string) => void;
 	onCreateNew: (type: "blank" | "ai" | "template") => void;
+	workflows: Array<{
+		id: string;
+		name?: string | null;
+		updatedAt?: Date | string | null;
+		nodes?: unknown;
+	}>;
 }
 
 export function MissionControl({
@@ -17,33 +23,37 @@ export function MissionControl({
 	onClose,
 	onSelectWorkflow,
 	onCreateNew,
+	workflows,
 }: MissionControlProps) {
 	const [mode, setMode] = useState<"menu" | "create">("menu");
 
-	// Mock Data
-	const recentWorkflows = [
-		{
-			id: "wf-1",
-			name: "Nike Summer Campaign",
-			status: "active",
-			nodes: 12,
-			updated: "2m ago",
-		},
-		{
-			id: "wf-2",
-			name: "Product Cleanup v2",
-			status: "draft",
-			nodes: 5,
-			updated: "4h ago",
-		},
-		{
-			id: "wf-3",
-			name: "Social Video Gen",
-			status: "paused",
-			nodes: 8,
-			updated: "1d ago",
-		},
-	];
+	const recentWorkflows = workflows.slice(0, 10).map((wf) => {
+		const updatedAt =
+			wf.updatedAt instanceof Date
+				? wf.updatedAt
+				: wf.updatedAt
+					? new Date(wf.updatedAt)
+					: null;
+		const nodeCount = Array.isArray(wf.nodes) ? wf.nodes.length : 0;
+		return {
+			id: wf.id,
+			name: wf.name ?? "Untitled",
+			updatedAt,
+			nodes: nodeCount,
+		};
+	});
+
+	const formatUpdated = (date: Date | null) => {
+		if (!date) return "";
+		const diffMs = Date.now() - date.getTime();
+		const diffMin = Math.round(diffMs / 60_000);
+		if (diffMin < 1) return "now";
+		if (diffMin < 60) return `${diffMin}m ago`;
+		const diffHr = Math.round(diffMin / 60);
+		if (diffHr < 24) return `${diffHr}h ago`;
+		const diffDay = Math.round(diffHr / 24);
+		return `${diffDay}d ago`;
+	};
 
 	return (
 		<div className="fixed top-[60px] left-6 z-[60]">
@@ -144,12 +154,15 @@ export function MissionControl({
 																{wf.name}
 															</span>
 															<span className="text-[9px] font-mono text-neutral-400">
-																UPD: {wf.updated}
+																UPD: {formatUpdated(wf.updatedAt)}
 															</span>
 														</div>
-														<div
-															className={`w-1.5 h-1.5 rounded-full ${wf.status === "active" ? "bg-[#FF4D00]" : "bg-neutral-300 dark:bg-neutral-700"}`}
-														/>
+														<div className="flex items-center gap-3">
+															<span className="text-[9px] font-mono text-neutral-400 tabular-nums">
+																{wf.nodes}N
+															</span>
+															<div className="w-1.5 h-1.5 rounded-full bg-[#FF4D00]" />
+														</div>
 													</button>
 												))}
 											</div>

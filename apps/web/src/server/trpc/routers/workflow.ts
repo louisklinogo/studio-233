@@ -2,11 +2,9 @@ import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { Prisma, prisma } from "@studio233/db";
 import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
-import { nanoid } from "nanoid";
 import { z } from "zod";
 import { inngest } from "@/inngest/client";
 import { workflowRequestedEvent } from "@/inngest/events";
-import { kv } from "@/lib/kv";
 import { publicProcedure, router } from "../init";
 
 const nodeSchema = z
@@ -36,16 +34,57 @@ const definitionSchema = z.object({
 	edges: z.array(edgeSchema),
 });
 
-type WorkflowDefinition = z.infer<typeof definitionSchema> & {
-	id: string;
-	userId: string;
-	updatedAt: number;
-};
+type SerializableNode = z.infer<typeof nodeSchema>;
+type SerializableEdge = z.infer<typeof edgeSchema>;
 
-const listKey = (userId: string, projectId: string) =>
-	`workflow:list:${userId}:${projectId}`;
-const defKey = (userId: string, projectId: string, id: string) =>
-	`workflow:def:${userId}:${projectId}:${id}`;
+function getExecutionOrder(
+	nodes: SerializableNode[],
+	edges: SerializableEdge[],
+) {
+	const nodeIds = nodes.map((n) => n.id);
+	const inDegree = new Map<string, number>();
+	const adjacencyList = new Map<string, string[]>();
+
+	for (const nodeId of nodeIds) {
+		inDegree.set(nodeId, 0);
+		adjacencyList.set(nodeId, []);
+	}
+
+	for (const edge of edges) {
+		if (!adjacencyList.has(edge.source)) {
+			adjacencyList.set(edge.source, []);
+		}
+		adjacencyList.get(edge.source)?.push(edge.target);
+		inDegree.set(edge.target, (inDegree.get(edge.target) ?? 0) + 1);
+	}
+
+	const queue = nodeIds.filter((id) => (inDegree.get(id) ?? 0) === 0);
+	const result: string[] = [];
+
+	while (queue.length > 0) {
+		const current = queue.shift();
+		if (!current) break;
+		result.push(current);
+
+		const neighbors = adjacencyList.get(current) ?? [];
+		for (const neighbor of neighbors) {
+			const nextDegree = (inDegree.get(neighbor) ?? 0) - 1;
+			inDegree.set(neighbor, nextDegree);
+			if (nextDegree === 0) {
+				queue.push(neighbor);
+			}
+		}
+	}
+
+	if (result.length !== nodeIds.length) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Workflow contains a cycle or disconnected references",
+		});
+	}
+
+	return result;
+}
 
 async function assertProjectAccess(userId: string, projectId: string) {
 	const project = await prisma.project.findFirst({
@@ -132,11 +171,14 @@ export const workflowRouter = router({
 				throw new TRPCError({ code: "UNAUTHORIZED" });
 			}
 			await assertProjectAccess(session.user.id, input.projectId);
-			const items =
-				(await kv.get<WorkflowDefinition[]>(
-					listKey(session.user.id, input.projectId),
-				)) || [];
-			return items;
+
+			return prisma.workflowDefinition.findMany({
+				where: {
+					projectId: input.projectId,
+					userId: session.user.id,
+				},
+				orderBy: { updatedAt: "desc" },
+			});
 		}),
 
 	get: publicProcedure
@@ -148,9 +190,14 @@ export const workflowRouter = router({
 				throw new TRPCError({ code: "UNAUTHORIZED" });
 			}
 			await assertProjectAccess(session.user.id, input.projectId);
-			const def = await kv.get<WorkflowDefinition>(
-				defKey(session.user.id, input.projectId, input.id),
-			);
+
+			const def = await prisma.workflowDefinition.findFirst({
+				where: {
+					id: input.id,
+					projectId: input.projectId,
+					userId: session.user.id,
+				},
+			});
 			if (!def) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
@@ -170,31 +217,16 @@ export const workflowRouter = router({
 			}
 			await assertProjectAccess(session.user.id, input.projectId);
 
-			try {
-				const id = nanoid();
-				const now = Date.now();
-				const definition: WorkflowDefinition = {
-					...input,
-					id,
+			return prisma.workflowDefinition.create({
+				data: {
+					name: input.name,
+					description: input.description,
+					projectId: input.projectId,
 					userId: session.user.id,
-					updatedAt: now,
-				};
-
-				const list =
-					(await kv.get<WorkflowDefinition[]>(
-						listKey(session.user.id, input.projectId),
-					)) || [];
-				await kv.set(defKey(session.user.id, input.projectId, id), definition);
-				await kv.set(listKey(session.user.id, input.projectId), [
-					...list.filter((item) => item.id !== id),
-					definition,
-				]);
-
-				return definition;
-			} catch (error) {
-				console.error("workflow.create failed", error);
-				throw error;
-			}
+					nodes: input.nodes as Prisma.InputJsonValue,
+					edges: input.edges as Prisma.InputJsonValue,
+				},
+			});
 		}),
 
 	update: publicProcedure
@@ -220,9 +252,14 @@ export const workflowRouter = router({
 			}
 			await assertProjectAccess(session.user.id, input.projectId!);
 
-			const existing = await kv.get<WorkflowDefinition>(
-				defKey(session.user.id, input.projectId!, input.id),
-			);
+			const existing = await prisma.workflowDefinition.findFirst({
+				where: {
+					id: input.id,
+					projectId: input.projectId!,
+					userId: session.user.id,
+				},
+				select: { id: true },
+			});
 			if (!existing) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
@@ -230,26 +267,15 @@ export const workflowRouter = router({
 				});
 			}
 
-			const updated: WorkflowDefinition = {
-				...existing,
-				...input,
-				updatedAt: Date.now(),
-			};
-
-			const list =
-				(await kv.get<WorkflowDefinition[]>(
-					listKey(session.user.id, input.projectId!),
-				)) || [];
-			await kv.set(
-				defKey(session.user.id, input.projectId!, input.id),
-				updated,
-			);
-			await kv.set(
-				listKey(session.user.id, input.projectId!),
-				list.map((item) => (item.id === input.id ? updated : item)),
-			);
-
-			return updated;
+			return prisma.workflowDefinition.update({
+				where: { id: input.id },
+				data: {
+					name: input.name,
+					description: input.description,
+					nodes: input.nodes as Prisma.InputJsonValue | undefined,
+					edges: input.edges as Prisma.InputJsonValue | undefined,
+				},
+			});
 		}),
 
 	delete: publicProcedure
@@ -262,16 +288,22 @@ export const workflowRouter = router({
 			}
 			await assertProjectAccess(session.user.id, input.projectId);
 
-			const list =
-				(await kv.get<WorkflowDefinition[]>(
-					listKey(session.user.id, input.projectId),
-				)) || [];
-			await kv.del(defKey(session.user.id, input.projectId, input.id));
-			await kv.set(
-				listKey(session.user.id, input.projectId),
-				list.filter((item) => item.id !== input.id),
-			);
+			const existing = await prisma.workflowDefinition.findFirst({
+				where: {
+					id: input.id,
+					projectId: input.projectId,
+					userId: session.user.id,
+				},
+				select: { id: true },
+			});
+			if (!existing) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Workflow not found",
+				});
+			}
 
+			await prisma.workflowDefinition.delete({ where: { id: input.id } });
 			return { success: true } as const;
 		}),
 
@@ -291,9 +323,13 @@ export const workflowRouter = router({
 			}
 			await assertProjectAccess(session.user.id, input.projectId);
 
-			const def = await kv.get<WorkflowDefinition>(
-				defKey(session.user.id, input.projectId, input.workflowId),
-			);
+			const def = await prisma.workflowDefinition.findFirst({
+				where: {
+					id: input.workflowId,
+					projectId: input.projectId,
+					userId: session.user.id,
+				},
+			});
 			if (!def) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
@@ -301,14 +337,27 @@ export const workflowRouter = router({
 				});
 			}
 
+			const nodes = (def.nodes ?? []) as unknown as SerializableNode[];
+			const edges = (def.edges ?? []) as unknown as SerializableEdge[];
+			const executionOrder = getExecutionOrder(nodes, edges);
+
 			const run = await prisma.workflowRun.create({
 				data: {
+					workflowDefinitionId: def.id,
 					workflow: def.id,
 					projectId: input.projectId,
 					userId: session.user.id,
 					input: (input.payload ?? Prisma.JsonNull) as Prisma.InputJsonValue,
 					state: "PENDING",
-					output: { definition: def } as Prisma.InputJsonValue,
+					output: {
+						definitionSnapshot: {
+							id: def.id,
+							name: def.name,
+							description: def.description,
+							nodes,
+							edges,
+						},
+					} as Prisma.InputJsonValue,
 				},
 				select: {
 					id: true,
@@ -317,16 +366,26 @@ export const workflowRouter = router({
 				},
 			});
 
-			if (def.nodes?.length) {
+			if (nodes.length) {
 				await prisma.workflowStep.createMany({
-					data: def.nodes.map((node, index) => ({
-						runId: run.id,
-						name: (node.data as any)?.label ?? node.id,
-						order: index,
-						toolName: node.type ?? undefined,
-						state: "PENDING",
-						input: (node.data as any) ?? {},
-					})),
+					data: executionOrder.map((nodeId, index) => {
+						const node = nodes.find((n) => n.id === nodeId);
+						const data =
+							(node?.data as Record<string, unknown> | undefined) ?? {};
+						const pluginId =
+							typeof data.pluginId === "string" ? data.pluginId : undefined;
+						return {
+							runId: run.id,
+							name:
+								typeof data.label === "string"
+									? data.label
+									: (node?.id ?? nodeId),
+							order: index,
+							toolName: pluginId ?? node?.type ?? undefined,
+							state: "PENDING",
+							input: data as Prisma.InputJsonValue,
+						};
+					}),
 				});
 			}
 
@@ -339,8 +398,8 @@ export const workflowRouter = router({
 						workflowId: def.id,
 						projectId: input.projectId,
 						userId: session.user.id,
-						nodes: def.nodes,
-						edges: def.edges,
+						nodes,
+						edges,
 						input: input.payload ?? {},
 						idempotencyKey: run.id,
 					},

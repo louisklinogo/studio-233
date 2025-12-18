@@ -19,7 +19,7 @@ import { SystemOverlay } from "@/components/landing/SystemOverlay";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { SmoothScroll } from "@/components/ui/smooth-scroll";
 
-type OverlayType = "modules" | "pricing" | "protocols" | null;
+type OverlayType = "modules" | "pricing" | "protocols" | "manifesto" | null;
 
 export default function HomePage() {
 	const [isBooted, setIsBooted] = useState(false);
@@ -67,7 +67,7 @@ export default function HomePage() {
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ duration: 1 }}
-					className="min-h-dvh bg-[#f4f4f0] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-50 font-sans selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black flex flex-col relative"
+					className="dark min-h-dvh bg-[#f4f4f0] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-50 font-sans selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black flex flex-col relative"
 				>
 					{/* Reactive Background Grid */}
 					<ReactiveGrid />
@@ -83,7 +83,6 @@ export default function HomePage() {
 						</div>
 						<div className="text-right hidden md:flex flex-col items-end gap-4">
 							<div className="flex items-center gap-4">
-								<PhysicalThemeSwitch />
 								<StatusPill />
 							</div>
 							<GlitchCoordinates />

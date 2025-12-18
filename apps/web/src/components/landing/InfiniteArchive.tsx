@@ -169,7 +169,7 @@ function StableEffects() {
 
 	return (
 		<EffectComposer
-			disableNormalPass
+			enableNormalPass={false}
 			multisampling={0} // Disable MSAA for performance
 			autoClear={false}
 		>

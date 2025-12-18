@@ -23,6 +23,12 @@ interface NodeInspectorProps {
 	onDelete: () => void;
 	isOutputVisible: boolean;
 	hasOutputData: boolean;
+	triggerFiles?: File[];
+	isTriggerUploading?: boolean;
+	triggerUploadProgress?: number;
+	onTriggerFilesSelected?: (files: File[]) => void;
+	onTriggerRemoveFile?: (index: number) => void;
+	onTriggerUpload?: () => void;
 }
 
 export function NodeInspector({
@@ -35,10 +41,30 @@ export function NodeInspector({
 	onDelete,
 	isOutputVisible,
 	hasOutputData,
+	triggerFiles,
+	isTriggerUploading,
+	triggerUploadProgress,
+	onTriggerFilesSelected,
+	onTriggerRemoveFile,
+	onTriggerUpload,
 }: NodeInspectorProps) {
 	const [activeTab, setActiveTab] = useState<"config" | "source">("source");
-	const [files, setFiles] = useState<File[]>([]); // Local state for demo
+	const [localFiles, setLocalFiles] = useState<File[]>([]);
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+
+	const effectiveFiles = triggerFiles ?? localFiles;
+	const handleFilesSelected = onTriggerFilesSelected
+		? onTriggerFilesSelected
+		: (files: File[]) => setLocalFiles((prev) => [...prev, ...files]);
+	const handleRemoveFile = onTriggerRemoveFile
+		? onTriggerRemoveFile
+		: (index: number) =>
+				setLocalFiles((prev) => prev.filter((_, idx) => idx !== index));
+	const handleUpload = onTriggerUpload
+		? onTriggerUpload
+		: () => {
+				// no-op: wiring happens in StudioOperatorClient
+			};
 
 	// Determine Inspector Width based on Content
 	// Fixed width of 480px as per user requirement for "Rich InputQueue" support
@@ -155,14 +181,12 @@ export function NodeInspector({
 				{nodeType === "trigger" && activeTab === "source" ? (
 					<div className="absolute inset-0 bg-white dark:bg-[#0a0a0a]">
 						<InputQueue
-							files={files}
-							onFilesSelected={(newFiles) => setFiles([...files, ...newFiles])}
-							onRemoveFile={(i) =>
-								setFiles(files.filter((_, idx) => idx !== i))
-							}
-							onUpload={() => console.log("Upload triggered")}
-							isUploading={false}
-							uploadProgress={0}
+							files={effectiveFiles}
+							onFilesSelected={handleFilesSelected}
+							onRemoveFile={handleRemoveFile}
+							onUpload={handleUpload}
+							isUploading={isTriggerUploading ?? false}
+							uploadProgress={triggerUploadProgress ?? 0}
 						/>
 					</div>
 				) : (

@@ -76,6 +76,31 @@ export function LoginForm() {
 	};
 
 	// Braun Industrial Toggle Component
+	const ToggleVariant = ({
+		active,
+		onClick,
+		label,
+	}: {
+		active: boolean;
+		onClick: () => void;
+		label: string;
+	}) => (
+		<button
+			onClick={onClick}
+			className={`relative px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] transition-all duration-300 ${
+				active
+					? "bg-[#1a1a1a] text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.5)] border-t border-l border-white/5 border-b border-black"
+					: "text-neutral-600 hover:text-neutral-400"
+			}`}
+		>
+			{active && (
+				<div className="absolute top-0 left-0 w-full h-[1px] bg-accent-critical/50" />
+			)}
+			<span className="relative z-10">{label}</span>
+		</button>
+	);
+
+	// Braun Industrial Toggle Component
 	const ToggleSwitch = ({
 		active,
 		onClick,
@@ -87,13 +112,21 @@ export function LoginForm() {
 	}) => (
 		<button
 			onClick={onClick}
-			className="flex flex-col gap-2 group cursor-pointer"
+			className="flex flex-col gap-2 group cursor-pointer relative"
 		>
+			{/* Track Markings */}
+			{active && (
+				<div className="absolute -left-1 -right-1 top-0 h-1 flex justify-between px-0.5 pointer-events-none opacity-40">
+					{[...Array(4)].map((_, i) => (
+						<div key={i} className="w-[1px] h-full bg-accent-critical/40" />
+					))}
+				</div>
+			)}
 			<div
-				className={`h-1 w-8 transition-colors duration-300 ${active ? "bg-[#FF4D00]" : "bg-neutral-800 group-hover:bg-neutral-700"}`}
+				className={`h-1 w-8 transition-colors duration-300 relative ${active ? "bg-accent-critical shadow-[0_0_8px_rgba(234,88,12,0.3)]" : "bg-[#1a1a1a] group-hover:bg-[#222]"}`}
 			/>
 			<span
-				className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${active ? "text-white" : "text-neutral-600 group-hover:text-neutral-400"}`}
+				className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${active ? "text-foreground" : "text-neutral-600 group-hover:text-neutral-400"}`}
 			>
 				{label}
 			</span>
@@ -104,31 +137,40 @@ export function LoginForm() {
 		<div className="flex-1 flex flex-col h-full justify-between">
 			<div className="space-y-8">
 				{isAuthenticated && (
-					<div className="border border-emerald-900/30 bg-emerald-950/10 p-4 space-y-3">
-						<div className="flex items-center gap-2 font-mono text-[10px] tracking-wider text-emerald-500">
-							<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-							CHANNEL SECURE — SESSION ACTIVE
-						</div>
-						<div className="flex flex-wrap gap-2">
-							<button
-								onClick={handleContinue}
-								className="px-4 py-2 text-xs uppercase font-mono bg-emerald-500 text-black hover:bg-emerald-400 transition-colors font-bold"
-							>
-								Proceed to Console
-							</button>
-							<button
-								onClick={handleSwitchAccount}
-								disabled={isSwitchingAccount}
-								className="px-4 py-2 text-xs uppercase font-mono border border-neutral-800 text-neutral-500 hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
-							>
-								{isSwitchingAccount ? "Terminating..." : "Switch Identity"}
-							</button>
+					<div className="bg-[#0a0a0a] border border-[#222] p-5 relative overflow-hidden group/session">
+						{/* Subtle background glow */}
+						<div className="absolute inset-0 bg-emerald-500/5 opacity-40" />
+
+						<div className="relative z-10 space-y-4">
+							<div className="flex items-center gap-3 font-mono text-[10px] tracking-wider text-emerald-500/80">
+								<div className="relative w-2 h-2">
+									<span className="animate-ping absolute inset-0 rounded-full bg-emerald-500 opacity-20" />
+									<span className="relative block w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+								</div>
+								<span>SECURE_DATA_LINK — ACTIVE</span>
+							</div>
+
+							<div className="flex flex-wrap gap-3 pt-1">
+								<button
+									onClick={handleContinue}
+									className="px-5 py-2 text-xs uppercase font-mono bg-[#1a1a1a] text-white border-t border-l border-[#333] border-b border-r border-black hover:bg-black transition-all shadow-md group-hover/session:border-emerald-500/30"
+								>
+									Open Terminal
+								</button>
+								<button
+									onClick={handleSwitchAccount}
+									disabled={isSwitchingAccount}
+									className="px-5 py-2 text-xs uppercase font-mono text-neutral-600 hover:text-neutral-400 transition-colors disabled:opacity-50"
+								>
+									{isSwitchingAccount ? "Terminating..." : "Drop Session"}
+								</button>
+							</div>
 						</div>
 					</div>
 				)}
 
 				{/* Mode Selection (Industrial Toggles) */}
-				<div className="flex items-start gap-8 border-b border-neutral-900 pb-6 mb-8">
+				<div className="flex items-start gap-8 border-b border-border pb-6 mb-8">
 					<ToggleSwitch
 						active={mode === "federated"}
 						onClick={() => setMode("federated")}
@@ -150,20 +192,17 @@ export function LoginForm() {
 							exit={{ opacity: 0, height: 0 }}
 							className="flex justify-end -mt-4 mb-4"
 						>
-							<div className="flex gap-1 bg-[#0f0f0f] p-1 border border-neutral-800">
-								{["signal", "receipt"].map((v) => (
-									<button
-										key={v}
-										onClick={() => setVariant(v as Variant)}
-										className={`px-3 py-1 font-mono text-[9px] uppercase tracking-wider transition-colors ${
-											variant === v
-												? "bg-[#222] text-white border border-neutral-700"
-												: "text-neutral-600 hover:text-neutral-400"
-										}`}
-									>
-										{v}
-									</button>
-								))}
+							<div className="flex bg-[#050505] p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)] border border-[#1a1a1a]">
+								<ToggleVariant
+									active={variant === "signal"}
+									onClick={() => setVariant("signal")}
+									label="Signal"
+								/>
+								<ToggleVariant
+									active={variant === "receipt"}
+									onClick={() => setVariant("receipt")}
+									label="Receipt"
+								/>
 							</div>
 						</motion.div>
 					)}
@@ -178,12 +217,12 @@ export function LoginForm() {
 							exit={{ opacity: 0, y: -10 }}
 							className="py-4 space-y-6"
 						>
-							<div className="flex items-center gap-4 text-neutral-600">
-								<div className="h-px flex-1 bg-neutral-900" />
+							<div className="flex items-center gap-4 text-muted-foreground">
+								<div className="h-px flex-1 bg-border" />
 								<p className="font-mono text-[10px] uppercase tracking-widest">
 									Select Identity Provider
 								</p>
-								<div className="h-px flex-1 bg-neutral-900" />
+								<div className="h-px flex-1 bg-border" />
 							</div>
 
 							<FederatedLoginButton
@@ -208,15 +247,15 @@ export function LoginForm() {
 			</div>
 
 			{/* Footer Status */}
-			<div className="pt-6 mt-8 border-t border-neutral-900">
+			<div className="pt-6 mt-8 border-t border-[#1a1a1a]">
 				<div className="flex justify-between items-center font-mono text-[9px] text-neutral-600 uppercase tracking-widest">
 					<div className="flex items-center gap-2">
-						<SwissIcons.Lock size={10} />
-						<span>TLS_1.3 /// ENCRYPTED</span>
+						<SwissIcons.Lock size={10} className="text-neutral-700" />
+						<span>AUTH_GATEWAY // PHOENIX-RELAY</span>
 					</div>
 					<span className="flex items-center gap-2">
-						GATEWAY_STATUS
-						<span className="w-1.5 h-1.5 rounded-full bg-[#FF4D00] animate-pulse" />
+						<span className="text-neutral-700">STATUS.</span>
+						<span className="w-1 h-1 rounded-full bg-accent-critical shadow-[0_0_8px_rgba(234,88,12,0.8)]" />
 					</span>
 				</div>
 			</div>

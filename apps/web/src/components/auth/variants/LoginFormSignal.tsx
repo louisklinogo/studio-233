@@ -54,23 +54,29 @@ export function LoginFormSignal() {
 
 	return (
 		<div className="space-y-6 py-8 relative">
-			{/* SIGNAL STATUS BAR */}
-			<div className="absolute top-0 right-0 font-mono text-[9px] text-[#FF4D00] flex items-center gap-2">
-				{status !== "idle" && (
-					<span className="animate-pulse">TRANSMITTING...</span>
-				)}
-				<div className="flex gap-0.5">
-					{[1, 2, 3, 4].map((i) => (
-						<div
-							key={i}
-							className={`w-1 h-3 transition-colors ${
-								status === "idle"
-									? "bg-neutral-200 dark:bg-neutral-800"
-									: "bg-[#FF4D00]"
-							}`}
-							style={{ opacity: status === "idle" ? 1 : Math.random() }} // Fake signal noise
-						/>
-					))}
+			{/* Physical Signal Meter */}
+			<div className="absolute top-4 right-0 flex flex-col items-end gap-1.5">
+				<div className="flex items-center gap-2 bg-[#0a0a0a] px-2 py-1.5 border border-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)] rounded-[1px]">
+					<span className="font-mono text-[6px] text-neutral-600 uppercase tracking-tighter">
+						SIGNAL_LOAD
+					</span>
+					<div className="flex items-end gap-[1.5px] h-3">
+						{[...Array(4)].map((_, i) => (
+							<div
+								key={i}
+								className={`w-[1.5px] transition-all duration-500 rounded-px ${
+									status === "idle"
+										? "bg-neutral-800 h-1"
+										: i <= 2
+											? "bg-accent-critical h-3 shadow-[0_0_8px_rgba(234,88,12,0.6)]"
+											: "bg-neutral-900 h-1.5"
+								}`}
+							/>
+						))}
+					</div>
+				</div>
+				<div className="font-mono text-[5px] text-neutral-700 tracking-[0.3em] uppercase px-1">
+					Packet_Flow: Established
 				</div>
 			</div>
 
@@ -91,9 +97,9 @@ export function LoginFormSignal() {
 							onChange={(e) => setEmail(e.target.value)}
 							className={`w-full bg-transparent border-b-2 px-0 py-3 font-mono text-lg focus:outline-none rounded-none transition-colors ${
 								status === "idle"
-									? "border-neutral-300 dark:border-neutral-700 focus:border-[#FF4D00]"
-									: "border-[#FF4D00] text-[#FF4D00]"
-							}`}
+									? "border-border focus:border-accent-critical text-neutral-100"
+									: "border-accent-critical text-accent-critical opacity-80"
+							} disabled:text-neutral-400`}
 							placeholder="ENTER_EMAIL..."
 						/>
 						{status !== "idle" && (
@@ -103,7 +109,7 @@ export function LoginFormSignal() {
 									setStatus("idle");
 									setOtp("");
 								}}
-								className="absolute right-0 top-3 text-[9px] font-mono text-neutral-400 hover:text-[#FF4D00] underline"
+								className="absolute right-0 top-3 text-[9px] font-mono text-muted-foreground hover:text-accent-critical underline"
 							>
 								RESET_SIGNAL
 							</button>
@@ -129,7 +135,7 @@ export function LoginFormSignal() {
 								autoFocus
 								value={otp}
 								onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
-								className="w-full bg-neutral-100 dark:bg-neutral-900 border-none px-4 py-4 font-mono text-xl tracking-[0.5em] focus:outline-none focus:ring-1 focus:ring-[#FF4D00] text-center"
+								className="w-full bg-[#050505] border border-[#1a1a1a] px-4 py-4 font-mono text-xl tracking-[0.5em] focus:outline-none focus:border-accent-critical focus:ring-0 text-neutral-100 text-center shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]"
 								placeholder="000 000"
 							/>
 						</motion.div>
@@ -139,7 +145,7 @@ export function LoginFormSignal() {
 				<button
 					type="submit"
 					disabled={status === "sending" || status === "verifying"}
-					className="w-full h-14 relative overflow-hidden bg-black dark:bg-white text-white dark:text-black font-mono text-sm uppercase tracking-widest disabled:opacity-70 group"
+					className="w-full h-14 relative overflow-hidden bg-foreground text-background font-mono text-sm uppercase tracking-widest disabled:opacity-70 group"
 				>
 					<span className="relative z-10 flex items-center justify-center gap-2">
 						{status === "idle" && "INITIATE_SEQUENCE"}
@@ -151,7 +157,7 @@ export function LoginFormSignal() {
 					{/* Progress Bar Fill */}
 					{(status === "sending" || status === "verifying") && (
 						<motion.div
-							className="absolute inset-0 bg-[#FF4D00] z-0"
+							className="absolute inset-0 bg-accent-critical z-0"
 							initial={{ x: "-100%" }}
 							animate={{ x: "0%" }}
 							transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}

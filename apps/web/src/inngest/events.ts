@@ -19,6 +19,9 @@ export const workflowRequestedSchema = z.object({
 						label: z.string().optional(),
 						description: z.string().optional(),
 						status: z.string().optional(),
+						pluginId: z.string().optional(),
+						pluginVersion: z.string().optional(),
+						executor: z.enum(["native", "inngest", "python-e2b"]).optional(),
 						config: z.record(z.string(), z.unknown()).optional(),
 						icon: z.string().optional(),
 					})
@@ -29,12 +32,15 @@ export const workflowRequestedSchema = z.object({
 		.default([]),
 	edges: z
 		.array(
-			z.object({
-				source: z.string(),
-				target: z.string(),
-				animated: z.boolean().optional(),
-				markerEnd: z.record(z.string(), z.unknown()).optional(),
-			}),
+			z
+				.object({
+					id: z.string().optional(),
+					source: z.string(),
+					target: z.string(),
+					animated: z.boolean().optional(),
+					markerEnd: z.record(z.string(), z.unknown()).optional(),
+				})
+				.passthrough(),
 		)
 		.default([]),
 	input: z.record(z.string(), z.unknown()).optional(),

@@ -1,5 +1,5 @@
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
-import { prisma } from "@studio233/db";
+import { Prisma, prisma } from "@studio233/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../init";
@@ -46,6 +46,20 @@ export const projectRouter = router({
 							name: "Main Canvas",
 							projectId: newProject.id,
 							data: {}, // Empty canvas data
+						},
+					});
+				}
+
+				// Create a default workflow definition for STUDIO projects
+				if (input.type === "STUDIO") {
+					await tx.workflowDefinition.create({
+						data: {
+							name: "Main Workflow",
+							description: "",
+							projectId: newProject.id,
+							userId: session.user.id,
+							nodes: [],
+							edges: [],
 						},
 					});
 				}
@@ -139,10 +153,11 @@ export const projectRouter = router({
 				});
 			}
 
-			// Fetch original project with full canvas structure
+			// Fetch original project with full canvas structure (and workflow definitions)
 			const originalProject = await prisma.project.findUnique({
 				where: { id: input.id },
 				include: {
+					workflowDefinitions: true,
 					canvases: {
 						include: {
 							elements: true,
@@ -167,30 +182,48 @@ export const projectRouter = router({
 						description: originalProject.description,
 						thumbnail: originalProject.thumbnail,
 						userId: session.user.id,
+						workspaceId: originalProject.workspaceId,
+						type: originalProject.type,
 					},
 				});
 
-				// 2. Duplicate Canvases and Elements
-				for (const canvas of originalProject.canvases) {
-					const newCanvas = await tx.canvas.create({
-						data: {
-							name: canvas.name,
-							width: canvas.width,
-							height: canvas.height,
-							data: canvas.data ?? {},
-							projectId: newProject.id,
-						},
-					});
+				if (originalProject.type === "CANVAS") {
+					// 2. Duplicate Canvases and Elements
+					for (const canvas of originalProject.canvases) {
+						const newCanvas = await tx.canvas.create({
+							data: {
+								name: canvas.name,
+								width: canvas.width,
+								height: canvas.height,
+								data: canvas.data ?? {},
+								projectId: newProject.id,
+							},
+						});
 
-					// Bulk create elements for this canvas
-					if (canvas.elements.length > 0) {
-						await tx.canvasElement.createMany({
-							data: canvas.elements.map((el) => ({
-								canvasId: newCanvas.id,
-								kind: el.kind,
-								data: el.data ?? {},
-								zIndex: el.zIndex,
-							})),
+						// Bulk create elements for this canvas
+						if (canvas.elements.length > 0) {
+							await tx.canvasElement.createMany({
+								data: canvas.elements.map((el) => ({
+									canvasId: newCanvas.id,
+									kind: el.kind,
+									data: el.data ?? {},
+									zIndex: el.zIndex,
+								})),
+							});
+						}
+					}
+				} else {
+					// 2. Duplicate Workflow Definitions
+					for (const workflow of originalProject.workflowDefinitions) {
+						await tx.workflowDefinition.create({
+							data: {
+								name: workflow.name,
+								description: workflow.description,
+								userId: session.user.id,
+								projectId: newProject.id,
+								nodes: (workflow.nodes ?? []) as Prisma.InputJsonValue,
+								edges: (workflow.edges ?? []) as Prisma.InputJsonValue,
+							},
 						});
 					}
 				}

@@ -52,6 +52,7 @@ const backgroundRemovalCoreOutputSchema = z.object({
 export const backgroundRemovalInputSchema = z.object({
 	imageUrl: z.string().url(),
 	apiKey: z.string().optional(),
+	provider: z.enum(["auto", "fal", "gemini"]).optional(),
 });
 
 export const backgroundRemovalOutputSchema =
@@ -71,10 +72,18 @@ async function executeBackgroundRemoval(
 	input: BackgroundRemovalInput,
 ): Promise<z.infer<typeof backgroundRemovalCoreOutputSchema>> {
 	const { imageUrl, apiKey } = input;
+	const provider = input.provider ?? "auto";
 	const falKey = apiKey || env.falKey;
 
+	const shouldTryFal = provider === "auto" || provider === "fal";
+	const shouldTryGemini = provider === "auto" || provider === "gemini";
+
+	if (!shouldTryFal && !shouldTryGemini) {
+		throw new Error(`Invalid provider selection: ${provider}`);
+	}
+
 	// Try FAL first
-	if (falKey) {
+	if (shouldTryFal && falKey) {
 		try {
 			const fal = createFalClient({ credentials: () => falKey });
 			const result = await fal.subscribe("fal-ai/bria/background/remove", {
@@ -90,6 +99,12 @@ async function executeBackgroundRemoval(
 				error,
 			);
 		}
+	}
+
+	if (!shouldTryGemini) {
+		throw new Error(
+			"FAL background removal failed and Gemini fallback is disabled",
+		);
 	}
 
 	// Fallback to Gemini
