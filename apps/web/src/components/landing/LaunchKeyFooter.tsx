@@ -53,18 +53,21 @@ export const LaunchKeyFooter = () => {
 				{/* Engraved Branding */}
 				<div className="flex flex-col items-center gap-4">
 					<h1
-						className="text-[18vw] md:text-[12rem] font-bold tracking-tighter leading-none text-[#1a1a1a]"
+						className="text-[18vw] md:text-[12rem] font-bold tracking-tighter leading-none text-[#151515]"
 						style={{
 							textShadow:
-								"0px 1px 0px rgba(255,255,255,0.05), inset 0px 2px 4px rgba(0,0,0,0.8)",
+								"0px 1px 0px rgba(255,255,255,0.08), inset 0px 2px 4px rgba(0,0,0,0.9)",
 						}}
 					>
 						STUDIO+233
 					</h1>
-					<div className="flex items-center gap-4 text-[10px] font-mono text-neutral-600 tracking-[0.5em] uppercase">
-						<span>SYS.VER.2.0</span>
-						<span>///</span>
-						<span>READY</span>
+					<div className="flex items-center gap-4 text-[10px] font-mono text-neutral-500 tracking-[0.5em] uppercase">
+						<span className="flex items-center gap-2">
+							<div className="w-1 h-1 bg-[#FF4D00] rounded-full" />
+							SYS.VER.2.0
+						</span>
+						<span className="text-neutral-800">///</span>
+						<span className="text-neutral-400">STATE: READY</span>
 					</div>
 				</div>
 
@@ -91,39 +94,43 @@ export const LaunchKeyFooter = () => {
 						<motion.div
 							drag="x"
 							dragConstraints={{ left: 0, right: CONSTRAINT }}
-							dragElastic={0.05}
+							dragElastic={0}
 							dragMomentum={false}
 							onDragStart={() => {
-								if ("vibrate" in navigator) navigator.vibrate(10);
+								if ("vibrate" in navigator) navigator.vibrate(20);
 							}}
 							onDrag={(e, info) => {
-								// Haptic "clicks" every 20px
-								if (Math.round(info.offset.x) % 40 === 0) {
+								// Precise mechanical "clicks"
+								const step = 20;
+								if (Math.round(info.offset.x) % step === 0) {
 									if ("vibrate" in navigator) navigator.vibrate(5);
 								}
 							}}
 							onDragEnd={handleDragEnd}
 							animate={controls}
 							style={{ x }}
-							className="relative z-20 w-[64px] h-[72px] bg-[#1a1a1a] rounded-[2px] border-t border-l border-[#333] border-b border-r border-black shadow-[0_4px_12px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] cursor-grab active:cursor-grabbing flex items-center justify-center group"
+							className="relative z-20 w-[68px] h-[76px] bg-[#1a1a1a] rounded-[2px] border-t border-l border-[#333] border-b border-r border-black shadow-[0_8px_24px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.1)] cursor-grab active:cursor-grabbing flex items-center justify-center group"
 						>
-							{/* Ribbed Texture (Grip) */}
+							{/* Ribbed Texture (Milled Aluminum Grip) */}
 							<div className="flex gap-1.5 pointer-events-none">
-								<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
-								<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
-								<div className="w-[2px] h-8 bg-[#0a0a0a] border-r border-[#2a2a2a]" />
+								{[...Array(4)].map((_, i) => (
+									<div
+										key={i}
+										className="w-[1.5px] h-10 bg-[#050505] border-r border-[#2a2a2a]/50"
+									/>
+								))}
 							</div>
 
 							{/* Status LED on Handle */}
-							<div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-neutral-800 overflow-hidden shadow-[0_0_8px_rgba(0,0,0,0.5)]">
+							<div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-neutral-900 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)] flex items-center justify-center">
 								<motion.div
 									className="w-full h-full"
 									style={{
 										backgroundColor: ledColor,
 										boxShadow: useTransform(
 											progress,
-											[0.8, 1],
-											["0 0 0px #ea580c", "0 0 10px #10b981"],
+											[0.85, 1],
+											["0 0 0px #ea580c", "0 0 12px #10b981"],
 										),
 									}}
 								/>

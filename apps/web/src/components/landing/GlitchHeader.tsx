@@ -50,8 +50,41 @@ export const GlitchHeader = () => {
 	}, [index]);
 
 	return (
-		<div>
-			<p className="text-xs font-mono text-[#FF4D00] h-4">{`> ${text}`}</p>
+		<div className="relative group">
+			{/* Integrated HUD Readout */}
+			<div className="flex items-center gap-4 px-2 py-1 overflow-hidden">
+				{/* Status Marker & LED */}
+				<div className="flex items-center gap-2 shrink-0">
+					<div className="w-1.5 h-1.5 rounded-full bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.6)] animate-pulse" />
+					<div className="w-[1px] h-8 bg-neutral-900" />
+				</div>
+
+				{/* LCD Readout */}
+				<div className="flex flex-col gap-0.5">
+					<span className="font-mono text-[8px] text-neutral-600 uppercase tracking-[0.3em] leading-none">
+						LIVE_PROC_STREAM
+					</span>
+					<p className="text-xs font-mono text-neutral-300 h-4 flex items-center tracking-tight">
+						<span className="text-[#FF4D00] mr-2">/</span>
+						{text}
+					</p>
+				</div>
+
+				{/* HUD Decoration (Grid Aligned) */}
+				<div className="hidden lg:flex items-center gap-3 ml-4">
+					<div className="flex flex-col gap-1">
+						<div className="w-12 h-[1px] bg-neutral-900" />
+						<div className="w-8 h-[1px] bg-neutral-900" />
+					</div>
+					<span className="text-[7px] font-mono text-neutral-700 tracking-[0.5em] uppercase select-none">
+						88-DELTA-SYNC
+					</span>
+				</div>
+			</div>
+
+			{/* Subtle HUD Brackets (Projected) */}
+			<div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-neutral-800" />
+			<div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-neutral-800" />
 		</div>
 	);
 };

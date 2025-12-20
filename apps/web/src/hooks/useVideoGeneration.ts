@@ -372,19 +372,12 @@ export function useVideoGeneration(
 				return newMap;
 			});
 
-			const toastId = toast({
-				title: "Removing background from video",
-				description: "This may take several minutes...",
-				duration: Infinity,
-			}).id;
-
 			setActiveVideoGenerations((prev) => {
 				const newMap = new Map(prev);
 				const generation = newMap.get(generationId);
 				if (generation) {
 					newMap.set(generationId, {
 						...generation,
-						toastId,
 					});
 				}
 				return newMap;
@@ -455,12 +448,6 @@ export function useVideoGeneration(
 
 					setVideos((prev) => [...prev, { ...video, isVideo: true as const }]);
 					saveToHistory();
-
-					toast({
-						title: "Video created successfully",
-						description:
-							"The video has been added to the right of the source image.",
-					});
 				} else {
 					console.error("Source image not found:", sourceImageId);
 					toast({
@@ -498,28 +485,6 @@ export function useVideoGeneration(
 
 						setVideos((prev) => [...prev, newVideo]);
 						saveToHistory();
-
-						if (isExtension) {
-							toast({
-								title: "Video extended successfully",
-								description:
-									"The extended video has been added to the right of the source video.",
-							});
-						} else if (
-							generation?.modelId === "bria-video-background-removal"
-						) {
-							toast({
-								title: "Background removed successfully",
-								description:
-									"The video with removed background has been added to the right of the source video.",
-							});
-						} else {
-							toast({
-								title: "Video transformed successfully",
-								description:
-									"The transformed video has been added to the right of the source video.",
-							});
-						}
 					} else {
 						console.error("Source video not found:", sourceVideoId);
 						toast({
@@ -536,10 +501,6 @@ export function useVideoGeneration(
 				setSelectedVideoForExtend(null);
 			} else {
 				console.log("Generated video URL:", videoUrl);
-				toast({
-					title: "Video generated",
-					description: "Video is ready but cannot be placed on canvas yet.",
-				});
 			}
 
 			setActiveVideoGenerations((prev) => {

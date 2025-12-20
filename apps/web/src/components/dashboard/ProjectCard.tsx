@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -154,6 +154,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
 						>
 							{/* Monitor / Thumbnail Area */}
 							<div className="flex-1 bg-[#E5E5E5] dark:bg-[#111111] relative overflow-hidden">
+								{/* Technical "Tab" Badge */}
+								<div className="absolute top-0 right-0 z-10">
+									<div
+										className={`
+                    px-3 py-1 text-[9px] font-mono font-bold tracking-widest uppercase rounded-bl-lg backdrop-blur-sm
+                    ${
+											project.type === "STUDIO"
+												? "bg-[#FF4D00] text-black" // Orange Tab
+												: "bg-neutral-900/80 text-neutral-400" // Dark Glass Tab
+										}
+                  `}
+									>
+										{project.type === "STUDIO" ? "STUDIO+" : "CANVAS"}
+									</div>
+								</div>
+
 								{project.thumbnail ? (
 									<img
 										src={project.thumbnail}
@@ -260,11 +276,22 @@ export function CreateProjectCard({ workspaceId }: { workspaceId?: string }) {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const trpc = useTRPC();
 	const router = useRouter();
+	const searchParams = useSearchParams();
+
+	// Determine default type based on current filter
+	const filterType = searchParams.get("type"); // "CANVAS" | "STUDIO"
+	const defaultType = (filterType === "STUDIO" ? "STUDIO" : "CANVAS") as
+		| "CANVAS"
+		| "STUDIO";
 
 	const createProject = useMutation({
 		...trpc.project.create.mutationOptions(),
 		onSuccess: (project) => {
 			toast.success("System initialized successfully");
+
+			// Smart Redirection: If created type matches current view (or no filter), go to project
+			// If created type differs from current filter, we should probably clear filter or switch it
+			// But for now, direct navigation to the project page is the safest "show me what I made" action
 			router.push(
 				project.type === "STUDIO"
 					? `/studio/${project.id}`
@@ -302,6 +329,7 @@ export function CreateProjectCard({ workspaceId }: { workspaceId?: string }) {
 				open={isDialogOpen}
 				onOpenChange={setIsDialogOpen}
 				mode="create"
+				initialData={{ type: defaultType }}
 				onSubmit={(data) => createProject.mutate({ ...data, workspaceId })}
 				isPending={createProject.isPending}
 			/>

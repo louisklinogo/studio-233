@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
 	CreateProjectCard,
@@ -17,6 +18,9 @@ export function DashboardClient({
 	userProjects,
 	userWorkspaces,
 }: DashboardClientProps) {
+	const searchParams = useSearchParams();
+	const filterType = searchParams.get("type"); // "CANVAS" | "STUDIO"
+
 	// Initialize with the first workspace as default if available
 	const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(
 		userWorkspaces.length > 0 ? userWorkspaces[0].id : "",
@@ -29,11 +33,15 @@ export function DashboardClient({
 		}
 	}, [userWorkspaces, selectedWorkspaceId]);
 
-	// Filter projects by selected workspace
+	// Filter projects by selected workspace and type
 	const filteredProjects = useMemo(() => {
 		if (!selectedWorkspaceId) return [];
-		return userProjects.filter((p) => p.workspaceId === selectedWorkspaceId);
-	}, [userProjects, selectedWorkspaceId]);
+		return userProjects.filter((p) => {
+			const matchesWorkspace = p.workspaceId === selectedWorkspaceId;
+			const matchesType = filterType ? p.type === filterType : true;
+			return matchesWorkspace && matchesType;
+		});
+	}, [userProjects, selectedWorkspaceId, filterType]);
 
 	const selectedWorkspace = userWorkspaces.find(
 		(w) => w.id === selectedWorkspaceId,
@@ -70,10 +78,13 @@ export function DashboardClient({
 				<section className="space-y-6">
 					<div className="flex items-end justify-between border-b border-neutral-200 dark:border-neutral-900 pb-4">
 						<h2 className="text-lg font-bold text-neutral-900 dark:text-white tracking-tight">
-							Active Sessions
+							{filterType
+								? `${filterType === "STUDIO" ? "Studio+" : "Canvas"} Sessions`
+								: "Active Sessions"}
 						</h2>
 						<span className="font-mono text-xs text-neutral-500">
 							{selectedWorkspace?.name.toUpperCase() || "UNKNOWN"}_CONTEXT
+							{filterType && ` // ${filterType}`}
 						</span>
 					</div>
 

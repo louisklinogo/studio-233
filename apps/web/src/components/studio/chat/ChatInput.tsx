@@ -32,9 +32,18 @@ const SeedAttachmentsLoader: React.FC<{
 	onConsumed?: () => void;
 }> = ({ seeds, onConsumed }) => {
 	const attachmentsApi = usePromptInputAttachments();
+	// Track the last processed seeds array reference to prevent duplicate processing
+	// from re-renders, while allowing new seeds arrays to be processed
+	const processedSeedsRef = React.useRef<typeof seeds | null>(null);
 
 	useEffect(() => {
-		if (!seeds.length) return;
+		// Skip if no seeds or if we've already processed this exact seeds array
+		if (!seeds.length || processedSeedsRef.current === seeds) {
+			return;
+		}
+
+		// Mark as processed immediately to prevent duplicate runs from Strict Mode
+		processedSeedsRef.current = seeds;
 
 		const toFiles = async () => {
 			const filePromises = seeds.map(async (seed) => {
@@ -50,7 +59,8 @@ const SeedAttachmentsLoader: React.FC<{
 		};
 
 		void toFiles();
-	}, [attachmentsApi, onConsumed, seeds]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- attachmentsApi changes on every render, but we track seeds by reference
+	}, [seeds, onConsumed]);
 
 	return null;
 };

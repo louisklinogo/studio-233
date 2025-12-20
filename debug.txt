@@ -1,358 +1,123 @@
- GET / 200 in 28.7s (compile: 21.4s, render: 7.3s)
- ○ Compiling /dashboard ...
-POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
-prisma:error 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
-
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
+ 2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
 getaddrinfo EAI_AGAIN ep-lucky-leaf-ab6257e4-pooler.eu-west-2.aws.neon.tech
-2025-12-08T15:26:56.064Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
+2025-12-18T22:41:29.514Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/3563b_better-auth_dist_4af89c9f._.js:2488:50
 
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
 getaddrinfo EAI_AGAIN ep-lucky-leaf-ab6257e4-pooler.eu-west-2.aws.neon.tech
-    at async AuthenticatedDashboard (src/app/dashboard/layout.tsx:33:18)
-  31 |  const headerList = await headers();
-  32 |  const headerRecord = Object.fromEntries(headerList.entries());
-> 33 |  const session = await auth.api.getSession({ headers: headerRecord });
-     |                  ^
-  34 |
-  35 |  if (!session) {
-  36 |          redirect("/login"); {
+    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:32:11)
+    at async DashboardPage (src/app/dashboard/page.tsx:67:18)
+  30 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  31 |          try {
+> 32 |                  return await auth.api.getSession({ headers });
+     |                         ^
+  33 |          } catch (error) {
+  34 |                  lastError = error;
+  35 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
   code: 'EAI_AGAIN',
   meta: [Object],
-  clientVersion: '7.0.1'
+  clientVersion: '7.1.0'
 }
+[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: [Object],
+  headers: {},
+  statusCode: 500
+}
+ GET /dashboard 200 in 25.3s (compile: 9.8s, render: 15.5s)
 prisma:error 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/3563b_better-auth_dist_4af89c9f._.js:2488:50
 
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
 getaddrinfo EAI_AGAIN ep-lucky-leaf-ab6257e4-pooler.eu-west-2.aws.neon.tech
-2025-12-08T15:26:58.562Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
+2025-12-18T22:41:45.835Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/3563b_better-auth_dist_4af89c9f._.js:2488:50
 
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
 getaddrinfo EAI_AGAIN ep-lucky-leaf-ab6257e4-pooler.eu-west-2.aws.neon.tech
-    at async DashboardPage (src/app/dashboard/page.tsx:10:18)
-   8 |  const headerList = await headers();
-   9 |  const headerRecord = Object.fromEntries(headerList.entries());
-> 10 |  const session = await auth.api.getSession({ headers: headerRecord });
-     |                  ^
-  11 |
-  12 |  // Note: Redirects are handled by layout.tsx, but typesafety needs this check
-  13 |  if (!session) return null; {
+    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:32:11)
+    at async LoginPage (src/app/login/page.tsx:9:18)
+  30 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  31 |          try {
+> 32 |                  return await auth.api.getSession({ headers });
+     |                         ^
+  33 |          } catch (error) {
+  34 |                  lastError = error;
+  35 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
   code: 'EAI_AGAIN',
   meta: [Object],
-  clientVersion: '7.0.1'
+  clientVersion: '7.1.0'
 }
- ⨯ [Error [APIError]: Failed to get session] {
+[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
   status: 'INTERNAL_SERVER_ERROR',
   body: [Object],
   headers: {},
-  statusCode: 500,
-  digest: '3914836991'
-}
- ⨯ [Error [APIError]: Failed to get session] {
-  status: 'INTERNAL_SERVER_ERROR',
-  body: [Object],
-  headers: {},
-  statusCode: 500,
-  digest: '3914836991'
-}
- GET /dashboard 200 in 3.3min (compile: 114s, render: 86s)
- ○ Compiling instrumentation Node.js ...
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
-prisma:error 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
-
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
-
-2025-12-08T17:14:45.110Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
-
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
-
-    at async AuthenticatedDashboard (src/app/dashboard/layout.tsx:33:18)
-  31 |  const headerList = await headers();
-  32 |  const headerRecord = Object.fromEntries(headerList.entries());
-> 33 |  const session = await auth.api.getSession({ headers: headerRecord });
-     |                  ^
-  34 |
-  35 |  if (!session) {
-  36 |          redirect("/login"); {
-  code: 'ETIMEDOUT',
-  meta: [Object],
-  clientVersion: '7.0.1'
+  statusCode: 500
 }
 prisma:error 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/3563b_better-auth_dist_4af89c9f._.js:2488:50
 
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
+getaddrinfo EAI_AGAIN ep-lucky-leaf-ab6257e4-pooler.eu-west-2.aws.neon.tech
+2025-12-18T22:41:46.170Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/3563b_better-auth_dist_4af89c9f._.js:2488:50
 
-2025-12-08T17:14:48.669Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
-Invalid `db[model].findMany()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/de17f_better-auth_dist_6d1e4f56._.js:16568:51
-
-  16565     map.set(key, getModelName(joinModel));
-  16566 }
-  16567 const selects = convertSelect(select, model, join);
-→ 16568 let result = (await db[model].findMany(
-
-    at async DashboardPage (src/app/dashboard/page.tsx:10:18)
-   8 |  const headerList = await headers();
-   9 |  const headerRecord = Object.fromEntries(headerList.entries());
-> 10 |  const session = await auth.api.getSession({ headers: headerRecord });
-     |                  ^
-  11 |
-  12 |  // Note: Redirects are handled by layout.tsx, but typesafety needs this check
-  13 |  if (!session) return null; {
-  code: 'ETIMEDOUT',
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
+getaddrinfo EAI_AGAIN ep-lucky-leaf-ab6257e4-pooler.eu-west-2.aws.neon.tech
+    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:32:11)
+    at async LoginPage (src/app/login/page.tsx:9:18)
+  30 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  31 |          try {
+> 32 |                  return await auth.api.getSession({ headers });
+     |                         ^
+  33 |          } catch (error) {
+  34 |                  lastError = error;
+  35 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
+  code: 'EAI_AGAIN',
   meta: [Object],
-  clientVersion: '7.0.1'
+  clientVersion: '7.1.0'
 }
- ⨯ [Error [APIError]: Failed to get session] {
+[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
   status: 'INTERNAL_SERVER_ERROR',
   body: [Object],
   headers: {},
-  statusCode: 500,
-  digest: '3914836991'
+  statusCode: 500
 }
- ⨯ [Error [APIError]: Failed to get session] {
-  status: 'INTERNAL_SERVER_ERROR',
-  body: [Object],
-  headers: {},
-  statusCode: 500,
-  digest: '3914836991'
-}
- ⚠ Server is approaching the used memory threshold, restarting...
- [INFO] Monorepo Root: /home/paco/projects/studio+233
-   ▲ Next.js 16.0.7 (Turbopack, Cache Components)
-   - Local:         http://localhost:3001
-   - Network:       http://0.0.0.0:3001
-   - Environments: .env.local
+ GET /login 200 in 16.0s (compile: 4.5s, render: 11.4s)
+ GET /login 200 in 11.0s (compile: 77ms, render: 10.9s)
+[DEBUG] Creating rate limiter: 5 tokens per 60 s
+[DEBUG] Creating rate limiter: 20 tokens per 60 m
+[DEBUG] Creating rate limiter: 60 tokens per 24 h
+prisma:error 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/3563b_better-auth_dist_4ef4c8b0._.js:2482:50
 
- ✓ Starting...
- ○ Compiling instrumentation Node.js ...
- ○ Compiling instrumentation Edge ...
- ✓ Ready in 58s
- ○ Compiling /dashboard ...
-POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
-prisma:query SELECT "public"."session"."id", "public"."session"."expiresAt", "public"."session"."token", "public"."session"."createdAt", "public"."session"."updatedAt", "public"."session"."ipAddress", "public"."session"."userAgent", "public"."session"."userId" FROM "public"."session" WHERE "public"."session"."token" = $1 ORDER BY "public"."session"."id" ASC LIMIT $2 OFFSET $3
-prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."emailVerified", "public"."user"."image", "public"."user"."hasCompletedOnboarding", "public"."user"."createdAt", "public"."user"."updatedAt" FROM "public"."user" WHERE "public"."user"."id" = $1 ORDER BY "public"."user"."id" ASC LIMIT $2 OFFSET $3
-prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."emailVerified", "public"."user"."image", "public"."user"."hasCompletedOnboarding", "public"."user"."createdAt", "public"."user"."updatedAt" FROM "public"."user" WHERE ("public"."user"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
-prisma:query SELECT "public"."session"."id", "public"."session"."expiresAt", "public"."session"."token", "public"."session"."createdAt", "public"."session"."updatedAt", "public"."session"."ipAddress", "public"."session"."userAgent", "public"."session"."userId" FROM "public"."session" WHERE "public"."session"."token" = $1 ORDER BY "public"."session"."id" ASC LIMIT $2 OFFSET $3
-prisma:query SELECT "public"."workspace"."id", "public"."workspace"."name", "public"."workspace"."description", "public"."workspace"."slug", "public"."workspace"."userId", "public"."workspace"."createdAt", "public"."workspace"."updatedAt", COALESCE("aggr_selection_0_Project"."_aggr_count_projects", 0) AS "_aggr_count_projects" FROM "public"."workspace" LEFT JOIN (SELECT "public"."project"."workspaceId", COUNT(*) AS "_aggr_count_projects" FROM "public"."project" WHERE 1=1 GROUP BY "public"."project"."workspaceId") AS "aggr_selection_0_Project" ON ("public"."workspace"."id" = "aggr_selection_0_Project"."workspaceId") WHERE "public"."workspace"."userId" = $1 ORDER BY "public"."workspace"."updatedAt" DESC OFFSET $2
-prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."emailVerified", "public"."user"."image", "public"."user"."hasCompletedOnboarding", "public"."user"."createdAt", "public"."user"."updatedAt" FROM "public"."user" WHERE "public"."user"."id" = $1 ORDER BY "public"."user"."id" ASC LIMIT $2 OFFSET $3
-prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."hasCompletedOnboarding" FROM "public"."user" WHERE ("public"."user"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
-prisma:query SELECT "public"."project"."id", "public"."project"."name", "public"."project"."thumbnail", "public"."project"."updatedAt", "public"."project"."description", "public"."project"."workspaceId", "public"."project"."type"::text, "public"."project"."userId" FROM "public"."project" WHERE "public"."project"."userId" = $1 ORDER BY "public"."project"."updatedAt" DESC LIMIT $2 OFFSET $3
- GET /dashboard 200 in 101s (compile: 85s, render: 15.6s)
- ○ Compiling /canvas/[id] ...
- GET /canvas/cmixa65v90003f1cryl3mg5uh 200 in 61s (compile: 61s, render: 325ms)
- ○ Compiling /api/trpc/[trpc] ...
- ⨯ ./packages/ai/src/runtime/tools.ts:19:1
-Export htmlToCanvasTool doesn't exist in target module
-  17 |  videoStitchTool,
-  18 | } from "../tools/video";
-> 19 | import {
-     | ^^^^^^^^
-> 20 |  backgroundRemovalTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 21 |  htmlGeneratorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 22 |  htmlToCanvasTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 23 |  imageReframeTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 24 |  imageUpscaleTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 25 |  layoutDesignerTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 26 |  objectIsolationTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 27 |  paletteExtractorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 28 |  storyboardTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 29 | } from "../tools/vision";
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  30 | import { logger } from "../utils/logger";
-  31 |
-  32 | const TOOL_DEFINITIONS = {
-
-The export htmlToCanvasTool was not found in module [project]/packages/ai/src/tools/vision.ts [app-route] (ecmascript).
-Did you mean to import htmlGeneratorTool?
-All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-
-Import trace:
-  App Route:
-    ./packages/ai/src/runtime/tools.ts
-    ./packages/ai/src/runtime/index.ts
-    ./packages/ai/src/index.ts
-    ./apps/web/src/server/trpc/routers/_app.ts
-    ./apps/web/src/app/api/trpc/[trpc]/route.ts
-
-
- ○ Compiling /_error ...
- GET /api/trpc/project.getRecent,project.getById?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmixa65v90003f1cryl3mg5uh%22%7D%7D%7D 500 in 37.8s (compile: 37.4s, render: 398ms)
- ⨯ ./packages/ai/src/runtime/tools.ts:19:1
-Export htmlToCanvasTool doesn't exist in target module
-  17 |  videoStitchTool,
-  18 | } from "../tools/video";
-> 19 | import {
-     | ^^^^^^^^
-> 20 |  backgroundRemovalTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 21 |  htmlGeneratorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 22 |  htmlToCanvasTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 23 |  imageReframeTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 24 |  imageUpscaleTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 25 |  layoutDesignerTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 26 |  objectIsolationTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 27 |  paletteExtractorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 28 |  storyboardTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 29 | } from "../tools/vision";
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  30 | import { logger } from "../utils/logger";
-  31 |
-  32 | const TOOL_DEFINITIONS = {
-
-The export htmlToCanvasTool was not found in module [project]/packages/ai/src/tools/vision.ts [app-route] (ecmascript).
-Did you mean to import htmlGeneratorTool?
-All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-
-Import trace:
-  App Route:
-    ./packages/ai/src/runtime/tools.ts
-    ./packages/ai/src/runtime/index.ts
-    ./packages/ai/src/index.ts
-    ./apps/web/src/server/trpc/routers/_app.ts
-    ./apps/web/src/app/api/trpc/[trpc]/route.ts
-
-
- GET /api/trpc/project.getRecent,project.getById?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmixa65v90003f1cryl3mg5uh%22%7D%7D%7D 500 in 107ms (compile: 19ms, render: 89ms)
- ⨯ ./packages/ai/src/runtime/tools.ts:19:1
-Export htmlToCanvasTool doesn't exist in target module
-  17 |  videoStitchTool,
-  18 | } from "../tools/video";
-> 19 | import {
-     | ^^^^^^^^
-> 20 |  backgroundRemovalTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 21 |  htmlGeneratorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 22 |  htmlToCanvasTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 23 |  imageReframeTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 24 |  imageUpscaleTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 25 |  layoutDesignerTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 26 |  objectIsolationTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 27 |  paletteExtractorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 28 |  storyboardTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 29 | } from "../tools/vision";
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  30 | import { logger } from "../utils/logger";
-  31 |
-  32 | const TOOL_DEFINITIONS = {
-
-The export htmlToCanvasTool was not found in module [project]/packages/ai/src/tools/vision.ts [app-route] (ecmascript).
-Did you mean to import htmlGeneratorTool?
-All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-
-Import trace:
-  App Route:
-    ./packages/ai/src/runtime/tools.ts
-    ./packages/ai/src/runtime/index.ts
-    ./packages/ai/src/index.ts
-    ./apps/web/src/server/trpc/routers/_app.ts
-    ./apps/web/src/app/api/trpc/[trpc]/route.ts
-
-
- GET /api/trpc/project.getRecent,project.getById?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmixa65v90003f1cryl3mg5uh%22%7D%7D%7D 500 in 76ms (compile: 25ms, render: 51ms)
- ⨯ ./packages/ai/src/runtime/tools.ts:19:1
-Export htmlToCanvasTool doesn't exist in target module
-  17 |  videoStitchTool,
-  18 | } from "../tools/video";
-> 19 | import {
-     | ^^^^^^^^
-> 20 |  backgroundRemovalTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 21 |  htmlGeneratorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 22 |  htmlToCanvasTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 23 |  imageReframeTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 24 |  imageUpscaleTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 25 |  layoutDesignerTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 26 |  objectIsolationTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 27 |  paletteExtractorTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 28 |  storyboardTool,
-     | ^^^^^^^^^^^^^^^^^^^^^^^
-> 29 | } from "../tools/vision";
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  30 | import { logger } from "../utils/logger";
-  31 |
-  32 | const TOOL_DEFINITIONS = {
-
-The export htmlToCanvasTool was not found in module [project]/packages/ai/src/tools/vision.ts [app-route] (ecmascript).
-Did you mean to import htmlGeneratorTool?
-All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-
-Import trace:
-  App Route:
-    ./packages/ai/src/runtime/tools.ts
-    ./packages/ai/src/runtime/index.ts
-    ./packages/ai/src/index.ts
-    ./apps/web/src/server/trpc/routers/_app.ts
-    ./apps/web/src/app/api/trpc/[trpc]/route.ts
-
-
- GET /api/trpc/project.getRecent,project.getById?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmixa65v90003f1cryl3mg5uh%22%7D%7D%7D 500 in 239ms (compile: 179ms, render: 60ms)
+  2479     map.set(key, getModelName(joinModel));
+  2480 }
+  2481 const selects = convertSelect(select, model, join);
+→ 2482 let result = await db[model].findFirst(
+getaddrinfo EAI_AGAIN ep-lucky-leaf-ab6257e4-pooler.eu-west-2.aws.neon.tech
 

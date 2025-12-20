@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { Viewfinder3D } from "@/components/ui/Viewfinder3D";
 
 export default function DashboardLayout({
 	children,
@@ -11,13 +12,7 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<Suspense
-			fallback={
-				<div className="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-[#050505]">
-					<div className="h-4 w-4 animate-pulse bg-neutral-400" />
-				</div>
-			}
-		>
+		<Suspense fallback={<Viewfinder3D label="CALIBRATING_WORKSPACES" />}>
 			<AuthenticatedDashboard>{children}</AuthenticatedDashboard>
 		</Suspense>
 	);

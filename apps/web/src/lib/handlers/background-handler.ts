@@ -42,12 +42,6 @@ export const handleRemoveBackground = async (deps: BackgroundHandlerDeps) => {
 			const image = images.find((img) => img.id === imageId);
 			if (!image) continue;
 
-			// Show loading state
-			toast({
-				title: "Processing...",
-				description: "Removing background from image",
-			});
-
 			// Process the image to get the cropped/processed version
 			const imgElement = new window.Image();
 			imgElement.crossOrigin = "anonymous"; // Enable CORS
@@ -174,11 +168,6 @@ export const handleRemoveBackground = async (deps: BackgroundHandlerDeps) => {
 				),
 			);
 		}
-
-		toast({
-			title: "Success",
-			description: "Background removed successfully",
-		});
 	} catch (error) {
 		console.error("Error removing background:", error);
 		toast({

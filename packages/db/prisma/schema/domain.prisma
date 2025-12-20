@@ -96,6 +96,7 @@ model Workspace {
 
   @@unique([userId, slug])
   @@index([userId])
+  @@index([updatedAt(sort: Desc)]) // For workspace listing
   @@map("workspace")
 }
 
@@ -125,6 +126,7 @@ model Project {
 
   @@index([userId])
   @@index([workspaceId, type])
+  @@index([workspaceId, updatedAt(sort: Desc)]) // For dashboard project list
   @@map("project")
 }
 
@@ -195,6 +197,7 @@ model Asset {
   outputRuns GenerationRun[] @relation("GenerationOutputAsset")
 
   @@index([projectId, type])
+  @@index([projectId, createdAt(sort: Desc)]) // For asset gallery
   @@map("asset")
 }
 

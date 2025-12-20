@@ -94,7 +94,7 @@ export function LoginForm() {
 			}`}
 		>
 			{active && (
-				<div className="absolute top-0 left-0 w-full h-[1px] bg-accent-critical/50" />
+				<div className="absolute top-0 left-0 w-full h-[1px] bg-[#FF4D00]/50" />
 			)}
 			<span className="relative z-10">{label}</span>
 		</button>
@@ -118,12 +118,12 @@ export function LoginForm() {
 			{active && (
 				<div className="absolute -left-1 -right-1 top-0 h-1 flex justify-between px-0.5 pointer-events-none opacity-40">
 					{[...Array(4)].map((_, i) => (
-						<div key={i} className="w-[1px] h-full bg-accent-critical/40" />
+						<div key={i} className="w-[1px] h-full bg-[#FF4D00]/40" />
 					))}
 				</div>
 			)}
 			<div
-				className={`h-1 w-8 transition-colors duration-300 relative ${active ? "bg-accent-critical shadow-[0_0_8px_rgba(234,88,12,0.3)]" : "bg-[#1a1a1a] group-hover:bg-[#222]"}`}
+				className={`h-1 w-8 transition-colors duration-300 relative ${active ? "bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.3)]" : "bg-[#1a1a1a] group-hover:bg-[#222]"}`}
 			/>
 			<span
 				className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${active ? "text-foreground" : "text-neutral-600 group-hover:text-neutral-400"}`}
@@ -255,7 +255,7 @@ export function LoginForm() {
 					</div>
 					<span className="flex items-center gap-2">
 						<span className="text-neutral-700">STATUS.</span>
-						<span className="w-1 h-1 rounded-full bg-accent-critical shadow-[0_0_8px_rgba(234,88,12,0.8)]" />
+						<span className="w-1 h-1 rounded-full bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.8)]" />
 					</span>
 				</div>
 			</div>

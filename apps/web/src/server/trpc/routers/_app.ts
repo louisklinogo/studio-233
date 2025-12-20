@@ -720,170 +720,199 @@ export const appRouter = router({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				const falClient = await getFalClient(input.apiKey, ctx);
+			// Check if FAL key is available
+			const falKey = input.apiKey || process.env.FAL_KEY;
 
-				// Use the FAL client with EVF-SAM2 for segmentation
-				console.log("Using FAL client for EVF-SAM2...");
-				console.log("FAL_KEY present:", !!process.env.FAL_KEY);
-				console.log("Input:", {
-					imageUrl: input.imageUrl,
-					prompt: input.textInput,
-				});
+			// Try FAL first if key is available
+			if (falKey) {
+				try {
+					const falClient = await getFalClient(input.apiKey, ctx);
 
-				// Use EVF-SAM2 to get the segmentation mask
-				const result = await falClient.subscribe("fal-ai/evf-sam", {
-					input: {
-						image_url: input.imageUrl,
+					// Use the FAL client with EVF-SAM2 for segmentation
+					console.log("Using FAL client for EVF-SAM2...");
+					console.log("Input:", {
+						imageUrl: input.imageUrl,
 						prompt: input.textInput,
-						mask_only: true, // Get the binary mask
-						fill_holes: true, // Clean up the mask
-						expand_mask: 2, // Slightly expand to avoid cutting edges
-					},
-				});
+					});
 
-				console.log("FAL API Success Response:", result.data);
+					// Use EVF-SAM2 to get the segmentation mask
+					const result = await falClient.subscribe("fal-ai/evf-sam", {
+						input: {
+							image_url: input.imageUrl,
+							prompt: input.textInput,
+							mask_only: true, // Get the binary mask
+							fill_holes: true, // Clean up the mask
+							expand_mask: 2, // Slightly expand to avoid cutting edges
+						},
+					});
 
-				// Check if we got a valid mask
-				if (!result.data?.image?.url) {
-					throw new Error("No objects found matching the description");
+					console.log("FAL API Success Response:", result.data);
+
+					// Check if we got a valid mask
+					if (!result.data?.image?.url) {
+						throw new Error("No objects found matching the description");
+					}
+
+					// Download both the original image and the mask
+					console.log("Downloading original image and mask...");
+					const [originalBuffer, maskBuffer] = await Promise.all([
+						downloadImage(input.imageUrl),
+						downloadImage(result.data.image.url),
+					]);
+
+					// Apply mask to original image
+					console.log("Applying mask to extract segmented object...");
+
+					// Load images with sharp
+					const originalImage = sharp(originalBuffer);
+					const maskImage = sharp(maskBuffer);
+
+					// Get metadata to ensure dimensions match
+					const [originalMetadata, maskMetadata] = await Promise.all([
+						originalImage.metadata(),
+						maskImage.metadata(),
+					]);
+
+					console.log(
+						`Original image: ${originalMetadata.width}x${originalMetadata.height}`,
+					);
+					console.log(
+						`Mask image: ${maskMetadata.width}x${maskMetadata.height}`,
+					);
+
+					// Resize mask to match original if needed
+					let processedMask = maskImage;
+					if (
+						originalMetadata.width !== maskMetadata.width ||
+						originalMetadata.height !== maskMetadata.height
+					) {
+						console.log("Resizing mask to match original image dimensions...");
+						processedMask = maskImage.resize(
+							originalMetadata.width,
+							originalMetadata.height,
+						);
+					}
+
+					// Apply the mask as an alpha channel
+					// First ensure both images have alpha channels
+					const [rgbaOriginal, alphaMask] = await Promise.all([
+						originalImage
+							.ensureAlpha()
+							.raw()
+							.toBuffer({ resolveWithObject: true }),
+						processedMask
+							.grayscale() // Convert to single channel
+							.raw()
+							.toBuffer({ resolveWithObject: true }),
+					]);
+
+					console.log("Original image buffer info:", rgbaOriginal.info);
+					console.log("Mask buffer info:", alphaMask.info);
+
+					// Create new image buffer with mask applied as alpha
+					const outputBuffer = Buffer.alloc(rgbaOriginal.data.length);
+
+					// Apply mask: copy RGB from original, use mask value as alpha
+					for (
+						let i = 0;
+						i < rgbaOriginal.info.width * rgbaOriginal.info.height;
+						i++
+					) {
+						const rgbOffset = i * 4;
+						const maskOffset = i; // Grayscale mask has 1 channel
+
+						// Copy RGB values
+						outputBuffer[rgbOffset] = rgbaOriginal.data[rgbOffset]; // R
+						outputBuffer[rgbOffset + 1] = rgbaOriginal.data[rgbOffset + 1]; // G
+						outputBuffer[rgbOffset + 2] = rgbaOriginal.data[rgbOffset + 2]; // B
+
+						// Use mask value as alpha (white = opaque, black = transparent)
+						outputBuffer[rgbOffset + 3] = alphaMask.data[maskOffset];
+					}
+
+					// Create final image from the buffer
+					const segmentedImage = await sharp(outputBuffer, {
+						raw: {
+							width: rgbaOriginal.info.width,
+							height: rgbaOriginal.info.height,
+							channels: 4,
+						},
+					})
+						.png()
+						.toBuffer();
+
+					// Upload the segmented image to FAL storage
+					console.log("Uploading segmented image to storage...");
+					const segmentedImageArrayBuffer = segmentedImage.buffer.slice(
+						segmentedImage.byteOffset,
+						segmentedImage.byteOffset + segmentedImage.byteLength,
+					);
+					const segmentedImageUint8 = new Uint8Array(
+						segmentedImageArrayBuffer as ArrayBuffer,
+					);
+
+					const uploadResult = await falClient.storage.upload(
+						new Blob([segmentedImageUint8], { type: "image/png" }),
+					);
+
+					// Return the URL of the segmented object
+					console.log("Returning segmented image URL:", uploadResult);
+					console.log("Original mask URL:", result.data.image.url);
+
+					return {
+						url: uploadResult,
+						maskUrl: result.data.image.url, // Also return mask URL for reference
+					};
+				} catch (error: any) {
+					console.error(
+						"FAL isolate failed, attempting Gemini fallback:",
+						error.message,
+					);
+					// Proceed to Gemini fallback below
 				}
-
-				// Download both the original image and the mask
-				console.log("Downloading original image and mask...");
-				const [originalBuffer, maskBuffer] = await Promise.all([
-					downloadImage(input.imageUrl),
-					downloadImage(result.data.image.url),
-				]);
-
-				// Apply mask to original image
-				console.log("Applying mask to extract segmented object...");
-
-				// Load images with sharp
-				const originalImage = sharp(originalBuffer);
-				const maskImage = sharp(maskBuffer);
-
-				// Get metadata to ensure dimensions match
-				const [originalMetadata, maskMetadata] = await Promise.all([
-					originalImage.metadata(),
-					maskImage.metadata(),
-				]);
-
+			} else {
 				console.log(
-					`Original image: ${originalMetadata.width}x${originalMetadata.height}`,
+					"No FAL key found, defaulting to Gemini fallback for isolate",
 				);
-				console.log(`Mask image: ${maskMetadata.width}x${maskMetadata.height}`);
+			}
 
-				// Resize mask to match original if needed
-				let processedMask = maskImage;
-				if (
-					originalMetadata.width !== maskMetadata.width ||
-					originalMetadata.height !== maskMetadata.height
-				) {
-					console.log("Resizing mask to match original image dimensions...");
-					processedMask = maskImage.resize(
-						originalMetadata.width,
-						originalMetadata.height,
+			// ===== GEMINI FALLBACK =====
+			try {
+				const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+				if (!geminiKey) {
+					throw new Error(
+						falKey
+							? "FAL failed and no Gemini API key found for fallback"
+							: "No API keys configured for object isolation (FAL or Gemini required)",
 					);
 				}
 
-				// Apply the mask as an alpha channel
-				// First ensure both images have alpha channels
-				const [rgbaOriginal, alphaMask] = await Promise.all([
-					originalImage
-						.ensureAlpha()
-						.raw()
-						.toBuffer({ resolveWithObject: true }),
-					processedMask
-						.grayscale() // Convert to single channel
-						.raw()
-						.toBuffer({ resolveWithObject: true }),
-				]);
+				console.log("Using Gemini fallback for object isolation...");
+				console.log("Target object:", input.textInput);
 
-				console.log("Original image buffer info:", rgbaOriginal.info);
-				console.log("Mask buffer info:", alphaMask.info);
+				// Craft a specific prompt for Gemini to isolate the object
+				const isolatePrompt = `Isolate "${input.textInput}" from this image. Remove everything else and make the background fully transparent. Return ONLY the isolated "${input.textInput}" with a transparent background. Keep the object intact with clean edges.`;
 
-				// Create new image buffer with mask applied as alpha
-				const outputBuffer = Buffer.alloc(rgbaOriginal.data.length);
-
-				// Apply mask: copy RGB from original, use mask value as alpha
-				for (
-					let i = 0;
-					i < rgbaOriginal.info.width * rgbaOriginal.info.height;
-					i++
-				) {
-					const rgbOffset = i * 4;
-					const maskOffset = i; // Grayscale mask has 1 channel
-
-					// Copy RGB values
-					outputBuffer[rgbOffset] = rgbaOriginal.data[rgbOffset]; // R
-					outputBuffer[rgbOffset + 1] = rgbaOriginal.data[rgbOffset + 1]; // G
-					outputBuffer[rgbOffset + 2] = rgbaOriginal.data[rgbOffset + 2]; // B
-
-					// Use mask value as alpha (white = opaque, black = transparent)
-					outputBuffer[rgbOffset + 3] = alphaMask.data[maskOffset];
-				}
-
-				// Create final image from the buffer
-				const segmentedImage = await sharp(outputBuffer, {
-					raw: {
-						width: rgbaOriginal.info.width,
-						height: rgbaOriginal.info.height,
-						channels: 4,
-					},
-				})
-					.png()
-					.toBuffer();
-
-				// Upload the segmented image to FAL storage
-				console.log("Uploading segmented image to storage...");
-				const segmentedImageArrayBuffer = segmentedImage.buffer.slice(
-					segmentedImage.byteOffset,
-					segmentedImage.byteOffset + segmentedImage.byteLength,
-				);
-				const segmentedImageUint8 = new Uint8Array(
-					segmentedImageArrayBuffer as ArrayBuffer,
+				const result = await generateImageFromTextWithFallback(
+					isolatePrompt,
+					input.imageUrl,
+					geminiKey,
+					ctx,
 				);
 
-				const uploadResult = await falClient.storage.upload(
-					new Blob([segmentedImageUint8], { type: "image/png" }),
-				);
-
-				// Return the URL of the segmented object
-				console.log("Returning segmented image URL:", uploadResult);
-				console.log("Original mask URL:", result.data.image.url);
+				console.log("Gemini isolation successful:", result.url);
 
 				return {
-					url: uploadResult,
-					maskUrl: result.data.image.url, // Also return mask URL for reference
+					url: result.url,
+					maskUrl: undefined, // Gemini doesn't provide a mask
 				};
-			} catch (error: any) {
-				console.error("Error isolating object:", error);
-				console.error("Error details:", {
-					message: error.message,
-					status: error.status,
-					body: error.body,
-					data: error.data,
-				});
-
-				// Check for enterprise-only error (shouldn't happen with EVF-SAM2)
-				if (
-					error.body?.detail?.includes("not enterprise ready") ||
-					error.message?.includes("not enterprise ready")
-				) {
-					throw new Error(
-						"This model requires an enterprise FAL account. Please contact FAL support for access or use the 'Remove Background' feature instead.",
-					);
-				}
-
-				// Check for other specific error types
-				if (error.status === 403 || error.message?.includes("Forbidden")) {
-					throw new Error(
-						"API access denied. Please check your FAL API key permissions.",
-					);
-				}
-
-				throw new Error(error.message || "Failed to isolate object");
+			} catch (geminiError) {
+				console.error("Gemini fallback also failed:", geminiError);
+				throw new Error(
+					geminiError instanceof Error
+						? geminiError.message
+						: "Failed to isolate object (both FAL and Gemini failed)",
+				);
 			}
 		}),
 

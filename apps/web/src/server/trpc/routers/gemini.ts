@@ -33,10 +33,10 @@ async function checkRateLimit(apiKey: string | undefined, ctx?: Context) {
 	}
 }
 
-function parseImageInput(imageUrl: string): {
-	image: string | URL | Buffer;
+async function parseImageInput(imageUrl: string): Promise<{
+	image: Buffer;
 	mediaType: string;
-} {
+}> {
 	// Data URL (e.g. data:image/png;base64,...)
 	if (imageUrl.startsWith("data:")) {
 		const match = /^data:(.+);base64,(.*)$/.exec(imageUrl);
@@ -48,19 +48,23 @@ function parseImageInput(imageUrl: string): {
 		return { image: buffer, mediaType: mimeType };
 	}
 
-	// HTTP(S) URL
+	// HTTP(S) URL - Pre-fetch to avoid AI SDK's internal fetch timeout issues
 	if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-		const url = new URL(imageUrl);
-		const pathname = url.pathname.toLowerCase();
-		let mediaType = "image/png";
-
-		if (pathname.endsWith(".jpg") || pathname.endsWith(".jpeg")) {
-			mediaType = "image/jpeg";
-		} else if (pathname.endsWith(".webp")) {
-			mediaType = "image/webp";
+		const response = await fetch(imageUrl);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch image: ${response.status} ${response.statusText}`,
+			);
 		}
+		const arrayBuffer = await response.arrayBuffer();
+		const buffer = Buffer.from(arrayBuffer);
 
-		return { image: url, mediaType };
+		// Determine media type from Content-Type header or fall back to pathname
+		let mediaType = response.headers.get("content-type") || "image/png";
+		// Strip charset or other params (e.g., "image/png; charset=utf-8" -> "image/png")
+		mediaType = mediaType.split(";")[0].trim();
+
+		return { image: buffer, mediaType };
 	}
 
 	throw new Error("Unsupported image source. Use a data URL or HTTPS URL.");
@@ -131,7 +135,7 @@ export async function generateImageFromTextWithFallback(
 	}
 
 	const google = createGoogleGenerativeAI({ apiKey: key });
-	const { image, mediaType } = parseImageInput(imageUrl);
+	const { image, mediaType } = await parseImageInput(imageUrl);
 
 	const result = await generateText({
 		model: google(IMAGE_GEN_MODEL),
@@ -212,7 +216,7 @@ export const geminiRouter = router({
 
 			const google = createGoogleGenerativeAI({ apiKey });
 
-			const { image, mediaType } = parseImageInput(input.imageUrl);
+			const { image, mediaType } = await parseImageInput(input.imageUrl);
 
 			const result = await generateText({
 				model: google(IMAGE_GEN_MODEL),

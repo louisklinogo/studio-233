@@ -4,6 +4,63 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 
+const RETRY_DELAYS_MS = [0, 200, 600] as const;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isTransientPrismaNetworkError = (error: unknown) => {
+	if (!(error instanceof Error)) return false;
+	const message = error.message ?? "";
+	return (
+		message.includes("EAI_AGAIN") ||
+		message.includes("ETIMEDOUT") ||
+		message.includes("getaddrinfo") ||
+		message.includes("ECONNRESET")
+	);
+};
+
+const fetchUserWithRetry = async (userId: string) => {
+	let lastError: unknown;
+
+	for (const delay of RETRY_DELAYS_MS) {
+		if (delay > 0) await wait(delay);
+
+		try {
+			return await prisma.user.findUnique({
+				where: { id: userId },
+				include: {
+					workspaces: {
+						orderBy: { updatedAt: "desc" },
+						include: {
+							_count: {
+								select: { projects: true },
+							},
+						},
+					},
+					projects: {
+						take: 50,
+						orderBy: { updatedAt: "desc" },
+						select: {
+							id: true,
+							name: true,
+							thumbnail: true,
+							updatedAt: true,
+							description: true,
+							workspaceId: true,
+							type: true,
+						},
+					},
+				},
+			});
+		} catch (error) {
+			lastError = error;
+			if (!isTransientPrismaNetworkError(error)) throw error;
+		}
+	}
+
+	throw lastError ?? new Error("Failed to fetch user after retries");
+};
+
 export default async function DashboardPage() {
 	const headerList = await headers();
 	const headerRecord = Object.fromEntries(headerList.entries());
@@ -12,33 +69,7 @@ export default async function DashboardPage() {
 	// Note: Redirects are handled by layout.tsx, but typesafety needs this check
 	if (!session) return null;
 
-	// Fetch User Data, Projects, and Workspaces in parallel
-	const user = await prisma.user.findUnique({
-		where: { id: session.user.id as string },
-		include: {
-			workspaces: {
-				orderBy: { updatedAt: "desc" },
-				include: {
-					_count: {
-						select: { projects: true },
-					},
-				},
-			},
-			projects: {
-				take: 50, // Increase limit as we filter client side
-				orderBy: { updatedAt: "desc" },
-				select: {
-					id: true,
-					name: true,
-					thumbnail: true,
-					updatedAt: true,
-					description: true,
-					workspaceId: true, // Needed for filtering
-					type: true,
-				},
-			},
-		},
-	});
+	const user = await fetchUserWithRetry(session.user.id as string);
 
 	if (!user) return null;
 

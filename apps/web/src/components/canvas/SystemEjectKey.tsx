@@ -2,10 +2,18 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 
 export function SystemEjectKey() {
+	const router = useRouter();
+
+	useEffect(() => {
+		router.prefetch("/dashboard");
+	}, [router]);
+
 	const playClickSound = () => {
 		const AudioContext =
 			window.AudioContext || (window as any).webkitAudioContext;

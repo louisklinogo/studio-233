@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
 import { StudioOperatorClient } from "@/components/studio-workflow/StudioOperatorClient";
+import { Viewfinder3D } from "@/components/ui/Viewfinder3D";
 
 type StudioParams = { id: string };
 
@@ -20,7 +21,7 @@ export default function StudioPage({
 	params: Promise<StudioParams>;
 }) {
 	return (
-		<Suspense fallback={null}>
+		<Suspense fallback={<Viewfinder3D label="LINKING_SYSTEM_OPERATOR" />}>
 			<StudioContent params={params} />
 		</Suspense>
 	);

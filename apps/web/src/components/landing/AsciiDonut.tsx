@@ -99,15 +99,47 @@ export const AsciiDonut = () => {
 	return (
 		<div
 			ref={containerRef}
-			className="flex items-center justify-center w-full h-full overflow-hidden"
+			className="relative flex items-center justify-center w-full h-full overflow-hidden bg-transparent"
 			aria-hidden="true"
 		>
+			{/* Technical Crosshairs (HUD-Integrated) */}
+			<div className="absolute inset-0 pointer-events-none opacity-[0.15]">
+				<div className="absolute top-1/2 left-0 w-full h-[1px] bg-neutral-600" />
+				<div className="absolute top-0 left-1/2 w-[1px] h-full bg-neutral-600" />
+				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-neutral-700 rounded-full opacity-20" />
+			</div>
+
+			{/* HUD Metadata Callouts (Ethereal Style) */}
+			<div className="absolute top-12 left-12 flex flex-col gap-1.5 pointer-events-none">
+				<div className="flex items-center gap-2">
+					<div className="w-1.5 h-1.5 bg-[#FF4D00] animate-pulse" />
+					<span className="font-mono text-[8px] text-neutral-400 tracking-[0.3em] uppercase">
+						LINK_ESTABLISHED
+					</span>
+				</div>
+				<span className="font-mono text-[8px] text-neutral-600 tracking-[0.2em]">
+					FPS: 60.00 // TRACE_0x9
+				</span>
+			</div>
+
+			<div className="absolute bottom-12 right-12 flex flex-col gap-1 items-end pointer-events-none">
+				<span className="font-mono text-[8px] text-neutral-600 tracking-[0.2em] uppercase">
+					MESH_BUFFER_READY
+				</span>
+				<div className="flex gap-1 h-1.5 mt-1">
+					{[...Array(6)].map((_, i) => (
+						<div key={i} className="w-2 h-[1px] bg-neutral-800" />
+					))}
+				</div>
+			</div>
+
 			<pre
 				ref={preRef}
-				className="font-mono text-[8px] sm:text-[10px] md:text-xs leading-[1.0] text-neutral-900 dark:text-white whitespace-pre select-none"
+				className="font-mono text-[8px] sm:text-[10px] md:text-xs leading-[1.0] text-neutral-900 dark:text-neutral-200 whitespace-pre select-none relative z-10"
 				style={{
 					fontFamily: '"Courier New", Courier, monospace',
 					letterSpacing: "0px",
+					textShadow: "0 0 20px rgba(255,255,255,0.02)",
 				}}
 			/>
 			<span className="sr-only">

@@ -230,6 +230,7 @@ export function LegacyOverlayPage() {
 		x: number;
 		y: number;
 	} | null>(null);
+	const [toolbarError, setToolbarError] = useState<string | null>(null);
 
 	// Viewport hook
 	const {
@@ -266,9 +267,8 @@ export function LegacyOverlayPage() {
 
 	const trpc = useTRPC();
 
-	const { mutateAsync: removeBackground } = useMutation(
-		trpc.removeBackground.mutationOptions(),
-	);
+	const { mutateAsync: removeBackground, isPending: isRemovingBackground } =
+		useMutation(trpc.removeBackground.mutationOptions());
 
 	// Video generation hook
 	const {
@@ -1027,7 +1027,7 @@ export function LegacyOverlayPage() {
 		setGenerationSettings((prev) => ({ ...prev, prompt }));
 	};
 
-	const handleGeminiEdit = async () => {
+	const handleGeminiEdit = async (prompt?: string) => {
 		if (selectedIds.length !== 1) return;
 
 		const selectedId = selectedIds[0];
@@ -1045,14 +1045,10 @@ export function LegacyOverlayPage() {
 		}
 
 		try {
-			toast({
-				title: "Editing with Gemini",
-				description: "Sending image to Gemini, this may take a few seconds...",
-			});
-
 			const result = await editWithGemini({
 				imageUrl: image.src,
 				prompt:
+					prompt?.trim() ||
 					generationSettings.prompt.trim() ||
 					"Improve this image in a visually appealing way.",
 			});
@@ -1068,19 +1064,11 @@ export function LegacyOverlayPage() {
 			saveToHistory();
 			setImages((prev) => [...prev, newImage]);
 			setSelectedIds([newImage.id]);
-
-			toast({
-				title: "Gemini edit complete",
-				description: "A new edited image has been added next to the original.",
-			});
 		} catch (error) {
 			console.error("Gemini edit failed:", error);
-			toast({
-				title: "Gemini edit failed",
-				description:
-					error instanceof Error ? error.message : "Unknown error from Gemini",
-				variant: "destructive",
-			});
+			setToolbarError(
+				error instanceof Error ? error.message : "Unknown error from Gemini",
+			);
 		}
 	};
 
@@ -1100,12 +1088,6 @@ export function LegacyOverlayPage() {
 				setIsIsolating(false);
 				return;
 			}
-
-			// Show loading state
-			toast({
-				title: "Processing...",
-				description: `Isolating "${isolateInputValue}" from image`,
-			});
 
 			// Process the image to get the cropped/processed version
 			const imgElement = new window.Image();
@@ -1268,29 +1250,16 @@ export function LegacyOverlayPage() {
 
 					// Update selection
 					setSelectedIds([newImage.id]);
-
-					toast({
-						title: "Success",
-						description: `Isolated "${isolateInputValue}" successfully`,
-					});
 				};
 
 				testImg.onerror = (e) => {
 					console.error("Failed to load new image:", e);
-					toast({
-						title: "Failed to load isolated image",
-						description: "The isolated image could not be loaded",
-						variant: "destructive",
-					});
+					setToolbarError("The isolated image could not be loaded");
 				};
 
 				testImg.src = result.url;
 			} else {
-				toast({
-					title: "No object found",
-					description: `Could not find "${isolateInputValue}" in the image`,
-					variant: "destructive",
-				});
+				setToolbarError(`Could not find "${isolateInputValue}" in the image`);
 			}
 
 			// Reset the isolate input
@@ -1299,11 +1268,7 @@ export function LegacyOverlayPage() {
 			setIsIsolating(false);
 		} catch (error) {
 			console.error("Error isolating object:", error);
-			toast({
-				title: "Failed to isolate object",
-				description: error instanceof Error ? error.message : "Unknown error",
-				variant: "destructive",
-			});
+			setToolbarError(error instanceof Error ? error.message : "Unknown error");
 			setIsolateTarget(null);
 			setIsolateInputValue("");
 			setIsIsolating(false);
@@ -1743,10 +1708,6 @@ export function LegacyOverlayPage() {
 							setSelectedIds([placeholderId]);
 							saveToHistory();
 
-							toast({
-								title: "Image generated",
-								description: `Created by ${command.meta?.provider || "AI"}`,
-							});
 							return;
 						}
 					}
@@ -1766,11 +1727,6 @@ export function LegacyOverlayPage() {
 					setImages((prev) => [...prev, newImage]);
 					setSelectedIds([newImage.id]);
 					saveToHistory();
-
-					toast({
-						title: "Image generated",
-						description: `Created by ${command.meta?.provider || "AI"}`,
-					});
 				} else if (command.type === "update-image") {
 					const existingImage = images.find((img) => img.id === command.id);
 					if (!existingImage) {
@@ -1791,11 +1747,6 @@ export function LegacyOverlayPage() {
 						),
 					);
 					saveToHistory();
-
-					toast({
-						title: "Image updated",
-						description: `${command.meta?.operation || "Operation"} completed`,
-					});
 				} else if (command.type === "add-video") {
 					const placement = reservePlacement(command.width, command.height);
 					const newVideo: PlacedVideo = {
@@ -1827,11 +1778,6 @@ export function LegacyOverlayPage() {
 					setVideos((prev) => [...prev, newVideo]);
 					setSelectedIds([newVideo.id]);
 					saveToHistory();
-
-					toast({
-						title: "Video generated",
-						description: `Created by ${command.meta?.provider || "AI"}`,
-					});
 				}
 			} catch (error) {
 				console.error("Failed to handle canvas command:", error);
@@ -2142,11 +2088,15 @@ export function LegacyOverlayPage() {
 							isGenerating={isGenerating}
 							generationSettings={generationSettings}
 							isolateInputValue={isolateInputValue}
+							setIsolateInputValue={setIsolateInputValue}
+							isIsolating={isIsolating}
+							handleIsolate={handleIsolate}
 							handleRun={handleRun}
 							handleGeminiEdit={handleGeminiEdit}
 							isGeminiEditing={isGeminiEditing}
 							handleDuplicate={handleDuplicate}
 							handleRemoveBackground={handleRemoveBackground}
+							isRemovingBackground={isRemovingBackground}
 							handleCombineImages={handleCombineImages}
 							handleDelete={handleDelete}
 							handleOpenIsolateDialog={() => {
@@ -2164,7 +2114,6 @@ export function LegacyOverlayPage() {
 							handleExtendVideo={handleExtendVideo}
 							handleRemoveVideoBackground={handleRemoveVideoBackground}
 							setCroppingImageId={setCroppingImageId}
-							setIsolateInputValue={setIsolateInputValue}
 							setIsolateTarget={setIsolateTarget}
 							onCropConfirm={handleCropConfirm}
 							onCropCancel={handleCropCancel}
@@ -2173,6 +2122,8 @@ export function LegacyOverlayPage() {
 							bringForward={bringForward}
 							sendBackward={sendBackward}
 							viewport={viewport}
+							error={toolbarError}
+							clearError={() => setToolbarError(null)}
 						/>
 
 						{/* Overlay UI */}

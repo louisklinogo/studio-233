@@ -74,31 +74,41 @@ const NeuralMaterial = {
 		void main() {
 			vec2 uv = vUv;
 			
+			// High-Res Scanlines
+			float scanline = sin(uv.y * 800.0) * 0.04;
+			float scanline2 = sin(uv.y * 400.0) * 0.02;
+			
 			// Grid Pattern
-			float gridX = step(0.98, fract(uv.x * 32.0));
-			float gridY = step(0.98, fract(uv.y * 18.0));
+			float gridX = step(0.992, fract(uv.x * 64.0));
+			float gridY = step(0.992, fract(uv.y * 36.0));
 			float grid = max(gridX, gridY);
 			
 			// Moving Noise Zones
-			float noise = snoise(uv * 2.0 + time * 0.1);
+			float noise = snoise(uv * 3.0 + time * 0.05);
 			
 			// Digital Pulse
-			float pulse = step(0.9, sin(uv.y * 50.0 + time * 5.0)) * step(0.5, snoise(uv * 5.0 + time));
+			float pulse = step(0.98, sin(uv.y * 10.0 + time * 2.0)) * step(0.2, snoise(uv * 2.0 + time));
 			
-			// UI Box Elements
-			float uiBox = step(0.8, snoise(uv * 8.0 + floor(time * 2.0))); 
+			// UI Box Elements (Flicker)
+			float uiBox = step(0.85, snoise(uv * 12.0 + floor(time * 4.0))); 
 			
 			// Color Mixing
-			vec3 finalColor = mix(color1, color2, grid * 0.2); // Base grid
-			finalColor += accent * pulse * 0.5; // Pulse scanlines
-			finalColor += accent * uiBox * 0.1; // UI flicker
-			finalColor += accent * step(0.6, noise) * 0.05; // Ambient noise glow
+			vec3 finalColor = mix(color1, color2, grid * 0.4); // Enhanced base grid
+			finalColor -= scanline + scanline2; // CRT Scanlines depth
+			finalColor += accent * pulse * 0.8; // Stronger Pulse scanlines
+			finalColor += accent * uiBox * 0.2; // UI flicker
+			finalColor += accent * step(0.7, noise) * 0.1; // Ambient noise glow
+			
+			// RGB Shift (Subtle)
+			float r = finalColor.r;
+			float g_ = finalColor.g;
+			float b = finalColor.b;
 			
 			// Vignette
-			float vig = 1.0 - length(uv - 0.5) * 1.2;
+			float vig = 1.0 - length(uv - 0.5) * 1.4;
 			finalColor *= vig;
 
-			gl_FragColor = vec4(finalColor, 0.9);
+			gl_FragColor = vec4(finalColor, 0.95);
 		}
 	`,
 };
@@ -330,12 +340,29 @@ export const DeconstructedUI = () => {
 						whileInView={{ opacity: 1, y: 0 }}
 						transition={{ duration: 1, delay: 0.5 }}
 					>
-						<h3 className="text-4xl md:text-6xl font-bold tracking-tighter text-white">
+						<h3 className="text-4xl md:text-7xl font-bold tracking-tighter text-white/90">
 							SYSTEM_CORE
 						</h3>
-						<p className="text-xs font-mono text-neutral-400 mt-2">
-							// WORKBENCH_INITIALIZED
-						</p>
+						<div className="flex items-center gap-4 mt-2">
+							<div className="w-12 h-[1px] bg-[#FF4D00]" />
+							<p className="text-[10px] font-mono text-neutral-400 tracking-[0.5em] uppercase">
+								WORKBENCH_INITIALIZED
+							</p>
+						</div>
+						<div className="mt-8 flex flex-col gap-2 opacity-40">
+							<div className="flex gap-4 items-center">
+								<span className="text-[8px] font-mono text-white">
+									LATENCY: 12MS
+								</span>
+								<div className="w-24 h-[1px] bg-neutral-800" />
+							</div>
+							<div className="flex gap-4 items-center">
+								<span className="text-[8px] font-mono text-white">
+									UPTIME: 99.9%
+								</span>
+								<div className="w-16 h-[1px] bg-neutral-800" />
+							</div>
+						</div>
 					</motion.div>
 				</div>
 			</div>

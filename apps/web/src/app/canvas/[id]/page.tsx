@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
 import { OverlayInterface } from "@/components/canvas/OverlayInterface";
+import { Viewfinder3D } from "@/components/ui/Viewfinder3D";
 
 type CanvasParams = { id: string };
 
@@ -20,7 +21,7 @@ export default function CanvasPage({
 	params: Promise<CanvasParams>;
 }) {
 	return (
-		<Suspense fallback={null}>
+		<Suspense fallback={<Viewfinder3D label="CALIBRATING_CANVAS" />}>
 			<CanvasContent params={params} />
 		</Suspense>
 	);

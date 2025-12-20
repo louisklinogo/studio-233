@@ -27,12 +27,12 @@ export function LoginPageView() {
 				<div className="pointer-events-auto">
 					<Magnetic range={60} stiffness={350}>
 						<Link href="/" className="group flex items-center gap-4 p-2 -m-2">
-							<div className="relative w-10 h-10 bg-[#050505] border border-[#1a1a1a] shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] flex items-center justify-center transition-all duration-300 group-hover:border-accent-critical/50 group-hover:shadow-[0_0_20px_rgba(234,88,12,0.2),inset_0_1px_2px_rgba(255,255,255,0.05)]">
+							<div className="relative w-10 h-10 bg-[#050505] border border-[#1a1a1a] shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] flex items-center justify-center transition-all duration-300 group-hover:border-[#FF4D00]/50 group-hover:shadow-[0_0_20px_rgba(255,77,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.05)]">
 								{/* Strobe Effect on Hover */}
-								<div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-accent-critical/5 animate-pulse transition-opacity" />
+								<div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-[#FF4D00]/5 animate-pulse transition-opacity" />
 
 								<SwissIcons.ArrowUpRight
-									className="text-neutral-700 group-hover:text-accent-critical rotate-180 transition-all duration-500 group-hover:scale-110"
+									className="text-neutral-700 group-hover:text-[#FF4D00] rotate-180 transition-all duration-500 group-hover:scale-110"
 									size={18}
 								/>
 
@@ -44,10 +44,10 @@ export function LoginPageView() {
 							</div>
 
 							<div className="flex flex-col">
-								<span className="font-mono text-[9px] text-neutral-600 uppercase tracking-[0.3em] group-hover:text-accent-critical transition-colors duration-300">
+								<span className="font-mono text-[9px] text-neutral-500 uppercase tracking-[0.3em] group-hover:text-[#FF4D00] transition-colors duration-300 leading-none">
 									Abort_Sequence
 								</span>
-								<span className="font-bold text-[10px] tracking-tighter text-neutral-500 group-hover:text-neutral-200 transition-colors duration-300">
+								<span className="font-bold text-[10px] tracking-tighter text-neutral-400 group-hover:text-neutral-100 transition-colors duration-300">
 									RETURN_TO_ROOT
 								</span>
 							</div>
@@ -69,14 +69,14 @@ export function LoginPageView() {
 				>
 					<div className="flex items-center gap-4 mb-2">
 						<div className="h-px w-8 bg-neutral-900" />
-						<span className="font-mono text-[10px] text-accent-critical tracking-[0.3em]">
+						<span className="font-mono text-[10px] text-[#FF4D00] tracking-[0.3em]">
 							AUTHENTICATION
 						</span>
 						<div className="h-px w-8 bg-neutral-900" />
 					</div>
 
 					<h1
-						className="font-bold text-5xl md:text-6xl tracking-tighter text-[#1a1a1a] leading-tight"
+						className="font-bold text-5xl md:text-7xl tracking-tighter text-white/90 leading-tight"
 						style={{
 							textShadow:
 								"0px 1px 0px rgba(255,255,255,0.05), inset 0px 2px 4px rgba(0,0,0,0.8)",
@@ -85,14 +85,13 @@ export function LoginPageView() {
 						STUDIO+233
 					</h1>
 
-					<div className="flex items-center gap-3 text-[9px] font-mono text-neutral-600 tracking-[0.5em] uppercase mt-2">
-						<span>SYS.VER.2.0</span>
-						<div className="flex gap-1">
-							{[...Array(3)].map((_, i) => (
-								<div key={i} className="w-1 h-1 bg-neutral-800 rounded-full" />
-							))}
-						</div>
-						<span>SECURE_ENTRY</span>
+					<div className="flex items-center gap-3 text-[9px] font-mono text-neutral-400 tracking-[0.5em] uppercase mt-2">
+						<span className="flex items-center gap-1.5">
+							<div className="w-1.5 h-1.5 rounded-full bg-[#FF4D00] animate-pulse shadow-[0_0_8px_#FF4D00]" />
+							SYS.VER.2.0
+						</span>
+						<div className="h-3 w-[1px] bg-neutral-800" />
+						<span>SECURE_ENTRY_ESTABLISHED</span>
 					</div>
 				</motion.div>
 
@@ -106,17 +105,22 @@ export function LoginPageView() {
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				transition={{ delay: 0.5, duration: 1 }}
-				className="relative z-10 p-6 md:p-12 flex justify-between items-end text-[9px] font-mono text-muted-foreground uppercase tracking-widest border-t border-border/50"
+				className="relative z-10 p-6 md:p-12 flex justify-between items-end text-[9px] font-mono text-neutral-400 uppercase tracking-widest border-t border-neutral-900/50"
 			>
-				<div>
-					SECURE_GATEWAY_V2.0
-					<br />
-					ENCRYPTION: AES-256
+				<div className="flex flex-col gap-1">
+					<span className="text-neutral-500">GATEWAY: V2.0_SECURE</span>
+					<span className="flex items-center gap-2">
+						<div className="w-1 h-1 bg-emerald-500 rounded-full" />
+						ENCRYPTION: AES-256-GCM
+					</span>
 				</div>
-				<div className="text-right">
-					UNAUTHORIZED ACCESS
-					<br />
-					IS PROHIBITED
+				<div className="text-right flex flex-col gap-1 items-end">
+					<span className="text-neutral-500 uppercase tracking-tighter font-bold">
+						Unauthorized Access is Prohibited
+					</span>
+					<span className="text-neutral-600 tracking-normal text-[8px]">
+						LOG_IP: 127.0.0.1 (DEV_BYPASS)
+					</span>
 				</div>
 			</motion.footer>
 		</div>

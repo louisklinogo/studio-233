@@ -27,18 +27,19 @@ type Payload = {
 
 export async function POST(
 	req: NextRequest,
-	{ params }: { params: { agent: string } },
+	{ params }: { params: Promise<{ agent: string }> },
 ) {
-	const agentKey = AGENT_MAP[params.agent];
+	const { agent } = await params;
+	const agentKey = AGENT_MAP[agent];
 	if (!agentKey) {
 		return NextResponse.json(
-			{ error: `Unknown agent '${params.agent}'` },
+			{ error: `Unknown agent '${agent}'` },
 			{ status: 404 },
 		);
 	}
 	const body = (await req.json()) as Payload;
 	const threadId = body.metadata?.threadId ?? "web-session";
-	const resourceId = body.metadata?.resourceId ?? params.agent;
+	const resourceId = body.metadata?.resourceId ?? agent;
 
 	if (!body.prompt && !body.messages?.length) {
 		return NextResponse.json(

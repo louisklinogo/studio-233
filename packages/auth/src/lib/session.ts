@@ -13,8 +13,11 @@ function isTransientNetworkError(error: unknown): boolean {
 	return (
 		code === "EAI_AGAIN" ||
 		code === "ETIMEDOUT" ||
+		code === "ECONNRESET" ||
 		(message?.includes("EAI_AGAIN") ?? false) ||
-		(message?.includes("ETIMEDOUT") ?? false)
+		(message?.includes("ETIMEDOUT") ?? false) ||
+		(message?.includes("getaddrinfo") ?? false) ||
+		(message?.includes("ECONNRESET") ?? false)
 	);
 }
 
@@ -22,7 +25,7 @@ export async function getSessionWithRetry(
 	headersSource: HeaderSource = undefined,
 	options: { retries?: number; delayMs?: number } = {},
 ) {
-	const maxRetries = options.retries ?? 2;
+	const maxRetries = options.retries ?? 4;
 	let delay = options.delayMs ?? 200;
 	const headers = normalizeHeaders(headersSource);
 	let lastError: unknown;
@@ -34,7 +37,7 @@ export async function getSessionWithRetry(
 			lastError = error;
 			if (isTransientNetworkError(error) && attempt < maxRetries) {
 				await new Promise((resolve) => setTimeout(resolve, delay));
-				delay *= 2;
+				delay = Math.min(delay * 2, 2_000);
 				continue;
 			}
 			console.error("[auth] getSessionWithRetry failed", error);

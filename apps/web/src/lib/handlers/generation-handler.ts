@@ -303,12 +303,6 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 			]);
 
 			setSelectedIds([id]);
-			toast({
-				title: "Image generated",
-				description: `Created by ${
-					resolvedCommand.meta?.provider || "Studio+233 AI"
-				}`,
-			});
 		} catch (error) {
 			console.error("Error generating image:", error);
 			toast({
