@@ -4,7 +4,10 @@ import { useChat } from "@ai-sdk/react";
 import type { CanvasCommand } from "@studio233/ai/types/canvas";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FileUIPart, UIMessage } from "ai";
-import { DefaultChatTransport } from "ai";
+import {
+	DefaultChatTransport,
+	lastAssistantMessageIsCompleteWithToolCalls,
+} from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatHeader } from "@/components/studio/chat/ChatHeader";
 import { ChatHistoryList } from "@/components/studio/chat/ChatHistoryList";
@@ -91,6 +94,7 @@ export function ChatPanel({
 		id: activeThreadId ?? "new-chat",
 		transport: chatTransport,
 		maxSteps: 5,
+		sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
 		initialMessages: [], // We'll sync manually to handle the async fetch
 		onError: (err: unknown) => {
 			setErrorMessage(
@@ -200,8 +204,8 @@ export function ChatPanel({
 	const handleToolInteraction = useCallback(
 		(toolCallId: string, result: any) => {
 			addToolOutput({
+				tool: "askForAspectRatio",
 				toolCallId,
-				toolName: "askForAspectRatio",
 				output: result,
 			});
 		},

@@ -1,4 +1,372 @@
-// Domain models for Studio+233
+model Workspace {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  slug        String?
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  projects    Project[]
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@index([updatedAt(sort: Desc)])
+  @@map("workspace")
+}
+
+model Project {
+  id                  String               @id @default(cuid())
+  name                String
+  description         String?
+  thumbnail           String?
+  userId              String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  type                ProjectType          @default(CANVAS)
+  workspaceId         String?
+  threads             AgentThread[]
+  assets              Asset[]
+  auditLogs           AuditLog[]
+  batchJobs           BatchJob[]
+  canvases            Canvas[]
+  generationRuns      GenerationRun[]
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace           Workspace?           @relation(fields: [workspaceId], references: [id])
+  usageSamples        UsageSample[]
+  workflowDefinitions WorkflowDefinition[]
+  workflowRuns        WorkflowRun[]
+
+  @@index([userId])
+  @@index([workspaceId, type])
+  @@index([workspaceId, updatedAt(sort: Desc)])
+  @@map("project")
+}
+
+model Canvas {
+  id             String           @id @default(cuid())
+  name           String
+  width          Int              @default(1920)
+  height         Int              @default(1080)
+  data           Json             @db.Json
+  projectId      String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  elements       CanvasElement[]
+  snapshots      CanvasSnapshot[]
+  generationRuns GenerationRun[]
+
+  @@index([projectId])
+  @@map("canvas")
+}
+
+model CanvasSnapshot {
+  id          String          @id @default(cuid())
+  canvasId    String
+  data        Json            @db.Json
+  version     Int
+  createdAt   DateTime        @default(now())
+  createdById String?
+  elements    CanvasElement[]
+  canvas      Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  createdBy   User?           @relation(fields: [createdById], references: [id])
+
+  @@index([canvasId, version])
+  @@map("canvas_snapshot")
+}
+
+model CanvasElement {
+  id         String          @id @default(cuid())
+  canvasId   String
+  snapshotId String?
+  kind       String
+  data       Json            @db.Json
+  zIndex     Int             @default(0)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  canvas     Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  snapshot   CanvasSnapshot? @relation(fields: [snapshotId], references: [id])
+
+  @@index([canvasId])
+  @@index([snapshotId])
+  @@map("canvas_element")
+}
+
+model Asset {
+  id         String          @id @default(cuid())
+  name       String
+  type       AssetType       @default(IMAGE)
+  url        String
+  size       Int
+  mimeType   String
+  metadata   Json?           @db.Json
+  projectId  String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions   AssetVersion[]
+  inputRuns  GenerationRun[] @relation("GenerationInputAsset")
+  outputRuns GenerationRun[] @relation("GenerationOutputAsset")
+
+  @@index([projectId, type])
+  @@index([projectId, createdAt(sort: Desc)])
+  @@map("asset")
+}
+
+model AssetVersion {
+  id           String         @id @default(cuid())
+  assetId      String
+  generationId String?
+  url          String
+  checksum     String?
+  mimeType     String?
+  size         Int?
+  metadata     Json?          @db.Json
+  isPrimary    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  asset        Asset          @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  generation   GenerationRun? @relation(fields: [generationId], references: [id])
+
+  @@index([assetId, createdAt])
+  @@index([generationId])
+  @@map("asset_version")
+}
+
+model GenerationRun {
+  id            String           @id @default(cuid())
+  userId        String?
+  projectId     String?
+  canvasId      String?
+  type          GenerationType   @default(IMAGE)
+  status        GenerationStatus @default(QUEUED)
+  prompt        String?
+  modelId       String?
+  loraUrl       String?
+  settings      Json?            @db.Json
+  inputAssetId  String?
+  outputAssetId String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  error         Json?            @db.Json
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  versions      AssetVersion[]
+  canvas        Canvas?          @relation(fields: [canvasId], references: [id])
+  inputAsset    Asset?           @relation("GenerationInputAsset", fields: [inputAssetId], references: [id])
+  outputAsset   Asset?           @relation("GenerationOutputAsset", fields: [outputAssetId], references: [id])
+  project       Project?         @relation(fields: [projectId], references: [id])
+  user          User?            @relation(fields: [userId], references: [id])
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@map("generation_run")
+}
+
+model BatchJob {
+  id            String          @id @default(cuid())
+  userId        String?
+  projectId     String?
+  label         String?
+  status        BatchStatus     @default(QUEUED)
+  config        Json            @db.Json
+  resultSummary Json?           @db.Json
+  error         Json?           @db.Json
+  concurrency   Int             @default(1)
+  attempts      Int             @default(0)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  canceledAt    DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  project       Project?        @relation(fields: [projectId], references: [id])
+  user          User?           @relation(fields: [userId], references: [id])
+  events        BatchJobEvent[]
+  items         BatchJobItem[]
+
+  @@index([userId, status])
+  @@index([projectId])
+  @@map("batch_job")
+}
+
+model BatchJobItem {
+  id        String      @id @default(cuid())
+  jobId     String
+  inputUrl  String
+  outputUrl String?
+  status    BatchStatus @default(QUEUED)
+  attempts  Int         @default(0)
+  metadata  Json?       @db.Json
+  error     Json?       @db.Json
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  job       BatchJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, status])
+  @@map("batch_job_item")
+}
+
+model BatchJobEvent {
+  id        String   @id @default(cuid())
+  jobId     String
+  type      String
+  payload   Json?    @db.Json
+  createdAt DateTime @default(now())
+  job       BatchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, createdAt])
+  @@map("batch_job_event")
+}
+
+model WorkflowDefinition {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  projectId   String
+  nodes       Json          @db.Json
+  edges       Json          @db.Json
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs        WorkflowRun[]
+
+  @@index([userId, projectId])
+  @@index([projectId])
+  @@map("workflow_definition")
+}
+
+model WorkflowRun {
+  id                   String              @id @default(cuid())
+  workflow             String
+  state                WorkflowState       @default(PENDING)
+  userId               String?
+  projectId            String?
+  input                Json?               @db.Json
+  output               Json?               @db.Json
+  error                Json?               @db.Json
+  startedAt            DateTime?
+  finishedAt           DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  workflowDefinitionId String?
+  project              Project?            @relation(fields: [projectId], references: [id])
+  user                 User?               @relation(fields: [userId], references: [id])
+  workflowDefinition   WorkflowDefinition? @relation(fields: [workflowDefinitionId], references: [id])
+  steps                WorkflowStep[]
+
+  @@index([workflow, state])
+  @@index([workflowDefinitionId])
+  @@index([userId])
+  @@map("workflow_run")
+}
+
+model WorkflowStep {
+  id         String        @id @default(cuid())
+  runId      String
+  name       String
+  state      WorkflowState @default(PENDING)
+  order      Int           @default(0)
+  toolName   String?
+  input      Json?         @db.Json
+  output     Json?         @db.Json
+  error      Json?         @db.Json
+  startedAt  DateTime?
+  finishedAt DateTime?
+  run        WorkflowRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId, order])
+  @@map("workflow_step")
+}
+
+model AgentThread {
+  id        String          @id @default(cuid())
+  userId    String?
+  projectId String?
+  title     String?
+  metadata  Json?           @db.Json
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  messages  AgentMessage[]
+  project   Project?        @relation(fields: [projectId], references: [id])
+  user      User?           @relation(fields: [userId], references: [id])
+  toolCalls AgentToolCall[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@map("agent_thread")
+}
+
+model AgentMessage {
+  id           String           @id @default(cuid())
+  threadId     String
+  role         AgentMessageRole
+  type         AgentMessageType @default(TEXT)
+  content      Json             @db.Json
+  inputTokens  Int?
+  outputTokens Int?
+  toolCallId   String?
+  createdAt    DateTime         @default(now())
+  thread       AgentThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  toolCall     AgentToolCall?   @relation(fields: [toolCallId], references: [id])
+
+  @@index([threadId, createdAt])
+  @@map("agent_message")
+}
+
+model AgentToolCall {
+  id          String         @id @default(cuid())
+  threadId    String
+  name        String
+  arguments   Json           @db.Json
+  result      Json?          @db.Json
+  status      ToolCallStatus @default(REQUESTED)
+  latencyMs   Int?
+  createdAt   DateTime       @default(now())
+  completedAt DateTime?
+  messages    AgentMessage[]
+  thread      AgentThread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+  @@map("agent_tool_call")
+}
+
+model UsageSample {
+  id        String          @id @default(cuid())
+  userId    String?
+  projectId String?
+  source    UsageSource     @default(BATCH)
+  metric    UsageMetricType
+  amount    Int
+  metadata  Json?           @db.Json
+  createdAt DateTime        @default(now())
+  project   Project?        @relation(fields: [projectId], references: [id])
+  user      User?           @relation(fields: [userId], references: [id])
+
+  @@index([userId, metric])
+  @@index([projectId])
+  @@map("usage_sample")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  projectId    String?
+  action       String
+  resourceType String
+  resourceId   String?
+  metadata     Json?    @db.Json
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+  project      Project? @relation(fields: [projectId], references: [id])
+  user         User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+  @@map("audit_log")
+}
 
 enum AssetType {
   IMAGE
@@ -79,380 +447,4 @@ enum UsageSource {
 enum ProjectType {
   CANVAS
   STUDIO
-}
-
-model Workspace {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  slug        String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  projects Project[]
-
-  @@unique([userId, slug])
-  @@index([userId])
-  @@index([updatedAt(sort: Desc)]) // For workspace listing
-  @@map("workspace")
-}
-
-model Project {
-  id          String      @id @default(cuid())
-  name        String
-  description String?
-  thumbnail   String?
-  type        ProjectType @default(CANVAS)
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspaceId String?
-  workspace   Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  // Relations
-  canvases            Canvas[]
-  assets              Asset[]
-  generationRuns      GenerationRun[]
-  batchJobs           BatchJob[]
-  workflowDefinitions WorkflowDefinition[]
-  workflowRuns        WorkflowRun[]
-  threads             AgentThread[]
-  usageSamples        UsageSample[]
-  auditLogs           AuditLog[]
-
-  @@index([userId])
-  @@index([workspaceId, type])
-  @@index([workspaceId, updatedAt(sort: Desc)]) // For dashboard project list
-  @@map("project")
-}
-
-model Canvas {
-  id             String           @id @default(cuid())
-  name           String
-  width          Int              @default(1920)
-  height         Int              @default(1080)
-  data           Json             @db.Json
-  projectId      String
-  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  snapshots      CanvasSnapshot[]
-  elements       CanvasElement[]
-  generationRuns GenerationRun[]
-
-  @@index([projectId])
-  @@map("canvas")
-}
-
-model CanvasSnapshot {
-  id          String          @id @default(cuid())
-  canvasId    String
-  canvas      Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  data        Json            @db.Json
-  version     Int
-  createdAt   DateTime        @default(now())
-  createdById String?
-  createdBy   User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  elements    CanvasElement[]
-
-  @@index([canvasId, version])
-  @@map("canvas_snapshot")
-}
-
-model CanvasElement {
-  id         String          @id @default(cuid())
-  canvasId   String
-  canvas     Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  snapshotId String?
-  snapshot   CanvasSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
-  kind       String
-  data       Json            @db.Json
-  zIndex     Int             @default(0)
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-
-  @@index([canvasId])
-  @@index([snapshotId])
-  @@map("canvas_element")
-}
-
-model Asset {
-  id         String          @id @default(cuid())
-  name       String
-  type       AssetType       @default(IMAGE)
-  url        String
-  size       Int
-  mimeType   String
-  metadata   Json?           @db.Json
-  projectId  String
-  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  versions   AssetVersion[]
-  inputRuns  GenerationRun[] @relation("GenerationInputAsset")
-  outputRuns GenerationRun[] @relation("GenerationOutputAsset")
-
-  @@index([projectId, type])
-  @@index([projectId, createdAt(sort: Desc)]) // For asset gallery
-  @@map("asset")
-}
-
-model AssetVersion {
-  id           String         @id @default(cuid())
-  assetId      String
-  asset        Asset          @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  generationId String?
-  generation   GenerationRun? @relation(fields: [generationId], references: [id], onDelete: SetNull)
-  url          String
-  checksum     String?
-  mimeType     String?
-  size         Int?
-  metadata     Json?          @db.Json
-  isPrimary    Boolean        @default(false)
-  createdAt    DateTime       @default(now())
-
-  @@index([assetId, createdAt])
-  @@index([generationId])
-  @@map("asset_version")
-}
-
-model GenerationRun {
-  id            String           @id @default(cuid())
-  userId        String?
-  user          User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId     String?
-  project       Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  canvasId      String?
-  canvas        Canvas?          @relation(fields: [canvasId], references: [id], onDelete: SetNull)
-  type          GenerationType   @default(IMAGE)
-  status        GenerationStatus @default(QUEUED)
-  prompt        String?
-  modelId       String?
-  loraUrl       String?
-  settings      Json?            @db.Json
-  inputAssetId  String?
-  inputAsset    Asset?           @relation("GenerationInputAsset", fields: [inputAssetId], references: [id], onDelete: SetNull)
-  outputAssetId String?
-  outputAsset   Asset?           @relation("GenerationOutputAsset", fields: [outputAssetId], references: [id], onDelete: SetNull)
-  startedAt     DateTime?
-  completedAt   DateTime?
-  error         Json?            @db.Json
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  versions      AssetVersion[]
-
-  @@index([projectId])
-  @@index([userId])
-  @@index([status])
-  @@map("generation_run")
-}
-
-model BatchJob {
-  id            String          @id @default(cuid())
-  userId        String?
-  user          User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId     String?
-  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  label         String?
-  status        BatchStatus     @default(QUEUED)
-  config        Json            @db.Json
-  resultSummary Json?           @db.Json
-  error         Json?           @db.Json
-  concurrency   Int             @default(1)
-  attempts      Int             @default(0)
-  startedAt     DateTime?
-  completedAt   DateTime?
-  canceledAt    DateTime?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  items         BatchJobItem[]
-  events        BatchJobEvent[]
-
-  @@index([userId, status])
-  @@index([projectId])
-  @@map("batch_job")
-}
-
-model BatchJobItem {
-  id        String      @id @default(cuid())
-  jobId     String
-  job       BatchJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  inputUrl  String
-  outputUrl String?
-  status    BatchStatus @default(QUEUED)
-  attempts  Int         @default(0)
-  metadata  Json?       @db.Json
-  error     Json?       @db.Json
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  @@index([jobId, status])
-  @@map("batch_job_item")
-}
-
-model BatchJobEvent {
-  id        String   @id @default(cuid())
-  jobId     String
-  job       BatchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  type      String
-  payload   Json?    @db.Json
-  createdAt DateTime @default(now())
-
-  @@index([jobId, createdAt])
-  @@map("batch_job_event")
-}
-
-model WorkflowDefinition {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  projectId   String
-  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  nodes       Json      @db.Json
-  edges       Json      @db.Json
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  runs        WorkflowRun[]
-
-  @@index([userId, projectId])
-  @@index([projectId])
-  @@map("workflow_definition")
-}
-
-model WorkflowRun {
-  id                   String               @id @default(cuid())
-  workflowDefinitionId String?
-  workflowDefinition   WorkflowDefinition?  @relation(fields: [workflowDefinitionId], references: [id], onDelete: SetNull)
-  workflow             String               // Legacy field for backward compatibility
-  state                WorkflowState        @default(PENDING)
-  userId               String?
-  user                 User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId            String?
-  project              Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  input                Json?                @db.Json
-  output               Json?                @db.Json
-  error                Json?                @db.Json
-  startedAt            DateTime?
-  finishedAt           DateTime?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  steps                WorkflowStep[]
-
-  @@index([workflow, state])
-  @@index([workflowDefinitionId])
-  @@index([userId])
-  @@map("workflow_run")
-}
-
-model WorkflowStep {
-  id         String        @id @default(cuid())
-  runId      String
-  run        WorkflowRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
-  name       String
-  state      WorkflowState @default(PENDING)
-  order      Int           @default(0)
-  toolName   String?
-  input      Json?         @db.Json
-  output     Json?         @db.Json
-  error      Json?         @db.Json
-  startedAt  DateTime?
-  finishedAt DateTime?
-
-  @@index([runId, order])
-  @@map("workflow_step")
-}
-
-model AgentThread {
-  id        String          @id @default(cuid())
-  userId    String?
-  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId String?
-  project   Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  title     String?
-  metadata  Json?           @db.Json
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  messages  AgentMessage[]
-  toolCalls AgentToolCall[]
-
-  @@index([userId])
-  @@index([projectId])
-  @@map("agent_thread")
-}
-
-model AgentMessage {
-  id           String           @id @default(cuid())
-  threadId     String
-  thread       AgentThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  role         AgentMessageRole
-  type         AgentMessageType @default(TEXT)
-  content      Json             @db.Json
-  inputTokens  Int?
-  outputTokens Int?
-  toolCallId   String?
-  toolCall     AgentToolCall?   @relation(fields: [toolCallId], references: [id], onDelete: SetNull)
-  createdAt    DateTime         @default(now())
-
-  @@index([threadId, createdAt])
-  @@map("agent_message")
-}
-
-model AgentToolCall {
-  id          String         @id @default(cuid())
-  threadId    String
-  thread      AgentThread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  name        String
-  arguments   Json           @db.Json
-  result      Json?          @db.Json
-  status      ToolCallStatus @default(REQUESTED)
-  latencyMs   Int?
-  createdAt   DateTime       @default(now())
-  completedAt DateTime?
-  messages    AgentMessage[]
-
-  @@index([threadId])
-  @@map("agent_tool_call")
-}
-
-model UsageSample {
-  id        String          @id @default(cuid())
-  userId    String?
-  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId String?
-  project   Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  source    UsageSource     @default(BATCH)
-  metric    UsageMetricType
-  amount    Int
-  metadata  Json?           @db.Json
-  createdAt DateTime        @default(now())
-
-  @@index([userId, metric])
-  @@index([projectId])
-  @@map("usage_sample")
-}
-
-model AuditLog {
-  id           String   @id @default(cuid())
-  userId       String?
-  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId    String?
-  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  action       String
-  resourceType String
-  resourceId   String?
-  metadata     Json?    @db.Json
-  ipAddress    String?
-  createdAt    DateTime @default(now())
-
-  @@index([userId])
-  @@index([projectId])
-  @@map("audit_log")
 }
