@@ -224,6 +224,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 			prompt: simpsonsStyle?.prompt || "",
 			loraUrl: simpsonsStyle?.loraUrl || "",
 			styleId: simpsonsStyle?.id || "simpsons",
+			aspectRatio: "1:1",
 		});
 	const [previousStyleId, setPreviousStyleId] = useState<string>(
 		simpsonsStyle?.id || "simpsons",
@@ -954,6 +955,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 				...prev,
 				prompt: settings.prompt,
 				modelId: settings.modelId,
+				aspectRatio: settings.aspectRatio || prev.aspectRatio,
 				// Assuming loraUrl and styleId might need handling if model is not custom
 			}));
 		}

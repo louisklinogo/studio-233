@@ -212,6 +212,7 @@ export function LegacyOverlayPage() {
 			prompt: simpsonsStyle?.prompt || "",
 			loraUrl: simpsonsStyle?.loraUrl || "",
 			styleId: simpsonsStyle?.id || "simpsons",
+			aspectRatio: "1:1",
 		});
 	const [previousStyleId, setPreviousStyleId] = useState<string>(
 		simpsonsStyle?.id || "simpsons",

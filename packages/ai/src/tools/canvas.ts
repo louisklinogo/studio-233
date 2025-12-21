@@ -12,7 +12,7 @@ type TextToImageOutput = z.infer<typeof textToImageWorkflow.outputSchema>;
 export const canvasTextToImageTool = createTool({
 	id: "canvas-text-to-image",
 	description:
-		"Generate a new image from text for placement on the Studio+233 canvas.",
+		"Generate a new image from a text prompt and dispatch it to the canvas (output.command.type = 'add-image', includes url/width/height/meta). Inputs: prompt (required), optional aspectRatio/size/seed/modelId/loraUrl.",
 	inputSchema: textToImageInputSchema,
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {

@@ -16,8 +16,8 @@ export type ToolDefinition<
 	id: string;
 	description: string;
 	inputSchema: TInputSchema;
-	outputSchema: TOutputSchema;
-	execute: ToolExecuteFn<z.infer<TInputSchema>, z.infer<TOutputSchema>>;
+	outputSchema?: TOutputSchema;
+	execute?: ToolExecuteFn<z.infer<TInputSchema>, z.infer<TOutputSchema>>;
 };
 
 export function createTool<
@@ -25,4 +25,16 @@ export function createTool<
 	TOutputSchema extends z.ZodTypeAny,
 >(definition: ToolDefinition<TInputSchema, TOutputSchema>) {
 	return definition;
+}
+
+export function createClientTool<TInputSchema extends z.ZodTypeAny>(
+	definition: Omit<
+		ToolDefinition<TInputSchema, z.ZodTypeAny>,
+		"execute" | "outputSchema"
+	>,
+) {
+	return {
+		...definition,
+		execute: undefined,
+	};
 }

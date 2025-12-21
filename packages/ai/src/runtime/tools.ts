@@ -10,6 +10,7 @@ import {
 	siteExtractorTool,
 	webSearchTool,
 } from "../tools/research";
+import { askForAspectRatioTool } from "../tools/ui";
 import {
 	captionOverlayTool,
 	textToVideoTool,
@@ -32,6 +33,7 @@ import { logger } from "../utils/logger";
 const TOOL_DEFINITIONS = {
 	delegateToAgent: delegateToAgentTool,
 	canvasTextToImage: canvasTextToImageTool,
+	askForAspectRatio: askForAspectRatioTool,
 	backgroundRemoval: backgroundRemovalTool,
 	objectIsolation: objectIsolationTool,
 	imageReframe: imageReframeTool,
@@ -61,10 +63,14 @@ function wrapTool(
 	injectedContext?: any,
 ): ReturnType<typeof createAiTool> {
 	const factory = createAiTool as any;
-	return factory({
+
+	const toolOptions: any = {
 		description: def.description,
 		parameters: def.inputSchema as unknown as z.ZodTypeAny,
-		execute: async (
+	};
+
+	if (def.execute) {
+		toolOptions.execute = async (
 			parameters: z.infer<typeof def.inputSchema>,
 			runtimeContext?: any,
 		) => {
@@ -79,7 +85,7 @@ function wrapTool(
 
 			try {
 				// Pass the injected context (containing runAgent) to the tool execution
-				return await def.execute({
+				return await def.execute!({
 					context: parsed.data,
 					runtimeContext: injectedContext ?? runtimeContext,
 				});
@@ -91,8 +97,10 @@ function wrapTool(
 				});
 				throw error;
 			}
-		},
-	}) as ReturnType<typeof createAiTool>;
+		};
+	}
+
+	return factory(toolOptions) as ReturnType<typeof createAiTool>;
 }
 
 // Legacy static toolkit (without context)

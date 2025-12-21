@@ -159,7 +159,7 @@ const StatusLine: React.FC<{ mode: "default" | "search" | "brainstorm" }> = ({
 		count === 0 ? null : count === 1 ? "1 attachment" : `${count} attachments`;
 
 	return (
-		<div className="text-center text-[10px] text-neutral-400 pt-4 font-mono uppercase tracking-wider">
+		<div className="text-center text-[10px] text-neutral-400 pt-1 font-mono uppercase tracking-wider">
 			{attachmentLabel ? `${attachmentLabel} • ${modeLabel}` : modeLabel}
 		</div>
 	);
@@ -184,7 +184,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
 	return (
 		<SelectedAssetsContext.Provider value={selectedAssetIds}>
-			<div className={cn("p-3 bg-[#f4f4f0] dark:bg-[#111111]", className)}>
+			<div className={cn("p-2 bg-[#f4f4f0] dark:bg-[#111111]", className)}>
 				<PromptInputProvider>
 					<SeedAttachmentsLoader
 						seeds={seedAttachments}

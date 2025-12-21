@@ -250,7 +250,7 @@ export const handleRun = async (deps: GenerationHandlerDeps) => {
 				prompt: generationSettings.prompt,
 				modelId: generationSettings.modelId,
 				loraUrl: generationSettings.loraUrl || undefined,
-				imageSize: "square",
+				aspectRatio: generationSettings.aspectRatio,
 				apiKey: customApiKey || undefined,
 			});
 

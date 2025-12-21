@@ -4,7 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import type { CanvasCommand } from "@studio233/ai/types/canvas";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FileUIPart, UIMessage } from "ai";
-import { TextStreamChatTransport } from "ai";
+import { DefaultChatTransport } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatHeader } from "@/components/studio/chat/ChatHeader";
 import { ChatHistoryList } from "@/components/studio/chat/ChatHistoryList";
@@ -65,6 +65,7 @@ export function ChatPanel({
 	const [showHistory, setShowHistory] = useState(false);
 	const [showFiles, setShowFiles] = useState(false);
 	const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const currentGenerationIdRef = useRef<string | null>(null);
 	const trpc = useTRPC();
@@ -80,7 +81,7 @@ export function ChatPanel({
 	});
 
 	const chatTransport = useMemo(() => {
-		return new TextStreamChatTransport<UIMessage>({
+		return new DefaultChatTransport<UIMessage>({
 			api: "/api/chat",
 			body: activeThreadId ? { threadId: activeThreadId } : undefined,
 		});
@@ -89,16 +90,55 @@ export function ChatPanel({
 	const chatOptions = {
 		id: activeThreadId ?? "new-chat",
 		transport: chatTransport,
+		maxSteps: 5,
 		initialMessages: [], // We'll sync manually to handle the async fetch
+		onError: (err: unknown) => {
+			setErrorMessage(
+				err instanceof Error ? err.message : "Something went wrong",
+			);
+		},
 		onFinish: ({ message }: { message: UIMessage }) => {
 			// Invalidate threads list to show updated timestamp/title
 			queryClient.invalidateQueries(
 				trpc.agent.getThreads.queryFilter({ limit: 50 }),
 			);
+			setErrorMessage(null);
 
-			// Process tool invocations for canvas commands
-			if (message.parts) {
-				for (const part of message.parts) {
+			// Process tool invocations for canvas commands (parts + toolInvocations)
+			const toolInvocations = (message as any).toolInvocations ?? [];
+			const toolParts = Array.isArray(toolInvocations)
+				? toolInvocations.map((invocation) => {
+						const state = invocation.state;
+						const toolState:
+							| "input-streaming"
+							| "input-available"
+							| "output-available"
+							| "output-error" =
+							state === "result"
+								? "output-available"
+								: state === "error"
+									? "output-error"
+									: state === "call" || state === "started"
+										? "input-available"
+										: "input-streaming";
+
+						const output = invocation.result ?? invocation.output;
+						const errorText = invocation.error ?? invocation.errorText;
+
+						return {
+							type: `tool-${invocation.toolName ?? invocation.name ?? "call"}`,
+							state: toolState,
+							input: invocation.args ?? invocation.input,
+							output,
+							errorText,
+						};
+					})
+				: [];
+
+			const allParts = [...(message.parts ?? []), ...toolParts];
+
+			if (allParts.length) {
+				for (const part of allParts) {
 					// Handle Vercel AI SDK tool parts
 					const toolPart = part as any;
 					if (
@@ -154,8 +194,18 @@ export function ChatPanel({
 		},
 	};
 
-	const { messages, setMessages, stop, status, sendMessage } = useChat(
-		chatOptions as any,
+	const { messages, setMessages, stop, status, sendMessage, addToolOutput } =
+		useChat(chatOptions as any);
+
+	const handleToolInteraction = useCallback(
+		(toolCallId: string, result: any) => {
+			addToolOutput({
+				toolCallId,
+				toolName: "askForAspectRatio",
+				output: result,
+			});
+		},
+		[addToolOutput],
 	);
 
 	// Sync messages when threadData loads
@@ -244,6 +294,7 @@ export function ChatPanel({
 			config?: { mode: "default" | "search" | "brainstorm" },
 		) => {
 			if (!message.trim()) return;
+			setErrorMessage(null);
 
 			let finalMessage = message;
 
@@ -322,6 +373,11 @@ export function ChatPanel({
 			/>
 
 			<div className="flex-1 overflow-hidden relative">
+				{errorMessage && (
+					<div className="px-4 py-2 text-sm text-red-700 bg-red-50 border-b border-red-200">
+						{errorMessage}
+					</div>
+				)}
 				{showHistory ? (
 					<ChatHistoryList
 						onSelectThread={handleSelectThread}
@@ -338,6 +394,7 @@ export function ChatPanel({
 							<ChatList
 								messages={messages as UIMessage[]}
 								isStreaming={isLoading}
+								onToolInteraction={handleToolInteraction}
 							/>
 						)}
 					</div>
@@ -345,7 +402,7 @@ export function ChatPanel({
 			</div>
 
 			{!showHistory && (
-				<div className="p-4 pb-6 bg-[#f4f4f0] dark:bg-[#111111] border-t border-neutral-200 dark:border-neutral-800">
+				<div className="p-3 pb-4 bg-[#f4f4f0] dark:bg-[#111111] border-t border-neutral-200 dark:border-neutral-800">
 					<ChatInput
 						onSubmit={handleSubmit}
 						isLoading={isLoading}

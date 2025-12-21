@@ -9,8 +9,8 @@ export async function POST(req: Request) {
 		const headers = new Headers(req.headers);
 		const session = await getSessionWithRetry(headers);
 
-		// Convert to CoreMessage[] for better compatibility
-		const coreMessages = convertToCoreMessages(messages);
+		// Convert to CoreMessage[] directly - convertToCoreMessages handles tool messages
+		const coreMessages = convertToCoreMessages(messages as any);
 
 		let currentThreadId = threadId;
 
@@ -148,8 +148,8 @@ export async function POST(req: Request) {
 			},
 		});
 
-		// Return stream with threadId header so client knows the ID
-		return stream.toTextStreamResponse({
+		// Return UI message (data) stream so tool parts are preserved
+		return stream.toUIMessageStreamResponse({
 			headers: {
 				"X-Thread-Id": currentThreadId,
 			},

@@ -36,6 +36,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		tools: [
 			"delegateToAgent",
 			"canvasTextToImage",
+			"askForAspectRatio",
 			"htmlToCanvas",
 			"imageReframe",
 			"imageUpscale",

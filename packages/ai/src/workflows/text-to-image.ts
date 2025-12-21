@@ -24,20 +24,78 @@ type FalImageResponse = {
 	images?: FalImage[];
 };
 
+const ASPECT_RATIO_OPTIONS = [
+	"1:1",
+	"2:3",
+	"3:2",
+	"3:4",
+	"4:3",
+	"4:5",
+	"5:4",
+	"9:16",
+	"16:9",
+	"21:9",
+] as const;
+
+const IMAGE_SIZE_OPTIONS = [
+	"landscape_4_3",
+	"portrait_4_3",
+	"square",
+	"landscape_16_9",
+	"portrait_16_9",
+] as const;
+
+type AspectRatioOption = (typeof ASPECT_RATIO_OPTIONS)[number];
+type ImageSizeOption = (typeof IMAGE_SIZE_OPTIONS)[number];
+
+const aspectRatioEnum = z.enum(ASPECT_RATIO_OPTIONS);
+const imageSizeEnum = z.enum(IMAGE_SIZE_OPTIONS);
+
+const aspectRatioOptionsSet = new Set<AspectRatioOption>(ASPECT_RATIO_OPTIONS);
+const imageSizeOptionsSet = new Set<ImageSizeOption>(IMAGE_SIZE_OPTIONS);
+
+const isAspectRatioOption = (value: unknown): value is AspectRatioOption => {
+	return (
+		typeof value === "string" &&
+		aspectRatioOptionsSet.has(value as AspectRatioOption)
+	);
+};
+
+const isImageSizeOption = (value: unknown): value is ImageSizeOption => {
+	return (
+		typeof value === "string" &&
+		imageSizeOptionsSet.has(value as ImageSizeOption)
+	);
+};
+
+const imageSizeToAspectRatio: Record<ImageSizeOption, AspectRatioOption> = {
+	square: "1:1",
+	landscape_4_3: "4:3",
+	portrait_4_3: "3:4",
+	landscape_16_9: "16:9",
+	portrait_16_9: "9:16",
+};
+
+const aspectRatioToImageSize: Record<AspectRatioOption, ImageSizeOption> = {
+	"1:1": "square",
+	"2:3": "portrait_4_3",
+	"3:2": "landscape_4_3",
+	"3:4": "portrait_4_3",
+	"4:3": "landscape_4_3",
+	"4:5": "portrait_4_3",
+	"5:4": "landscape_4_3",
+	"9:16": "portrait_16_9",
+	"16:9": "landscape_16_9",
+	"21:9": "landscape_16_9",
+};
+
 export const textToImageInputSchema = z.object({
 	prompt: z.string().min(1),
 	modelId: z.string().optional(),
 	loraUrl: z.string().url().optional(),
 	seed: z.number().optional(),
-	imageSize: z
-		.enum([
-			"landscape_4_3",
-			"portrait_4_3",
-			"square",
-			"landscape_16_9",
-			"portrait_16_9",
-		])
-		.optional(),
+	aspectRatio: aspectRatioEnum.optional(),
+	imageSize: z.union([imageSizeEnum, aspectRatioEnum]).optional(),
 	apiKey: z.string().optional(),
 });
 
@@ -49,7 +107,19 @@ export type TextToImageResult = z.infer<typeof textToImageOutputSchema>;
 export async function runTextToImageWorkflow(
 	input: TextToImageInput,
 ): Promise<TextToImageResult> {
-	const { prompt, modelId, loraUrl, seed, imageSize, apiKey } = input;
+	const { prompt, modelId, loraUrl, seed, imageSize, aspectRatio, apiKey } =
+		input;
+
+	const normalizedImageSize = isAspectRatioOption(imageSize)
+		? aspectRatioToImageSize[imageSize]
+		: imageSize;
+
+	const aspectRatioOverride =
+		aspectRatio ??
+		(isAspectRatioOption(imageSize) ? imageSize : undefined) ??
+		(normalizedImageSize
+			? imageSizeToAspectRatio[normalizedImageSize]
+			: undefined);
 
 	const googleKey = apiKey || env.googleApiKey;
 	const falKey = apiKey || env.falKey;
@@ -68,9 +138,19 @@ export async function runTextToImageWorkflow(
 		}
 
 		const google = createGoogleGenerativeAI({ apiKey: googleKey });
+		const providerOptions = aspectRatioOverride
+			? {
+					google: {
+						imageConfig: {
+							aspectRatio: aspectRatioOverride,
+						},
+					},
+				}
+			: undefined;
 		const result = await generateText({
 			model: google(IMAGE_GEN_MODEL),
 			prompt,
+			providerOptions,
 		});
 
 		const file = result.files?.find((f) => f.mediaType.startsWith("image/"));
@@ -123,12 +203,19 @@ export async function runTextToImageWorkflow(
 
 	const loras = loraUrl ? [{ path: loraUrl, scale: 1 }] : [];
 
+	const resolvedFalImageSize =
+		normalizedImageSize ||
+		(aspectRatioOverride
+			? aspectRatioToImageSize[aspectRatioOverride]
+			: undefined) ||
+		"square";
+
 	const result = await falClient.subscribe(
 		"fal-ai/flux-kontext-lora/text-to-image",
 		{
 			input: {
 				prompt,
-				image_size: imageSize || "square",
+				image_size: resolvedFalImageSize,
 				num_inference_steps: 30,
 				guidance_scale: 2.5,
 				num_images: 1,
