@@ -285,6 +285,41 @@ export function ChatPanel({
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const isLoading = status === "streaming" || status === "submitted";
 
+	const latestAssistantHasPendingTool = useMemo(() => {
+		for (let i = messages.length - 1; i >= 0; i--) {
+			const message = messages[i];
+			if (message?.role !== "assistant") {
+				continue;
+			}
+			const toolInvocations = (message as any)?.toolInvocations;
+			if (
+				Array.isArray(toolInvocations) &&
+				toolInvocations.some(
+					(invocation) =>
+						invocation?.state !== "result" && invocation?.state !== "error",
+				)
+			) {
+				return true;
+			}
+			const parts = message.parts ?? [];
+			if (
+				parts.some((part: any) => {
+					if (typeof part?.type !== "string") return false;
+					if (!part.type.startsWith("tool-")) return false;
+					return (
+						part.state !== "output-available" && part.state !== "output-error"
+					);
+				})
+			) {
+				return true;
+			}
+			break;
+		}
+		return false;
+	}, [messages]);
+
+	const showStreamingStatus = isLoading && !latestAssistantHasPendingTool;
+
 	useEffect(() => {
 		if (scrollRef.current) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -397,7 +432,7 @@ export function ChatPanel({
 						) : (
 							<ChatList
 								messages={messages as UIMessage[]}
-								isStreaming={isLoading}
+								showStreamingStatus={showStreamingStatus}
 								onToolInteraction={handleToolInteraction}
 							/>
 						)}

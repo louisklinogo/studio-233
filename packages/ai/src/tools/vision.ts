@@ -84,17 +84,52 @@ export const objectIsolationTool = createTool({
 	},
 });
 
+const imageReframeInputSchema = z
+	.object({
+		imageUrl: z.string().url().optional(),
+		url: z.string().url().optional(),
+		targetWidth: z.number().int().positive().optional(),
+		width: z.number().int().positive().optional(),
+		targetHeight: z.number().int().positive().optional(),
+		height: z.number().int().positive().optional(),
+		strategy: z.enum(["cover", "contain", "attention"]).optional(),
+		prompt: z.string().min(3).optional(),
+		originalImageId: z.string().optional(),
+	})
+	.superRefine((data, ctx) => {
+		if (!data.imageUrl && !data.url) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "imageUrl or url is required",
+			});
+		}
+		if (!data.targetWidth && !data.width) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "targetWidth or width is required",
+			});
+		}
+		if (!data.targetHeight && !data.height) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "targetHeight or height is required",
+			});
+		}
+	})
+	.transform((data) => ({
+		imageUrl: (data.imageUrl ?? data.url)!,
+		targetWidth: (data.targetWidth ?? data.width)!,
+		targetHeight: (data.targetHeight ?? data.height)!,
+		strategy: data.strategy ?? "cover",
+		prompt: data.prompt,
+		originalImageId: data.originalImageId,
+	}));
+
 export const imageReframeTool = createTool({
 	id: "image-reframe",
 	description:
 		"Resize/crop an image to new dimensions while preserving key regions",
-	inputSchema: z.object({
-		imageUrl: z.string().url(),
-		targetWidth: z.number().int().positive(),
-		targetHeight: z.number().int().positive(),
-		strategy: z.enum(["cover", "contain", "attention"]).default("cover"),
-		originalImageId: z.string().optional(), // For canvas updates
-	}),
+	inputSchema: imageReframeInputSchema,
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
 		const result = await imageReframeWorkflow.run(context);

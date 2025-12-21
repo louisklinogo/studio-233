@@ -27,8 +27,8 @@ interface ChatListProps {
 	messages: UIMessage[];
 	className?: string;
 	emptyState?: React.ReactNode;
-	isStreaming?: boolean;
-	onToolInteraction?: (toolCallId: string, result: any) => void;
+	showStreamingStatus?: boolean;
+	onToolInteraction?: (toolCallId: string, result: AspectRatio) => void;
 }
 
 const isFilePart = (part: UIMessage["parts"][number]): part is FileUIPart =>
@@ -39,18 +39,14 @@ const isToolPart = (
 ): part is ToolUIPart<Record<string, any>> =>
 	typeof part.type === "string" && part.type.startsWith("tool-");
 
-// Map toolInvocations (from ai-sdk) into ToolUIPart shape for UI rendering
 const toolInvocationsToParts = (
-	message: any,
+	message: UIMessage,
 ): ToolUIPart<Record<string, any>>[] => {
-	const invocations = message?.toolInvocations;
+	const invocations = (message as any)?.toolInvocations;
 	if (!Array.isArray(invocations)) return [];
 
 	return invocations.map((invocation: any) => {
 		const state = invocation.state;
-		// If toolCallId is missing on invocation (some versions), use a fallback or ensure it's there
-		const toolCallId = invocation.toolCallId;
-
 		const toolState:
 			| "input-streaming"
 			| "input-available"
@@ -70,7 +66,7 @@ const toolInvocationsToParts = (
 			input: invocation.args ?? invocation.input,
 			output: invocation.result ?? invocation.output,
 			errorText: invocation.error ?? invocation.errorText,
-			toolCallId,
+			toolCallId: invocation.toolCallId,
 		} as ToolUIPart<Record<string, any>> & { toolCallId: string };
 	});
 };
@@ -79,10 +75,9 @@ export const ChatList: React.FC<ChatListProps> = ({
 	messages,
 	className,
 	emptyState,
-	isStreaming,
+	showStreamingStatus,
 	onToolInteraction,
 }) => {
-	// Helper to cleaner internal orchestration JSON
 	const cleanText = (text: string) => {
 		const withoutSystemDirective = text.replace(
 			/^\s*\[System:[^\]]*\]\s*/i,
@@ -134,8 +129,6 @@ export const ChatList: React.FC<ChatListProps> = ({
 												> & { toolCallId?: string };
 
 												if (part.type === "tool-askForAspectRatio") {
-													// If we have an output already, show what was selected (maybe just text or a small badge)
-													// If state is input-available (called but no result), show Picker
 													if (part.state === "output-available") {
 														return (
 															<div
@@ -197,14 +190,18 @@ export const ChatList: React.FC<ChatListProps> = ({
 							);
 						})}
 
-				{isStreaming && (
+				{showStreamingStatus && (
 					<Message
-						key="streaming-placeholder"
+						key="streaming-status"
 						from="assistant"
 						className="max-w-full"
 					>
 						<MessageContent className="max-w-full break-words space-y-2">
-							<MessageResponse>Thinking…</MessageResponse>
+							<MessageResponse>
+								<span className="font-mono text-[11px] tracking-[0.3em] uppercase text-neutral-600 dark:text-neutral-400">
+									EXECUTING_WORKFLOW…
+								</span>
+							</MessageResponse>
 						</MessageContent>
 					</Message>
 				)}

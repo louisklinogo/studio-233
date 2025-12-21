@@ -18,6 +18,7 @@ export {
 	getAgentName,
 	resolveAgentKeyByName,
 } from "./agent-config";
+export { generateThreadTitle } from "./titling";
 export type { AgentMessage, AgentRunOptions, ToolCallInfo } from "./types";
 
 const env = getEnv();
