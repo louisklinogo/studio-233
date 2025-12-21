@@ -263,6 +263,33 @@
 	.rotate-y-180 {
 		transform: rotateY(180deg);
 	}
+
+	/* Swiss Minimalist Scrollbars */
+	.scrollbar-swiss {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(125, 125, 125, 0.2) transparent;
+	}
+
+	.scrollbar-swiss::-webkit-scrollbar {
+		width: 5px;
+		height: 5px;
+	}
+
+	.scrollbar-swiss::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.scrollbar-swiss::-webkit-scrollbar-thumb {
+		background: rgba(125, 125, 125, 0.2);
+		border-radius: 10px;
+		border: 1px solid transparent;
+		background-clip: content-box;
+	}
+
+	.scrollbar-swiss::-webkit-scrollbar-thumb:hover {
+		background: rgba(125, 125, 125, 0.4);
+		background-clip: content-box;
+	}
 }
 
 html {

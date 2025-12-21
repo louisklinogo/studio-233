@@ -1,17 +1,9 @@
 "use client";
 
 import type { ToolUIPart } from "ai";
-import {
-	CheckCircleIcon,
-	ChevronDownIcon,
-	CircleIcon,
-	ClockIcon,
-	WrenchIcon,
-	XCircleIcon,
-} from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
-import { Badge } from "@/components/ui/badge";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -24,7 +16,10 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
 	<Collapsible
-		className={cn("not-prose mb-4 w-full rounded-md border", className)}
+		className={cn(
+			"group/tool w-full rounded-sm border-l-2 border-neutral-200 pl-4 transition-all data-[state=open]:border-[#FF4D00] dark:border-neutral-800",
+			className,
+		)}
 		{...props}
 	/>
 );
@@ -42,32 +37,53 @@ export type ToolHeaderProps = {
 	className?: string;
 };
 
-const getStatusBadge = (status: ToolState) => {
-	const labels: Record<ToolState, string> = {
-		"input-streaming": "Pending",
-		"input-available": "Running",
-		"approval-requested": "Awaiting Approval",
-		"approval-responded": "Responded",
-		"output-available": "Completed",
-		"output-error": "Error",
-		"output-denied": "Denied",
+// Map technical tool names to "System Titles"
+const getSystemTitle = (type: string) => {
+	const rawName = type.split("-").slice(1).join("-") || type;
+	const titleMap: Record<string, string> = {
+		canvasTextToImage: "GENERATOR // IMG",
+		delegateToAgent: "AGENT // DELEGATE",
+		generateImage: "GENERATOR // IMG",
+		editImage: "GENERATOR // EDIT",
+		searchWeb: "NETWORK // SEARCH",
+		readFile: "SYSTEM // READ",
+		writeFile: "SYSTEM // WRITE",
 	};
+	return titleMap[rawName] || rawName.toUpperCase().replace(/_/g, " ");
+};
 
-	const icons: Record<ToolState, ReactNode> = {
-		"input-streaming": <CircleIcon className="size-4" />,
-		"input-available": <ClockIcon className="size-4 animate-pulse" />,
-		"approval-requested": <ClockIcon className="size-4 text-yellow-600" />,
-		"approval-responded": <CheckCircleIcon className="size-4 text-blue-600" />,
-		"output-available": <CheckCircleIcon className="size-4 text-green-600" />,
-		"output-error": <XCircleIcon className="size-4 text-red-600" />,
-		"output-denied": <XCircleIcon className="size-4 text-orange-600" />,
+// The "Signal Light" component (Braun/Swiss style)
+const Signal = ({ state }: { state: ToolState }) => {
+	const getSignalStyle = () => {
+		switch (state) {
+			case "input-streaming":
+			case "input-available":
+				return "bg-neutral-400 animate-pulse";
+			case "output-available":
+				return "bg-[#FF4D00]"; // Braun Orange for success/active completion
+			case "output-error":
+			case "output-denied":
+				return "bg-red-600";
+			case "approval-requested":
+				return "bg-yellow-500 animate-pulse";
+			default:
+				return "bg-neutral-300";
+		}
 	};
 
 	return (
-		<Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
-			{icons[status]}
-			{labels[status]}
-		</Badge>
+		<div className="relative flex items-center justify-center size-3">
+			<div
+				className={cn(
+					"size-1.5 rounded-full transition-colors",
+					getSignalStyle(),
+				)}
+			/>
+			{/* Optional glowing ring for active states */}
+			{(state === "input-available" || state === "input-streaming") && (
+				<div className="absolute inset-0 rounded-full bg-neutral-400/30 animate-ping" />
+			)}
+		</div>
 	);
 };
 
@@ -80,19 +96,18 @@ export const ToolHeader = ({
 }: ToolHeaderProps) => (
 	<CollapsibleTrigger
 		className={cn(
-			"flex w-full items-center justify-between gap-4 p-3",
+			"flex w-full items-center justify-between py-2 group/header cursor-pointer",
 			className,
 		)}
 		{...props}
 	>
-		<div className="flex items-center gap-2">
-			<WrenchIcon className="size-4 text-muted-foreground" />
-			<span className="font-medium text-sm">
-				{title ?? type.split("-").slice(1).join("-")}
+		<div className="flex items-center gap-3">
+			<Signal state={state} />
+			<span className="font-mono text-[10px] tracking-[0.2em] font-medium text-neutral-500 uppercase group-data-[state=open]/tool:text-foreground transition-colors">
+				{title ?? getSystemTitle(type)}
 			</span>
-			{getStatusBadge(state)}
 		</div>
-		<ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+		<ChevronRightIcon className="size-3 text-neutral-400 transition-transform duration-300 group-data-[state=open]/tool:rotate-90" />
 	</CollapsibleTrigger>
 );
 
@@ -101,7 +116,7 @@ export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
 export const ToolContent = ({ className, ...props }: ToolContentProps) => (
 	<CollapsibleContent
 		className={cn(
-			"data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
+			"overflow-hidden data-[state=closed]:animate-collapse data-[state=open]:animate-expand",
 			className,
 		)}
 		{...props}
@@ -112,16 +127,43 @@ export type ToolInputProps = ComponentProps<"div"> & {
 	input: ToolUIPart["input"];
 };
 
-export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
-	<div className={cn("space-y-2 overflow-hidden p-4", className)} {...props}>
-		<h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-			Parameters
-		</h4>
-		<div className="rounded-md bg-muted/50">
-			<CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+// Helper to clean up parameter values
+const formatValue = (value: any): string => {
+	if (typeof value === "string") return value;
+	if (typeof value === "number") return value.toString();
+	if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
+	if (value === null) return "NULL";
+	if (typeof value === "object") return "{...}"; // Abbreviate nested objects
+	return String(value);
+};
+
+export const ToolInput = ({ className, input, ...props }: ToolInputProps) => {
+	// Flatten the input for the grid
+	const params = typeof input === "object" ? Object.entries(input || {}) : [];
+
+	return (
+		<div className={cn("pt-1 pb-3 pl-6", className)} {...props}>
+			{params.length > 0 ? (
+				<div className="grid grid-cols-[80px_1fr] gap-y-1 gap-x-4">
+					{params.map(([key, value]) => (
+						<div key={key} className="contents group/param">
+							<span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400 py-1 border-b border-dashed border-neutral-100 dark:border-neutral-800">
+								{key}
+							</span>
+							<span className="font-sans text-[11px] text-neutral-700 dark:text-neutral-300 py-1 border-b border-dashed border-neutral-100 dark:border-neutral-800 truncate">
+								{formatValue(value)}
+							</span>
+						</div>
+					))}
+				</div>
+			) : (
+				<div className="font-mono text-[9px] text-neutral-400 italic">
+					NO PARAMETERS
+				</div>
+			)}
 		</div>
-	</div>
-);
+	);
+};
 
 export type ToolOutputProps = ComponentProps<"div"> & {
 	output: ToolUIPart["output"];
@@ -138,31 +180,43 @@ export const ToolOutput = ({
 		return null;
 	}
 
-	let Output = <div>{output as ReactNode}</div>;
-
-	if (typeof output === "object" && !isValidElement(output)) {
-		Output = (
-			<CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
+	// If error, show system alert style
+	if (errorText) {
+		return (
+			<div className="pl-6 pb-2 text-[10px] font-mono text-red-600 flex gap-2">
+				<span>[ERR]</span>
+				<span>{errorText}</span>
+			</div>
 		);
-	} else if (typeof output === "string") {
-		Output = <CodeBlock code={output} language="json" />;
+	}
+
+	// For standard output, try to keep it minimal
+	// If it's a generated image output (special case for our app likely), we could show a thumb
+	// For now, let's just log "OK" or the simplified result
+
+	let displayOutput: ReactNode = "completed";
+
+	if (typeof output === "string") {
+		// If it's a URL, maybe shorten it?
+		if (output.startsWith("http")) {
+			displayOutput = "ASSET GENERATED";
+		} else {
+			displayOutput = output;
+		}
+	} else if (typeof output === "object") {
+		// If it contains a 'result' or 'status' field, prioritize that
+		const result = (output as any).result || (output as any).status;
+		if (result) displayOutput = String(result);
+		else displayOutput = "DATA RECEIVED";
 	}
 
 	return (
-		<div className={cn("space-y-2 p-4", className)} {...props}>
-			<h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-				{errorText ? "Error" : "Result"}
-			</h4>
-			<div
-				className={cn(
-					"overflow-x-auto rounded-md text-xs [&_table]:w-full",
-					errorText
-						? "bg-destructive/10 text-destructive"
-						: "bg-muted/50 text-foreground",
-				)}
-			>
-				{errorText && <div>{errorText}</div>}
-				{Output}
+		<div className={cn("pl-6 pb-2", className)} {...props}>
+			<div className="flex items-center gap-2">
+				<div className="h-px w-2 bg-[#FF4D00]" />
+				<span className="font-mono text-[9px] uppercase tracking-wider text-[#FF4D00]">
+					{displayOutput}
+				</span>
 			</div>
 		</div>
 	);

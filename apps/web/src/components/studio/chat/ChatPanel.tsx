@@ -2,13 +2,17 @@
 
 import { useChat } from "@ai-sdk/react";
 import type { CanvasCommand } from "@studio233/ai/types/canvas";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FileUIPart, UIMessage } from "ai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { TextStreamChatTransport } from "ai";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatHeader } from "@/components/studio/chat/ChatHeader";
+import { ChatHistoryList } from "@/components/studio/chat/ChatHistoryList";
 import { ChatInput } from "@/components/studio/chat/ChatInput";
 import { ChatList } from "@/components/studio/chat/ChatList";
 import { ChatWelcome } from "@/components/studio/chat/ChatWelcome";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/trpc/client";
 
 interface ChatPanelProps {
 	isOpen: boolean;
@@ -60,12 +64,38 @@ export function ChatPanel({
 }: ChatPanelProps) {
 	const [showHistory, setShowHistory] = useState(false);
 	const [showFiles, setShowFiles] = useState(false);
+	const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
 
 	const currentGenerationIdRef = useRef<string | null>(null);
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
 
-	const { messages, setMessages, stop, status, sendMessage } = useChat({
-		id: "studio-chat",
-		onFinish: ({ message }) => {
+	// Fetch thread details if a thread is active
+	const { data: threadData, isLoading: isThreadLoading } = useQuery({
+		...trpc.agent.getThread.queryOptions({
+			id: (activeThreadId as string) ?? "",
+		}),
+		enabled: !!activeThreadId,
+		refetchOnWindowFocus: false,
+	});
+
+	const chatTransport = useMemo(() => {
+		return new TextStreamChatTransport<UIMessage>({
+			api: "/api/chat",
+			body: activeThreadId ? { threadId: activeThreadId } : undefined,
+		});
+	}, [activeThreadId]);
+
+	const chatOptions = {
+		id: activeThreadId ?? "new-chat",
+		transport: chatTransport,
+		initialMessages: [], // We'll sync manually to handle the async fetch
+		onFinish: ({ message }: { message: UIMessage }) => {
+			// Invalidate threads list to show updated timestamp/title
+			queryClient.invalidateQueries(
+				trpc.agent.getThreads.queryFilter({ limit: 50 }),
+			);
+
 			// Process tool invocations for canvas commands
 			if (message.parts) {
 				for (const part of message.parts) {
@@ -78,20 +108,20 @@ export function ChatPanel({
 					) {
 						const output = toolPart.output;
 
-						// Helper to process a potential command result
+						// Helper to process a potential command result (handle nested shapes)
 						const processResult = (res: any) => {
-							if (res && typeof res === "object" && "command" in res) {
-								const command = res.command as CanvasCommand;
-								if (command && onCanvasCommand) {
-									console.log(
-										"[ChatPanel] Dispatching canvas command:",
-										command,
-									);
-									onCanvasCommand(command, {
-										replaceId: currentGenerationIdRef.current || undefined,
-									});
-									currentGenerationIdRef.current = null; // Reset after usage
-								}
+							if (!res || typeof res !== "object") return;
+							const candidateCommand =
+								res.command ?? res.result?.command ?? res.data?.command;
+							if (candidateCommand && onCanvasCommand) {
+								console.log(
+									"[ChatPanel] Dispatching canvas command:",
+									candidateCommand,
+								);
+								onCanvasCommand(candidateCommand as CanvasCommand, {
+									replaceId: currentGenerationIdRef.current || undefined,
+								});
+								currentGenerationIdRef.current = null; // Reset after usage
 							}
 						};
 
@@ -109,11 +139,50 @@ export function ChatPanel({
 								}
 							}
 						}
+
+						// 3. Fallback: toolResults present directly on output
+						if (Array.isArray(output?.toolResults)) {
+							for (const sub of output.toolResults) {
+								if (sub?.result) {
+									processResult(sub.result);
+								}
+							}
+						}
 					}
 				}
 			}
 		},
-	});
+	};
+
+	const { messages, setMessages, stop, status, sendMessage } = useChat(
+		chatOptions as any,
+	);
+
+	// Sync messages when threadData loads
+	useEffect(() => {
+		if (activeThreadId && threadData?.messages) {
+			const uiMessages: UIMessage[] = threadData.messages.map((m: any) => ({
+				id: m.id,
+				role: m.role.toLowerCase(),
+				content: typeof m.content === "string" ? m.content : "",
+				parts: Array.isArray(m.content)
+					? m.content
+					: [
+							{
+								type: "text",
+								text:
+									typeof m.content === "string"
+										? m.content
+										: JSON.stringify(m.content),
+							},
+						],
+				createdAt: new Date(m.createdAt),
+			}));
+			setMessages(uiMessages);
+		} else if (!activeThreadId) {
+			setMessages([]);
+		}
+	}, [activeThreadId, threadData, setMessages]);
 
 	// Monitor messages for new tool invocations to trigger start generation
 	useEffect(() => {
@@ -220,7 +289,9 @@ export function ChatPanel({
 	);
 
 	const handleNewChat = useCallback(() => {
+		setActiveThreadId(null);
 		setMessages([]);
+		setShowHistory(false);
 	}, [setMessages]);
 
 	const handleToggleHistory = useCallback(() => {
@@ -229,6 +300,11 @@ export function ChatPanel({
 
 	const handleToggleFiles = useCallback(() => {
 		setShowFiles((prev) => !prev);
+	}, []);
+
+	const handleSelectThread = useCallback((threadId: string) => {
+		setActiveThreadId(threadId);
+		setShowHistory(false);
 	}, []);
 
 	return (
@@ -246,31 +322,40 @@ export function ChatPanel({
 			/>
 
 			<div className="flex-1 overflow-hidden relative">
-				<div
-					ref={scrollRef}
-					className="h-full overflow-y-auto overflow-x-hidden px-4 py-4 scroll-smooth"
-				>
-					{messages.length === 0 ? (
-						<ChatWelcome onSelectTemplate={handleSelectTemplate} />
-					) : (
-						<ChatList
-							messages={messages as UIMessage[]}
-							isStreaming={isLoading}
-						/>
-					)}
-				</div>
+				{showHistory ? (
+					<ChatHistoryList
+						onSelectThread={handleSelectThread}
+						activeThreadId={activeThreadId}
+					/>
+				) : (
+					<div
+						ref={scrollRef}
+						className="h-full overflow-y-auto overflow-x-hidden px-4 py-4 scroll-smooth scrollbar-swiss"
+					>
+						{messages.length === 0 ? (
+							<ChatWelcome onSelectTemplate={handleSelectTemplate} />
+						) : (
+							<ChatList
+								messages={messages as UIMessage[]}
+								isStreaming={isLoading}
+							/>
+						)}
+					</div>
+				)}
 			</div>
 
-			<div className="p-4 bg-[#f4f4f0] dark:bg-[#111111] border-t border-neutral-200 dark:border-neutral-800">
-				<ChatInput
-					onSubmit={handleSubmit}
-					isLoading={isLoading}
-					onStop={stop}
-					selectedAssetIds={selectedImageIds}
-					seedAttachments={seedAttachments}
-					onSeedConsumed={onSeedConsumed}
-				/>
-			</div>
+			{!showHistory && (
+				<div className="p-4 pb-6 bg-[#f4f4f0] dark:bg-[#111111] border-t border-neutral-200 dark:border-neutral-800">
+					<ChatInput
+						onSubmit={handleSubmit}
+						isLoading={isLoading}
+						onStop={stop}
+						selectedAssetIds={selectedImageIds}
+						seedAttachments={seedAttachments}
+						onSeedConsumed={onSeedConsumed}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }

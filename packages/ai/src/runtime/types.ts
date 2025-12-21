@@ -20,4 +20,6 @@ export type AgentRunOptions = {
 	maxSteps?: number;
 	/** Callback invoked after each tool call completes */
 	onToolCall?: (toolCall: ToolCallInfo) => void | Promise<void>;
+	/** Callback invoked when the stream finishes */
+	onFinish?: (event: any) => void | Promise<void>;
 };

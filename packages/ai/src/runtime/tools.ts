@@ -52,18 +52,20 @@ const TOOL_DEFINITIONS = {
 	batchPlanner: batchJobPlannerTool,
 } as const;
 
+// Re-export TOOL_DEFINITIONS for use in buildToolset
+export { TOOL_DEFINITIONS };
 export type ToolId = keyof typeof TOOL_DEFINITIONS;
 
-function wrapTool<
-	TInputSchema extends z.ZodTypeAny,
-	TOutputSchema extends z.ZodTypeAny,
->(def: ToolDefinition<TInputSchema, TOutputSchema>) {
+function wrapTool(
+	def: ToolDefinition<z.ZodTypeAny, z.ZodTypeAny>,
+	injectedContext?: any,
+): ReturnType<typeof createAiTool> {
 	const factory = createAiTool as any;
 	return factory({
 		description: def.description,
 		parameters: def.inputSchema as unknown as z.ZodTypeAny,
 		execute: async (
-			parameters: z.infer<TInputSchema>,
+			parameters: z.infer<typeof def.inputSchema>,
 			runtimeContext?: any,
 		) => {
 			const startedAt = Date.now();
@@ -76,7 +78,11 @@ function wrapTool<
 			}
 
 			try {
-				return await def.execute({ context: parsed.data, runtimeContext });
+				// Pass the injected context (containing runAgent) to the tool execution
+				return await def.execute({
+					context: parsed.data,
+					runtimeContext: injectedContext ?? runtimeContext,
+				});
 			} catch (error) {
 				logger.error(`tool.${def.id}.failed`, {
 					durationMs: Date.now() - startedAt,
@@ -88,23 +94,29 @@ function wrapTool<
 		},
 	}) as ReturnType<typeof createAiTool>;
 }
-const toolkitEntries: Array<[ToolId, ReturnType<typeof createAiTool>]> = [];
 
-for (const [key, def] of Object.entries(TOOL_DEFINITIONS) as Array<
-	[ToolId, ToolDefinition<z.ZodTypeAny, z.ZodTypeAny>]
->) {
-	toolkitEntries.push([key, wrapTool(def)]);
-}
-
+// Legacy static toolkit (without context)
+const toolkitEntries: Array<[ToolId, ReturnType<typeof createAiTool>]> =
+	Object.entries(TOOL_DEFINITIONS).map(([key, def]) => [
+		key as ToolId,
+		wrapTool(def as ToolDefinition<z.ZodTypeAny, z.ZodTypeAny>),
+	]);
 export const TOOLKIT = Object.fromEntries(toolkitEntries) as Record<
 	ToolId,
 	ReturnType<typeof createAiTool>
 >;
 
-export function buildToolset(ids: ToolId[]) {
+// Dynamic toolset builder with context injection
+export function buildToolset(ids: ToolId[], runtimeContext?: any) {
 	return ids.reduce<Record<string, ReturnType<typeof createAiTool>>>(
 		(acc, id) => {
-			acc[id] = TOOLKIT[id];
+			const def = TOOL_DEFINITIONS[id];
+			if (def) {
+				acc[id] = wrapTool(
+					def as ToolDefinition<z.ZodTypeAny, z.ZodTypeAny>,
+					runtimeContext,
+				);
+			}
 			return acc;
 		},
 		{},

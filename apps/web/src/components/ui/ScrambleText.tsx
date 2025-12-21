@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
 const CYCLES_PER_LETTER = 2;
@@ -10,12 +10,14 @@ interface ScrambleTextProps {
 	text: string;
 	className?: string;
 	scrambleColor?: string;
+	style?: CSSProperties;
 }
 
 export function ScrambleText({
 	text,
 	className = "",
 	scrambleColor = "#BFFF6D",
+	style,
 }: ScrambleTextProps) {
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 	const spanRef = useRef<HTMLSpanElement>(null);
@@ -86,6 +88,7 @@ export function ScrambleText({
 			onMouseEnter={scramble}
 			onMouseLeave={stopScramble}
 			className={`inline-block cursor-pointer whitespace-nowrap ${className}`}
+			style={style}
 		>
 			{displayText}
 		</span>

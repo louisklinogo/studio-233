@@ -21,11 +21,15 @@ const handler = (req: NextRequest) =>
 	});
 
 const protectedHandler = async (req: NextRequest) => {
-	// Only check for bots on POST requests (mutations)
-	if (req.method === "POST") {
-		const verification = await checkBotId();
-		if (verification.isBot) {
-			return new Response("Access denied", { status: 403 });
+	// Only check for bots on POST requests (mutations) and on Vercel
+	if (req.method === "POST" && process.env.VERCEL === "1") {
+		try {
+			const verification = await checkBotId();
+			if (verification.isBot) {
+				return new Response("Access denied", { status: 403 });
+			}
+		} catch (error) {
+			console.warn("BotId verification failed, allowing request", error);
 		}
 	}
 	return handler(req);

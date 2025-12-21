@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
-import React, { useEffect, useState } from "react";
+import React, { type CSSProperties, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface Viewfinder3DProps {
@@ -67,9 +67,11 @@ const CornerBracket = ({
 const ScrambleText = ({
 	text,
 	className,
+	style,
 }: {
 	text: string;
 	className?: string;
+	style?: CSSProperties;
 }) => {
 	const [display, setDisplay] = useState(text);
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_@#&";
@@ -94,7 +96,11 @@ const ScrambleText = ({
 		return () => clearInterval(interval);
 	}, [text]);
 
-	return <span className={cn("font-mono", className)}>{display}</span>;
+	return (
+		<span className={cn("font-mono", className)} style={style}>
+			{display}
+		</span>
+	);
 };
 
 export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {

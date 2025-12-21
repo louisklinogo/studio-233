@@ -43,11 +43,20 @@ function buildMessages(options: AgentRunOptions): CoreMessage[] {
 function getModel(agentKey: AgentKey) {
 	const agent = AGENT_DEFINITIONS[agentKey];
 	const modelConfig = getModelConfig(agent.model);
+
+	// Create runtime context with recursive agent capability
+	const runtimeContext = {
+		runAgent: generateAgentResponse,
+	};
+
 	return {
 		model: google(modelConfig.model),
 		temperature: modelConfig.temperature,
 		prompt: agent.prompt,
-		tools: agent.tools.length > 0 ? buildToolset(agent.tools) : undefined,
+		tools:
+			agent.tools.length > 0
+				? buildToolset(agent.tools, runtimeContext)
+				: undefined,
 	};
 }
 
@@ -144,6 +153,7 @@ export function streamAgentResponse(
 				}
 			}
 		},
+		onFinish: options.onFinish,
 		experimental_context: options.metadata?.context,
 	});
 }

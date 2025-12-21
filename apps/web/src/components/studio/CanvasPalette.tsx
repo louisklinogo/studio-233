@@ -204,7 +204,7 @@ export function CanvasPalette({
 
 	return (
 		<motion.div
-			className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 shadow-2xl rounded-sm overflow-hidden"
+			className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-[1px] bg-neutral-200 dark:bg-neutral-800 shadow-2xl rounded-lg overflow-hidden"
 			initial={{ width: "56px" }}
 			animate={{ width: isHovered ? "220px" : "56px" }}
 			transition={{ type: "spring", stiffness: 400, damping: 30 }}

@@ -2213,7 +2213,6 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 							handleExtendVideo={handleExtendVideo}
 							handleRemoveVideoBackground={handleRemoveVideoBackground}
 							setCroppingImageId={setCroppingImageId}
-							setIsolateInputValue={setIsolateInputValue}
 							setIsolateTarget={setIsolateTarget}
 							onCropConfirm={handleCropConfirm}
 							onCropCancel={handleCropCancel}
@@ -2305,7 +2304,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 							animate={{ width: 450, opacity: 1, marginRight: 16 }}
 							exit={{ width: 0, opacity: 0, marginRight: 0 }}
 							transition={{ duration: 0.3, ease: "easeInOut" }}
-							className="h-[calc(100%-2rem)] my-4 rounded-2xl border border-border z-[9999] relative flex-shrink-0 bg-transparent shadow-2xl overflow-hidden"
+							className="h-[calc(100%-2rem)] my-4 rounded-lg border border-border z-[9999] relative flex-shrink-0 bg-transparent shadow-2xl overflow-hidden"
 						>
 							<ChatPanel
 								isOpen={isChatOpen}

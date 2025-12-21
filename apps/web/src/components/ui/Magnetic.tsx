@@ -7,6 +7,7 @@ interface MagneticProps {
 	children: React.ReactNode;
 	strength?: number; // How much it pulls (0 to 1)
 	range?: number; // Distance in pixels to start pulling
+	stiffness?: number; // Spring stiffness for motion
 }
 
 /**
@@ -18,6 +19,7 @@ export const Magnetic = ({
 	children,
 	strength = 0.5,
 	range = 60,
+	stiffness = 350,
 }: MagneticProps) => {
 	const ref = useRef<HTMLDivElement>(null);
 	const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -25,7 +27,7 @@ export const Magnetic = ({
 	const x = useMotionValue(0);
 	const y = useMotionValue(0);
 
-	const springConfig = { damping: 20, stiffness: 350, mass: 0.1 };
+	const springConfig = { damping: 20, stiffness, mass: 0.1 };
 	const springX = useSpring(x, springConfig);
 	const springY = useSpring(y, springConfig);
 

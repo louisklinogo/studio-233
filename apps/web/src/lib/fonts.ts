@@ -1,47 +1,93 @@
-import {
-	Carlito,
-	JetBrains_Mono,
-	Outfit,
-	Poppins,
-	Space_Grotesk,
-} from "next/font/google";
+import localFont from "next/font/local";
 
 // Primary Sans - Technical, Clean, Modern (Replaced Inter with Carlito/Calibri)
-export const carlito = Carlito({
-	subsets: ["latin"],
-	weight: ["400", "700"],
+export const carlito = localFont({
 	variable: "--font-calibri",
 	display: "swap",
+	adjustFontFallback: false,
+	src: [
+		{
+			path: "../../public/fonts/fonts/carlito-regular.woff2",
+			style: "normal",
+			weight: "400",
+		},
+		{
+			path: "../../public/fonts/fonts/carlito-bold.woff2",
+			style: "normal",
+			weight: "700",
+		},
+	],
 });
 
 // Headings/Labels - Prominent, Friendly
-export const poppins = Poppins({
-	subsets: ["latin"],
-	weight: ["400", "500", "600", "700"],
+export const poppins = localFont({
 	variable: "--font-poppins",
 	display: "swap",
+	adjustFontFallback: false,
+	src: [
+		{
+			path: "../../public/fonts/fonts/poppins-regular.woff2",
+			style: "normal",
+			weight: "400",
+		},
+		{
+			path: "../../public/fonts/fonts/poppins-medium.woff2",
+			style: "normal",
+			weight: "500",
+		},
+		{
+			path: "../../public/fonts/fonts/poppins-semibold.woff2",
+			style: "normal",
+			weight: "600",
+		},
+		{
+			path: "../../public/fonts/fonts/poppins-bold.woff2",
+			style: "normal",
+			weight: "700",
+		},
+	],
 });
 
 // UI/Dropzones - Clean, Display
-export const outfit = Outfit({
-	subsets: ["latin"],
-	weight: ["400", "500", "600"],
+export const outfit = localFont({
 	variable: "--font-outfit",
 	display: "swap",
+	adjustFontFallback: false,
+	src: [
+		{
+			path: "../../public/fonts/fonts/outfit-variable.woff2",
+			style: "normal",
+			weight: "400 700",
+		},
+	],
 });
 
 // Brand/Heading - Characterful, Brutalist
-export const spaceGrotesk = Space_Grotesk({
-	subsets: ["latin"],
+export const spaceGrotesk = localFont({
 	variable: "--font-space",
 	display: "swap",
+	adjustFontFallback: false,
+	src: [
+		{
+			path: "../../public/fonts/fonts/space-grotesk-variable.woff2",
+			style: "normal",
+			weight: "300 700",
+		},
+	],
 });
 
 // Monospace - Data, Code
-export const jetbrainsMono = JetBrains_Mono({
-	subsets: ["latin"],
+export const jetbrainsMono = localFont({
 	variable: "--font-jetbrains",
 	display: "swap",
+	adjustFontFallback: false,
+	src: [
+		{
+			path: "../../public/fonts/fonts/jetbrains-mono-variable.woff2",
+			style: "normal",
+			weight: "100 800",
+		},
+	],
 });
 
 // Re-export for backward compatibility if needed, or update consumers

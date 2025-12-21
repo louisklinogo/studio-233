@@ -5,12 +5,20 @@ import { htmlRenderWorkflow } from "../workflows/html-render";
 import { htmlGeneratorWorkflow } from "../workflows/layout";
 import { createTool } from "./factory";
 
-const htmlToCanvasInputSchema = htmlGeneratorWorkflow.inputSchema.extend({
+const baseSchema = htmlGeneratorWorkflow.inputSchema.extend({
 	renderWidth: z.number().int().min(320).max(1920).optional(),
 	renderHeight: z.number().int().min(320).max(2400).optional(),
 	renderScale: z.number().min(1).max(2).optional(),
 	background: z.string().optional(),
 });
+
+const htmlToCanvasInputSchema = z.preprocess((val: any) => {
+	// Alias 'prompt' to 'brief' which is what the workflow expects
+	if (val && typeof val === "object" && val.prompt && !val.brief) {
+		return { ...val, brief: val.prompt };
+	}
+	return val;
+}, baseSchema);
 
 export const htmlToCanvasTool = createTool({
 	id: "html-to-canvas",

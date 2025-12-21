@@ -159,7 +159,7 @@ const StatusLine: React.FC<{ mode: "default" | "search" | "brainstorm" }> = ({
 		count === 0 ? null : count === 1 ? "1 attachment" : `${count} attachments`;
 
 	return (
-		<div className="text-center text-[10px] text-neutral-400 pt-2 font-mono uppercase tracking-wider">
+		<div className="text-center text-[10px] text-neutral-400 pt-4 font-mono uppercase tracking-wider">
 			{attachmentLabel ? `${attachmentLabel} • ${modeLabel}` : modeLabel}
 		</div>
 	);

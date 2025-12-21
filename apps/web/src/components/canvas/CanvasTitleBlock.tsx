@@ -121,8 +121,8 @@ export function CanvasTitleBlock({
 				"pointer-events-auto",
 				"flex flex-col gap-[1px]",
 				"bg-neutral-200 dark:bg-neutral-800",
-				"rounded-sm shadow-sm",
-				"min-w-[240px] max-w-xs",
+				"rounded-lg shadow-sm",
+				"min-w-[180px] max-w-xs",
 				isOpen ? "z-50" : "z-0",
 			)}
 		>
@@ -131,25 +131,25 @@ export function CanvasTitleBlock({
 				<button
 					onClick={() => setIsOpen(!isOpen)}
 					className={cn(
-						"w-full text-left bg-[#f4f4f0] dark:bg-[#0a0a0a] px-6 py-5 flex items-center justify-between group transition-colors",
-						isOpen && "bg-white dark:bg-[#111]",
+						"w-full text-left bg-[#f4f4f0] dark:bg-[#111111] px-4 py-3 flex items-center justify-between group transition-colors",
+						isOpen && "bg-white dark:bg-[#1a1a1a]",
 					)}
 				>
 					<div className="flex flex-col gap-1 overflow-hidden">
-						<span className="font-mono text-[9px] tracking-[0.2em] uppercase text-[#FF4D00] flex items-center gap-2">
+						<span className="font-mono text-[8px] tracking-[0.2em] uppercase text-[#FF4D00] flex items-center gap-2">
 							CANVAS_IDENTITY
 						</span>
-						<div className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
+						<div className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
 							<span className="truncate">{title}</span>
 							<ChevronDown
 								className={cn(
-									"w-3 h-3 text-neutral-400 transition-transform duration-300",
+									"w-2.5 h-2.5 text-neutral-400 transition-transform duration-300",
 									isOpen && "rotate-180",
 								)}
 							/>
 						</div>
 					</div>
-					<div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+					<div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
 				</button>
 
 				{/* Tabbed Dropdown Content */}
@@ -160,7 +160,7 @@ export function CanvasTitleBlock({
 							animate={{ opacity: 1, height: "auto" }}
 							exit={{ opacity: 0, height: 0 }}
 							transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-							className="overflow-hidden bg-[#f4f4f0] dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800"
+							className="overflow-hidden bg-[#f4f4f0] dark:bg-[#111111] border-t border-neutral-200 dark:border-neutral-800"
 						>
 							{/* Tab Switcher */}
 							<div className="flex bg-neutral-100 dark:bg-[#050505] p-1 gap-1">
@@ -172,7 +172,7 @@ export function CanvasTitleBlock({
 									className={cn(
 										"flex-1 py-2 text-[9px] font-mono uppercase tracking-widest transition-colors",
 										activeTab === "ops"
-											? "bg-white dark:bg-[#111] text-[#FF4D00] shadow-sm"
+											? "bg-white dark:bg-[#1a1a1a] text-[#FF4D00] shadow-sm"
 											: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200",
 									)}
 								>
@@ -183,7 +183,7 @@ export function CanvasTitleBlock({
 									className={cn(
 										"flex-1 py-2 text-[9px] font-mono uppercase tracking-widest transition-colors",
 										activeTab === "log"
-											? "bg-white dark:bg-[#111] text-[#FF4D00] shadow-sm"
+											? "bg-white dark:bg-[#1a1a1a] text-[#FF4D00] shadow-sm"
 											: "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200",
 									)}
 								>
@@ -198,7 +198,7 @@ export function CanvasTitleBlock({
 										<div className="flex flex-col gap-2">
 											<button
 												onClick={() => setMode("create")}
-												className="flex items-center justify-between p-3 bg-white dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 hover:border-[#FF4D00] transition-colors group"
+												className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 hover:border-[#FF4D00] transition-colors group"
 											>
 												<span className="text-xs font-medium text-neutral-900 dark:text-white">
 													Initialize Canvas
@@ -210,7 +210,7 @@ export function CanvasTitleBlock({
 											</button>
 											<button
 												onClick={handleBackToHub}
-												className="flex items-center justify-between p-3 bg-white dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 transition-colors group"
+												className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 transition-colors group"
 											>
 												<span className="text-xs font-medium text-neutral-900 dark:text-white">
 													Return to Hub
@@ -249,7 +249,7 @@ export function CanvasTitleBlock({
 												<button
 													type="submit"
 													disabled={!newName.trim() || createProject.isPending}
-													className="w-full bg-[#1a1a1a] dark:bg-[#111] border border-neutral-800 text-white hover:border-[#FF4D00] text-[10px] font-mono uppercase py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+													className="w-full bg-[#1a1a1a] dark:bg-[#1a1a1a] border border-neutral-800 text-white hover:border-[#FF4D00] text-[10px] font-mono uppercase py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 												>
 													{createProject.isPending ? (
 														<>
@@ -312,7 +312,7 @@ export function CanvasTitleBlock({
 
 			{/* Technical Specs Plate */}
 			{!isOpen && (
-				<div className="bg-[#f4f4f0] dark:bg-[#0a0a0a] px-6 py-3 grid grid-cols-[60px_1fr] gap-y-1 text-[10px] font-mono leading-tight border-t border-neutral-200 dark:border-neutral-800">
+				<div className="bg-[#f4f4f0] dark:bg-[#111111] px-4 py-2 grid grid-cols-[60px_1fr] gap-y-1 text-[9px] font-mono leading-tight border-t border-neutral-200 dark:border-neutral-800">
 					<span className="uppercase text-neutral-400 tracking-wider">DIM</span>
 					<span className="text-neutral-900 dark:text-neutral-400 text-right tabular-nums tracking-wide">
 						{sizeLabel} <span className="text-neutral-400/40">px</span>

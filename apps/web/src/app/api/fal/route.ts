@@ -14,10 +14,16 @@ const limiter: RateLimiter = {
 };
 
 export const POST = async (req: NextRequest) => {
-	// Check for bot activity first
-	const verification = await checkBotId();
-	if (verification.isBot) {
-		return new Response("Access denied", { status: 403 });
+	// Check for bot activity first (only on Vercel)
+	if (process.env.VERCEL === "1") {
+		try {
+			const verification = await checkBotId();
+			if (verification.isBot) {
+				return new Response("Access denied", { status: 403 });
+			}
+		} catch (error) {
+			console.warn("BotId verification failed, allowing request", error);
+		}
 	}
 
 	// Check if user has provided their own API key

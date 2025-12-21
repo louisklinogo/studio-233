@@ -1,9 +1,10 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText } from "ai";
+import { generateObject, generateText } from "ai";
 import { z } from "zod";
 
 import { getEnv } from "../config";
 import { GEMINI_PRO_MODEL, GEMINI_TEXT_MODEL } from "../model-config";
+import { logger } from "../utils/logger";
 
 const env = getEnv();
 
@@ -29,9 +30,37 @@ export type HtmlGeneratorInput = z.infer<typeof htmlGeneratorInputSchema>;
 export type HtmlGeneratorResult = z.infer<typeof htmlGeneratorOutputSchema>;
 
 type HtmlGeneratorDeps = {
+	generateObjectFn?: typeof generateObject;
 	generateTextFn?: typeof generateText;
 	createGoogleFn?: typeof createGoogleGenerativeAI;
 };
+
+function extractJsonObject(responseText: string) {
+	const trimmed = responseText.trim();
+	const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+	const withoutFences = fenceMatch ? fenceMatch[1] : trimmed;
+	const start = withoutFences.indexOf("{");
+	const end = withoutFences.lastIndexOf("}");
+	const candidate =
+		start !== -1 && end !== -1 && end > start
+			? withoutFences.slice(start, end + 1)
+			: withoutFences;
+
+	return JSON.parse(candidate);
+}
+
+function coerceHtmlGeneratorResult(value: unknown): HtmlGeneratorResult {
+	const data = value as Record<string, unknown>;
+
+	return {
+		html: typeof data.html === "string" ? data.html : "",
+		css: typeof data.css === "string" ? data.css : "",
+		components: Array.isArray(data.components)
+			? data.components.filter((c) => typeof c === "string")
+			: [],
+		rationale: typeof data.rationale === "string" ? data.rationale : "",
+	};
+}
 
 export async function runHtmlGeneratorWorkflow(
 	input: HtmlGeneratorInput,
@@ -42,6 +71,7 @@ export async function runHtmlGeneratorWorkflow(
 		throw new Error("Google API key required for HTML generation");
 	}
 
+	const generateObjectFn = deps.generateObjectFn ?? generateObject;
 	const generateTextFn = deps.generateTextFn ?? generateText;
 	const createGoogleFn = deps.createGoogleFn ?? createGoogleGenerativeAI;
 
@@ -61,14 +91,28 @@ Brand tone: ${input.brandTone}
 Layout: ${input.layout}
 Sections: ${sections.join(", ")}
 Color palette: ${colorPalette?.join(", ") ?? "designer's choice"}
-Return only JSON with keys html, css, rationale, components (component names).`;
+Return only a single JSON object with keys html, css, rationale, components (component names). Do not include markdown, code fences, or prose.`;
 
 	const google = createGoogleFn({ apiKey: key });
+	const model = google(GEMINI_TEXT_MODEL);
+
+	try {
+		const result = await generateObjectFn({
+			model,
+			schema: htmlGeneratorOutputSchema,
+			prompt,
+		});
+
+		return htmlGeneratorOutputSchema.parse(result.object);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		logger.warn("html-generator.object-fallback", { message });
+	}
 
 	let responseText = "{}";
 	try {
 		const result = await generateTextFn({
-			model: google(GEMINI_TEXT_MODEL),
+			model,
 			prompt,
 		});
 		responseText = result.text ?? "{}";
@@ -80,21 +124,16 @@ Return only JSON with keys html, css, rationale, components (component names).`;
 		throw new Error(`html-generator: model request failed: ${message}`);
 	}
 
-	let parsed: any;
 	try {
-		parsed = JSON.parse(responseText);
+		const parsed = extractJsonObject(responseText);
+		return coerceHtmlGeneratorResult(parsed);
 	} catch (error) {
+		logger.error("html-generator: failed-to-parse", {
+			snippet: responseText.slice(0, 2000),
+			message: error instanceof Error ? error.message : String(error),
+		});
 		throw new Error("html-generator: failed to parse model response as JSON");
 	}
-
-	return {
-		html: typeof parsed.html === "string" ? parsed.html : "",
-		css: typeof parsed.css === "string" ? parsed.css : "",
-		components: Array.isArray(parsed.components)
-			? parsed.components.filter((c: unknown) => typeof c === "string")
-			: [],
-		rationale: typeof parsed.rationale === "string" ? parsed.rationale : "",
-	};
 }
 
 export const htmlGeneratorWorkflow = {

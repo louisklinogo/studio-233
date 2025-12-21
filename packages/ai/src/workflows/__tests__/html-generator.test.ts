@@ -21,9 +21,9 @@ test("html generator applies defaults when sections are missing", async () => {
 			detailLevel: "minimal",
 		} as any,
 		{
-			generateTextFn: async ({ prompt }: { prompt: string }) => {
+			generateObjectFn: async ({ prompt }: { prompt: string }) => {
 				prompts.push(prompt);
-				return { text: JSON.stringify(DUMMY_RESPONSE) } as any;
+				return { object: DUMMY_RESPONSE } as any;
 			},
 			createGoogleFn: () => (modelName: string) => modelName as any,
 		},
