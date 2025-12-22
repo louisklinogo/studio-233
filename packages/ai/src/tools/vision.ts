@@ -1,3 +1,5 @@
+import { list } from "@vercel/blob";
+import crypto from "crypto";
 import { z } from "zod";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
 import { backgroundRemovalWorkflow } from "../workflows/background-removal";
@@ -6,6 +8,7 @@ import {
 	layoutDesignerWorkflow,
 } from "../workflows/layout";
 import { objectIsolationWorkflow } from "../workflows/object-isolation";
+import { visionAnalysisWorkflow } from "../workflows/vision-analysis";
 import {
 	imageReframeWorkflow,
 	imageUpscaleWorkflow,
@@ -15,6 +18,61 @@ import {
 import { createTool } from "./factory";
 
 export { htmlToCanvasTool } from "./html-to-canvas";
+
+async function getLatestBlobUrl(prefix: string): Promise<string | null> {
+	try {
+		const result = await list({ prefix, limit: 50 });
+		const blobs = result.blobs;
+		if (blobs.length === 0) return null;
+
+		let latest = blobs[0]!;
+		for (const blob of blobs) {
+			if (blob.uploadedAt > latest.uploadedAt) {
+				latest = blob;
+			}
+		}
+
+		return latest.url;
+	} catch {
+		return null;
+	}
+}
+
+export const visionAnalysisTool = createTool({
+	id: "vision-analysis",
+	description:
+		"Analyze an image and return structured details (scene, palette, objects, OCR)",
+	inputSchema: visionAnalysisWorkflow.inputSchema!,
+	outputSchema: visionAnalysisWorkflow.outputSchema!,
+	execute: async ({ context }) => visionAnalysisWorkflow.run(context),
+});
+
+export const visionAnalysisRefTool = createTool({
+	id: "vision-analysis-ref",
+	description:
+		"Look up persisted vision analysis and source snapshot URLs for a given image URL",
+	inputSchema: z.object({
+		imageUrl: z.string().url(),
+	}),
+	outputSchema: z.object({
+		imageHash: z.string(),
+		analysisJsonUrl: z.string().url().nullable(),
+		sourceImageUrl: z.string().url().nullable(),
+	}),
+	execute: async ({ context }) => {
+		const imageHash = crypto
+			.createHash("md5")
+			.update(context.imageUrl)
+			.digest("hex");
+
+		const [analysisJsonUrl, sourceImageUrl] = await Promise.all([
+			getLatestBlobUrl(`vision/metadata/${imageHash}/`),
+			getLatestBlobUrl(`vision/source/${imageHash}/`),
+		]);
+
+		return { imageHash, analysisJsonUrl, sourceImageUrl };
+	},
+});
 
 export const backgroundRemovalTool = createTool({
 	id: "background-removal",

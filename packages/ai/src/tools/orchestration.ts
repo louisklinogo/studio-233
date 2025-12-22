@@ -15,7 +15,7 @@ const agentAliasMap: Record<string, AgentId> = {
 };
 
 const agentSchema = z
-	.string({ required_error: "Agent is required" })
+	.string()
 	.min(1, "Agent is required")
 	.transform((value) => value.trim().toLowerCase())
 	.refine((value) => value in agentAliasMap, {

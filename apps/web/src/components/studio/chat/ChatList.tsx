@@ -197,10 +197,8 @@ export const ChatList: React.FC<ChatListProps> = ({
 						className="max-w-full"
 					>
 						<MessageContent className="max-w-full break-words space-y-2">
-							<MessageResponse>
-								<span className="font-mono text-[11px] tracking-[0.3em] uppercase text-neutral-600 dark:text-neutral-400">
-									EXECUTING_WORKFLOW…
-								</span>
+							<MessageResponse className="font-mono text-[11px] tracking-[0.3em] uppercase text-neutral-600 dark:text-neutral-400">
+								EXECUTING_WORKFLOW…
 							</MessageResponse>
 						</MessageContent>
 					</Message>

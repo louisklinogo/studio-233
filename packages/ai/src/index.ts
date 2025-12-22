@@ -6,6 +6,7 @@ export {
 	resolveAgentKeyByName,
 	streamAgentResponse,
 } from "./runtime";
+export { generateThreadTitle } from "./runtime/titling";
 export * from "./tools";
 export type { CanvasCommand } from "./types/canvas";
 export { uploadImageBufferToBlob } from "./utils/blob-storage";
@@ -15,4 +16,5 @@ export * from "./workflows/object-isolation";
 export * from "./workflows/research";
 export * from "./workflows/text-to-image";
 export * from "./workflows/video";
+export * from "./workflows/vision-analysis";
 export * from "./workflows/vision-enhancements";

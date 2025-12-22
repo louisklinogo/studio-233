@@ -16,7 +16,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ASPECT_RATIOS, AVAILABLE_MODELS } from "@/constants/image-config";
+import {
+	ASPECT_RATIOS,
+	AVAILABLE_MODELS,
+	type ImageAspectRatio,
+	type ImageModelId,
+} from "@/constants/image-config";
 import { useToast } from "@/hooks/use-toast";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useFalClient } from "@/hooks/useFalClient";
@@ -24,8 +29,8 @@ import { cn } from "@/lib/utils";
 
 export interface ImageGeneratorSettings {
 	prompt: string;
-	modelId: string;
-	aspectRatio: string;
+	modelId: ImageModelId;
+	aspectRatio: ImageAspectRatio;
 	numImages: number;
 	referenceImage?: string; // Data URL for reference image
 }
@@ -46,8 +51,10 @@ export const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
 	initialPrompt = "",
 }) => {
 	const [prompt, setPrompt] = useState(initialPrompt);
-	const [modelId, setModelId] = useState("gemini-2.5-flash-image-preview");
-	const [aspectRatio, setAspectRatio] = useState("1:1");
+	const [modelId, setModelId] = useState<ImageModelId>(
+		"gemini-2.5-flash-image-preview",
+	);
+	const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>("1:1");
 	const [numImages, setNumImages] = useState(1); // Default to 1 for now
 	const [referenceImage, setReferenceImage] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -132,7 +139,10 @@ export const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
 							<div className="flex items-center justify-between pt-2 border-t border-border/50">
 								<div className="flex items-center gap-1">
 									{/* Model Selector */}
-									<Select value={modelId} onValueChange={setModelId}>
+									<Select
+										value={modelId}
+										onValueChange={(value) => setModelId(value as ImageModelId)}
+									>
 										<SelectTrigger className="h-8 gap-2 border-none bg-transparent hover:bg-muted/50 rounded-lg px-2 text-xs font-medium font-outfit transition-colors focus:ring-0 focus:ring-offset-0 w-fit">
 											<Zap className="h-3 w-3" />
 											<SelectValue placeholder="Select Model" />
@@ -177,7 +187,12 @@ export const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
 								{/* Run Button */}
 								<div className="flex items-center gap-2">
 									{/* Aspect Ratio Selector */}
-									<Select value={aspectRatio} onValueChange={setAspectRatio}>
+									<Select
+										value={aspectRatio}
+										onValueChange={(value) =>
+											setAspectRatio(value as ImageAspectRatio)
+										}
+									>
 										<SelectTrigger className="h-8 gap-2 border-none bg-transparent hover:bg-muted/50 rounded-lg px-2 text-xs font-medium font-outfit transition-colors focus:ring-0 focus:ring-offset-0 w-fit">
 											<SelectValue>{aspectRatio}</SelectValue>
 										</SelectTrigger>

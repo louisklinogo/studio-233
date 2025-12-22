@@ -54,6 +54,8 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		prompt: VISION_FORGE_PROMPT,
 		model: "vision",
 		tools: [
+			"visionAnalysis",
+			"visionAnalysisRef",
 			"backgroundRemoval",
 			"objectIsolation",
 			"imageReframe",

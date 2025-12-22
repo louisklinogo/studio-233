@@ -919,38 +919,7 @@ export const appRouter = router({
 		}),
 
 	generateTextToImage: publicProcedure
-		.input(
-			z.object({
-				prompt: z.string(),
-				modelId: z.string().optional(),
-				loraUrl: z.string().url().optional(),
-				seed: z.number().optional(),
-				aspectRatio: z
-					.enum([
-						"1:1",
-						"2:3",
-						"3:2",
-						"3:4",
-						"4:3",
-						"4:5",
-						"5:4",
-						"9:16",
-						"16:9",
-						"21:9",
-					])
-					.optional(),
-				imageSize: z
-					.enum([
-						"landscape_4_3",
-						"portrait_4_3",
-						"square",
-						"landscape_16_9",
-						"portrait_16_9",
-					])
-					.optional(),
-				apiKey: z.string().optional(),
-			}),
-		)
+		.input(textToImageWorkflow.inputSchema)
 		.mutation(async ({ input, ctx }) => {
 			try {
 				return await textToImageWorkflow.run({

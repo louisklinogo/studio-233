@@ -27,6 +27,8 @@ import {
 	objectIsolationTool,
 	paletteExtractorTool,
 	storyboardTool,
+	visionAnalysisRefTool,
+	visionAnalysisTool,
 } from "../tools/vision";
 import { logger } from "../utils/logger";
 
@@ -34,6 +36,8 @@ const TOOL_DEFINITIONS = {
 	delegateToAgent: delegateToAgentTool,
 	canvasTextToImage: canvasTextToImageTool,
 	askForAspectRatio: askForAspectRatioTool,
+	visionAnalysis: visionAnalysisTool,
+	visionAnalysisRef: visionAnalysisRefTool,
 	backgroundRemoval: backgroundRemovalTool,
 	objectIsolation: objectIsolationTool,
 	imageReframe: imageReframeTool,
@@ -87,7 +91,14 @@ function wrapTool(
 				// Pass the injected context (containing runAgent) to the tool execution
 				return await def.execute!({
 					context: parsed.data,
-					runtimeContext: injectedContext ?? runtimeContext,
+					runtimeContext: injectedContext
+						? {
+								...(runtimeContext && typeof runtimeContext === "object"
+									? runtimeContext
+									: {}),
+								...injectedContext,
+							}
+						: runtimeContext,
 				});
 			} catch (error) {
 				logger.error(`tool.${def.id}.failed`, {

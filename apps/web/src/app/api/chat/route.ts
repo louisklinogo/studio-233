@@ -139,12 +139,15 @@ export async function POST(req: Request) {
 							: [msg.content];
 						for (const part of contentArray) {
 							if (part.type === "tool-result") {
+								const output =
+									("output" in part ? part.output : undefined) ??
+									("result" in part ? part.result : undefined);
 								await db.agentToolCall
 									.update({
 										where: { id: part.toolCallId },
 										data: {
 											status: "SUCCEEDED",
-											result: part.result as any,
+											result: output as any,
 											completedAt: new Date(),
 										},
 									})
