@@ -1,10 +1,13 @@
+import { createHash } from "node:crypto";
 import {
 	generateAgentResponse,
 	generateThreadTitle,
 	streamAgentResponse,
+	uploadImageBufferToBlob,
 } from "@studio233/ai";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma as db } from "@studio233/db";
+import { list } from "@vercel/blob";
 import { convertToCoreMessages } from "ai";
 
 export async function POST(req: Request) {
@@ -15,6 +18,109 @@ export async function POST(req: Request) {
 
 		// Convert to CoreMessage[] directly - convertToCoreMessages handles tool messages
 		const coreMessages = convertToCoreMessages(messages as any);
+
+		const parseBase64DataUrl = (
+			dataUrl: string,
+		): { mediaType: string; buffer: Buffer } => {
+			const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
+			if (!match) {
+				throw new Error("Invalid data URL");
+			}
+
+			const mediaType = match[1] ?? "application/octet-stream";
+			const buffer = Buffer.from(match[2] ?? "", "base64");
+			return { mediaType, buffer };
+		};
+
+		const getLatestBlobUrl = async (prefix: string): Promise<string | null> => {
+			const { blobs } = await list({ prefix, limit: 10 });
+			if (!blobs.length) return null;
+
+			const [latest] = [...blobs].sort((a, b) => {
+				const aTime = new Date((a as any).uploadedAt ?? 0).getTime();
+				const bTime = new Date((b as any).uploadedAt ?? 0).getTime();
+				return bTime - aTime;
+			});
+
+			return latest?.url ?? null;
+		};
+
+		const resolveLatestImageUrl = async (
+			msgs: unknown[],
+		): Promise<string | null> => {
+			for (let i = msgs.length - 1; i >= 0; i--) {
+				const msg: any = msgs[i];
+				if (!msg || msg.role !== "user") continue;
+				const content = msg.content;
+				if (!Array.isArray(content)) continue;
+
+				for (const part of content) {
+					if (
+						part?.type === "file" &&
+						typeof part.mediaType === "string" &&
+						part.mediaType.startsWith("image/")
+					) {
+						const data = part.data;
+						if (data instanceof URL) return data.toString();
+						if (typeof data !== "string") continue;
+
+						if (data.startsWith("http://") || data.startsWith("https://")) {
+							return data;
+						}
+
+						if (data.startsWith("data:")) {
+							try {
+								const { mediaType, buffer } = parseBase64DataUrl(data);
+								const hash = createHash("sha256").update(buffer).digest("hex");
+								const prefix = `vision/ingest/${hash}`;
+								const existing = await getLatestBlobUrl(`${prefix}/`);
+								if (existing) return existing;
+
+								return await uploadImageBufferToBlob(buffer, {
+									contentType: mediaType,
+									prefix,
+								});
+							} catch (error) {
+								console.warn("Failed to ingest image attachment:", error);
+								return data;
+							}
+						}
+
+						// Some clients send raw base64 (without data: prefix)
+						if (/^[A-Za-z0-9+/=]+$/.test(data) && data.length > 100) {
+							try {
+								const buffer = Buffer.from(data, "base64");
+								const hash = createHash("sha256").update(buffer).digest("hex");
+								const prefix = `vision/ingest/${hash}`;
+								const existing = await getLatestBlobUrl(`${prefix}/`);
+								if (existing) return existing;
+
+								return await uploadImageBufferToBlob(buffer, {
+									contentType: part.mediaType,
+									prefix,
+								});
+							} catch (error) {
+								console.warn(
+									"Failed to ingest base64 image attachment:",
+									error,
+								);
+								return `data:${part.mediaType};base64,${data}`;
+							}
+						}
+					}
+
+					if (part?.type === "image") {
+						const image = part.image;
+						if (image instanceof URL) return image.toString();
+						if (typeof image === "string") return image;
+					}
+				}
+			}
+
+			return null;
+		};
+
+		const latestImageUrl = await resolveLatestImageUrl(coreMessages as any);
 
 		let currentThreadId = threadId;
 
@@ -162,6 +268,7 @@ export async function POST(req: Request) {
 			metadata: {
 				context: {
 					canvas,
+					latestImageUrl,
 					runtimeContext: {
 						runAgent: generateAgentResponse,
 					},

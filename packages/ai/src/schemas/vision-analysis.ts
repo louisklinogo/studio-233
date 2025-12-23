@@ -17,6 +17,21 @@ const visualAttributesSchema = z.object({
 	dimensions_relative: z.string().nullable(),
 });
 
+const wearingConfigurationSchema = z.object({
+	fastening_status: z
+		.string()
+		.describe("e.g., 'Fully buttoned', 'Open', 'Buttoned at collar only'")
+		.nullable(),
+	drape_and_fit: z
+		.string()
+		.describe("e.g., 'Boxy', 'Tapered', 'Flared open due to pose'")
+		.nullable(),
+	layering_interaction: z
+		.string()
+		.describe("e.g., 'Reveals trousers underneath', 'Tucked in'")
+		.nullable(),
+});
+
 const objectSchema = z.object({
 	id: z.string(),
 	label: z.string(),
@@ -24,6 +39,7 @@ const objectSchema = z.object({
 	location: z.string().nullable(),
 	prominence: z.string().nullable(),
 	visual_attributes: visualAttributesSchema,
+	wearing_configuration: wearingConfigurationSchema.nullable(),
 	micro_details: z.array(z.string()).nullable(),
 	pose_or_orientation: z.string().nullable(),
 	text_content: z.string().nullable(),

@@ -50,9 +50,23 @@ export const delegateToAgentTool = createTool({
 		}
 
 		try {
+			const delegatedContext: Record<string, unknown> = {};
+			if (runtimeContext && typeof runtimeContext === "object") {
+				const rt = runtimeContext as any;
+				if (rt.latestImageUrl)
+					delegatedContext.latestImageUrl = rt.latestImageUrl;
+				if (rt.threadId) delegatedContext.threadId = rt.threadId;
+				if (rt.resourceId) delegatedContext.resourceId = rt.resourceId;
+				if (rt.canvas) delegatedContext.canvas = rt.canvas;
+			}
+
 			// Call the sub-agent using the injected runtime
 			const response = await runtimeContext.runAgent(agent, {
 				prompt: task,
+				metadata:
+					Object.keys(delegatedContext).length > 0
+						? { context: delegatedContext }
+						: undefined,
 			});
 
 			return {

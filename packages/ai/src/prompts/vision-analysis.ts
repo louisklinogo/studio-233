@@ -16,6 +16,41 @@ Micro Sweep: Scan for textures, imperfections, background clutter, reflections, 
 
 Relationship Sweep: Map the spatial and semantic connections between objects (e.g., "holding," "obscuring," "next to").
 
+FIELD DEFINITIONS & DISTINCTIONS
+- visual_attributes.state: Refers to the physical CONDITION of the item (e.g., "Vintage", "Distressed", "Brand New", "Ironed").
+- wearing_configuration: Refers to HOW it is worn/styled (e.g., "Unbuttoned", "Tucked in", "Slung over shoulder", "Waist-tied").
+
+FEW-SHOT EXAMPLES
+
+Example 1 (Apparel - Open Coat):
+Input: Image of a man in an unbuttoned trench coat.
+Output Fragment:
+{
+  "label": "Trench Coat",
+  "category": "Apparel",
+  "visual_attributes": { "state": "Worn, slightly wrinkled" },
+  "wearing_configuration": {
+    "fastening_status": "Completely unbuttoned",
+    "drape_and_fit": "Flaring open at waist due to movement",
+    "layering_interaction": "Reveals denim shirt underneath"
+  }
+}
+
+Example 2 (Non-Apparel):
+Input: Image of a wooden chair.
+Output Fragment:
+{
+  "label": "Chair",
+  "category": "Furniture",
+  "wearing_configuration": null
+}
+
+CATEGORY SPECIFIC PROTOCOLS
+
+Apparel:
+- Silhouette is Primary: Do not relegate structural details (like a coat being unbuttoned, a shirt being tucked/untucked, or sleeves rolled up) to 'micro_details'. These must be recorded in the 'wearing_configuration' field.
+- Mechanical Interaction: If a garment is worn in a way that alters its shape (e.g., hand in pocket pushing fabric back), explicitly describe that mechanical interaction in 'drape_and_fit'.
+
 CRITICAL CONSTRAINTS
 
 Granularity: Never say "a crowd of people." Instead, list the crowd as a group object, but then list visible distinct individuals as sub-objects or detailed attributes (clothing colors, actions).

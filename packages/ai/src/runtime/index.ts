@@ -61,6 +61,40 @@ function getModel(agentKey: AgentKey) {
 	};
 }
 
+function shouldForceVisionAnalysis(messages: CoreMessage[]): boolean {
+	const hasImage = messages.some((msg) => {
+		if (msg.role !== "user") return false;
+		const content: any = msg.content;
+		if (!Array.isArray(content)) return false;
+		return content.some((part: any) => {
+			if (part?.type === "image") return true;
+			return (
+				part?.type === "file" &&
+				typeof part.mediaType === "string" &&
+				part.mediaType.startsWith("image/")
+			);
+		});
+	});
+	if (!hasImage) return false;
+
+	const lastUser = [...messages].reverse().find((m) => m.role === "user");
+	if (!lastUser) return false;
+
+	const text = (() => {
+		const content: any = lastUser.content;
+		if (typeof content === "string") return content;
+		if (!Array.isArray(content)) return "";
+		return content
+			.map((part: any) => (part?.type === "text" ? part.text : ""))
+			.join(" ")
+			.trim();
+	})();
+
+	return /\b(what\s+is\s+this|what'?s\s+this|describe|analy[sz]e|identify|what\s+am\s+i\s+looking\s+at)\b/i.test(
+		text,
+	);
+}
+
 /**
  * Resolve the maximum number of reasoning steps for an agent.
  * Uses sensible defaults per agent type but allows explicit overrides.
@@ -93,6 +127,26 @@ export async function generateAgentResponse(
 
 	const model = getModel(agentKey);
 	const messages = buildMessages(options);
+	const latestImageUrl =
+		options.metadata?.context && typeof options.metadata.context === "object"
+			? ((options.metadata.context as any).latestImageUrl as string | undefined)
+			: undefined;
+	const forceVisionAnalysis =
+		!!model.tools &&
+		"visionAnalysis" in model.tools &&
+		!!latestImageUrl &&
+		shouldForceVisionAnalysis(messages);
+	const maxSteps = resolveStepLimit(agentKey, options.maxSteps);
+	const prepareStep = forceVisionAnalysis
+		? ({ stepNumber }: { stepNumber: number }) => {
+				if (stepNumber === 0) {
+					return {
+						toolChoice: { type: "tool", toolName: "visionAnalysis" },
+					} as any;
+				}
+				return { toolChoice: "auto" } as any;
+			}
+		: undefined;
 
 	const result = await generateText({
 		model: model.model,
@@ -100,6 +154,8 @@ export async function generateAgentResponse(
 		system: model.prompt,
 		messages,
 		tools: model.tools,
+		prepareStep,
+		stopWhen: stepCountIs(maxSteps),
 		experimental_context: options.metadata?.context,
 	});
 
@@ -125,6 +181,25 @@ export function streamAgentResponse(
 	const model = getModel(agentKey);
 	const messages = buildMessages(options);
 	const maxSteps = resolveStepLimit(agentKey, options.maxSteps);
+	const latestImageUrl =
+		options.metadata?.context && typeof options.metadata.context === "object"
+			? ((options.metadata.context as any).latestImageUrl as string | undefined)
+			: undefined;
+	const forceVisionAnalysis =
+		!!model.tools &&
+		"visionAnalysis" in model.tools &&
+		!!latestImageUrl &&
+		shouldForceVisionAnalysis(messages);
+	const prepareStep = forceVisionAnalysis
+		? ({ stepNumber }: { stepNumber: number }) => {
+				if (stepNumber === 0) {
+					return {
+						toolChoice: { type: "tool", toolName: "visionAnalysis" },
+					} as any;
+				}
+				return { toolChoice: "auto" } as any;
+			}
+		: undefined;
 
 	return streamText({
 		model: model.model,
@@ -132,6 +207,7 @@ export function streamAgentResponse(
 		system: model.prompt,
 		messages,
 		tools: model.tools,
+		prepareStep,
 		stopWhen: stepCountIs(maxSteps),
 		onStepFinish: async ({ toolCalls, toolResults }) => {
 			// Invoke callback for each tool call if provided

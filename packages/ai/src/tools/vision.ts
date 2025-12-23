@@ -41,29 +41,54 @@ async function getLatestBlobUrl(prefix: string): Promise<string | null> {
 export const visionAnalysisTool = createTool({
 	id: "vision-analysis",
 	description:
-		"Analyze an image and return structured details (scene, palette, objects, OCR)",
-	inputSchema: visionAnalysisWorkflow.inputSchema!,
+		"Analyze an image and return structured details (scene, palette, objects, OCR). If imageUrl is omitted, uses the most recent image attachment.",
+	inputSchema: z.object({
+		imageUrl: z.string().url().optional(),
+	}),
 	outputSchema: visionAnalysisWorkflow.outputSchema!,
-	execute: async ({ context }) => visionAnalysisWorkflow.run(context),
+	execute: async ({ context, runtimeContext }) => {
+		const imageUrl =
+			context.imageUrl ??
+			(typeof runtimeContext === "object" && runtimeContext
+				? ((runtimeContext as any).latestImageUrl as string | undefined)
+				: undefined);
+
+		if (!imageUrl) {
+			throw new Error(
+				"visionAnalysis requires an imageUrl (or an image attachment in context)",
+			);
+		}
+
+		return visionAnalysisWorkflow.run({ imageUrl });
+	},
 });
 
 export const visionAnalysisRefTool = createTool({
 	id: "vision-analysis-ref",
 	description:
-		"Look up persisted vision analysis and source snapshot URLs for a given image URL",
+		"Look up persisted vision analysis and source snapshot URLs for a given image URL. If imageUrl is omitted, uses the most recent image attachment.",
 	inputSchema: z.object({
-		imageUrl: z.string().url(),
+		imageUrl: z.string().url().optional(),
 	}),
 	outputSchema: z.object({
 		imageHash: z.string(),
 		analysisJsonUrl: z.string().url().nullable(),
 		sourceImageUrl: z.string().url().nullable(),
 	}),
-	execute: async ({ context }) => {
-		const imageHash = crypto
-			.createHash("md5")
-			.update(context.imageUrl)
-			.digest("hex");
+	execute: async ({ context, runtimeContext }) => {
+		const imageUrl =
+			context.imageUrl ??
+			(typeof runtimeContext === "object" && runtimeContext
+				? ((runtimeContext as any).latestImageUrl as string | undefined)
+				: undefined);
+
+		if (!imageUrl) {
+			throw new Error(
+				"visionAnalysisRef requires an imageUrl (or an image attachment in context)",
+			);
+		}
+
+		const imageHash = crypto.createHash("md5").update(imageUrl).digest("hex");
 
 		const [analysisJsonUrl, sourceImageUrl] = await Promise.all([
 			getLatestBlobUrl(`vision/metadata/${imageHash}/`),

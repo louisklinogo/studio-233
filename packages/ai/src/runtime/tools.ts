@@ -1,4 +1,4 @@
-import { tool as createAiTool } from "ai";
+import { tool as createAiTool, type ToolCallOptions } from "ai";
 import { z } from "zod";
 import { batchJobPlannerTool } from "../tools/batch";
 import { canvasTextToImageTool } from "../tools/canvas";
@@ -76,7 +76,7 @@ function wrapTool(
 	if (def.execute) {
 		toolOptions.execute = async (
 			parameters: z.infer<typeof def.inputSchema>,
-			runtimeContext?: any,
+			toolCallOptions?: ToolCallOptions,
 		) => {
 			const startedAt = Date.now();
 			const parsed = def.inputSchema.safeParse(parameters);
@@ -88,17 +88,22 @@ function wrapTool(
 			}
 
 			try {
-				// Pass the injected context (containing runAgent) to the tool execution
+				const ctx = toolCallOptions?.experimental_context;
+				const flattenedContext =
+					ctx && typeof ctx === "object"
+						? (ctx as Record<string, unknown>)
+						: {};
+
+				// Pass the request context (experimental_context) + injected utilities
 				return await def.execute!({
 					context: parsed.data,
-					runtimeContext: injectedContext
-						? {
-								...(runtimeContext && typeof runtimeContext === "object"
-									? runtimeContext
-									: {}),
-								...injectedContext,
-							}
-						: runtimeContext,
+					runtimeContext: {
+						...flattenedContext,
+						toolCallId: toolCallOptions?.toolCallId,
+						messages: toolCallOptions?.messages,
+						abortSignal: toolCallOptions?.abortSignal,
+						...injectedContext,
+					},
 				});
 			} catch (error) {
 				logger.error(`tool.${def.id}.failed`, {
