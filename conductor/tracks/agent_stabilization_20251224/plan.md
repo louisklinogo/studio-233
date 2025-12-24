@@ -6,9 +6,9 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Logic Refinement & Prompt Engineering' (Protocol in workflow.md)
 
 ## Phase 2: Context Awareness & Tool Hardening
-- [x] Task: Enhance `delegateToAgent` tool to strictly validate and pass `latestImageUrl` (c481bdb)
-- [x] Task: Inject system-level awareness of reference images into `runtime/index.ts` (c481bdb)
-- [x] Task: Resolve "undefined" input errors in `orchestration.ts` tool call execution (c481bdb)
+- [x] Task: Enhance `delegateToAgent` tool to strictly validate and pass `latestImageUrl` (e354f4f)
+- [x] Task: Inject system-level awareness of reference images into `runtime/index.ts` (e354f4f)
+- [x] Task: Resolve "undefined" input errors in `orchestration.ts` tool call execution (e354f4f)
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Context Awareness & Tool Hardening' (Protocol in workflow.md)
 
 ## Phase 3: Verification & Integration Testing
