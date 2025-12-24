@@ -79,12 +79,23 @@ function wrapTool(
 			toolCallOptions?: ToolCallOptions,
 		) => {
 			const startedAt = Date.now();
-			const parsed = def.inputSchema.safeParse(parameters);
+			// Ensure parameters is at least an empty object for safeParse
+			const params = parameters ?? {};
+			const parsed = def.inputSchema.safeParse(params);
 			if (!parsed.success) {
 				const issues = parsed.error.issues
 					.map((issue) => issue.message)
 					.join("; ");
-				throw new Error(`Invalid tool input: ${issues}`);
+				const errorMsg = `Invalid tool input: ${issues}`;
+
+				logger.error(`tool.${def.id}.validation_failed`, {
+					durationMs: Date.now() - startedAt,
+					message: errorMsg,
+					receivedParameters: params,
+					issues: parsed.error.issues,
+				});
+
+				throw new Error(errorMsg);
 			}
 
 			try {

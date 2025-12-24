@@ -3,6 +3,7 @@ import { type CoreMessage, generateText, stepCountIs, streamText } from "ai";
 
 import { getEnv } from "../config";
 import { getModelConfig } from "../model-config";
+import { logger } from "../utils/logger";
 import {
 	AGENT_DEFINITIONS,
 	type AgentKey,
@@ -167,6 +168,17 @@ export async function generateAgentResponse(
 		prepareStep,
 		stopWhen: stepCountIs(maxSteps),
 		experimental_context: options.metadata?.context,
+		onStepFinish: (step) => {
+			if (step.toolCalls && step.toolCalls.length > 0) {
+				logger.info(`agent.${agentKey}.step_finish`, {
+					toolCalls: step.toolCalls.map((tc) => ({
+						name: tc.toolName,
+						args: tc.args,
+					})),
+					finishReason: step.finishReason,
+				});
+			}
+		},
 	});
 
 	return {
@@ -229,7 +241,17 @@ export function streamAgentResponse(
 		tools: model.tools,
 		prepareStep,
 		stopWhen: stepCountIs(maxSteps),
-		onStepFinish: async ({ toolCalls, toolResults }) => {
+		onStepFinish: async ({ toolCalls, toolResults, finishReason }) => {
+			if (toolCalls && toolCalls.length > 0) {
+				logger.info(`agent.${agentKey}.stream_step_finish`, {
+					toolCalls: toolCalls.map((tc) => ({
+						name: tc.toolName,
+						args: tc.args,
+					})),
+					finishReason,
+				});
+			}
+
 			// Invoke callback for each tool call if provided
 			if (options.onToolCall && toolCalls.length > 0) {
 				for (const toolCall of toolCalls) {
