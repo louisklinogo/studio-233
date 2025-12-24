@@ -1,8 +1,8 @@
 # Track Plan: Agent Orchestration Stabilization
 
 ## Phase 1: Logic Refinement & Prompt Engineering
-- [ ] Task: Update Orchestrator System Prompt to clarify delegation vs. direct handling
-- [ ] Task: Implement aspect ratio inference logic in Orchestrator prompt for variations
+- [x] Task: Update Orchestrator System Prompt to clarify delegation vs. direct handling (131b85f)
+- [x] Task: Implement aspect ratio inference logic in Orchestrator prompt for variations (131b85f)
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Logic Refinement & Prompt Engineering' (Protocol in workflow.md)
 
 ## Phase 2: Context Awareness & Tool Hardening
