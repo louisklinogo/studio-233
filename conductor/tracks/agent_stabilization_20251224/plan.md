@@ -12,7 +12,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Context Awareness & Tool Hardening' (Protocol in workflow.md)
 
 ## Phase 3: Verification & Integration Testing
-- [ ] Task: Create integration test for generative variation workflow (Orchestrator -> Vision -> Generation)
-- [ ] Task: Create integration test for technical manipulation delegation (Orchestrator -> Vision Forge)
-- [ ] Task: Verify end-to-side streaming and status lights in the Chat Panel
+- [x] Task: Create integration test for generative variation workflow (Orchestrator -> Vision -> Generation) (30ce07c)
+- [x] Task: Create integration test for technical manipulation delegation (Orchestrator -> Vision Forge) (30ce07c)
+- [x] Task: Verify end-to-side streaming and status lights in the Chat Panel (30ce07c)
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Verification & Integration Testing' (Protocol in workflow.md)
