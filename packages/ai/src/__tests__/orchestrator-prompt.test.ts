@@ -69,3 +69,20 @@ describe("Orchestrator Prompt Logic", () => {
 		);
 	});
 });
+
+const { delegateToAgentTool } = require("../tools/orchestration");
+
+describe("Tool Validation", () => {
+	it("delegateToAgent should require agent and task", async () => {
+		const schema = delegateToAgentTool.inputSchema;
+
+		const result1 = schema.safeParse({ agent: "vision" });
+		expect(result1.success).toBe(false);
+
+		const result2 = schema.safeParse({ task: "something" });
+		expect(result2.success).toBe(false);
+
+		const result3 = schema.safeParse({ agent: "vision", task: "do something" });
+		expect(result3.success).toBe(true);
+	});
+});

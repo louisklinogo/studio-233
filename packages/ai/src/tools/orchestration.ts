@@ -6,12 +6,18 @@ type AgentId = (typeof AGENT_IDS)[number];
 
 const agentAliasMap: Record<string, AgentId> = {
 	vision: "vision",
+	"vision forge": "vision",
+	"vision-forge": "vision",
 	motion: "motion",
+	"motion director": "motion",
+	"motion-director": "motion",
 	insight: "insight",
 	"insight researcher": "insight",
+	"insight-researcher": "insight",
 	research: "insight",
 	researcher: "insight",
 	batch: "batch",
+	"batch ops": "batch",
 };
 
 const agentSchema = z
@@ -31,6 +37,7 @@ export const delegateToAgentTool = createTool({
 		agent: agentSchema,
 		task: z
 			.string()
+			.min(1, "Task description is required")
 			.describe(
 				"The specific natural language instructions for the specialized agent.",
 			),
@@ -43,6 +50,12 @@ export const delegateToAgentTool = createTool({
 	execute: async ({ context, runtimeContext }) => {
 		const { agent, task } = context;
 
+		if (!task || task.trim().length === 0) {
+			return {
+				result: "Error: No task provided for delegation.",
+			};
+		}
+
 		if (!runtimeContext?.runAgent) {
 			return {
 				result: "Error: Agent runtime not available for delegation.",
@@ -50,15 +63,24 @@ export const delegateToAgentTool = createTool({
 		}
 
 		try {
+			console.log(
+				`[Delegation] Routing to ${agent} with task: "${task.substring(0, 50)}..."`,
+			);
 			const delegatedContext: Record<string, unknown> = {};
 			if (runtimeContext && typeof runtimeContext === "object") {
 				const rt = runtimeContext as any;
-				if (rt.latestImageUrl)
+				if (rt.latestImageUrl) {
 					delegatedContext.latestImageUrl = rt.latestImageUrl;
+				}
 				if (rt.threadId) delegatedContext.threadId = rt.threadId;
 				if (rt.resourceId) delegatedContext.resourceId = rt.resourceId;
 				if (rt.canvas) delegatedContext.canvas = rt.canvas;
 			}
+
+			// If we have a latestImageUrl but the task doesn't mention it,
+			// we can append it to the task or rely on the agent's system prompt.
+			// The Vision agent prompt says: "USE IT FIRST when users ask 'describe this'..."
+			// and "If the user attached an image, you can call visionAnalysis without an imageUrl"
 
 			// Call the sub-agent using the injected runtime
 			const response = await runtimeContext.runAgent(agent, {

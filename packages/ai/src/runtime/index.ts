@@ -131,6 +131,16 @@ export async function generateAgentResponse(
 		options.metadata?.context && typeof options.metadata.context === "object"
 			? ((options.metadata.context as any).latestImageUrl as string | undefined)
 			: undefined;
+
+	// Inject awareness of the latest image and decision logic into the system prompt
+	const systemPrompt = latestImageUrl
+		? `${model.prompt}\n\n[System Note]: A reference image is available: ${latestImageUrl}. 
+        - For "what is this?" or "describe this", call \`visionAnalysis\`.
+        - For variations (e.g., "make this a woman"), YOU must call \`canvasTextToImage\` directly.
+        - When calling \`canvasTextToImage\` for a variation, YOU MUST provide BOTH a new \`prompt\` AND the \`referenceImageUrl\`: "${latestImageUrl}".
+        - You MAY assume the output aspect ratio matches this reference image unless specified otherwise.`
+		: model.prompt;
+
 	const forceVisionAnalysis =
 		!!model.tools &&
 		"visionAnalysis" in model.tools &&
@@ -151,7 +161,7 @@ export async function generateAgentResponse(
 	const result = await generateText({
 		model: model.model,
 		temperature: model.temperature,
-		system: model.prompt,
+		system: systemPrompt,
 		messages,
 		tools: model.tools,
 		prepareStep,
@@ -185,6 +195,16 @@ export function streamAgentResponse(
 		options.metadata?.context && typeof options.metadata.context === "object"
 			? ((options.metadata.context as any).latestImageUrl as string | undefined)
 			: undefined;
+
+	// Inject awareness of the latest image and decision logic into the system prompt
+	const systemPrompt = latestImageUrl
+		? `${model.prompt}\n\n[System Note]: A reference image is available: ${latestImageUrl}. 
+        - For "what is this?" or "describe this", call \`visionAnalysis\`.
+        - For variations (e.g., "make this a woman"), YOU must call \`canvasTextToImage\` directly.
+        - When calling \`canvasTextToImage\` for a variation, YOU MUST provide BOTH a new \`prompt\` AND the \`referenceImageUrl\`: "${latestImageUrl}".
+        - You MAY assume the output aspect ratio matches this reference image unless specified otherwise.`
+		: model.prompt;
+
 	const forceVisionAnalysis =
 		!!model.tools &&
 		"visionAnalysis" in model.tools &&
@@ -204,7 +224,7 @@ export function streamAgentResponse(
 	return streamText({
 		model: model.model,
 		temperature: model.temperature,
-		system: model.prompt,
+		system: systemPrompt,
 		messages,
 		tools: model.tools,
 		prepareStep,
