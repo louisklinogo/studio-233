@@ -5,6 +5,21 @@
 		".": {
 			"default": "./src/index.ts"
 		},
+		"./runtime": {
+			"default": "./src/runtime/index.ts"
+		},
+		"./tools": {
+			"default": "./src/tools/index.ts"
+		},
+		"./workflows": {
+			"default": "./src/workflows/index.ts"
+		},
+		"./telemetry": {
+			"default": "./src/telemetry/langwatch.ts"
+		},
+		"./utils/*": {
+			"default": "./src/utils/*.ts"
+		},
 		"./*": {
 			"default": "./src/*.ts"
 		}
@@ -17,11 +32,13 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@ai-sdk/google": "^2.0.38",
+		"@ai-sdk/devtools": "^0.0.1",
+		"@ai-sdk/google": "^3.0.1",
 		"@fal-ai/client": "^1.7.0",
 		"@vercel/blob": "^1.1.1",
-		"ai": "^5.0.97",
+		"ai": "^6.0.3",
 		"dotenv": "^17.2.3",
+		"langwatch": "^0.10.0",
 		"sharp": "^0.33.5",
 		"zod": "catalog:"
 	}

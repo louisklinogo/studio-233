@@ -77,6 +77,9 @@ import { cn } from "@/lib/utils";
 export type AttachmentsContext = {
 	files: (FileUIPart & { id: string })[];
 	add: (files: File[] | FileList) => void;
+	addRemote: (
+		files: { url: string; filename: string; mediaType: string }[],
+	) => void;
 	remove: (id: string) => void;
 	clear: () => void;
 	openFileDialog: () => void;
@@ -175,6 +178,23 @@ export function PromptInputProvider({
 		);
 	}, []);
 
+	const addRemote = useCallback(
+		(files: { url: string; filename: string; mediaType: string }[]) => {
+			if (files.length === 0) return;
+
+			setAttachements((prev) =>
+				prev.concat(
+					files.map((file) => ({
+						id: nanoid(),
+						type: "file" as const,
+						...file,
+					})),
+				),
+			);
+		},
+		[],
+	);
+
 	const remove = useCallback((id: string) => {
 		setAttachements((prev) => {
 			const found = prev.find((f) => f.id === id);
@@ -204,12 +224,13 @@ export function PromptInputProvider({
 		() => ({
 			files: attachements,
 			add,
+			addRemote,
 			remove,
 			clear,
 			openFileDialog,
 			fileInputRef,
 		}),
-		[attachements, add, remove, clear, openFileDialog],
+		[attachements, add, addRemote, remove, clear, openFileDialog],
 	);
 
 	const __registerFileInput = useCallback(

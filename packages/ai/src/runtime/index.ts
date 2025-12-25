@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { type CoreMessage, generateText, stepCountIs, streamText } from "ai";
+import { generateText, stepCountIs, streamText } from "ai";
 
 import { getEnv } from "../config";
 import { getModelConfig } from "../model-config";
@@ -32,9 +32,9 @@ if (!env.googleApiKey) {
 
 const google = createGoogleGenerativeAI({ apiKey: env.googleApiKey });
 
-function buildMessages(options: AgentRunOptions): CoreMessage[] {
+function buildMessages(options: AgentRunOptions): any[] {
 	if (options.messages?.length) {
-		return options.messages as CoreMessage[];
+		return options.messages as any[];
 	}
 	if (options.prompt) {
 		return [{ role: "user", content: options.prompt }];
@@ -62,7 +62,11 @@ function getModel(agentKey: AgentKey) {
 	};
 }
 
-function shouldForceVisionAnalysis(messages: CoreMessage[]): boolean {
+type Message = NonNullable<
+	Parameters<typeof generateText>[0]["messages"]
+>[number];
+
+function shouldForceVisionAnalysis(messages: Message[]): boolean {
 	const hasImage = messages.some((msg) => {
 		if (msg.role !== "user") return false;
 		const content: any = msg.content;
@@ -91,7 +95,7 @@ function shouldForceVisionAnalysis(messages: CoreMessage[]): boolean {
 			.trim();
 	})();
 
-	return /\b(what\s+is\s+this|what'?s\s+this|describe|analy[sz]e|identify|what\s+am\s+i\s+looking\s+at)\b/i.test(
+	return /\b(what\s+is\s+this|what'?s\s+this|describe|analy[sz]e|identify|what\s+am\s+i\s+looking\s+at|add\s+to\s+chat|use\s+this\s+image|this\s+one)\b/i.test(
 		text,
 	);
 }
@@ -133,14 +137,66 @@ export async function generateAgentResponse(
 			? ((options.metadata.context as any).latestImageUrl as string | undefined)
 			: undefined;
 
-	// Inject awareness of the latest image and decision logic into the system prompt
-	const systemPrompt = latestImageUrl
-		? `${model.prompt}\n\n[System Note]: A reference image is available: ${latestImageUrl}. 
-        - For "what is this?" or "describe this", call \`visionAnalysis\`.
-        - For variations (e.g., "make this a woman"), YOU must call \`canvasTextToImage\` directly.
-        - When calling \`canvasTextToImage\` for a variation, YOU MUST provide BOTH a new \`prompt\` AND the \`referenceImageUrl\`: "${latestImageUrl}".
-        - You MAY assume the output aspect ratio matches this reference image unless specified otherwise.`
-		: model.prompt;
+	// Collect all user images from messages for multi-image context
+	const allUserImages: string[] = [];
+	for (const msg of messages) {
+		if (msg.role === "user" && Array.isArray(msg.content)) {
+			for (const part of msg.content) {
+				if (
+					part.type === "image" &&
+					part.image instanceof URL &&
+					part.image.toString().startsWith("http")
+				) {
+					allUserImages.push(part.image.toString());
+				} else if (part.type === "image" && typeof part.image === "string") {
+					allUserImages.push(part.image);
+				}
+			}
+		}
+	}
+	// Add latestImageUrl if not already present (it comes from context, might be newer than messages)
+	if (latestImageUrl && !allUserImages.includes(latestImageUrl)) {
+		allUserImages.push(latestImageUrl);
+	}
+
+	if (latestImageUrl) {
+		logger.info("agent.context.latest_image_detected", {
+			imageUrl: latestImageUrl,
+			count: allUserImages.length,
+			agent: agentKey,
+		});
+	}
+
+	let systemPrompt = model.prompt;
+	if (allUserImages.length > 0) {
+		const refs = allUserImages
+			.map((url, i) => `[${i + 1}]: ${url}`)
+			.join("\\n");
+		systemPrompt +=
+			"\\n\\n[System Note]: The following reference images are available:\\n" +
+			refs +
+			"\\n";
+
+		if (allUserImages.length === 1) {
+			systemPrompt +=
+				"- For 'what is this?' or 'describe this', call visionAnalysis. ";
+			systemPrompt +=
+				"- For variations/edits (e.g., 'make this a woman'), call visionAnalysis first, then call canvasTextToImage. ";
+			systemPrompt +=
+				"- When calling canvasTextToImage for a variation, YOU MUST provide BOTH a new prompt AND the referenceImageUrl: '" +
+				allUserImages[0] +
+				"'. ";
+			systemPrompt +=
+				"- You MAY assume the output aspect ratio matches this reference image unless specified otherwise.";
+		} else {
+			systemPrompt +=
+				"- Multiple images detected. Refer to them by index or URL. ";
+			systemPrompt +=
+				"- To analyze a specific image, pass its URL to `visionAnalysis({ imageUrl: '...' })`. ";
+			systemPrompt +=
+				"- To edit a specific image, pass its URL as `referenceImageUrl` to `canvasTextToImage`. ";
+		}
+	}
 
 	const forceVisionAnalysis =
 		!!model.tools &&
@@ -168,12 +224,16 @@ export async function generateAgentResponse(
 		prepareStep,
 		stopWhen: stepCountIs(maxSteps),
 		experimental_context: options.metadata?.context,
+		experimental_telemetry: { isEnabled: true },
+		...(options.abortSignal ? { abortSignal: options.abortSignal } : {}),
 		onStepFinish: (step) => {
 			if (step.toolCalls && step.toolCalls.length > 0) {
 				logger.info(`agent.${agentKey}.step_finish`, {
 					toolCalls: step.toolCalls.map((tc) => ({
 						name: tc.toolName,
-						args: tc.args,
+						args:
+							(tc as { args?: unknown; input?: unknown }).args ??
+							(tc as { args?: unknown; input?: unknown }).input,
 					})),
 					finishReason: step.finishReason,
 				});
@@ -208,14 +268,66 @@ export function streamAgentResponse(
 			? ((options.metadata.context as any).latestImageUrl as string | undefined)
 			: undefined;
 
-	// Inject awareness of the latest image and decision logic into the system prompt
-	const systemPrompt = latestImageUrl
-		? `${model.prompt}\n\n[System Note]: A reference image is available: ${latestImageUrl}. 
-        - For "what is this?" or "describe this", call \`visionAnalysis\`.
-        - For variations (e.g., "make this a woman"), YOU must call \`canvasTextToImage\` directly.
-        - When calling \`canvasTextToImage\` for a variation, YOU MUST provide BOTH a new \`prompt\` AND the \`referenceImageUrl\`: "${latestImageUrl}".
-        - You MAY assume the output aspect ratio matches this reference image unless specified otherwise.`
-		: model.prompt;
+	// Collect all user images from messages for multi-image context
+	const allUserImages: string[] = [];
+	for (const msg of messages) {
+		if (msg.role === "user" && Array.isArray(msg.content)) {
+			for (const part of msg.content) {
+				if (
+					part.type === "image" &&
+					part.image instanceof URL &&
+					part.image.toString().startsWith("http")
+				) {
+					allUserImages.push(part.image.toString());
+				} else if (part.type === "image" && typeof part.image === "string") {
+					allUserImages.push(part.image);
+				}
+			}
+		}
+	}
+	// Add latestImageUrl if not already present (it comes from context, might be newer than messages)
+	if (latestImageUrl && !allUserImages.includes(latestImageUrl)) {
+		allUserImages.push(latestImageUrl);
+	}
+
+	if (latestImageUrl) {
+		logger.info("agent.context.latest_image_detected", {
+			imageUrl: latestImageUrl,
+			count: allUserImages.length,
+			agent: agentKey,
+		});
+	}
+
+	let systemPrompt = model.prompt;
+	if (allUserImages.length > 0) {
+		const refs = allUserImages
+			.map((url, i) => `[${i + 1}]: ${url}`)
+			.join("\\n");
+		systemPrompt +=
+			"\\n\\n[System Note]: The following reference images are available:\\n" +
+			refs +
+			"\\n";
+
+		if (allUserImages.length === 1) {
+			systemPrompt +=
+				"- For 'what is this?' or 'describe this', call visionAnalysis. ";
+			systemPrompt +=
+				"- For variations/edits (e.g., 'make this a woman'), call visionAnalysis first, then call canvasTextToImage. ";
+			systemPrompt +=
+				"- When calling canvasTextToImage for a variation, YOU MUST provide BOTH a new prompt AND the referenceImageUrl: '" +
+				allUserImages[0] +
+				"'. ";
+			systemPrompt +=
+				"- You MAY assume the output aspect ratio matches this reference image unless specified otherwise.";
+		} else {
+			systemPrompt +=
+				"- Multiple images detected. Refer to them by index or URL. ";
+			systemPrompt +=
+				"- To analyze a specific image, pass its URL to `visionAnalysis({ imageUrl: '...' })`. ";
+			systemPrompt +=
+				"- To edit a specific image, pass its URL as `referenceImageUrl` to `canvasTextToImage`. ";
+		}
+	}
 
 	const forceVisionAnalysis =
 		!!model.tools &&
@@ -241,12 +353,15 @@ export function streamAgentResponse(
 		tools: model.tools,
 		prepareStep,
 		stopWhen: stepCountIs(maxSteps),
+		...(options.abortSignal ? { abortSignal: options.abortSignal } : {}),
 		onStepFinish: async ({ toolCalls, toolResults, finishReason }) => {
 			if (toolCalls && toolCalls.length > 0) {
 				logger.info(`agent.${agentKey}.stream_step_finish`, {
 					toolCalls: toolCalls.map((tc) => ({
 						name: tc.toolName,
-						args: tc.args,
+						args:
+							(tc as { args?: unknown; input?: unknown }).args ??
+							(tc as { args?: unknown; input?: unknown }).input,
 					})),
 					finishReason,
 				});
@@ -274,5 +389,6 @@ export function streamAgentResponse(
 		},
 		onFinish: options.onFinish,
 		experimental_context: options.metadata?.context,
+		experimental_telemetry: { isEnabled: true },
 	});
 }

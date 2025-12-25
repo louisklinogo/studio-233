@@ -1,11 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { put } from "@vercel/blob";
 
+import { withTimeout } from "./timeout";
+
 type UploadOptions = {
 	prefix?: string;
+	filename?: string;
 	contentType?: string;
 	extension?: string;
 	access?: "public" | "private";
+	abortSignal?: AbortSignal;
+	timeoutMs?: number;
 };
 
 function coerceBuffer(source: Buffer | Uint8Array | ArrayBuffer): Buffer {
@@ -35,13 +40,22 @@ export async function uploadImageBufferToBlob(
 	if (options.access && options.access !== "public") {
 		throw new Error("Private blob uploads are not supported in this helper");
 	}
-	const key = `${options.prefix ?? "studio233/ai"}/${Date.now()}-${randomUUID()}.${extension}`;
+	const key = options.filename
+		? `${options.prefix ?? "studio233/ai"}/${options.filename}`
+		: `${options.prefix ?? "studio233/ai"}/${Date.now()}-${randomUUID()}.${extension}`;
 
 	try {
-		const { url } = await put(key, coerceBuffer(buffer), {
-			access: "public",
-			contentType,
-		});
+		const timeoutMs = options.timeoutMs ?? 60_000;
+		const { url } = await withTimeout(
+			"blob.put",
+			timeoutMs,
+			async () =>
+				await put(key, coerceBuffer(buffer), {
+					access: "public",
+					contentType,
+				}),
+			options.abortSignal,
+		);
 
 		return url;
 	} catch (error) {

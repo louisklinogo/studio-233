@@ -1,24 +1,27 @@
 import { z } from "zod";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
 import type { CanvasCommand } from "../types/canvas";
-import { textToImageWorkflow } from "../workflows/text-to-image";
+import type { textToImageWorkflow } from "../workflows/text-to-image";
 import { createTool } from "./factory";
-
-const textToImageInputSchema = textToImageWorkflow.inputSchema;
-type TextToImageInput = z.infer<typeof textToImageInputSchema>;
-
-type TextToImageOutput = z.infer<typeof textToImageWorkflow.outputSchema>;
 
 export const canvasTextToImageTool = createTool({
 	id: "canvas-text-to-image",
 	description:
-		"Generate a new image from a text prompt and dispatch it to the canvas (output.command.type = 'add-image', includes url/width/height/meta). Inputs: prompt (required), optional aspectRatio/size/seed/modelId/loraUrl.",
-	inputSchema: textToImageInputSchema,
+		"Generate a new image from a text prompt and dispatch it to the canvas (output.command.type = 'add-image', includes url/width/height/meta). Inputs: prompt (required), optional aspectRatio/size/seed/modelId/loraUrl/referenceImageUrl.",
+	inputSchema: z.object({
+		prompt: z.string().min(1),
+		aspectRatio: z.string().optional(),
+		size: z.string().optional(),
+		seed: z.number().optional(),
+		modelId: z.string().optional(),
+		loraUrl: z.string().url().optional(),
+		referenceImageUrl: z.string().url().optional(),
+		apiKey: z.string().optional(),
+	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
-		const input = context as TextToImageInput;
-
-		const workflowResult = await textToImageWorkflow.run(input);
+		const { textToImageWorkflow } = await import("../workflows/text-to-image");
+		const workflowResult = await textToImageWorkflow.run(context as any);
 
 		const baseCommand = workflowResult.command;
 
@@ -30,9 +33,9 @@ export const canvasTextToImageTool = createTool({
 			...baseCommand,
 			meta: {
 				...(baseCommand.meta ?? {}),
-				prompt: input.prompt,
-				modelId: input.modelId,
-				loraUrl: input.loraUrl,
+				prompt: context.prompt,
+				modelId: context.modelId,
+				loraUrl: context.loraUrl,
 			},
 		};
 

@@ -1,14 +1,14 @@
 import { createHash } from "node:crypto";
 import {
 	generateAgentResponse,
-	generateThreadTitle,
 	streamAgentResponse,
-	uploadImageBufferToBlob,
-} from "@studio233/ai";
+} from "@studio233/ai/runtime";
+import { generateThreadTitle } from "@studio233/ai/runtime/titling";
+import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma as db } from "@studio233/db";
 import { list } from "@vercel/blob";
-import { convertToCoreMessages } from "ai";
+import { convertToModelMessages } from "ai";
 
 export async function POST(req: Request) {
 	try {
@@ -16,16 +16,14 @@ export async function POST(req: Request) {
 		const headers = new Headers(req.headers);
 		const session = await getSessionWithRetry(headers);
 
-		// Convert to CoreMessage[] directly - convertToCoreMessages handles tool messages
-		const coreMessages = convertToCoreMessages(messages as any);
+		// Convert to CoreMessage[] directly - convertToModelMessages handles tool messages
+		const coreMessages = await convertToModelMessages(messages as any);
 
 		const parseBase64DataUrl = (
 			dataUrl: string,
-		): { mediaType: string; buffer: Buffer } => {
+		): { mediaType: string; buffer: Buffer } | null => {
 			const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
-			if (!match) {
-				throw new Error("Invalid data URL");
-			}
+			if (!match) return null;
 
 			const mediaType = match[1] ?? "application/octet-stream";
 			const buffer = Buffer.from(match[2] ?? "", "base64");
@@ -33,94 +31,117 @@ export async function POST(req: Request) {
 		};
 
 		const getLatestBlobUrl = async (prefix: string): Promise<string | null> => {
-			const { blobs } = await list({ prefix, limit: 10 });
-			if (!blobs.length) return null;
+			try {
+				const { blobs } = await list({ prefix, limit: 10 });
+				if (!blobs.length) return null;
 
-			const [latest] = [...blobs].sort((a, b) => {
-				const aTime = new Date((a as any).uploadedAt ?? 0).getTime();
-				const bTime = new Date((b as any).uploadedAt ?? 0).getTime();
-				return bTime - aTime;
-			});
+				const [latest] = [...blobs].sort((a, b) => {
+					const aTime = new Date((a as any).uploadedAt ?? 0).getTime();
+					const bTime = new Date((b as any).uploadedAt ?? 0).getTime();
+					return bTime - aTime;
+				});
 
-			return latest?.url ?? null;
+				return latest?.url ?? null;
+			} catch (err) {
+				return null;
+			}
 		};
 
-		const resolveLatestImageUrl = async (
-			msgs: unknown[],
+		const ingestBase64 = async (
+			base64: string,
+			mediaType: string,
 		): Promise<string | null> => {
-			for (let i = msgs.length - 1; i >= 0; i--) {
-				const msg: any = msgs[i];
-				if (!msg || msg.role !== "user") continue;
-				const content = msg.content;
-				if (!Array.isArray(content)) continue;
+			try {
+				const parsed = parseBase64DataUrl(
+					base64.startsWith("data:")
+						? base64
+						: `data:${mediaType};base64,${base64}`,
+				);
+				if (!parsed) return null;
 
-				for (const part of content) {
+				const hash = createHash("sha256").update(parsed.buffer).digest("hex");
+				const prefix = `vision/ingest/${hash}`;
+
+				// FAST PATH: Try deterministic check
+				const deterministicUrl = `https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/${prefix}/source.bin`;
+				try {
+					const headRes = await fetch(deterministicUrl, { method: "HEAD" });
+					if (headRes.ok) return deterministicUrl;
+				} catch (e) {
+					// fallback to list
+				}
+
+				const existing = await getLatestBlobUrl(`${prefix}/`);
+				if (existing) return existing;
+
+				return await uploadImageBufferToBlob(parsed.buffer, {
+					contentType: parsed.mediaType,
+					prefix,
+					filename: "source.bin", // Ensure future deterministic lookups work
+				});
+			} catch (error) {
+				console.warn("Failed to ingest base64 image:", error);
+				return null;
+			}
+		};
+
+		/**
+		 * Ingests all base64 images in the message history and replaces them with Blob URLs.
+		 * This prevents sending massive payloads to the agent and resolves downstream fetch errors.
+		 */
+		const ingestImagesInHistory = async (
+			msgs: any[],
+		): Promise<string | null> => {
+			let latestUrl: string | null = null;
+
+			for (const msg of msgs) {
+				if (!msg.content || !Array.isArray(msg.content)) continue;
+
+				for (const part of msg.content) {
+					// Handle 'file' parts (often sent by clients for attachments)
 					if (
-						part?.type === "file" &&
+						part.type === "file" &&
 						typeof part.mediaType === "string" &&
 						part.mediaType.startsWith("image/")
 					) {
 						const data = part.data;
-						if (data instanceof URL) return data.toString();
 						if (typeof data !== "string") continue;
 
-						if (data.startsWith("http://") || data.startsWith("https://")) {
-							return data;
-						}
-
-						if (data.startsWith("data:")) {
-							try {
-								const { mediaType, buffer } = parseBase64DataUrl(data);
-								const hash = createHash("sha256").update(buffer).digest("hex");
-								const prefix = `vision/ingest/${hash}`;
-								const existing = await getLatestBlobUrl(`${prefix}/`);
-								if (existing) return existing;
-
-								return await uploadImageBufferToBlob(buffer, {
-									contentType: mediaType,
-									prefix,
-								});
-							} catch (error) {
-								console.warn("Failed to ingest image attachment:", error);
-								return data;
-							}
-						}
-
-						// Some clients send raw base64 (without data: prefix)
-						if (/^[A-Za-z0-9+/=]+$/.test(data) && data.length > 100) {
-							try {
-								const buffer = Buffer.from(data, "base64");
-								const hash = createHash("sha256").update(buffer).digest("hex");
-								const prefix = `vision/ingest/${hash}`;
-								const existing = await getLatestBlobUrl(`${prefix}/`);
-								if (existing) return existing;
-
-								return await uploadImageBufferToBlob(buffer, {
-									contentType: part.mediaType,
-									prefix,
-								});
-							} catch (error) {
-								console.warn(
-									"Failed to ingest base64 image attachment:",
-									error,
-								);
-								return `data:${part.mediaType};base64,${data}`;
+						if (data.startsWith("http")) {
+							latestUrl = data;
+						} else if (
+							data.startsWith("data:") ||
+							(/^[A-Za-z0-9+/=]+$/.test(data) && data.length > 100)
+						) {
+							const url = await ingestBase64(data, part.mediaType);
+							if (url) {
+								part.data = url; // Swap in the message history
+								latestUrl = url;
 							}
 						}
 					}
 
-					if (part?.type === "image") {
+					// Handle 'image' parts (standard AI SDK format)
+					if (part.type === "image") {
 						const image = part.image;
-						if (image instanceof URL) return image.toString();
-						if (typeof image === "string") return image;
+						if (typeof image === "string" && image.startsWith("data:")) {
+							const url = await ingestBase64(image, "image/png");
+							if (url) {
+								part.image = url; // Swap in the message history
+								latestUrl = url;
+							}
+						} else if (typeof image === "string" && image.startsWith("http")) {
+							latestUrl = image;
+						} else if (image instanceof URL) {
+							latestUrl = image.toString();
+						}
 					}
 				}
 			}
-
-			return null;
+			return latestUrl;
 		};
 
-		const latestImageUrl = await resolveLatestImageUrl(coreMessages as any);
+		const latestImageUrl = await ingestImagesInHistory(coreMessages);
 
 		let currentThreadId = threadId;
 
@@ -188,6 +209,7 @@ export async function POST(req: Request) {
 		const stream = streamAgentResponse("orchestrator", {
 			messages: coreMessages,
 			maxSteps,
+			abortSignal: req.signal,
 			onToolCall: async (toolCall) => {
 				// Persist tool call request
 				// Note: Tool calls are also part of the final assistant message structure,
@@ -195,15 +217,40 @@ export async function POST(req: Request) {
 				// For now, we rely on the final message persistence for the complete record,
 				// OR we can keep this for granular status updates.
 				// The schema has `AgentToolCall`, let's use it.
-				await db.agentToolCall.create({
-					data: {
+				const now = new Date();
+				const args = (toolCall.arguments ?? {}) as any;
+
+				await db.agentToolCall.upsert({
+					where: { id: toolCall.toolCallId },
+					create: {
 						id: toolCall.toolCallId,
 						threadId: currentThreadId,
 						name: toolCall.name,
-						arguments: toolCall.arguments as any,
-						status: "REQUESTED",
+						arguments: args,
+						status: "RUNNING",
+					},
+					update: {
+						name: toolCall.name,
+						arguments: args,
+						status: "RUNNING",
 					},
 				});
+
+				// If the runtime provides a result at this stage, persist it immediately.
+				if (toolCall.result !== undefined) {
+					await db.agentToolCall
+						.update({
+							where: { id: toolCall.toolCallId },
+							data: {
+								status: "SUCCEEDED",
+								result: toolCall.result as any,
+								completedAt: now,
+							},
+						})
+						.catch(() => {
+							// Ignore if tool call wasn't found (e.g. race condition)
+						});
+				}
 			},
 			onFinish: async ({ response }) => {
 				// 4. Persist Generated Assistant Messages (including tool calls/results)
@@ -260,6 +307,35 @@ export async function POST(req: Request) {
 									.catch(() => {
 										// Ignore if tool call wasn't found (e.g. race condition or created differently)
 									});
+								continue;
+							}
+
+							if (part.type === "tool-error") {
+								const raw =
+									("error" in part ? (part as any).error : undefined) ?? part;
+								const message =
+									raw && typeof raw === "object" && "message" in raw
+										? String((raw as any).message)
+										: typeof raw === "string"
+											? raw
+											: "Tool execution failed";
+
+								const status = message.toLowerCase().includes("timed out")
+									? "TIMED_OUT"
+									: "FAILED";
+
+								await db.agentToolCall
+									.update({
+										where: { id: part.toolCallId },
+										data: {
+											status,
+											result: { error: raw } as any,
+											completedAt: new Date(),
+										},
+									})
+									.catch(() => {
+										// Ignore if tool call wasn't found
+									});
 							}
 						}
 					}
@@ -269,6 +345,7 @@ export async function POST(req: Request) {
 				context: {
 					canvas,
 					latestImageUrl,
+					threadId: currentThreadId,
 					runtimeContext: {
 						runAgent: generateAgentResponse,
 					},

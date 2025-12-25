@@ -93,6 +93,7 @@ export const textToImageInputSchema = z.object({
 	prompt: z.string().min(1),
 	modelId: z.string().optional(),
 	loraUrl: z.string().url().optional(),
+	referenceImageUrl: z.string().url().optional(),
 	seed: z.number().optional(),
 	aspectRatio: aspectRatioEnum.optional(),
 	imageSize: z.union([imageSizeEnum, aspectRatioEnum]).optional(),
@@ -107,8 +108,16 @@ export type TextToImageResult = z.infer<typeof textToImageOutputSchema>;
 export async function runTextToImageWorkflow(
 	input: TextToImageInput,
 ): Promise<TextToImageResult> {
-	const { prompt, modelId, loraUrl, seed, imageSize, aspectRatio, apiKey } =
-		input;
+	const {
+		prompt,
+		modelId,
+		loraUrl,
+		referenceImageUrl,
+		seed,
+		imageSize,
+		aspectRatio,
+		apiKey,
+	} = input;
 
 	const normalizedImageSize = isAspectRatioOption(imageSize)
 		? aspectRatioToImageSize[imageSize]
@@ -147,9 +156,26 @@ export async function runTextToImageWorkflow(
 					},
 				}
 			: undefined;
+
+		const body = referenceImageUrl
+			? {
+					system:
+						"You are an expert visual editor. When provided with a reference image, you must generate a new image that strictly adheres to the composition, lighting, style, and subject pose of the reference, only applying the specific changes requested in the prompt. Maintain high fidelity to the original source.",
+					messages: [
+						{
+							role: "user" as const,
+							content: [
+								{ type: "text" as const, text: prompt },
+								{ type: "image" as const, image: new URL(referenceImageUrl) },
+							],
+						},
+					],
+				}
+			: { prompt };
+
 		const result = await generateText({
 			model: google(IMAGE_GEN_MODEL),
-			prompt,
+			...body,
 			providerOptions,
 		});
 
