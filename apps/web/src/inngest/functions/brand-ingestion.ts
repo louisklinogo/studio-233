@@ -1,5 +1,5 @@
 import { GeminiEmbedding } from "@llamaindex/google";
-import { PDFReader } from "@llamaindex/readers/pdf";
+import { PDFReader } from "@llamaindex/readers";
 import * as fs from "fs/promises";
 import {
 	Document,

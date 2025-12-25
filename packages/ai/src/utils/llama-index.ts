@@ -1,4 +1,5 @@
-import { GeminiEmbedding, Settings } from "llamaindex";
+import { GeminiEmbedding } from "@llamaindex/google";
+import { Settings } from "llamaindex";
 import { getEnv } from "../config";
 
 const env = getEnv();
