@@ -8,7 +8,7 @@ import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma as db } from "@studio233/db";
 import { list } from "@vercel/blob";
-import { convertToModelMessages } from "ai";
+import { convertToModelMessages, waitUntil } from "ai";
 
 export async function POST(req: Request) {
 	try {
@@ -160,14 +160,16 @@ export async function POST(req: Request) {
 
 			// Trigger AI Title Generation in background
 			if (messages[0]?.content && typeof messages[0].content === "string") {
-				generateThreadTitle(messages[0].content)
-					.then(async (betterTitle) => {
-						await db.agentThread.update({
-							where: { id: thread.id },
-							data: { title: betterTitle },
-						});
-					})
-					.catch((err) => console.error("Titling Background Error:", err));
+				waitUntil(
+					generateThreadTitle(messages[0].content)
+						.then(async (betterTitle) => {
+							await db.agentThread.update({
+								where: { id: (thread as any).id },
+								data: { title: betterTitle },
+							});
+						})
+						.catch((err) => console.error("Titling Background Error:", err)),
+				);
 			}
 		} else {
 			// If provided, ensure it exists and user has access (if session exists)
