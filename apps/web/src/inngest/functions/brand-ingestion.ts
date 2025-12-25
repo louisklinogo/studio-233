@@ -1,13 +1,9 @@
 import { GeminiEmbedding } from "@llamaindex/google";
 import { PDFReader } from "@llamaindex/readers";
 import * as fs from "fs/promises";
-import {
-	Document,
-	PGVectorStore,
-	Settings,
-	StorageContext,
-	VectorStoreIndex,
-} from "llamaindex";
+import { Document, Settings, VectorStoreIndex } from "llamaindex";
+import { StorageContext } from "llamaindex/storage";
+import { PGVectorStore } from "llamaindex/vector-store";
 import * as os from "os";
 import * as path from "path";
 import { inngest } from "../client";
