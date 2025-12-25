@@ -550,9 +550,44 @@ export const PromptInput = ({
 		[matchesAccept, maxFiles, maxFileSize, onError],
 	);
 
+	const addRemoteLocal = useCallback(
+		(files: { url: string; filename: string; mediaType: string }[]) => {
+			if (files.length === 0) return;
+
+			setItems((prev) => {
+				const capacity =
+					typeof maxFiles === "number"
+						? Math.max(0, maxFiles - prev.length)
+						: undefined;
+				const capped =
+					typeof capacity === "number" ? files.slice(0, capacity) : files;
+
+				if (typeof capacity === "number" && files.length > capacity) {
+					onError?.({
+						code: "max_files",
+						message: "Too many files. Some were not added.",
+					});
+				}
+
+				return prev.concat(
+					capped.map((file) => ({
+						id: nanoid(),
+						type: "file" as const,
+						...file,
+					})),
+				);
+			});
+		},
+		[maxFiles, onError],
+	);
+
 	const add = usingProvider
 		? (files: File[] | FileList) => controller.attachments.add(files)
 		: addLocal;
+
+	const addRemote = usingProvider
+		? (files: any[]) => controller.attachments.addRemote(files)
+		: addRemoteLocal;
 
 	const remove = usingProvider
 		? (id: string) => controller.attachments.remove(id)
@@ -677,12 +712,13 @@ export const PromptInput = ({
 		() => ({
 			files: files.map((item) => ({ ...item, id: item.id })),
 			add,
+			addRemote,
 			remove,
 			clear,
 			openFileDialog,
 			fileInputRef: inputRef,
 		}),
-		[files, add, remove, clear, openFileDialog],
+		[files, add, addRemote, remove, clear, openFileDialog],
 	);
 
 	const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
