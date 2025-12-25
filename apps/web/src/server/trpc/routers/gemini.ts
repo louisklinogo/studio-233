@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { IMAGE_GEN_MODEL } from "@studio233/ai";
 import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
+import { withDevTools } from "@studio233/ai/utils/model";
 import { generateText } from "ai";
 import { z } from "zod";
 import type { Context } from "../context";
@@ -93,7 +94,7 @@ export async function generateImageFromText(
 	const google = createGoogleGenerativeAI({ apiKey: key });
 
 	const result = await generateText({
-		model: google(IMAGE_GEN_MODEL),
+		model: withDevTools(google(IMAGE_GEN_MODEL)),
 		prompt: prompt,
 	});
 
@@ -139,7 +140,7 @@ export async function generateImageFromTextWithFallback(
 	const { image, mediaType } = await parseImageInput(imageUrl);
 
 	const result = await generateText({
-		model: google(IMAGE_GEN_MODEL),
+		model: withDevTools(google(IMAGE_GEN_MODEL)),
 		prompt: [
 			{
 				role: "user" as const,
@@ -220,7 +221,7 @@ export const geminiRouter = router({
 			const { image, mediaType } = await parseImageInput(input.imageUrl);
 
 			const result = await generateText({
-				model: google(IMAGE_GEN_MODEL),
+				model: withDevTools(google(IMAGE_GEN_MODEL)),
 				prompt: [
 					{
 						role: "user" as const,

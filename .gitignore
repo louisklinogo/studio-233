@@ -9,7 +9,8 @@
 .next/
 .pnp
 .pnp.js
-.vercel
+.vrcel
+.devtools
 build
 coverage
 node_modules/

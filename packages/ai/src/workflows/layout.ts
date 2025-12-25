@@ -11,6 +11,7 @@ import {
 	layoutDesignerOutputSchema,
 } from "../schemas/layout";
 import { logger } from "../utils/logger";
+import { withDevTools } from "../utils/model";
 
 const env = getEnv();
 
@@ -100,7 +101,7 @@ ${formatSpecifics || "- Use semantic HTML5 and modern CSS."}
 - Return only a single JSON object with keys: html, css, rationale, components (list of logical units). Do not include markdown, code fences, or prose.`;
 
 	const google = createGoogleFn({ apiKey: key });
-	const model = google(GEMINI_TEXT_MODEL);
+	const model = withDevTools(google(GEMINI_TEXT_MODEL));
 
 	try {
 		const result = await generateObjectFn({
@@ -159,7 +160,7 @@ export async function runLayoutDesignerWorkflow(
 	if (!key) throw new Error("Google API key required for layout design");
 
 	const google = createGoogleGenerativeAI({ apiKey: key });
-	const model = google(GEMINI_PRO_MODEL);
+	const model = withDevTools(google(GEMINI_PRO_MODEL));
 
 	const prompt = `You are a Lead Brand Strategist and Art Director. Create a high-level design strategy and hierarchical layout plan for a ${input.projectType}.
 

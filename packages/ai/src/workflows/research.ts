@@ -4,6 +4,7 @@ import sharp from "sharp";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { withDevTools } from "../utils/model";
 
 const env = getEnv();
 
@@ -227,7 +228,7 @@ export async function runMoodboardWorkflow(
 		throw new Error("Google API key required for moodboard synthesis");
 	}
 	const google = createGoogleGenerativeAI({ apiKey: key });
-	const model = google("gemini-2.5-pro");
+	const model = withDevTools(google("gemini-2.5-pro"));
 	const formatInstruction =
 		input.format === "json"
 			? "Return JSON with keys heroPalette, typography, layout, callouts"

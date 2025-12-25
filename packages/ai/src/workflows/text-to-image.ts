@@ -8,6 +8,7 @@ import { getEnv } from "../config";
 import { IMAGE_GEN_MODEL } from "../model-config";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
+import { withDevTools } from "../utils/model";
 
 const env = getEnv();
 
@@ -147,6 +148,8 @@ export async function runTextToImageWorkflow(
 		}
 
 		const google = createGoogleGenerativeAI({ apiKey: googleKey });
+		const model = withDevTools(google(IMAGE_GEN_MODEL));
+
 		const providerOptions = aspectRatioOverride
 			? {
 					google: {
@@ -174,7 +177,7 @@ export async function runTextToImageWorkflow(
 			: { prompt };
 
 		const result = await generateText({
-			model: google(IMAGE_GEN_MODEL),
+			model,
 			...body,
 			providerOptions,
 		});

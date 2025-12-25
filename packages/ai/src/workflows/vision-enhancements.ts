@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getEnv } from "../config";
 import { GEMINI_TEXT_MODEL } from "../model-config";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
+import { withDevTools } from "../utils/model";
 
 const env = getEnv();
 
@@ -213,7 +214,7 @@ export async function runStoryboardWorkflow(
 		throw new Error("Google API key required for storyboard generation");
 	}
 	const google = createGoogleGenerativeAI({ apiKey: key });
-	const model = google(GEMINI_TEXT_MODEL);
+	const model = withDevTools(google(GEMINI_TEXT_MODEL));
 	const formatDirective =
 		input.output === "html"
 			? "Return semantic HTML with <section> per frame and data attributes for timing."

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getEnv } from "../config";
 import { GEMINI_IMAGE_MODEL } from "../model-config";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
+import { withDevTools } from "../utils/model";
 
 const env = getEnv();
 
@@ -19,7 +20,7 @@ async function removeBackgroundWithGemini(imageUrl: string, apiKey?: string) {
 	const imagePart = { type: "image" as const, image: new URL(imageUrl) };
 
 	const result = await generateText({
-		model: google(GEMINI_IMAGE_MODEL),
+		model: withDevTools(google(GEMINI_IMAGE_MODEL)),
 		prompt: [
 			{
 				role: "user",

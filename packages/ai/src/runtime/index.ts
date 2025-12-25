@@ -4,6 +4,7 @@ import { generateText, stepCountIs, streamText } from "ai";
 import { getEnv } from "../config";
 import { getModelConfig } from "../model-config";
 import { logger } from "../utils/logger";
+import { withDevTools } from "../utils/model";
 import {
 	AGENT_DEFINITIONS,
 	type AgentKey,
@@ -51,8 +52,10 @@ function getModel(agentKey: AgentKey) {
 		runAgent: generateAgentResponse,
 	};
 
+	const model = withDevTools(google(modelConfig.model));
+
 	return {
-		model: google(modelConfig.model),
+		model,
 		temperature: modelConfig.temperature,
 		prompt: agent.prompt,
 		tools:

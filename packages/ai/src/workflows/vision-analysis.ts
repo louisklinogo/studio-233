@@ -17,6 +17,7 @@ import {
 } from "../schemas/vision-analysis";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
 import { logger } from "../utils/logger";
+import { withDevTools } from "../utils/model";
 import { withTimeout } from "../utils/timeout";
 
 const env = getEnv();
@@ -310,7 +311,7 @@ export async function runVisionAnalysisWorkflow(
 	} else {
 		const google = createGoogleGenerativeAI({ apiKey: key });
 		modelId = mode === "quick" ? GEMINI_FLASH_MODEL : GEMINI_PRO_MODEL;
-		model = google(modelId);
+		model = withDevTools(google(modelId));
 	}
 
 	const systemPrompt =

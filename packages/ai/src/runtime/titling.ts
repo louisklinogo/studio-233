@@ -2,6 +2,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { getEnv } from "../config";
+import { withDevTools } from "../utils/model";
 
 const env = getEnv();
 const google = createGoogleGenerativeAI({ apiKey: env.googleApiKey });
@@ -15,7 +16,7 @@ export async function generateThreadTitle(
 ): Promise<string> {
 	try {
 		const { object } = await generateObject({
-			model: google("gemini-3-flash-preview"), // Fast & reliable for summarization
+			model: withDevTools(google("gemini-3-flash-preview")), // Fast & reliable for summarization
 			schema: z.object({
 				title: z
 					.string()
