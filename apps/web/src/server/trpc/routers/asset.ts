@@ -2,6 +2,7 @@ import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma } from "@studio233/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { inngest } from "@/inngest/client";
 import { publicProcedure, router } from "../init";
 
 export const assetRouter = router({
@@ -40,7 +41,7 @@ export const assetRouter = router({
 				});
 			}
 
-			return await prisma.asset.create({
+			const asset = await prisma.asset.create({
 				data: {
 					name: input.name,
 					url: input.url,
@@ -51,6 +52,21 @@ export const assetRouter = router({
 					metadata: input.metadata,
 				},
 			});
+
+			// If it's a PDF brand asset, trigger ingestion
+			if (input.isBrandAsset && input.mimeType === "application/pdf") {
+				await inngest.send({
+					name: "brand.knowledge.ingested",
+					data: {
+						workspaceId: input.workspaceId,
+						assetId: asset.id,
+						url: input.url,
+						filename: input.name,
+					},
+				});
+			}
+
+			return asset;
 		}),
 
 	/**

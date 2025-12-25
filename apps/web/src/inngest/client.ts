@@ -1,8 +1,15 @@
-import { Inngest } from "inngest";
-import type { WorkflowRequested } from "@/inngest/events";
+import { EventSchemas, Inngest } from "inngest";
+import type {
+	BrandKnowledgeIngested,
+	WorkflowRequested,
+} from "@/inngest/events";
 
 type EventMap = {
-	"studio.workflow.requested": WorkflowRequested;
+	"studio.workflow.requested": { data: WorkflowRequested };
+	"brand.knowledge.ingested": { data: BrandKnowledgeIngested };
 };
 
-export const inngest = new Inngest({ id: "studio-233" });
+export const inngest = new Inngest({
+	id: "studio-233",
+	schemas: new EventSchemas().fromRecord<EventMap>(),
+});

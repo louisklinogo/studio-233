@@ -1,0 +1,14 @@
+model BrandKnowledge {
+  id           String                      @id @default(cuid())
+  node_id      String?                     @unique
+  text         String
+  embedding    Unsupported("vector(768)")?
+  metadata     Json?                       @db.Json
+  workspace_id String?
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+  workspace    Workspace?                  @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id])
+  @@map("brand_knowledge")
+}

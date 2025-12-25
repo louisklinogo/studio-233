@@ -1,13 +1,16 @@
 model Workspace {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  slug        String?
-  userId      String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  projects    Project[]
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  slug         String?
+  userId       String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  projects     Project[]
+  assets       Asset[]
+  brandKnowledge BrandKnowledge[]
+  brandProfile Json?     @db.Json
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, slug])
   @@index([userId])
@@ -94,23 +97,27 @@ model CanvasElement {
 }
 
 model Asset {
-  id         String          @id @default(cuid())
-  name       String
-  type       AssetType       @default(IMAGE)
-  url        String
-  size       Int
-  mimeType   String
-  metadata   Json?           @db.Json
-  projectId  String
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  versions   AssetVersion[]
-  inputRuns  GenerationRun[] @relation("GenerationInputAsset")
-  outputRuns GenerationRun[] @relation("GenerationOutputAsset")
+  id           String          @id @default(cuid())
+  name         String
+  type         AssetType       @default(IMAGE)
+  url          String
+  size         Int
+  mimeType     String
+  metadata     Json?           @db.Json
+  projectId    String?
+  workspaceId  String?
+  isBrandAsset Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  project      Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspace    Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  versions     AssetVersion[]
+  inputRuns    GenerationRun[] @relation("GenerationInputAsset")
+  outputRuns   GenerationRun[] @relation("GenerationOutputAsset")
 
   @@index([projectId, type])
   @@index([projectId, createdAt(sort: Desc)])
+  @@index([workspaceId])
   @@map("asset")
 }
 

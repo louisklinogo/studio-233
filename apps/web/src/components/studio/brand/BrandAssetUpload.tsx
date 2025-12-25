@@ -81,9 +81,10 @@ export function BrandAssetUpload({
 				type="file"
 				ref={fileInputRef}
 				className="hidden"
-				accept="image/*"
+				accept="image/*,application/pdf"
 				onChange={handleFileChange}
 			/>
+
 			<button
 				onClick={() => fileInputRef.current?.click()}
 				disabled={isUploading || registerAsset.isPending}

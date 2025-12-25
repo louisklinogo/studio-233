@@ -48,6 +48,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 			"captionOverlay",
 			"htmlGenerator",
 			"layoutDesigner",
+			"consultBrandGuidelines",
 		],
 	},
 	vision: {
@@ -68,6 +69,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 			"htmlToCanvas",
 			"htmlGenerator",
 			"layoutDesigner",
+			"consultBrandGuidelines",
 		],
 	},
 	motion: {

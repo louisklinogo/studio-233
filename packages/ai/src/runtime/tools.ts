@@ -1,6 +1,7 @@
 import { tool as createAiTool, type ToolExecutionOptions } from "ai";
 import { z } from "zod";
 import { batchJobPlannerTool } from "../tools/batch";
+import { consultBrandGuidelinesTool } from "../tools/brand";
 import { canvasTextToImageTool } from "../tools/canvas";
 import type { ToolDefinition } from "../tools/factory";
 import { delegateToAgentTool } from "../tools/orchestration";
@@ -56,6 +57,7 @@ const TOOL_DEFINITIONS = {
 	imageAnalyzer: imageAnalyzerTool,
 	moodboard: moodboardTool,
 	batchPlanner: batchJobPlannerTool,
+	consultBrandGuidelines: consultBrandGuidelinesTool,
 } as const;
 
 // Re-export TOOL_DEFINITIONS for use in buildToolset

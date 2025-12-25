@@ -1,6 +1,18 @@
 import { z } from "zod";
 
 export const workflowRequestedEvent = "studio.workflow.requested" as const;
+export const brandKnowledgeIngestedEvent = "brand.knowledge.ingested" as const;
+
+export const brandKnowledgeIngestedSchema = z.object({
+	workspaceId: z.string(),
+	assetId: z.string(),
+	url: z.string().url(),
+	filename: z.string(),
+});
+
+export type BrandKnowledgeIngested = z.infer<
+	typeof brandKnowledgeIngestedSchema
+>;
 
 export const workflowRequestedSchema = z.object({
 	runId: z.string(),

@@ -2,6 +2,7 @@ import { serve } from "inngest/next";
 import type { NextRequest } from "next/server";
 import { inngest } from "@/inngest/client";
 
+import { brandIngestion } from "@/inngest/functions/brand-ingestion";
 import { processStudioWorkflow } from "@/inngest/functions/studio/process-workflow";
 
 type RouteContext = { params: Promise<Record<string, string>> };
@@ -12,7 +13,7 @@ type AppRouteHandler = (
 
 const handlers = serve({
 	client: inngest,
-	functions: [processStudioWorkflow],
+	functions: [processStudioWorkflow, brandIngestion],
 });
 
 const adapt = <T extends keyof typeof handlers>(method: T) => {

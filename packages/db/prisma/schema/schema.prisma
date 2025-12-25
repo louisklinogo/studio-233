@@ -1,9 +1,11 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../generated"
-  moduleFormat = "esm"
+  provider        = "prisma-client"
+  output          = "../generated"
+  moduleFormat    = "esm"
+  previewFeatures = ["postgresqlExtensions", "prismaSchemaFolder"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
