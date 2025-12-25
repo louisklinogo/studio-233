@@ -1,20 +1,30 @@
 export { getModelConfig, IMAGE_GEN_MODEL } from "./model-config";
 export type { AgentKey, AgentMessage, AgentRunOptions } from "./runtime";
 export {
-	generateAgentResponse,
 	getAgentName,
 	resolveAgentKeyByName,
-	streamAgentResponse,
 } from "./runtime";
-export { generateThreadTitle } from "./runtime/titling";
-export * from "./tools";
+export type {
+	VisionAnalysisInput,
+	VisionAnalysisResult,
+} from "./schemas/vision-analysis";
 export type { CanvasCommand } from "./types/canvas";
-export { uploadImageBufferToBlob } from "./utils/blob-storage";
-export * from "./workflows/background-removal";
-export * from "./workflows/layout";
-export * from "./workflows/object-isolation";
-export * from "./workflows/research";
-export * from "./workflows/text-to-image";
-export * from "./workflows/video";
-export * from "./workflows/vision-analysis";
-export * from "./workflows/vision-enhancements";
+export type {
+	BackgroundRemovalInput,
+	BackgroundRemovalResult,
+} from "./workflows/background-removal";
+export type {
+	TextToImageInput,
+	TextToImageResult,
+} from "./workflows/text-to-image";
+export type {
+	ImageReframeInput,
+	ImageReframeResult,
+	ImageUpscaleInput,
+	ImageUpscaleResult,
+	PaletteExtractionInput,
+	PaletteExtractionResult,
+} from "./workflows/vision-enhancements";
+
+// Note: Runtime-heavy exports (agents, tools, workflows) should be imported from their specific paths
+// to avoid pulling Node.js dependencies into Edge runtime contexts.

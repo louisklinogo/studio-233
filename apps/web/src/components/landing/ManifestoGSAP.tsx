@@ -6,6 +6,25 @@ import React, { useLayoutEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const Redacted = ({
+	children,
+	className,
+	curtainClass,
+}: {
+	children: React.ReactNode;
+	className?: string;
+	curtainClass: string;
+}) => (
+	<span
+		className={`relative inline-block whitespace-nowrap overflow-hidden align-bottom mx-1 px-1 py-1 ${className}`}
+	>
+		<span className="relative z-10">{children}</span>
+		<span
+			className={`redaction-curtain ${curtainClass} absolute inset-0 bg-[#FF4D00] z-20 origin-left`}
+		/>
+	</span>
+);
+
 export const ManifestoGSAP = () => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const textRef = useRef<HTMLDivElement>(null);
@@ -16,42 +35,38 @@ export const ManifestoGSAP = () => {
 		const ctx = gsap.context(() => {
 			const lines = gsap.utils.toArray(".manifesto-line") as HTMLElement[];
 
-			// Initialize the Master Timeline
-			// This timeline is driven by the scroll position of the container.
 			const tl = gsap.timeline({
 				scrollTrigger: {
 					trigger: containerRef.current,
-					start: "top top", // Start when top of container hits top of viewport
-					end: "+=650%", // The animation lasts for 6.5x the viewport height
-					pin: true, // Pin the container in place while scrolling
-					pinSpacing: true, // Add padding to compensate for the pinned duration
-					scrub: 1, // Smooth scrubbing effect (1s lag)
-					anticipatePin: 1, // Prevent jitter during pinning
+					start: "top top",
+					end: "+=650%",
+					pin: true,
+					pinSpacing: true,
+					scrub: 1,
+					anticipatePin: 1,
 				},
 			});
 
 			/* =========================================
-			   PHASE 1: THE SPLIT (0% - 15%)
-			   The big "INFINITE CANVAS" text splits apart to reveal the content.
-			   ========================================= */
+         PHASE 1: THE SPLIT
+         ========================================= */
 			tl.addLabel("linesSplit", 0);
 
-			tl.to(lines[0], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit") // Top line moves left
-				.to(lines[1], { x: "20%", opacity: 0.5, duration: 0.6 }, "linesSplit") // Middle line moves right
-				.to(lines[2], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit") // Bottom line moves left
+			tl.to(lines[0], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit")
+				.to(lines[1], { x: "20%", opacity: 0.5, duration: 0.6 }, "linesSplit")
+				.to(lines[2], { x: "-20%", opacity: 0.5, duration: 0.6 }, "linesSplit")
 				.to(
 					lines,
-					{ opacity: 0, filter: "blur(12px)", duration: 0.8 }, // Fade out and blur all lines
+					{ opacity: 0, filter: "blur(12px)", duration: 0.8 },
 					"linesSplit+=0.25",
 				);
 
 			/* =========================================
-			   PHASE 2: PARAGRAPH 01 (15% - 50%)
-			   The first paragraph enters, scrolls up, highlights keywords, and exits.
-			   ========================================= */
+         PHASE 2: PARAGRAPH 01
+         ========================================= */
 			tl.addLabel("paragraph1Enter", "linesSplit+=0.9");
 
-			// 2.1 Entrance: Scale up and fade in from bottom
+			// 2.1 Entrance
 			tl.fromTo(
 				paragraph1Ref.current,
 				{ scale: 0.9, opacity: 0, filter: "blur(15px)", y: 140 },
@@ -65,26 +80,24 @@ export const ManifestoGSAP = () => {
 				},
 				"paragraph1Enter",
 			)
-				// 2.2 Scroll Up: Move the paragraph upwards to simulate reading flow
+				// 2.2 Scroll Up
 				.to(
 					paragraph1Ref.current,
 					{ y: -450, duration: 2, ease: "none" },
 					"paragraph1Enter+=0.4",
 				)
-				// 2.3 Kinetic Highlight: Highlight keywords in sequence
+				// 2.3 Redaction Reveal (Peel back the curtain)
 				.to(
-					".highlight-p1",
+					".curtain-p1",
 					{
-						backgroundColor: "#FF4D00",
-						color: "#000000",
-						padding: "0 0.2em",
-						fontWeight: 900,
-						duration: 0.8,
-						stagger: 0.15, // Delay between each highlight
+						scaleX: 0,
+						duration: 0.6,
+						stagger: 0.2,
+						ease: "power2.inOut",
 					},
 					"paragraph1Enter+=0.9",
 				)
-				// 2.4 Exit: Fade out, blur, and scale down
+				// 2.4 Exit
 				.to(
 					paragraph1Ref.current,
 					{ opacity: 0, filter: "blur(12px)", scale: 0.94, duration: 1 },
@@ -92,9 +105,8 @@ export const ManifestoGSAP = () => {
 				);
 
 			/* =========================================
-			   PHASE 3: PARAGRAPH 02 (50% - 85%)
-			   The second paragraph follows the same pattern as the first.
-			   ========================================= */
+         PHASE 3: PARAGRAPH 02
+         ========================================= */
 			tl.addLabel("paragraph2Enter", "paragraph1Enter+=2.6");
 
 			// 3.1 Entrance
@@ -117,16 +129,14 @@ export const ManifestoGSAP = () => {
 					{ y: -450, duration: 2, ease: "none" },
 					"paragraph2Enter+=0.4",
 				)
-				// 3.3 Kinetic Highlight
+				// 3.3 Redaction Reveal
 				.to(
-					".highlight-p2",
+					".curtain-p2",
 					{
-						backgroundColor: "#FF4D00",
-						color: "#000000",
-						padding: "0 0.2em",
-						fontWeight: 900,
-						duration: 0.8,
-						stagger: 0.15,
+						scaleX: 0,
+						duration: 0.6,
+						stagger: 0.2,
+						ease: "power2.inOut",
 					},
 					"paragraph2Enter+=0.9",
 				)
@@ -136,12 +146,6 @@ export const ManifestoGSAP = () => {
 					{ opacity: 0, filter: "blur(12px)", scale: 0.94, duration: 1 },
 					"paragraph2Enter+=2.0",
 				);
-
-			/* =========================================
-			   PHASE 4: OUTRO (85% - 100%)
-			   The final "SYSTEM READY" screen fades in.
-			   ========================================= */
-			// Removed redundant Outro phase to seamlessly flow into Product Hologram
 		}, containerRef);
 
 		return () => ctx.revert();
@@ -150,12 +154,11 @@ export const ManifestoGSAP = () => {
 	return (
 		<section
 			ref={containerRef}
-			// Reduced height significantly from 200vh to 150vh to remove the "long wait"
 			className="relative z-30 min-h-[150vh] flex flex-col items-center justify-start pt-[10vh] overflow-hidden"
 		>
 			<div
 				ref={textRef}
-				className="flex flex-col gap-0 font-black text-[9vw] tracking-tighter leading-[0.85] select-none text-neutral-900 dark:text-white w-full max-w-[95vw] mx-auto uppercase"
+				className="flex flex-col gap-0 font-extrabold text-[7.5vw] tracking-tighter leading-[0.9] select-none text-neutral-900 dark:text-white w-full max-w-[95vw] mx-auto uppercase"
 			>
 				<div className="manifesto-line whitespace-nowrap pl-4 w-full">
 					INFINITE CANVAS.
@@ -169,24 +172,32 @@ export const ManifestoGSAP = () => {
 			</div>
 
 			<div className="mt-[20vh] mb-[20vh] z-20 w-full max-w-4xl px-6 md:px-12 mx-auto grid grid-cols-1 grid-rows-1 items-center justify-center pointer-events-none">
-				{/* Grid Stacking: Both occupy row 1 / col 1 */}
 				<div
 					ref={paragraph1Ref}
 					className="col-start-1 row-start-1 opacity-0 w-full"
 				>
-					<p className="font-mono text-xl md:text-3xl lg:text-4xl text-neutral-800 dark:text-neutral-200 leading-tight text-left tracking-tight uppercase font-medium">
-						Studio+233 is not just a tool. It is a{" "}
-						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1 decoration-clone">
+					<p className="font-sans text-xl md:text-4xl lg:text-5xl text-neutral-500 dark:text-neutral-400 leading-tight text-left tracking-tight font-normal">
+						Studio+233 is not just a tool. It is a
+						<Redacted
+							curtainClass="curtain-p1"
+							className="font-mono text-neutral-900 dark:text-white font-bold"
+						>
 							production environment
-						</span>{" "}
-						for the next generation of creators. Combine the freedom of an{" "}
-						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1 decoration-clone">
+						</Redacted>
+						for the next generation of creators. Combine the freedom of an
+						<Redacted
+							curtainClass="curtain-p1"
+							className="font-mono text-neutral-900 dark:text-white font-bold"
+						>
 							infinite canvas
-						</span>{" "}
-						with the power of{" "}
-						<span className="kinetic-highlight highlight-p1 inline-block transition-all duration-300 px-1 decoration-clone">
+						</Redacted>
+						with the power of
+						<Redacted
+							curtainClass="curtain-p1"
+							className="font-mono text-neutral-900 dark:text-white font-bold"
+						>
 							autonomous AI agents
-						</span>{" "}
+						</Redacted>
 						to scale your workflow from one to one thousand.
 					</p>
 				</div>
@@ -195,26 +206,33 @@ export const ManifestoGSAP = () => {
 					ref={paragraph2Ref}
 					className="col-start-1 row-start-1 opacity-0 w-full"
 				>
-					<p className="font-mono text-xl md:text-3xl lg:text-4xl text-neutral-800 dark:text-neutral-200 leading-tight text-left tracking-tight uppercase font-medium">
-						Stop generating one-offs.{" "}
-						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1 decoration-clone">
+					<p className="font-sans text-xl md:text-4xl lg:text-5xl text-neutral-500 dark:text-neutral-400 leading-tight text-left tracking-tight font-normal">
+						Stop generating one-offs.
+						<Redacted
+							curtainClass="curtain-p2"
+							className="font-mono text-neutral-900 dark:text-white font-bold"
+						>
 							Orchestrate entire campaigns
-						</span>{" "}
+						</Redacted>
 						on an infinite canvas that thinks. Drag, drop, and chain neural
-						models to{" "}
-						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1 decoration-clone">
+						models to
+						<Redacted
+							curtainClass="curtain-p2"
+							className="font-mono text-neutral-900 dark:text-white font-bold"
+						>
 							batch process 1,000+ assets
-						</span>{" "}
-						in minutes. This isn't just a tool; it's your new{" "}
-						<span className="kinetic-highlight highlight-p2 inline-block transition-all duration-300 px-1 decoration-clone">
-							industrial-grade creative operating system
-						</span>
+						</Redacted>
+						in minutes. This isn't just a tool; it's your new
+						<Redacted
+							curtainClass="curtain-p2"
+							className="font-mono text-neutral-900 dark:text-white font-bold"
+						>
+							industrial-grade creative OS
+						</Redacted>
 						.
 					</p>
 				</div>
 			</div>
-
-			{/* 3D Grid Outro - REMOVED */}
 		</section>
 	);
 };

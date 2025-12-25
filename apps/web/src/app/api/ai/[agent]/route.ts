@@ -3,7 +3,7 @@ import {
 	generateAgentResponse,
 	getAgentName,
 	streamAgentResponse,
-} from "@studio233/ai";
+} from "@studio233/ai/runtime";
 import { type NextRequest, NextResponse } from "next/server";
 
 const AGENT_MAP: Record<string, AgentKey> = {
@@ -52,6 +52,7 @@ export async function POST(
 		const stream = streamAgentResponse(agentKey, {
 			messages: body.messages,
 			maxSteps: body.maxSteps,
+			abortSignal: req.signal,
 			metadata: {
 				context: {
 					threadId,
@@ -73,6 +74,7 @@ export async function POST(
 	const result = await generateAgentResponse(agentKey, {
 		prompt: body.prompt!,
 		maxSteps: body.maxSteps,
+		abortSignal: req.signal,
 		metadata: {
 			context: {
 				threadId,

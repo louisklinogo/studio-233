@@ -23,3 +23,6 @@ vectr/
 durable-llm-streams/
 .turbo/
 workflow-builder-template/
+
+# Better Agents
+.better-agents/

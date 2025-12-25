@@ -1,6 +1,6 @@
 "use server";
 
-import { type AgentKey, generateAgentResponse } from "@studio233/ai";
+import { type AgentKey, generateAgentResponse } from "@studio233/ai/runtime";
 
 type AgentResponse = {
 	text: string;

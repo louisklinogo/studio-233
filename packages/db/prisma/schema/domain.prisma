@@ -424,8 +424,11 @@ enum AgentMessageType {
 
 enum ToolCallStatus {
   REQUESTED
+  RUNNING
   SUCCEEDED
   FAILED
+  TIMED_OUT
+  CANCELED
 }
 
 enum UsageMetricType {

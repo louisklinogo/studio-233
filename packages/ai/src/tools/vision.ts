@@ -1,15 +1,18 @@
 import { list } from "@vercel/blob";
-import crypto from "crypto";
 import { z } from "zod";
-import { canvasToolOutputSchema } from "../schemas/tool-output";
-import { backgroundRemovalWorkflow } from "../workflows/background-removal";
 import {
+	htmlGeneratorInputSchema,
+	layoutDesignerInputSchema,
+} from "../schemas/layout";
+import { canvasToolOutputSchema } from "../schemas/tool-output";
+import type { backgroundRemovalWorkflow } from "../workflows/background-removal";
+import type {
 	htmlGeneratorWorkflow,
 	layoutDesignerWorkflow,
 } from "../workflows/layout";
-import { objectIsolationWorkflow } from "../workflows/object-isolation";
-import { visionAnalysisWorkflow } from "../workflows/vision-analysis";
-import {
+import type { objectIsolationWorkflow } from "../workflows/object-isolation";
+import type { visionAnalysisWorkflow } from "../workflows/vision-analysis";
+import type {
 	imageReframeWorkflow,
 	imageUpscaleWorkflow,
 	paletteExtractionWorkflow,
@@ -38,14 +41,24 @@ async function getLatestBlobUrl(prefix: string): Promise<string | null> {
 	}
 }
 
+/**
+ * Edge-compatible hash function using Web Crypto API
+ */
+async function hashString(input: string): Promise<string> {
+	const msgUint8 = new TextEncoder().encode(input);
+	const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export const visionAnalysisTool = createTool({
 	id: "vision-analysis",
 	description:
 		"Analyze an image and return structured details (scene, palette, objects, OCR). If imageUrl is omitted, uses the most recent image attachment.",
 	inputSchema: z.object({
 		imageUrl: z.string().url().optional(),
+		mode: z.enum(["quick", "full"]).optional(),
 	}),
-	outputSchema: visionAnalysisWorkflow.outputSchema!,
 	execute: async ({ context, runtimeContext }) => {
 		const imageUrl =
 			context.imageUrl ??
@@ -59,7 +72,29 @@ export const visionAnalysisTool = createTool({
 			);
 		}
 
-		return visionAnalysisWorkflow.run({ imageUrl });
+		const { visionAnalysisWorkflow } = await import(
+			"../workflows/vision-analysis"
+		);
+		return visionAnalysisWorkflow.run(
+			{ imageUrl },
+			{
+				mode: context.mode,
+				abortSignal:
+					typeof runtimeContext === "object" && runtimeContext
+						? ((runtimeContext as any).abortSignal as AbortSignal | undefined)
+						: undefined,
+				logContext: {
+					toolCallId:
+						typeof runtimeContext === "object" && runtimeContext
+							? ((runtimeContext as any).toolCallId as string | undefined)
+							: undefined,
+					threadId:
+						typeof runtimeContext === "object" && runtimeContext
+							? ((runtimeContext as any).threadId as string | undefined)
+							: undefined,
+				},
+			},
+		);
 	},
 });
 
@@ -88,7 +123,7 @@ export const visionAnalysisRefTool = createTool({
 			);
 		}
 
-		const imageHash = crypto.createHash("md5").update(imageUrl).digest("hex");
+		const imageHash = await hashString(imageUrl);
 
 		const [analysisJsonUrl, sourceImageUrl] = await Promise.all([
 			getLatestBlobUrl(`vision/metadata/${imageHash}/`),
@@ -110,6 +145,9 @@ export const backgroundRemovalTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { backgroundRemovalWorkflow } = await import(
+			"../workflows/background-removal"
+		);
 		const result = await backgroundRemovalWorkflow.run(context);
 
 		// Return standardized command format
@@ -145,6 +183,9 @@ export const objectIsolationTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { objectIsolationWorkflow } = await import(
+			"../workflows/object-isolation"
+		);
 		const result = await objectIsolationWorkflow.run(context);
 
 		// Return standardized command format
@@ -215,6 +256,9 @@ export const imageReframeTool = createTool({
 	inputSchema: imageReframeInputSchema,
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { imageReframeWorkflow } = await import(
+			"../workflows/vision-enhancements"
+		);
 		const result = await imageReframeWorkflow.run(context);
 
 		return {
@@ -244,6 +288,9 @@ export const imageUpscaleTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { imageUpscaleWorkflow } = await import(
+			"../workflows/vision-enhancements"
+		);
 		const result = await imageUpscaleWorkflow.run(context);
 
 		return {
@@ -269,8 +316,12 @@ export const paletteExtractorTool = createTool({
 		imageUrl: z.string().url(),
 		colors: z.number().min(3).max(12).default(6),
 	}),
-	outputSchema: paletteExtractionWorkflow.outputSchema!,
-	execute: async ({ context }) => paletteExtractionWorkflow.run(context),
+	execute: async ({ context }) => {
+		const { paletteExtractionWorkflow } = await import(
+			"../workflows/vision-enhancements"
+		);
+		return paletteExtractionWorkflow.run(context);
+	},
 });
 
 export const storyboardTool = createTool({
@@ -281,24 +332,32 @@ export const storyboardTool = createTool({
 		frames: z.number().min(3).max(12).default(6),
 		output: z.enum(["html", "markdown"]).default("html"),
 	}),
-	outputSchema: storyboardWorkflow.outputSchema!,
-	execute: async ({ context }) => storyboardWorkflow.run(context),
+	execute: async ({ context }) => {
+		const { storyboardWorkflow } = await import(
+			"../workflows/vision-enhancements"
+		);
+		return storyboardWorkflow.run(context);
+	},
 });
 
 export const htmlGeneratorTool = createTool({
 	id: "html-generator",
 	description:
 		"Produce semantic HTML/CSS scaffolds for layouts (hero pages, emails, decks)",
-	inputSchema: htmlGeneratorWorkflow.inputSchema!,
-	outputSchema: htmlGeneratorWorkflow.outputSchema!,
-	execute: async ({ context }) => htmlGeneratorWorkflow.run(context),
+	inputSchema: htmlGeneratorInputSchema,
+	execute: async ({ context }) => {
+		const { htmlGeneratorWorkflow } = await import("../workflows/layout");
+		return htmlGeneratorWorkflow.run(context as any);
+	},
 });
 
 export const layoutDesignerTool = createTool({
 	id: "layout-designer",
 	description:
 		"Create detailed layout plans with sections, KPIs, and testing checklist",
-	inputSchema: layoutDesignerWorkflow.inputSchema!,
-	outputSchema: layoutDesignerWorkflow.outputSchema!,
-	execute: async ({ context }) => layoutDesignerWorkflow.run(context),
+	inputSchema: layoutDesignerInputSchema,
+	execute: async ({ context }) => {
+		const { layoutDesignerWorkflow } = await import("../workflows/layout");
+		return layoutDesignerWorkflow.run(context as any);
+	},
 });

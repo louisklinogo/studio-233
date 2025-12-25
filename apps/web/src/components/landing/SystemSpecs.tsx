@@ -1,188 +1,156 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
 
-const SPECS = [
-	{
-		id: "01",
-		label: "GENERATIVE_ENGINE",
-		description: "High-fidelity parametric rendering",
-		value: "98.4%",
-	},
-	{
-		id: "02",
-		label: "BATCH_PROCESSOR",
-		description: "Parallel asset generation queue",
-		value: "1.2ms",
-	},
-	{
-		id: "03",
-		label: "NEURAL_ORCHESTRATION",
-		description: "Multi-agent workflow execution",
-		value: "ACTIVE",
-	},
+const LOGS = [
+	{ id: 1, type: "INFO", msg: "INITIALIZING_NEURAL_CORE_v2.5" },
+	{ id: 2, type: "SUCCESS", msg: "GPU_CLUSTER_DETECTED [x8 H100]" },
+	{ id: 3, type: "WARN", msg: "OPTIMIZING_LATENT_SPACE..." },
+	{ id: 4, type: "INFO", msg: "LOADING_LORA_WEIGHTS: 'INDUSTRIAL_SWISS'" },
+	{ id: 5, type: "SUCCESS", msg: "BATCH_PIPELINE_READY" },
+	{ id: 6, type: "INFO", msg: "AWAITING_INPUT_STREAM" },
 ];
 
-const ScrambleText = ({ text, trigger }: { text: string; trigger: number }) => {
-	const [display, setDisplay] = useState(text);
-	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+const METRICS = [
+	{ label: "VRAM_USAGE", value: 24, unit: "GB", max: 80 },
+	{ label: "THROUGHPUT", value: 1420, unit: "IMG/HR", max: 2000 },
+	{ label: "LATENCY", value: 12, unit: "MS", max: 100 },
+];
+
+function TerminalLog() {
+	const [logs, setLogs] = useState(LOGS);
 
 	useEffect(() => {
-		let iteration = 0;
 		const interval = setInterval(() => {
-			setDisplay(
-				text
-					.split("")
-					.map((char, index) => {
-						if (index < iteration) {
-							return text[index];
-						}
-						return chars[Math.floor(Math.random() * chars.length)];
-					})
-					.join(""),
-			);
-
-			if (iteration >= text.length) {
-				clearInterval(interval);
-			}
-
-			iteration += 1 / 2;
-		}, 30);
-
+			// Simulate live logs by cycling/randomizing slightly
+			const newLog = {
+				id: Date.now(),
+				type: Math.random() > 0.8 ? "WARN" : "INFO",
+				msg: `PROCESS_ID_${Math.floor(Math.random() * 9999)
+					.toString(16)
+					.toUpperCase()}_EXECUTED`,
+			};
+			setLogs((prev) => [...prev.slice(1), newLog]);
+		}, 2000);
 		return () => clearInterval(interval);
-	}, [text, trigger]);
-
-	return <span>{display}</span>;
-};
-
-export const SystemSpecs = () => {
-	const [activeIndex, setActiveIndex] = useState(0);
-
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setActiveIndex((prev) => (prev + 1) % SPECS.length);
-		}, 4000);
-		return () => clearInterval(timer);
 	}, []);
 
 	return (
-		<div className="w-full h-full flex flex-col justify-center px-8 md:px-16 py-12 relative overflow-hidden bg-transparent">
-			{/* HUD Top Header (Transparent) */}
-			<div className="absolute top-0 inset-x-0 h-10 border-b border-neutral-900/50 flex items-center justify-between px-8 z-20">
-				<div className="flex items-center gap-4">
-					<div className="flex gap-1.5 opacity-30">
-						<div className="w-1 h-1 bg-[#FF4D00] rounded-full" />
-						<div className="w-1 h-1 bg-neutral-800 rounded-full" />
-						<div className="w-1 h-1 bg-neutral-800 rounded-full" />
-					</div>
-					<span className="font-mono text-[9px] text-neutral-600 tracking-[0.4em] uppercase">
-						MAPPED_ENGINE_HUD
+		<div className="flex flex-col gap-1.5 font-mono text-[10px] text-neutral-500 h-[140px] overflow-hidden mask-gradient-b">
+			{logs.map((log) => (
+				<motion.div
+					key={log.id}
+					initial={{ opacity: 0, x: -10 }}
+					animate={{ opacity: 1, x: 0 }}
+					className="flex items-center gap-3 whitespace-nowrap"
+				>
+					<span className="text-neutral-700">
+						{new Date().toISOString().split("T")[1].slice(0, 8)}
 					</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<div className="h-4 w-[1px] bg-neutral-900" />
-					<span className="font-mono text-[9px] text-[#FF4D00]/80 tracking-widest">
-						[ {activeIndex + 1} // {SPECS.length} ]
-					</span>
-				</div>
-			</div>
-
-			{/* The Aperture Container */}
-			<div className="relative h-[240px] w-full max-w-2xl pl-0 overflow-hidden flex items-center">
-				<AnimatePresence mode="popLayout">
-					<motion.div
-						key={activeIndex}
-						initial={{ y: "100%", opacity: 0 }}
-						animate={{ y: "0%", opacity: 1 }}
-						exit={{ y: "-100%", opacity: 0 }}
-						transition={{
-							duration: 0.6,
-							ease: [0.25, 1, 0.5, 1], // Heavy mechanical ease
-						}}
-						className="flex flex-col gap-4 w-full"
+					<span
+						className={`${
+							log.type === "SUCCESS"
+								? "text-[#FF4D00]"
+								: log.type === "WARN"
+									? "text-yellow-600"
+									: "text-neutral-600"
+						}`}
 					>
-						{/* Background Plate */}
-						<div className="flex items-start gap-12">
-							{/* Huge Index (Etched/HUD Style) */}
-							<div className="relative flex-shrink-0">
-								<span
-									className="font-mono text-[160px] font-black leading-none select-none tracking-tighter text-transparent"
-									style={{
-										WebkitTextStroke: "1px rgba(255,255,255,0.03)",
-										textShadow: "0 0 20px rgba(255,77,0,0.02)",
-									}}
-								>
-									0{activeIndex + 1}
-								</span>
-								<div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-[#FF4D00]/50" />
-							</div>
+						[{log.type}]
+					</span>
+					<span>{log.msg}</span>
+				</motion.div>
+			))}
+		</div>
+	);
+}
 
-							<div className="flex flex-col gap-6 pt-4 flex-1">
-								{/* Label Plate */}
-								<div className="flex flex-col gap-1.5">
-									<div className="flex items-center gap-3">
-										<div className="w-2 h-2 bg-[#FF4D00]/80" />
-										<h3 className="font-sans text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-200 leading-none">
-											{SPECS[activeIndex].label}
-										</h3>
-									</div>
-									<p className="font-mono text-[9px] text-neutral-600 uppercase tracking-widest">
-										STATUS_ID:{" "}
-										{Math.floor(Math.random() * 1000)
-											.toString(16)
-											.toUpperCase()}
-										_0x1
-									</p>
-								</div>
+function LiveMetric({
+	label,
+	unit,
+	max,
+}: {
+	label: string;
+	value: number;
+	unit: string;
+	max: number;
+}) {
+	const [val, setVal] = useState(0);
 
-								{/* Value Ticker */}
-								<div className="font-mono text-7xl text-[#FF4D00] font-medium tracking-tighter leading-none py-2 border-y border-neutral-900/30">
-									<ScrambleText
-										text={SPECS[activeIndex].value}
-										trigger={activeIndex}
-									/>
-								</div>
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setVal(Math.floor(Math.random() * (max * 0.2)) + max * 0.7); // Jitter around 70-90%
+		}, 800);
+		return () => clearInterval(interval);
+	}, [max]);
 
-								{/* Description */}
-								<div className="flex flex-col gap-4">
-									<p className="font-mono text-[10px] text-neutral-500 max-w-md leading-relaxed uppercase tracking-wider">
-										{SPECS[activeIndex].description}
-									</p>
-									<div className="flex gap-1.5 pt-1">
-										{Array.from({ length: 12 }).map((_, i) => (
-											<div
-												key={i}
-												className={`w-3 h-1 ${i < (activeIndex + 1) * 4 ? "bg-[#FF4D00]/60" : "bg-neutral-900/30"}`}
-											/>
-										))}
-									</div>
-								</div>
-							</div>
-						</div>
-					</motion.div>
-				</AnimatePresence>
+	return (
+		<div className="flex flex-col gap-2 p-4 border border-neutral-800 bg-neutral-900/20">
+			<div className="flex justify-between items-center">
+				<span className="font-mono text-[9px] text-neutral-500 tracking-widest">
+					{label}
+				</span>
+				<div className="flex items-baseline gap-1">
+					<span className="font-mono text-xl text-white font-medium">
+						{val}
+					</span>
+					<span className="font-mono text-[9px] text-neutral-600">{unit}</span>
+				</div>
+			</div>
+			{/* Progress Bar */}
+			<div className="w-full h-1 bg-neutral-800 overflow-hidden relative">
+				<motion.div
+					className="h-full bg-[#FF4D00]"
+					animate={{ width: `${(val / max) * 100}%` }}
+					transition={{ type: "spring", stiffness: 50 }}
+				/>
+			</div>
+		</div>
+	);
+}
+
+export const SystemSpecs = () => {
+	return (
+		<div className="w-full h-full flex flex-col justify-between p-6 md:p-8 bg-neutral-950/50 border-l border-neutral-800 relative">
+			{/* Header */}
+			<div className="flex items-center justify-between border-b border-neutral-800 pb-4 mb-6">
+				<div className="flex flex-col gap-1">
+					<span className="font-mono text-[9px] text-[#FF4D00] tracking-[0.3em] uppercase">
+						TELEMETRY_DECK
+					</span>
+					<h3 className="font-sans text-sm font-medium text-white tracking-tight">
+						System Diagnostics
+					</h3>
+				</div>
+				<div className="w-2 h-2 bg-[#FF4D00] animate-pulse rounded-full shadow-[0_0_8px_#FF4D00]" />
 			</div>
 
-			{/* Industrial Perimeter Markings (HUD Style) */}
-			<div className="absolute bottom-4 left-8 right-8 flex gap-8 items-center border-t border-neutral-900/30 pt-4">
-				<div className="flex flex-col gap-1">
-					<span className="font-mono text-[8px] text-neutral-700 tracking-[0.3em] uppercase">
-						MODULE_ALPHA_LOCK
-					</span>
-					<span className="font-mono text-[9px] text-neutral-600 tracking-wider">
-						X-233-ALPHA-{SPECS[activeIndex].id}
-					</span>
-				</div>
-				<div className="h-6 w-[1px] bg-neutral-900/50" />
-				<div className="flex flex-col gap-1 text-right ml-auto">
-					<span className="font-mono text-[8px] text-neutral-700 tracking-[0.3em] uppercase">
-						LOC_GATEWAY_COORD
-					</span>
-					<span className="font-mono text-[9px] text-neutral-600 tracking-wider">
-						5.6037 N / 0.1870 W
-					</span>
-				</div>
+			{/* Metrics Grid */}
+			<div className="grid grid-cols-1 gap-3 mb-6">
+				{METRICS.map((m) => (
+					<LiveMetric key={m.label} {...m} />
+				))}
+			</div>
+
+			{/* Terminal Log */}
+			<div className="flex-1 min-h-0 border-t border-neutral-800 pt-4">
+				<span className="block font-mono text-[8px] text-neutral-600 mb-3 tracking-[0.2em]">
+					KERNEL_LOG_OUTPUT
+				</span>
+				<TerminalLog />
+			</div>
+
+			{/* Footer Decorative */}
+			<div className="absolute bottom-0 right-0 p-2 opacity-20">
+				<svg width="40" height="40" viewBox="0 0 40 40">
+					<path
+						d="M40 40L0 40L40 0V40Z"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1"
+					/>
+				</svg>
 			</div>
 		</div>
 	);

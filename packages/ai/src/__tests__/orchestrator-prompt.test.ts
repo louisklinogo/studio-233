@@ -23,7 +23,7 @@ mock.module("ai", () => {
 		stepCountIs: () => true,
 		streamText: async () => ({}),
 		createGoogleGenerativeAI: () => () => ({}),
-		convertToCoreMessages: (m: any) => m,
+		convertToModelMessages: (m: any) => m,
 		tool: (t: any) => t,
 		zodSchema: (s: any) => s,
 	};

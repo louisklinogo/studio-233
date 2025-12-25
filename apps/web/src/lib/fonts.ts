@@ -1,4 +1,13 @@
+import { IBM_Plex_Sans } from "next/font/google";
 import localFont from "next/font/local";
+
+// IBM Plex Sans - The "Industrial/Braun" Choice
+export const ibmPlexSans = IBM_Plex_Sans({
+	subsets: ["latin"],
+	weight: ["300", "400", "500", "600", "700"],
+	variable: "--font-ibm-plex",
+	display: "swap",
+});
 
 // Primary Sans - Technical, Clean, Modern (Replaced Inter with Carlito/Calibri)
 export const carlito = localFont({
@@ -91,7 +100,7 @@ export const jetbrainsMono = localFont({
 });
 
 // Re-export for backward compatibility if needed, or update consumers
-export const focal = carlito; // Aliasing focal to carlito (Calibri replacement)
+export const focal = ibmPlexSans; // Aliasing focal to ibmPlexSans (Industrial choice)
 export const hal = spaceGrotesk; // Aliasing hal to spaceGrotesk
 export const halMono = jetbrainsMono; // Aliasing halMono to jetbrainsMono
 export const commitMono = jetbrainsMono; // Aliasing commitMono to jetbrainsMono

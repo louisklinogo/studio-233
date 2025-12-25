@@ -1,6 +1,6 @@
-import type { CoreMessage } from "ai";
+import type { ModelMessage } from "ai";
 
-export type AgentMessage = CoreMessage;
+export type AgentMessage = ModelMessage;
 
 export type ToolCallInfo = {
 	toolCallId: string;
@@ -13,6 +13,7 @@ export type ToolCallInfo = {
 export type AgentRunOptions = {
 	messages?: AgentMessage[];
 	prompt?: string;
+	abortSignal?: AbortSignal;
 	metadata?: {
 		context?: Record<string, unknown>;
 	};

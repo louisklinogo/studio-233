@@ -2,7 +2,14 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { BotIdClient } from "botid/client";
-import { carlito, outfit, poppins } from "@/lib/fonts";
+import {
+	carlito,
+	ibmPlexSans,
+	jetbrainsMono,
+	outfit,
+	poppins,
+	spaceGrotesk,
+} from "@/lib/fonts";
 import { CoreProviders } from "./core-providers";
 
 const defaultAppUrl =
@@ -129,7 +136,7 @@ export default function RootLayout({
 				/>
 			</head>
 			<body
-				className={`${carlito.variable} ${poppins.variable} ${outfit.variable} font-sans bg-background text-foreground min-h-screen`}
+				className={`${ibmPlexSans.variable} ${carlito.variable} ${poppins.variable} ${outfit.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-background text-foreground min-h-screen`}
 			>
 				<BotIdClient
 					protect={[

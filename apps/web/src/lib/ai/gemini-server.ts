@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { uploadImageBufferToBlob } from "@studio233/ai";
+import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { generateText } from "ai";
 
 // Strict model definitions as requested

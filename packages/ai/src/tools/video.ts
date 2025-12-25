@@ -1,11 +1,5 @@
 import { z } from "zod";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
-import {
-	captionOverlayWorkflow,
-	textToVideoWorkflow,
-	videoGifWorkflow,
-	videoStitchWorkflow,
-} from "../workflows/video";
 import { createTool } from "./factory";
 
 export const textToVideoTool = createTool({
@@ -19,6 +13,7 @@ export const textToVideoTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { textToVideoWorkflow } = await import("../workflows/video");
 		const result = await textToVideoWorkflow.run(context);
 
 		const command =
@@ -60,6 +55,7 @@ export const videoStitchTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { videoStitchWorkflow } = await import("../workflows/video");
 		const result = await videoStitchWorkflow.run(context);
 
 		return {
@@ -88,6 +84,7 @@ export const videoGifTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { videoGifWorkflow } = await import("../workflows/video");
 		const result = await videoGifWorkflow.run(context);
 
 		return {
@@ -121,6 +118,7 @@ export const captionOverlayTool = createTool({
 	}),
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
+		const { captionOverlayWorkflow } = await import("../workflows/video");
 		const result = await captionOverlayWorkflow.run(context);
 
 		return {

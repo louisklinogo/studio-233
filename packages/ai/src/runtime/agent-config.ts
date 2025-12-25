@@ -58,6 +58,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		tools: [
 			"visionAnalysis",
 			"visionAnalysisRef",
+			"canvasTextToImage",
 			"backgroundRemoval",
 			"objectIsolation",
 			"imageReframe",

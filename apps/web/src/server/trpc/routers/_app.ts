@@ -1,5 +1,5 @@
 import { createFalClient } from "@fal-ai/client";
-import { textToImageWorkflow } from "@studio233/ai";
+import { textToImageWorkflow } from "@studio233/ai/workflows";
 import { tracked } from "@trpc/server";
 import sharp from "sharp";
 import { z } from "zod";

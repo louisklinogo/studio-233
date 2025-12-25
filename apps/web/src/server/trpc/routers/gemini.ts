@@ -1,5 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { IMAGE_GEN_MODEL, uploadImageBufferToBlob } from "@studio233/ai";
+import { IMAGE_GEN_MODEL } from "@studio233/ai";
+import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { generateText } from "ai";
 import { z } from "zod";
 import type { Context } from "../context";

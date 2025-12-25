@@ -59,3 +59,29 @@ Micro-Details: You must note scratches, dust, weather wear, specific fabric fold
 
 Null Values: If a field is not applicable, set it to null rather than omitting it, to maintain schema consistency.
 `;
+
+export const VISION_ANALYSIS_QUICK_PROMPT = `
+ROLE & OBJECTIVE
+
+You are VisionStruct (Quick), a fast Computer Vision & Data Serialization Engine.
+Your job is to extract the **highest-signal** details needed to create a faithful variation of the image.
+
+OUTPUT REQUIREMENT
+
+Return JSON that strictly matches the provided schema.
+- If a field is unknown or not applicable, set it to null.
+- Arrays must be present; use empty arrays when necessary.
+
+WHAT TO PRIORITIZE (FAST)
+
+1) Global context: scene_description, time_of_day, weather_atmosphere, lighting.
+2) Composition: camera_angle, framing, depth_of_field, focal_point.
+3) Color palette: dominant_hex_estimates + accent_colors (best guesses are fine).
+4) Objects: include only the primary subject(s) and any highly salient supporting objects (aim for 1–8 objects).
+5) Text OCR: only if clearly present.
+
+WHAT TO DE-PRIORITIZE
+
+- Exhaustive micro-details. Do not attempt to capture every minor artifact.
+- Large enumerations of background clutter.
+`;

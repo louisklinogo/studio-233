@@ -1,5 +1,5 @@
 import { z } from "zod";
-import {
+import type {
 	imageAnalyzerWorkflow,
 	moodboardWorkflow,
 	siteExtractorWorkflow,
@@ -14,8 +14,10 @@ export const webSearchTool = createTool({
 		query: z.string().min(3),
 		maxResults: z.number().min(1).max(10).default(5),
 	}),
-	outputSchema: webSearchWorkflow.outputSchema!,
-	execute: async ({ context }) => webSearchWorkflow.run(context),
+	execute: async ({ context }) => {
+		const { webSearchWorkflow } = await import("../workflows/research");
+		return webSearchWorkflow.run(context);
+	},
 });
 
 export const siteExtractorTool = createTool({
@@ -25,8 +27,10 @@ export const siteExtractorTool = createTool({
 		url: z.string().url(),
 		maxLength: z.number().min(200).max(5000).default(1500),
 	}),
-	outputSchema: siteExtractorWorkflow.outputSchema!,
-	execute: async ({ context }) => siteExtractorWorkflow.run(context),
+	execute: async ({ context }) => {
+		const { siteExtractorWorkflow } = await import("../workflows/research");
+		return siteExtractorWorkflow.run(context);
+	},
 });
 
 export const imageAnalyzerTool = createTool({
@@ -36,8 +40,10 @@ export const imageAnalyzerTool = createTool({
 	inputSchema: z.object({
 		imageUrl: z.string().url(),
 	}),
-	outputSchema: imageAnalyzerWorkflow.outputSchema!,
-	execute: async ({ context }) => imageAnalyzerWorkflow.run(context),
+	execute: async ({ context }) => {
+		const { imageAnalyzerWorkflow } = await import("../workflows/research");
+		return imageAnalyzerWorkflow.run(context);
+	},
 });
 
 export const moodboardTool = createTool({
@@ -49,6 +55,8 @@ export const moodboardTool = createTool({
 		goal: z.string().min(5),
 		format: z.enum(["markdown", "json"]).default("markdown"),
 	}),
-	outputSchema: moodboardWorkflow.outputSchema!,
-	execute: async ({ context }) => moodboardWorkflow.run(context),
+	execute: async ({ context }) => {
+		const { moodboardWorkflow } = await import("../workflows/research");
+		return moodboardWorkflow.run(context);
+	},
 });

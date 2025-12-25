@@ -1,10 +1,10 @@
+import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import {
 	backgroundRemovalWorkflow,
 	imageReframeWorkflow,
 	imageUpscaleWorkflow,
 	paletteExtractionWorkflow,
-	uploadImageBufferToBlob,
-} from "@studio233/ai";
+} from "@studio233/ai/workflows";
 import sharp from "sharp";
 import { z } from "zod";
 import type { MediaFile } from "@/lib/studio-workflow/plugins/types";

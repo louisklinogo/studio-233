@@ -1,5 +1,3 @@
-import { emitLangfuseEvent } from "../telemetry/langfuse";
-
 type LogLevel = "info" | "warn" | "error";
 
 function log(
@@ -15,9 +13,6 @@ function log(
 	} else {
 		console.info(payload);
 	}
-
-	// Fire-and-forget to Langfuse if configured
-	emitLangfuseEvent(event, level, meta);
 }
 
 export const logger = {

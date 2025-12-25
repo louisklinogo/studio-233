@@ -1,4 +1,4 @@
-import { tool as createAiTool, type ToolCallOptions } from "ai";
+import { tool as createAiTool, type ToolExecutionOptions } from "ai";
 import { z } from "zod";
 import { batchJobPlannerTool } from "../tools/batch";
 import { canvasTextToImageTool } from "../tools/canvas";
@@ -76,7 +76,7 @@ function wrapTool(
 	if (def.execute) {
 		toolOptions.execute = async (
 			parameters: z.infer<typeof def.inputSchema>,
-			toolCallOptions?: ToolCallOptions,
+			toolCallOptions?: ToolExecutionOptions,
 		) => {
 			const startedAt = Date.now();
 			// Ensure parameters is at least an empty object for safeParse
