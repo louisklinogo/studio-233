@@ -27,6 +27,13 @@ export const workspaceRouter = router({
 			z.object({
 				name: z.string().min(1).max(100),
 				description: z.string().max(500).optional(),
+				brandProfile: z
+					.object({
+						primaryColor: z.string(),
+						accentColor: z.string(),
+						fontFamily: z.string(),
+					})
+					.optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -70,6 +77,7 @@ export const workspaceRouter = router({
 				data: {
 					name: input.name,
 					description: input.description,
+					brandProfile: input.brandProfile,
 					slug,
 					userId: session.user.id,
 				},
@@ -140,6 +148,13 @@ export const workspaceRouter = router({
 				id: z.string(),
 				name: z.string().min(1).max(100).optional(),
 				description: z.string().max(500).optional(),
+				brandProfile: z
+					.object({
+						primaryColor: z.string(),
+						accentColor: z.string(),
+						fontFamily: z.string(),
+					})
+					.optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -191,6 +206,7 @@ export const workspaceRouter = router({
 				data: {
 					name: input.name,
 					description: input.description,
+					brandProfile: input.brandProfile,
 					slug,
 				},
 			});
@@ -227,6 +243,63 @@ export const workspaceRouter = router({
 			// Cascade delete handled by Prisma schema
 			return await prisma.workspace.delete({
 				where: { id: input.id },
+			});
+		}),
+
+	/**
+	 * Get all brand assets for a workspace
+	 */
+	getBrandAssets: publicProcedure
+		.input(z.object({ workspaceId: z.string() }))
+		.query(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+			if (!session) {
+				throw new TRPCError({ code: "UNAUTHORIZED" });
+			}
+
+			return await prisma.asset.findMany({
+				where: {
+					workspaceId: input.workspaceId,
+					isBrandAsset: true,
+				},
+				orderBy: { createdAt: "desc" },
+			});
+		}),
+
+	/**
+	 * Toggle the brand asset flag on an asset
+	 */
+	toggleBrandAsset: publicProcedure
+		.input(
+			z.object({
+				assetId: z.string(),
+				isBrandAsset: z.boolean(),
+			}),
+		)
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+			if (!session) {
+				throw new TRPCError({ code: "UNAUTHORIZED" });
+			}
+
+			// Verify ownership via workspace
+			const asset = await prisma.asset.findUnique({
+				where: { id: input.assetId },
+				include: { workspace: true },
+			});
+
+			if (!asset || asset.workspace?.userId !== session.user.id) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Asset not found or unauthorized",
+				});
+			}
+
+			return await prisma.asset.update({
+				where: { id: input.assetId },
+				data: { isBrandAsset: input.isBrandAsset },
 			});
 		}),
 });

@@ -70,6 +70,7 @@ async function downloadImage(url: string): Promise<Buffer> {
 
 import { getVideoModelById, VIDEO_MODELS } from "@/lib/video-models";
 import { agentRouter } from "./agent";
+import { assetRouter } from "./asset";
 import { projectRouter } from "./project";
 import { workflowRouter } from "./workflow";
 import { workflowDefinitionRouter } from "./workflow-definition";
@@ -77,6 +78,7 @@ import { workspaceRouter } from "./workspace";
 
 export const appRouter = router({
 	agent: agentRouter,
+	asset: assetRouter,
 	project: projectRouter,
 	workspace: workspaceRouter,
 	workflow: workflowRouter,

@@ -51,6 +51,7 @@ import { VideoOverlays } from "@/components/canvas/VideoOverlays";
 import { ZoomControls } from "@/components/canvas/ZoomControls";
 import { GenerationsIndicator } from "@/components/generations-indicator";
 import { Logo, SpinnerIcon } from "@/components/icons";
+import { BrandPanel } from "@/components/studio/brand/BrandPanel";
 import {
 	CanvasPalette,
 	type ToolType as CreativeToolType,
@@ -119,6 +120,8 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 	const {
 		isChatOpen,
 		setIsChatOpen,
+		isBrandArchiveOpen,
+		setIsBrandArchiveOpen,
 		isSettingsDialogOpen,
 		setIsSettingsDialogOpen,
 		showGrid,
@@ -768,16 +771,79 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 
 		// Get drop position relative to the stage
 		const stage = stageRef.current;
+		let dropPosition: { x: number; y: number } | undefined = undefined;
+
 		if (stage) {
 			const container = stage.container();
 			const rect = container.getBoundingClientRect();
-			const dropPosition = {
+			dropPosition = {
 				x: e.clientX - rect.left,
 				y: e.clientY - rect.top,
 			};
+		}
+
+		// Handle Studio Assets (from Brand Panel)
+		const studioAssetData = e.dataTransfer.getData("application/studio-asset");
+		if (studioAssetData) {
+			try {
+				const asset = JSON.parse(studioAssetData);
+				// Reuse file upload logic with the asset URL
+				const img = new window.Image();
+				img.crossOrigin = "anonymous";
+				img.onload = () => {
+					const aspectRatio = img.width / img.height;
+					const maxSize = 300;
+					let width = maxSize;
+					let height = maxSize / aspectRatio;
+
+					if (height > maxSize) {
+						height = maxSize;
+						width = maxSize * aspectRatio;
+					}
+
+					let x, y;
+					if (dropPosition) {
+						x = (dropPosition.x - viewport.x) / viewport.scale - width / 2;
+						y = (dropPosition.y - viewport.y) / viewport.scale - height / 2;
+					} else {
+						const centered = centerInViewport(
+							viewport,
+							canvasSize,
+							width,
+							height,
+						);
+						x = centered.x;
+						y = centered.y;
+					}
+
+					setImages((prev) => [
+						...prev,
+						{
+							id: `brand-${asset.id}-${Date.now()}`,
+							src: asset.url,
+							x,
+							y,
+							width,
+							height,
+							rotation: 0,
+							meta: {
+								assetId: asset.id,
+								isBrandAsset: true,
+							},
+						},
+					]);
+					saveToHistory();
+				};
+				img.src = asset.url;
+				return;
+			} catch (err) {
+				console.error("Failed to handle studio asset drop:", err);
+			}
+		}
+
+		// Handle Files
+		if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
 			handleFileUpload(e.dataTransfer.files, dropPosition);
-		} else {
-			handleFileUpload(e.dataTransfer.files);
 		}
 	};
 
@@ -1992,6 +2058,18 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 				)}
 
 				{/* Main content */}
+				{/* Brand Archive - slide in from left */}
+				<AnimatePresence>
+					{isBrandArchiveOpen && project?.workspaceId && (
+						<BrandPanel
+							isOpen={isBrandArchiveOpen}
+							onClose={() => setIsBrandArchiveOpen(false)}
+							workspaceId={project.workspaceId}
+							className="h-[calc(100%-2rem)] my-4 ml-4"
+						/>
+					)}
+				</AnimatePresence>
+
 				<main
 					ref={containerRef}
 					className="flex-1 relative flex items-center justify-center min-w-0"
@@ -2417,6 +2495,8 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					<ChatBar
 						isChatOpen={isChatOpen}
 						onToggleChat={() => setIsChatOpen(!isChatOpen)}
+						isArchiveOpen={isBrandArchiveOpen}
+						onToggleArchive={() => setIsBrandArchiveOpen(!isBrandArchiveOpen)}
 					/>
 					<ZoomControls
 						viewport={viewport}
