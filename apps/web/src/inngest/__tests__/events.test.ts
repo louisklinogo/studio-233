@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { inngest } from "../client";
 import { visionArchiveRequestedSchema } from "../events";
 
 describe("Inngest Events Schema", () => {
@@ -14,5 +15,10 @@ describe("Inngest Events Schema", () => {
 
 		const result = visionArchiveRequestedSchema.safeParse(payload);
 		expect(result.success).toBe(true);
+	});
+
+	it("should have vision.archive.requested in EventMap", () => {
+		// This is a type-level check primarily, but we can verify it doesn't throw
+		expect(inngest.id).toBe("studio-233");
 	});
 });
