@@ -1,7 +1,7 @@
 import { serve } from "inngest/next";
 import type { NextRequest } from "next/server";
 import { inngest } from "@/inngest/client";
-
+import { archiveVisionResult } from "@/inngest/functions/archive-vision-result";
 import { brandIngestion } from "@/inngest/functions/brand-ingestion";
 import { processStudioWorkflow } from "@/inngest/functions/studio/process-workflow";
 
@@ -13,7 +13,7 @@ type AppRouteHandler = (
 
 const handlers = serve({
 	client: inngest,
-	functions: [processStudioWorkflow, brandIngestion],
+	functions: [processStudioWorkflow, brandIngestion, archiveVisionResult],
 });
 
 const adapt = <T extends keyof typeof handlers>(method: T) => {
