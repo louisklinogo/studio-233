@@ -6,7 +6,7 @@ import {
 import { generateThreadTitle } from "@studio233/ai/runtime/titling";
 import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
-import { prisma as db } from "@studio233/db";
+import { prisma as db, Prisma } from "@studio233/db";
 import { list } from "@vercel/blob";
 import { waitUntil } from "@vercel/functions";
 import { convertToModelMessages } from "ai";
@@ -16,7 +16,13 @@ export async function POST(req: Request) {
 	try {
 		const { messages, canvas, maxSteps, threadId } = await req.json();
 		const headers = new Headers(req.headers);
-		const session = await getSessionWithRetry(headers);
+
+		// 1. Parallel Read: Start Session and Thread fetch immediately
+		const sessionPromise = getSessionWithRetry(headers);
+		let threadPromise: Promise<any> | undefined;
+		if (threadId) {
+			threadPromise = db.agentThread.findUnique({ where: { id: threadId } });
+		}
 
 		// Convert to CoreMessage[] directly - convertToModelMessages handles tool messages
 		const coreMessages = await convertToModelMessages(messages as any);
@@ -178,19 +184,40 @@ export async function POST(req: Request) {
 
 		const latestImageUrl = await ingestImagesInHistory(coreMessages);
 
+		// Await session now
+		const session = await sessionPromise;
+
 		let currentThreadId = threadId;
+		const lastMessage = coreMessages[coreMessages.length - 1];
+		const userMessageContent =
+			lastMessage?.role === "user" ? lastMessage.content : null;
 
 		// 1. Handle Thread Creation/Validation
 		if (!currentThreadId) {
-			// Create new thread with immediate fallback
+			// Transaction: Create Thread + First Message
 			const initialTitle =
 				messages[0]?.content?.slice(0, 50) || "New Conversation";
-			const thread = await db.agentThread.create({
-				data: {
-					title: initialTitle,
-					userId: session?.user?.id,
-				},
+
+			const thread = await db.$transaction(async (tx) => {
+				const t = await tx.agentThread.create({
+					data: {
+						title: initialTitle,
+						userId: session?.user?.id,
+					},
+				});
+
+				if (userMessageContent) {
+					await tx.agentMessage.create({
+						data: {
+							threadId: t.id,
+							role: "USER",
+							content: userMessageContent as any,
+						},
+					});
+				}
+				return t;
 			});
+
 			currentThreadId = thread.id;
 
 			// Trigger AI Title Generation in background
@@ -208,9 +235,7 @@ export async function POST(req: Request) {
 			}
 		} else {
 			// If provided, ensure it exists and user has access (if session exists)
-			const thread = await db.agentThread.findUnique({
-				where: { id: currentThreadId },
-			});
+			const thread = await threadPromise;
 
 			if (!thread) {
 				return new Response(JSON.stringify({ error: "Thread not found" }), {
@@ -227,19 +252,17 @@ export async function POST(req: Request) {
 					status: 401,
 				});
 			}
-		}
 
-		// 2. Persist the NEW User Message
-		// We assume the last message in the array is the new one from the user
-		const lastMessage = coreMessages[coreMessages.length - 1];
-		if (lastMessage && lastMessage.role === "user") {
-			await db.agentMessage.create({
-				data: {
-					threadId: currentThreadId,
-					role: "USER",
-					content: lastMessage.content as any, // Store strict content
-				},
-			});
+			// Persist the NEW User Message (outside transaction, single op)
+			if (userMessageContent) {
+				await db.agentMessage.create({
+					data: {
+						threadId: currentThreadId,
+						role: "USER",
+						content: userMessageContent as any,
+					},
+				});
+			}
 		}
 
 		// 3. Run Agent Stream
@@ -399,6 +422,22 @@ export async function POST(req: Request) {
 		});
 	} catch (error) {
 		console.error("Chat API Error:", error);
+
+		if (
+			error instanceof Prisma.PrismaClientKnownRequestError &&
+			["P1001", "P1002", "P2024"].includes(error.code)
+		) {
+			return new Response(
+				JSON.stringify({ error: "Service Unavailable: Database overloaded" }),
+				{
+					status: 503,
+					headers: {
+						"Content-Type": "application/json",
+						"Retry-After": "5", // Retry in 5 seconds
+					},
+				},
+			);
+		}
 
 		return new Response(JSON.stringify({ error: "Internal Server Error" }), {
 			status: 500,
