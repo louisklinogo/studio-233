@@ -8,7 +8,9 @@ import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma as db } from "@studio233/db";
 import { list } from "@vercel/blob";
-import { convertToModelMessages, waitUntil } from "ai";
+import { waitUntil } from "@vercel/functions";
+import { convertToModelMessages } from "ai";
+import { inngest } from "@/inngest/client";
 
 export async function POST(req: Request) {
 	try {
@@ -52,6 +54,14 @@ export async function POST(req: Request) {
 			mediaType: string,
 		): Promise<string | null> => {
 			try {
+				// Optimization: If it's already a blob URL, just return it.
+				if (
+					base64.startsWith("https://") &&
+					base64.includes(".blob.vercel-storage.com")
+				) {
+					return base64;
+				}
+
 				const parsed = parseBase64DataUrl(
 					base64.startsWith("data:")
 						? base64
@@ -92,52 +102,77 @@ export async function POST(req: Request) {
 		const ingestImagesInHistory = async (
 			msgs: any[],
 		): Promise<string | null> => {
-			let latestUrl: string | null = null;
+			const ingestionPromises: Promise<void>[] = [];
 
+			// 1. Launch all ingestions in parallel
 			for (const msg of msgs) {
 				if (!msg.content || !Array.isArray(msg.content)) continue;
 
 				for (const part of msg.content) {
-					// Handle 'file' parts (often sent by clients for attachments)
+					// Handle 'file' parts
 					if (
 						part.type === "file" &&
 						typeof part.mediaType === "string" &&
 						part.mediaType.startsWith("image/")
 					) {
 						const data = part.data;
-						if (typeof data !== "string") continue;
-
-						if (data.startsWith("http")) {
-							latestUrl = data;
-						} else if (
-							data.startsWith("data:") ||
-							(/^[A-Za-z0-9+/=]+$/.test(data) && data.length > 100)
+						if (
+							typeof data === "string" &&
+							(data.startsWith("data:") ||
+								(/^[A-Za-z0-9+/=]+$/.test(data) && data.length > 100))
 						) {
-							const url = await ingestBase64(data, part.mediaType);
-							if (url) {
-								part.data = url; // Swap in the message history
-								latestUrl = url;
-							}
+							ingestionPromises.push(
+								ingestBase64(data, part.mediaType).then((url) => {
+									if (url) part.data = url;
+								}),
+							);
 						}
 					}
 
-					// Handle 'image' parts (standard AI SDK format)
+					// Handle 'image' parts
 					if (part.type === "image") {
 						const image = part.image;
 						if (typeof image === "string" && image.startsWith("data:")) {
-							const url = await ingestBase64(image, "image/png");
-							if (url) {
-								part.image = url; // Swap in the message history
-								latestUrl = url;
-							}
-						} else if (typeof image === "string" && image.startsWith("http")) {
-							latestUrl = image;
-						} else if (image instanceof URL) {
-							latestUrl = image.toString();
+							ingestionPromises.push(
+								ingestBase64(image, "image/png").then((url) => {
+									if (url) part.image = url;
+								}),
+							);
 						}
 					}
 				}
 			}
+
+			// 2. Wait for all ingestions to complete
+			if (ingestionPromises.length > 0) {
+				await Promise.all(ingestionPromises);
+			}
+
+			// 3. Deterministically find the latest URL by scanning the array in order
+			let latestUrl: string | null = null;
+			for (const msg of msgs) {
+				if (!msg.content || !Array.isArray(msg.content)) continue;
+				for (const part of msg.content) {
+					if (
+						part.type === "file" &&
+						typeof part.data === "string" &&
+						part.data.startsWith("http")
+					) {
+						latestUrl = part.data;
+					}
+					if (part.type === "image") {
+						if (
+							typeof part.image === "string" &&
+							part.image.startsWith("http")
+						) {
+							latestUrl = part.image;
+						} else if (part.image instanceof URL) {
+							latestUrl = part.image.toString();
+						}
+					}
+				}
+			}
+
 			return latestUrl;
 		};
 
@@ -350,6 +385,7 @@ export async function POST(req: Request) {
 					threadId: currentThreadId,
 					runtimeContext: {
 						runAgent: generateAgentResponse,
+						inngest,
 					},
 				},
 			},

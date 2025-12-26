@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { list } from "@vercel/blob";
 import { generateObject, type LanguageModel } from "ai";
 
 import { getEnv } from "../config";
@@ -15,14 +14,10 @@ import {
 	visionAnalysisInputSchema,
 	visionAnalysisOutputSchema,
 } from "../schemas/vision-analysis";
-import { uploadImageBufferToBlob } from "../utils/blob-storage";
 import { logger } from "../utils/logger";
 import { withDevTools } from "../utils/model";
 import { withTimeout } from "../utils/timeout";
-import {
-	getLatestBlobUrl,
-	resolveOrCreateSourceSnapshot,
-} from "../utils/vision-ops";
+import { getLatestBlobUrl } from "../utils/vision-ops";
 
 const env = getEnv();
 
@@ -53,6 +48,10 @@ export type VisionAnalysisWorkflowOptions = {
 	timeouts?: Partial<VisionAnalysisTimeouts>;
 	logContext?: Record<string, unknown>;
 	model?: LanguageModel;
+	onResult?: (
+		result: VisionAnalysisResult,
+		imageHash: string,
+	) => Promise<void> | void;
 };
 
 async function loadCachedVisionAnalysis(
@@ -145,13 +144,12 @@ export async function runVisionAnalysisWorkflow(
 		return null;
 	});
 
-	// 2. Start Generation Promise (Don't await snapshot yet)
+	// 2. Start Generation Promise
 	const generationPromise = (async (): Promise<VisionAnalysisResult> => {
 		const key = env.googleApiKey;
 		if (!key) throw new Error("Google API key required for vision analysis");
 
-		// Trigger snapshot in background, don't wait for it to call Gemini
-		// Note: Gemini can consume the original URL directly if public
+		// Use original URL directly
 		const analysisImageUrl = input.imageUrl;
 
 		let model: LanguageModel;
@@ -206,35 +204,19 @@ export async function runVisionAnalysisWorkflow(
 			...logContext,
 		});
 
-		// BACKGROUND: Persistence & Snapshotting (Non-blocking)
-		const backgroundTasks = (async () => {
-			const jsonBuffer = Buffer.from(JSON.stringify(result.object, null, 2));
-			await Promise.allSettled([
-				// Persist metadata
-				uploadImageBufferToBlob(jsonBuffer, {
-					contentType: "application/json",
-					prefix: `vision/metadata/${imageHash}`,
-					abortSignal: options.abortSignal,
-					timeoutMs: timeouts.uploadMs,
-				}),
-				uploadImageBufferToBlob(jsonBuffer, {
-					contentType: "application/json",
-					prefix: `vision/metadata/${imageHash}`,
-					filename: "latest.json",
-					abortSignal: options.abortSignal,
-					timeoutMs: timeouts.uploadMs,
-				}),
-				// Create source snapshot if missing
-				resolveOrCreateSourceSnapshot(imageHash, input.imageUrl, {
-					timeoutMs: timeouts,
-					abortSignal: options.abortSignal,
-				}),
-			]);
-		})();
-
-		// Attach to context if we had one, otherwise just let it run
-		if ((globalThis as any).waitUntil) {
-			(globalThis as any).waitUntil(backgroundTasks);
+		// TRIGGER ASYNC ARCHIVAL (Off-path)
+		if (options.onResult) {
+			try {
+				const trigger = options.onResult(parsedResult, imageHash);
+				if (trigger instanceof Promise) {
+					// Fire and forget
+					trigger.catch((e) =>
+						console.error("Failed to trigger vision archival", e),
+					);
+				}
+			} catch (e) {
+				console.error("Failed to call onResult callback", e);
+			}
 		}
 
 		return parsedResult;

@@ -93,6 +93,19 @@ export const visionAnalysisTool = createTool({
 							? ((runtimeContext as any).threadId as string | undefined)
 							: undefined,
 				},
+				onResult: (result, imageHash) => {
+					const inngest = (runtimeContext as any)?.inngest;
+					if (inngest) {
+						return inngest.send({
+							name: "vision.archive.requested",
+							data: {
+								imageUrl,
+								imageHash,
+								metadata: result as any,
+							},
+						});
+					}
+				},
 			},
 		);
 	},
