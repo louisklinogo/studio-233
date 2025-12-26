@@ -5,11 +5,11 @@
 - [x] **Task 1.2: Register Event in Client** - Update `EventMap` in `apps/web/src/inngest/client.ts` to include the new event (2ec2a54)
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Inngest Schema & Event Definition' (Protocol in workflow.md) (7dc039e)
 
-#### Phase 2: Asynchronous Archival Function
-- [ ] **Task 2.1: Implement Archive Function** - Create `apps/web/src/inngest/functions/archive-vision-result.ts` to handle the download/upload logic.
-- [ ] **Task 2.2: Register Function** - Ensure the new function is registered in the Inngest handler (likely `apps/web/src/app/api/inngest/route.ts`).
-- [ ] **Task 2.3: Red/Green TDD** - Write a test for the archival logic and implement to pass.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Asynchronous Archival Function' (Protocol in workflow.md)
+#### Phase 2: Asynchronous Archival Function [checkpoint: b43c2ad]
+- [x] **Task 2.1: Implement Archive Function** - Create `apps/web/src/inngest/functions/archive-vision-result.ts` to handle the download/upload logic (0a043c8)
+- [x] **Task 2.2: Register Function** - Ensure the new function is registered in the Inngest handler (likely `apps/web/src/app/api/inngest/route.ts`) (0a043c8)
+- [x] **Task 2.3: Red/Green TDD** - Write a test for the archival logic and implement to pass (0a043c8)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Asynchronous Archival Function' (Protocol in workflow.md) (b43c2ad)
 
 #### Phase 3: Workflow Hardening
 - [ ] **Task 3.1: Refactor Vision Workflow** - Update `packages/ai/src/workflows/vision-analysis.ts` to implement the parallel race and trigger the Inngest event.
