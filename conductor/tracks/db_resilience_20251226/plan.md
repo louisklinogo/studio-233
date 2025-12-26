@@ -11,17 +11,17 @@ Refactor the database package to handle connection pooling correctly across HMR 
   - Add a `disconnect()` function to export, ensuring the pool is drained correctly for testing or edge cases.
 - [x] **Task 3: Pool Parameter Optimization** [d1afbab]
   - Review and adjust `max`, `idleTimeoutMillis`, and `connectionTimeoutMillis` based on Neon's "Transaction Mode" recommendations.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)** [checkpoint: 18bf994]
 
 ## Phase 2: Chat API Hardening
 Optimize the Chat API route to reduce connection thrashing and handle timeouts gracefully.
 
-- [ ] **Task 1: Parallel Read Implementation**
+- [x] **Task 1: Parallel Read Implementation** [c8f977a]
   - In `apps/web/src/app/api/chat/route.ts`, refactor `getSessionWithRetry` and `db.agentThread.findUnique` to execute via `Promise.all`.
-- [ ] **Task 2: Transactional Write Implementation**
+- [x] **Task 2: Transactional Write Implementation** [c8f977a]
   - Wrap initial thread creation and message persistence in a `$transaction`.
   - Ensure subsequent `onToolCall` and `onFinish` updates use optimized write patterns.
-- [ ] **Task 3: Resilient Error Handling**
+- [x] **Task 3: Resilient Error Handling** [c8f977a]
   - Implement a specialized error handler for database connection/timeout errors.
   - Map specific Prisma/PG error codes to a `503 Service Unavailable` response.
 - [ ] **Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)**
