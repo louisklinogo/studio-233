@@ -11,8 +11,8 @@
 - [x] **Task 2.3: Red/Green TDD** - Write a test for the archival logic and implement to pass (0a043c8)
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Asynchronous Archival Function' (Protocol in workflow.md) (b43c2ad)
 
-#### Phase 3: Workflow Hardening
-- [ ] **Task 3.1: Refactor Vision Workflow** - Update `packages/ai/src/workflows/vision-analysis.ts` to implement the parallel race and trigger the Inngest event.
-- [ ] **Task 3.2: Robust Error Handling** - Ensure cache failures and background trigger failures are swallowed and logged, not thrown.
-- [ ] **Task 3.3: Red/Green TDD** - Update existing vision analysis tests to verify the parallel execution and resilience.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Workflow Hardening' (Protocol in workflow.md)
+#### Phase 3: Workflow Hardening [checkpoint: 5f73824]
+- [x] **Task 3.1: Refactor Vision Workflow** - Update `packages/ai/src/workflows/vision-analysis.ts` to implement the parallel race and trigger the Inngest event (d5ec4a6)
+- [x] **Task 3.2: Robust Error Handling** - Ensure cache failures and background trigger failures are swallowed and logged, not thrown (d5ec4a6)
+- [x] **Task 3.3: Red/Green TDD** - Update existing vision analysis tests to verify the parallel execution and resilience (d5ec4a6)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Workflow Hardening' (Protocol in workflow.md) (5f73824)
