@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const workflowRequestedEvent = "studio.workflow.requested" as const;
 export const brandKnowledgeIngestedEvent = "brand.knowledge.ingested" as const;
+export const processFashionItemEvent = "studio/process-fashion-item" as const;
+export const visionArchiveRequestedEvent = "vision.archive.requested" as const;
 
 export const brandKnowledgeIngestedSchema = z.object({
 	workspaceId: z.string(),
@@ -12,6 +14,16 @@ export const brandKnowledgeIngestedSchema = z.object({
 
 export type BrandKnowledgeIngested = z.infer<
 	typeof brandKnowledgeIngestedSchema
+>;
+
+export const visionArchiveRequestedSchema = z.object({
+	imageUrl: z.string().url(),
+	imageHash: z.string(),
+	metadata: z.record(z.string(), z.unknown()),
+});
+
+export type VisionArchiveRequested = z.infer<
+	typeof visionArchiveRequestedSchema
 >;
 
 export const workflowRequestedSchema = z.object({
@@ -59,3 +71,13 @@ export const workflowRequestedSchema = z.object({
 });
 
 export type WorkflowRequested = z.infer<typeof workflowRequestedSchema>;
+
+export const processFashionItemSchema = z.object({
+	jobId: z.string(),
+	imageUrl: z.string().url(),
+	referenceImage: z.string(),
+	timestamp: z.number(),
+	maxAttempts: z.number().optional(),
+});
+
+export type ProcessFashionItem = z.infer<typeof processFashionItemSchema>;
