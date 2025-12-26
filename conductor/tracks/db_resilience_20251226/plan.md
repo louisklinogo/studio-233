@@ -24,15 +24,15 @@ Optimize the Chat API route to reduce connection thrashing and handle timeouts g
 - [x] **Task 3: Resilient Error Handling** [c8f977a]
   - Implement a specialized error handler for database connection/timeout errors.
   - Map specific Prisma/PG error codes to a `503 Service Unavailable` response.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)** [checkpoint: a7d0de1]
 
 ## Phase 3: Verification & Observability
 Ensure the fixes are effective and provide ongoing visibility into connection health.
 
-- [ ] **Task 1: HMR Leak Verification**
+- [x] **Task 1: HMR Leak Verification** [a7d0de1]
   - Perform stress test (20+ file saves) while monitoring Neon connection logs.
-- [ ] **Task 2: Integration Testing**
+- [x] **Task 2: Integration Testing** [88c5814]
   - Add/Update a test script to simulate concurrent Chat API and Inngest requests to verify no connection deadlocks.
-- [ ] **Task 3: Logging Standardization**
+- [x] **Task 3: Logging Standardization** [88c5814]
   - Ensure slow query logging is consistent and informative in development.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)** [checkpoint: 628aa60]
