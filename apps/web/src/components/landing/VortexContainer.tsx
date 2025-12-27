@@ -54,7 +54,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 		>
 			<div
 				ref={viewportRef}
-				className="h-screen w-full overflow-hidden"
+				className="relative h-screen w-full overflow-hidden"
 				data-testid="vortex-viewport"
 			>
 				{children}
