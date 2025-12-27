@@ -1,11 +1,11 @@
-"use client";
-
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useEffect, useRef, useState } from "react";
+import type { VortexHeroHandle } from "./VortexHero";
 
 interface VortexContainerProps {
 	children?: React.ReactNode;
+	heroRef?: React.RefObject<VortexHeroHandle | null>;
 }
 
 /**
@@ -14,6 +14,7 @@ interface VortexContainerProps {
  */
 export const VortexContainer: React.FC<VortexContainerProps> = ({
 	children,
+	heroRef,
 }) => {
 	const [mounted, setMounted] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
@@ -29,8 +30,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 
 		const ctx = gsap.context(() => {
 			// Main Orchestration Timeline
-			// The pin: true here ensures the viewport stays fixed while we scroll through the wrapper's height
-			gsap.timeline({
+			const tl = gsap.timeline({
 				scrollTrigger: {
 					trigger: wrapperRef.current,
 					start: "top top",
@@ -41,10 +41,50 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 					invalidateOnRefresh: true,
 				},
 			});
+
+			// --- Phase 2: The Curtain Split ---
+			if (heroRef?.current) {
+				const { studio, plus, numeric } = heroRef.current;
+
+				if (studio && plus && numeric) {
+					// 1. The "+" rotates 90 degrees (Quarter turn)
+					tl.to(
+						plus,
+						{
+							rotation: 90,
+							duration: 1,
+							ease: "power2.inOut",
+						},
+						0,
+					);
+
+					// 2. "STUDIO" moves LEFT (framing the content)
+					tl.to(
+						studio,
+						{
+							x: -window.innerWidth * 0.4, // Move towards left edge
+							duration: 1,
+							ease: "power2.inOut",
+						},
+						0,
+					);
+
+					// 3. "233" moves RIGHT (framing the content)
+					tl.to(
+						numeric,
+						{
+							x: window.innerWidth * 0.4, // Move towards right edge
+							duration: 1,
+							ease: "power2.inOut",
+						},
+						0,
+					);
+				}
+			}
 		}, wrapperRef);
 
 		return () => ctx.revert();
-	}, [mounted]);
+	}, [mounted, heroRef]);
 
 	return (
 		<div
