@@ -1,9 +1,25 @@
+import {
+	archiveVisionResult,
+	brandIngestion,
+	createProcessStudioWorkflow,
+	inngest,
+	processFashionItem,
+	processWorkflowRun,
+} from "@studio233/inngest";
 import { serve } from "inngest/next";
 import type { NextRequest } from "next/server";
-import { inngest } from "@/inngest/client";
-import { archiveVisionResult } from "@/inngest/functions/archive-vision-result";
-import { brandIngestion } from "@/inngest/functions/brand-ingestion";
-import { processStudioWorkflow } from "@/inngest/functions/studio/process-workflow";
+import {
+	coerceMediaFile,
+	getStudioPlugin,
+	validateStudioPluginConfig,
+} from "@/server/studio-workflow/plugin-registry";
+
+// Inject app-specific registry logic into the shared workflow function
+const processStudioWorkflow = createProcessStudioWorkflow({
+	coerceMediaFile,
+	getPlugin: getStudioPlugin,
+	validateConfig: validateStudioPluginConfig,
+});
 
 type RouteContext = { params: Promise<Record<string, string>> };
 type AppRouteHandler = (
@@ -13,7 +29,13 @@ type AppRouteHandler = (
 
 const handlers = serve({
 	client: inngest,
-	functions: [processStudioWorkflow, brandIngestion, archiveVisionResult],
+	functions: [
+		processStudioWorkflow,
+		brandIngestion,
+		archiveVisionResult,
+		processFashionItem,
+		processWorkflowRun,
+	],
 });
 
 const adapt = <T extends keyof typeof handlers>(method: T) => {

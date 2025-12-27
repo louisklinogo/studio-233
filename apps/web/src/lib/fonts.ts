@@ -85,6 +85,20 @@ export const spaceGrotesk = localFont({
 	],
 });
 
+// Cabinet Grotesk - The New "Swiss Red" Choice
+export const cabinetGrotesk = localFont({
+	variable: "--font-cabinet",
+	display: "swap",
+	adjustFontFallback: false,
+	src: [
+		{
+			path: "../../public/fonts/CabinetGrotesk_Complete/CabinetGrotesk_Complete/Fonts/WEB/fonts/CabinetGrotesk-Variable.woff2",
+			style: "normal",
+			weight: "100 900",
+		},
+	],
+});
+
 // Monospace - Data, Code
 export const jetbrainsMono = localFont({
 	variable: "--font-jetbrains",

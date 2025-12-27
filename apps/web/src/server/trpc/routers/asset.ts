@@ -1,8 +1,8 @@
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
-import { prisma } from "@studio233/db";
+import { Prisma, prisma } from "@studio233/db";
+import { inngest } from "@studio233/inngest";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { inngest } from "@/inngest/client";
 import { publicProcedure, router } from "../init";
 
 export const assetRouter = router({
@@ -18,7 +18,7 @@ export const assetRouter = router({
 				mimeType: z.string(),
 				workspaceId: z.string(),
 				isBrandAsset: z.boolean().default(false),
-				metadata: z.record(z.any()).optional(),
+				metadata: z.record(z.string(), z.any()).optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -49,7 +49,7 @@ export const assetRouter = router({
 					mimeType: input.mimeType,
 					workspaceId: input.workspaceId,
 					isBrandAsset: input.isBrandAsset,
-					metadata: input.metadata,
+					metadata: input.metadata as Prisma.InputJsonValue,
 				},
 			});
 

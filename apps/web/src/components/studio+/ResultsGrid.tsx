@@ -1,11 +1,11 @@
+import { StudioBatchJob } from "@studio233/db";
 import { motion } from "framer-motion";
 import { Download, ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BatchJob } from "@/lib/batch-store";
 
-const STATUS_LABELS: Record<BatchJob["status"], string> = {
+const STATUS_LABELS: Record<StudioBatchJob["status"], string> = {
 	canceled: "Canceled",
 	completed: "Completed",
 	failed: "Failed",
@@ -15,7 +15,7 @@ const STATUS_LABELS: Record<BatchJob["status"], string> = {
 };
 
 const STATUS_VARIANTS: Record<
-	BatchJob["status"],
+	StudioBatchJob["status"],
 	"default" | "secondary" | "destructive" | "outline"
 > = {
 	canceled: "secondary",
@@ -27,7 +27,7 @@ const STATUS_VARIANTS: Record<
 };
 
 interface ResultsGridProps {
-	jobs: BatchJob[];
+	jobs: StudioBatchJob[];
 	isProcessing: boolean;
 }
 

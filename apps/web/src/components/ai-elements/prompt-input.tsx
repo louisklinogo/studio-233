@@ -1,5 +1,6 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
 import type { ChatStatus, FileUIPart } from "ai";
 import {
 	CornerDownLeftIcon,
@@ -70,12 +71,53 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
+// Real upload logic using Vercel Blob client SDK
+async function uploadFile(file: File): Promise<{ url: string }> {
+	const blob = await upload(file.name, file, {
+		access: "public",
+		handleUploadUrl: "/api/upload",
+	});
+
+	return { url: blob.url };
+}
+
+export const useUploader = ({
+	onUpload,
+	onError,
+}: {
+	onUpload: (props: { id: string; url: string }) => void;
+	onError?: (props: { id: string; error: any }) => void;
+}) => {
+	const [isUploading, setIsUploading] = useState(false);
+	const upload = useCallback(
+		async (file: FileUIPart & { id: string }) => {
+			setIsUploading(true);
+			try {
+				const blob = await fetch(file.url).then((res) => res.blob());
+				const uploaded = await uploadFile(
+					new File([blob], file.filename ?? "untitled", {
+						type: file.mediaType,
+					}),
+				);
+				onUpload({ id: file.id, url: uploaded.url });
+			} catch (e) {
+				console.error("Upload failed", e);
+				onError?.({ id: file.id, error: e });
+			} finally {
+				setIsUploading(false);
+			}
+		},
+		[onUpload, onError],
+	);
+	return { upload, isUploading };
+};
+
 // ============================================================================
 // Provider Context & Types
 // ============================================================================
 
 export type AttachmentsContext = {
-	files: (FileUIPart & { id: string })[];
+	files: (FileUIPart & { id: string; isUploading?: boolean })[];
 	add: (files: File[] | FileList) => void;
 	addRemote: (
 		files: { url: string; filename: string; mediaType: string }[],
@@ -84,6 +126,8 @@ export type AttachmentsContext = {
 	clear: () => void;
 	openFileDialog: () => void;
 	fileInputRef: RefObject<HTMLInputElement | null>;
+	setFileUploading: (id: string, isUploading: boolean) => void;
+	updateFileUrl: (id: string, url: string) => void;
 };
 
 export type TextInputContext = {
@@ -154,29 +198,55 @@ export function PromptInputProvider({
 
 	// ----- attachments state (global when wrapped)
 	const [attachements, setAttachements] = useState<
-		(FileUIPart & { id: string })[]
+		(FileUIPart & { id: string; isUploading?: boolean })[]
 	>([]);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const openRef = useRef<() => void>(() => {});
 
-	const add = useCallback((files: File[] | FileList) => {
-		const incoming = Array.from(files);
-		if (incoming.length === 0) {
-			return;
-		}
-
+	const setFileUploading = useCallback((id: string, isUploading: boolean) => {
 		setAttachements((prev) =>
-			prev.concat(
-				incoming.map((file) => ({
-					id: nanoid(),
-					type: "file" as const,
-					url: URL.createObjectURL(file),
-					mediaType: file.type,
-					filename: file.name,
-				})),
-			),
+			prev.map((f) => (f.id === id ? { ...f, isUploading } : f)),
 		);
 	}, []);
+
+	const updateFileUrl = useCallback((id: string, url: string) => {
+		setAttachements((prev) =>
+			prev.map((f) => (f.id === id ? { ...f, url, isUploading: false } : f)),
+		);
+	}, []);
+
+	const uploader = useUploader({
+		onUpload: ({ id, url }) => {
+			updateFileUrl(id, url);
+		},
+		onError: ({ id }) => {
+			setFileUploading(id, false);
+		},
+	});
+	const add = useCallback(
+		(files: File[] | FileList) => {
+			const incoming = Array.from(files);
+			if (incoming.length === 0) {
+				return;
+			}
+			const newAttachments = incoming.map((file) => ({
+				id: nanoid(),
+				type: "file" as const,
+				url: URL.createObjectURL(file),
+				mediaType: file.type,
+				filename: file.name,
+				isUploading: true, // Mark for upload
+			}));
+
+			setAttachements((prev) => prev.concat(newAttachments));
+
+			// Trigger uploads
+			for (const attachment of newAttachments) {
+				uploader.upload(attachment);
+			}
+		},
+		[uploader],
+	);
 
 	const addRemote = useCallback(
 		(files: { url: string; filename: string; mediaType: string }[]) => {
@@ -229,8 +299,19 @@ export function PromptInputProvider({
 			clear,
 			openFileDialog,
 			fileInputRef,
+			setFileUploading,
+			updateFileUrl,
 		}),
-		[attachements, add, addRemote, remove, clear, openFileDialog],
+		[
+			attachements,
+			add,
+			addRemote,
+			remove,
+			clear,
+			openFileDialog,
+			setFileUploading,
+			updateFileUrl,
+		],
 	);
 
 	const __registerFileInput = useCallback(
@@ -478,7 +559,9 @@ export const PromptInput = ({
 	}, []);
 
 	// ----- Local attachments (only used when no provider)
-	const [items, setItems] = useState<(FileUIPart & { id: string })[]>([]);
+	const [items, setItems] = useState<
+		(FileUIPart & { id: string; isUploading?: boolean })[]
+	>([]);
 	const files = usingProvider ? controller.attachments.files : items;
 
 	const openFileDialogLocal = useCallback(() => {
@@ -498,6 +581,15 @@ export const PromptInput = ({
 		},
 		[accept],
 	);
+
+	const uploader = useUploader({
+		onUpload: ({ id, url }) => {
+			updateFileUrl(id, url);
+		},
+		onError: ({ id }) => {
+			setFileUploading(id, false);
+		},
+	});
 
 	const addLocal = useCallback(
 		(fileList: File[] | FileList) => {
@@ -521,64 +613,74 @@ export const PromptInput = ({
 				return;
 			}
 
-			setItems((prev) => {
-				const capacity =
-					typeof maxFiles === "number"
-						? Math.max(0, maxFiles - prev.length)
-						: undefined;
-				const capped =
-					typeof capacity === "number" ? sized.slice(0, capacity) : sized;
-				if (typeof capacity === "number" && sized.length > capacity) {
-					onError?.({
-						code: "max_files",
-						message: "Too many files. Some were not added.",
-					});
-				}
-				const next: (FileUIPart & { id: string })[] = [];
-				for (const file of capped) {
-					next.push({
-						id: nanoid(),
-						type: "file",
-						url: URL.createObjectURL(file),
-						mediaType: file.type,
-						filename: file.name,
-					});
-				}
-				return prev.concat(next);
-			});
+			const capacity =
+				typeof maxFiles === "number"
+					? Math.max(0, maxFiles - items.length)
+					: undefined;
+			const capped =
+				typeof capacity === "number" ? sized.slice(0, capacity) : sized;
+			if (typeof capacity === "number" && sized.length > capacity) {
+				onError?.({
+					code: "max_files",
+					message: "Too many files. Some were not added.",
+				});
+			}
+
+			const next: (FileUIPart & { id: string; isUploading: boolean })[] = [];
+			for (const file of capped) {
+				next.push({
+					id: nanoid(),
+					type: "file",
+					url: URL.createObjectURL(file),
+					mediaType: file.type,
+					filename: file.name,
+					isUploading: true,
+				});
+			}
+
+			setItems((prev) => prev.concat(next));
+
+			// Trigger uploads
+			for (const item of next) {
+				uploader.upload(item);
+			}
 		},
-		[matchesAccept, maxFiles, maxFileSize, onError],
+		[matchesAccept, maxFiles, maxFileSize, onError, uploader, items.length],
 	);
 
 	const addRemoteLocal = useCallback(
 		(files: { url: string; filename: string; mediaType: string }[]) => {
 			if (files.length === 0) return;
 
-			setItems((prev) => {
-				const capacity =
-					typeof maxFiles === "number"
-						? Math.max(0, maxFiles - prev.length)
-						: undefined;
-				const capped =
-					typeof capacity === "number" ? files.slice(0, capacity) : files;
+			const capacity =
+				typeof maxFiles === "number"
+					? Math.max(0, maxFiles - items.length)
+					: undefined;
+			const capped =
+				typeof capacity === "number" ? files.slice(0, capacity) : files;
 
-				if (typeof capacity === "number" && files.length > capacity) {
-					onError?.({
-						code: "max_files",
-						message: "Too many files. Some were not added.",
-					});
-				}
+			if (typeof capacity === "number" && files.length > capacity) {
+				onError?.({
+					code: "max_files",
+					message: "Too many files. Some were not added.",
+				});
+			}
 
-				return prev.concat(
-					capped.map((file) => ({
-						id: nanoid(),
-						type: "file" as const,
-						...file,
-					})),
-				);
-			});
+			const next = capped.map((file) => ({
+				id: nanoid(),
+				type: "file" as const,
+				...file,
+				isUploading: true,
+			}));
+
+			setItems((prev) => prev.concat(next));
+
+			// Trigger uploads
+			for (const item of next) {
+				uploader.upload(item);
+			}
 		},
-		[maxFiles, onError],
+		[maxFiles, onError, uploader, items.length],
 	);
 
 	const add = usingProvider
@@ -697,6 +799,42 @@ export const PromptInput = ({
 		}
 	};
 
+	const setFileUploading = useCallback((id: string, isUploading: boolean) => {
+		setItems((prev) =>
+			prev.map((f) => (f.id === id ? { ...f, isUploading } : f)),
+		);
+	}, []);
+
+	const updateFileUrl = useCallback((id: string, url: string) => {
+		setItems((prev) =>
+			prev.map((f) => (f.id === id ? { ...f, url, isUploading: false } : f)),
+		);
+	}, []);
+
+	const ctx = useMemo<AttachmentsContext>(
+		() => ({
+			files,
+			add,
+			addRemote,
+			remove,
+			clear,
+			openFileDialog,
+			fileInputRef: inputRef,
+			setFileUploading,
+			updateFileUrl,
+		}),
+		[
+			files,
+			add,
+			addRemote,
+			remove,
+			clear,
+			openFileDialog,
+			setFileUploading,
+			updateFileUrl,
+		],
+	);
+
 	const convertBlobUrlToDataUrl = async (url: string): Promise<string> => {
 		const response = await fetch(url);
 		const blob = await response.blob();
@@ -707,19 +845,6 @@ export const PromptInput = ({
 			reader.readAsDataURL(blob);
 		});
 	};
-
-	const ctx = useMemo<AttachmentsContext>(
-		() => ({
-			files: files.map((item) => ({ ...item, id: item.id })),
-			add,
-			addRemote,
-			remove,
-			clear,
-			openFileDialog,
-			fileInputRef: inputRef,
-		}),
-		[files, add, addRemote, remove, clear, openFileDialog],
-	);
 
 	const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
 		event.preventDefault();
@@ -732,28 +857,35 @@ export const PromptInput = ({
 					return (formData.get("message") as string) || "";
 				})();
 
-		// Reset form immediately after capturing text to avoid race condition
-		// where user input during async blob conversion would be lost
+		// Reset form immediately
 		if (!usingProvider) {
 			form.reset();
 		}
 
-		// Convert blob URLs to data URLs asynchronously
-		Promise.all(
-			files.map(async ({ id, ...item }) => {
-				if (item.url && item.url.startsWith("blob:")) {
-					return {
-						...item,
-						url: await convertBlobUrlToDataUrl(item.url),
-					};
-				}
-				return item;
-			}),
-		).then((convertedFiles: FileUIPart[]) => {
-			try {
-				const result = onSubmit({ text, files: convertedFiles }, event);
+		// Robustly prepare files: use uploaded URL if available, otherwise convert blob to base64
+		const prepareFiles = async () => {
+			return Promise.all(
+				files.map(async ({ id, isUploading, ...item }) => {
+					// If it's a blob URL (upload pending/failed/local), convert to base64
+					if (item.url && item.url.startsWith("blob:")) {
+						try {
+							const base64 = await convertBlobUrlToDataUrl(item.url);
+							return { ...item, url: base64 };
+						} catch (e) {
+							console.error("Failed to convert blob to base64", e);
+							return item; // Send as is (will likely fail on server but better than crashing here)
+						}
+					}
+					// Otherwise use the remote URL
+					return item;
+				}),
+			);
+		};
 
-				// Handle both sync and async onSubmit
+		prepareFiles().then((preparedFiles) => {
+			try {
+				const result = onSubmit({ text, files: preparedFiles }, event);
+
 				if (result instanceof Promise) {
 					result
 						.then(() => {
@@ -763,17 +895,16 @@ export const PromptInput = ({
 							}
 						})
 						.catch(() => {
-							// Don't clear on error - user may want to retry
+							// Don't clear on error
 						});
 				} else {
-					// Sync function completed without throwing, clear attachments
 					clear();
 					if (usingProvider) {
 						controller.textInput.clear();
 					}
 				}
 			} catch (error) {
-				// Don't clear on error - user may want to retry
+				// Don't clear on error
 			}
 		});
 	};

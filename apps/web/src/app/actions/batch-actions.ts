@@ -2,10 +2,10 @@
 
 import { usageService } from "@studio233/auth";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
+import { batchStore } from "@studio233/db";
+import { inngest } from "@studio233/inngest";
 import { nanoid } from "nanoid";
 import { headers } from "next/headers";
-import { inngest } from "@/inngest/client";
-import { batchStore } from "@/lib/batch-store";
 
 export async function startBatchProcessing(imageUrls: string[]) {
 	const jobs: string[] = [];
@@ -47,7 +47,7 @@ export async function startBatchProcessing(imageUrls: string[]) {
 						referenceImage: "default-mannequin",
 						timestamp: Date.now(),
 					},
-				};
+				} as const;
 			}),
 		);
 

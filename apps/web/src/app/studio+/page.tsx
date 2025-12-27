@@ -1,5 +1,6 @@
 "use client";
 
+import type { StudioBatchJob } from "@studio233/db";
 import { upload } from "@vercel/blob/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { History, Loader2, Play, Settings } from "lucide-react";
@@ -26,18 +27,17 @@ import {
 import { BackgroundGrid } from "@/components/ui/BackgroundGrid";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import type { BatchJob } from "@/lib/batch-store";
 import { type BatchUpload, canvasStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import type { UploadedAsset, ViewState } from "@/types/studio";
 
-const TERMINAL_BATCH_STATES: BatchJob["status"][] = [
+const TERMINAL_BATCH_STATES: StudioBatchJob["status"][] = [
 	"completed",
 	"failed",
 	"canceled",
 ];
 
-const isTerminalStatus = (status: BatchJob["status"]) =>
+const isTerminalStatus = (status: StudioBatchJob["status"]) =>
 	TERMINAL_BATCH_STATES.includes(status);
 
 interface FileUploadStatus {
@@ -66,7 +66,7 @@ export function LegacyStudioPlusPage() {
 	const [isUploading, setIsUploading] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [activeJobIds, setActiveJobIds] = useState<string[]>([]);
-	const [jobStatuses, setJobStatuses] = useState<BatchJob[]>([]);
+	const [jobStatuses, setJobStatuses] = useState<StudioBatchJob[]>([]);
 	const [fileUploadStatuses, setFileUploadStatuses] = useState<
 		Map<string, FileUploadStatus>
 	>(new Map());
@@ -216,7 +216,7 @@ export function LegacyStudioPlusPage() {
 					setJobStatuses(data.jobs);
 
 					// Check if all completed
-					const allDone = data.jobs.every((j: BatchJob) =>
+					const allDone = data.jobs.every((j: StudioBatchJob) =>
 						isTerminalStatus(j.status),
 					);
 					if (allDone && isProcessing) {

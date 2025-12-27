@@ -7,10 +7,10 @@ import { generateThreadTitle } from "@studio233/ai/runtime/titling";
 import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma as db, Prisma } from "@studio233/db";
+import { inngest } from "@studio233/inngest";
 import { list } from "@vercel/blob";
 import { waitUntil } from "@vercel/functions";
 import { convertToModelMessages } from "ai";
-import { inngest } from "@/inngest/client";
 
 export async function POST(req: Request) {
 	try {

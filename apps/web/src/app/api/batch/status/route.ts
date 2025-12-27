@@ -1,5 +1,5 @@
+import { batchStore } from "@studio233/db";
 import { NextResponse } from "next/server";
-import { batchStore } from "@/lib/batch-store";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);

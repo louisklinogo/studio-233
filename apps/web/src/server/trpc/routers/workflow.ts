@@ -1,10 +1,9 @@
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { Prisma, prisma } from "@studio233/db";
+import { inngest, workflowRequestedEvent } from "@studio233/inngest";
 import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import { z } from "zod";
-import { inngest } from "@/inngest/client";
-import { workflowRequestedEvent } from "@/inngest/events";
 import { publicProcedure, router } from "../init";
 
 const nodeSchema = z

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useRef, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { useToast } from "@/hooks/use-toast";
@@ -23,18 +24,22 @@ export function BrandAssetUpload({
 	const { customApiKey, setIsApiKeyDialogOpen } = useUIState();
 	const falClient = useFalClient(customApiKey);
 	const trpc = useTRPC();
-	const utils = trpc.useUtils();
+	const queryClient = useQueryClient();
 
-	const registerAsset = trpc.asset.register.useMutation({
-		onSuccess: () => {
-			utils.workspace.getBrandAssets.invalidate({ workspaceId });
-			onSuccess?.();
-			toast({
-				title: "Asset registered",
-				description: "Brand asset added to archive",
-			});
-		},
-	});
+	const registerAsset = useMutation(
+		trpc.asset.register.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries(
+					trpc.workspace.getBrandAssets.queryFilter({ workspaceId }),
+				);
+				onSuccess?.();
+				toast({
+					title: "Asset registered",
+					description: "Brand asset added to archive",
+				});
+			},
+		}),
+	);
 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -92,7 +97,7 @@ export function BrandAssetUpload({
 			>
 				{isUploading ? (
 					<>
-						<SwissIcons.Loader size={12} className="animate-spin" />
+						<SwissIcons.Spinner size={12} className="animate-spin" />
 						Uploading...
 					</>
 				) : (

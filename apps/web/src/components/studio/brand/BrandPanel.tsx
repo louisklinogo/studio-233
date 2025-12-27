@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
@@ -21,15 +22,17 @@ export function BrandPanel({
 	className,
 }: BrandPanelProps) {
 	const trpc = useTRPC();
-	const { data: workspace, isLoading: isWorkspaceLoading } =
-		trpc.workspace.getById.useQuery({
+	const { data: workspace, isLoading: isWorkspaceLoading } = useQuery(
+		trpc.workspace.getById.queryOptions({
 			id: workspaceId,
-		});
+		}),
+	);
 
-	const { data: brandAssets, isLoading: isAssetsLoading } =
-		trpc.workspace.getBrandAssets.useQuery({
+	const { data: brandAssets, isLoading: isAssetsLoading } = useQuery(
+		trpc.workspace.getBrandAssets.queryOptions({
 			workspaceId,
-		});
+		}),
+	);
 
 	const brandProfile = workspace?.brandProfile as any;
 	const primaryColor = brandProfile?.primaryColor || "#FF4D00";
@@ -66,7 +69,7 @@ export function BrandPanel({
 					onClick={onClose}
 					className="w-8 h-8 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded-sm"
 				>
-					<SwissIcons.X size={16} className="text-neutral-500" />
+					<SwissIcons.Close size={16} className="text-neutral-500" />
 				</button>
 			</div>
 
@@ -107,7 +110,7 @@ export function BrandPanel({
 						</div>
 					) : brandAssets && brandAssets.length > 0 ? (
 						<div className="grid grid-cols-2 gap-2">
-							{brandAssets.map((asset) => (
+							{brandAssets.map((asset: any) => (
 								<div
 									key={asset.id}
 									draggable
@@ -128,7 +131,7 @@ export function BrandPanel({
 						</div>
 					) : (
 						<div className="p-8 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm flex flex-col items-center justify-center text-center space-y-2">
-							<SwissIcons.Archive size={24} className="text-neutral-300" />
+							<SwissIcons.Box size={24} className="text-neutral-300" />
 							<p className="font-mono text-[9px] text-neutral-400 uppercase">
 								No_Brand_Assets
 							</p>

@@ -8,44 +8,91 @@ import { cn } from "@/lib/utils";
 interface ChatBarProps {
 	isChatOpen: boolean;
 	onToggleChat: () => void;
+	isArchiveOpen: boolean;
+	onToggleArchive: () => void;
 }
 
 export const ChatBar: React.FC<ChatBarProps> = ({
 	isChatOpen,
 	onToggleChat,
+	isArchiveOpen,
+	onToggleArchive,
 }) => {
 	return (
-		<div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
-			<motion.button
+		<div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+			<motion.div
 				layout
-				onClick={onToggleChat}
 				className={cn(
-					"h-12 px-6 flex items-center gap-3",
+					"h-12 flex items-center p-1",
 					"bg-[#f4f4f0] dark:bg-[#111111]",
 					"border border-neutral-200 dark:border-neutral-800",
 					"rounded-full shadow-2xl",
-					"hover:scale-105 active:scale-95 transition-all duration-200",
-					"group",
 				)}
 			>
-				<div
+				{/* BRAND ARCHIVE TOGGLE */}
+				<button
+					onClick={onToggleArchive}
 					className={cn(
-						"w-2 h-2 rounded-full",
-						isChatOpen ? "bg-[#FF4D00]" : "bg-neutral-300 dark:bg-neutral-700",
-						"transition-colors",
+						"h-full px-5 flex items-center gap-2 rounded-full transition-all duration-200 group",
+						isArchiveOpen
+							? "bg-white dark:bg-neutral-800 shadow-sm"
+							: "hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50",
 					)}
-				/>
-				<span className="text-sm font-medium tracking-wide text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
-					{isChatOpen ? "Close Assistant" : "Ask Assistant"}
-				</span>
+				>
+					<SwissIcons.Layout
+						size={16}
+						className={cn(
+							"transition-colors",
+							isArchiveOpen
+								? "text-[#FF4D00]"
+								: "text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300",
+						)}
+					/>
+					<span
+						className={cn(
+							"text-[10px] font-mono tracking-widest uppercase transition-colors",
+							isArchiveOpen
+								? "text-neutral-900 dark:text-white font-bold"
+								: "text-neutral-500",
+						)}
+					>
+						Archive
+					</span>
+				</button>
+
 				<div className="w-[1px] h-4 bg-neutral-200 dark:bg-neutral-800 mx-1" />
-				<SwissIcons.Mic
-					size={16}
+
+				{/* ASSISTANT TOGGLE */}
+				<button
+					onClick={onToggleChat}
 					className={cn(
-						"text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors",
+						"h-full px-5 flex items-center gap-2 rounded-full transition-all duration-200 group",
+						isChatOpen
+							? "bg-white dark:bg-neutral-800 shadow-sm"
+							: "hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50",
 					)}
-				/>
-			</motion.button>
+				>
+					<span
+						className={cn(
+							"text-[10px] font-mono tracking-widest uppercase transition-colors",
+							isChatOpen
+								? "text-neutral-900 dark:text-white font-bold"
+								: "text-neutral-500",
+						)}
+					>
+						Assistant
+					</span>
+					<SwissIcons.Mic
+						size={16}
+						className={cn(
+							"transition-colors",
+							isChatOpen
+								? "text-[#FF4D00]"
+								: "text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white",
+						)}
+					/>
+				</button>
+			</motion.div>
 		</div>
 	);
 };

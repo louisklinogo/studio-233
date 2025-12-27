@@ -255,6 +255,7 @@ export const projectRouter = router({
 					name: true,
 					description: true,
 					thumbnail: true,
+					workspaceId: true,
 					createdAt: true,
 					updatedAt: true,
 				},

@@ -14,7 +14,15 @@ interface WorkspaceDialogProps {
 		name?: string;
 		description?: string;
 	};
-	onSubmit: (data: { name: string; description: string }) => void;
+	onSubmit: (data: {
+		name: string;
+		description: string;
+		brandProfile?: {
+			primaryColor: string;
+			accentColor: string;
+			fontFamily: string;
+		};
+	}) => void;
 	isPending: boolean;
 }
 
@@ -30,6 +38,9 @@ export function WorkspaceDialog({
 	const [description, setDescription] = useState(
 		initialData?.description || "",
 	);
+	const [primaryColor, setPrimaryColor] = useState("#FF4D00");
+	const [accentColor, setAccentColor] = useState("#00FF00");
+	const [fontFamily, setFontFamily] = useState("Inter"); // Standardish for now
 	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => {
@@ -68,7 +79,15 @@ export function WorkspaceDialog({
 
 	const handleSubmit = () => {
 		playClickSound();
-		onSubmit({ name, description });
+		onSubmit({
+			name,
+			description,
+			brandProfile: {
+				primaryColor,
+				accentColor,
+				fontFamily,
+			},
+		});
 	};
 
 	if (!mounted) return null;
@@ -142,6 +161,81 @@ export function WorkspaceDialog({
 										placeholder="Add context about this workspace..."
 										className="w-full bg-neutral-100 dark:bg-[#111] border-none rounded-md px-4 py-3 font-sans text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:ring-0 focus:bg-neutral-50 dark:focus:bg-[#151515] transition-colors shadow-inner min-h-[120px] resize-none"
 									/>
+								</div>
+
+								{/* BRAND IDENTITY SECTION */}
+								<div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-6">
+									<div className="flex items-center gap-2">
+										<div className="w-1 h-3 bg-[#FF4D00]" />
+										<span className="font-mono text-[9px] uppercase tracking-widest text-neutral-400">
+											Brand DNA
+										</span>
+									</div>
+
+									<div className="space-y-4">
+										<Label className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+											Primary Palette
+										</Label>
+										<div className="flex gap-4">
+											<div className="flex flex-col gap-2">
+												<div
+													className="w-16 h-16 rounded-sm shadow-inner cursor-pointer border border-neutral-200 dark:border-neutral-800 relative group"
+													style={{ backgroundColor: primaryColor }}
+												>
+													<input
+														type="color"
+														value={primaryColor}
+														onChange={(e) => setPrimaryColor(e.target.value)}
+														className="absolute inset-0 opacity-0 cursor-pointer"
+													/>
+													<div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/10 transition-opacity">
+														<SwissIcons.Edit size={12} className="text-white" />
+													</div>
+												</div>
+												<span className="font-mono text-[9px] text-center text-neutral-400">
+													{primaryColor.toUpperCase()}
+												</span>
+											</div>
+
+											<div className="flex flex-col gap-2">
+												<div
+													className="w-16 h-16 rounded-sm shadow-inner cursor-pointer border border-neutral-200 dark:border-neutral-800 relative group"
+													style={{ backgroundColor: accentColor }}
+												>
+													<input
+														type="color"
+														value={accentColor}
+														onChange={(e) => setAccentColor(e.target.value)}
+														className="absolute inset-0 opacity-0 cursor-pointer"
+													/>
+													<div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/10 transition-opacity">
+														<SwissIcons.Edit size={12} className="text-white" />
+													</div>
+												</div>
+												<span className="font-mono text-[9px] text-center text-neutral-400">
+													{accentColor.toUpperCase()}
+												</span>
+											</div>
+										</div>
+									</div>
+
+									<div className="space-y-2">
+										<Label className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+											Type Interface
+										</Label>
+										<select
+											value={fontFamily}
+											onChange={(e) => setFontFamily(e.target.value)}
+											className="w-full bg-neutral-100 dark:bg-[#111] border-none rounded-md px-4 py-3 font-mono text-xs text-neutral-900 dark:text-white focus:ring-0 focus:bg-neutral-50 dark:focus:bg-[#151515] transition-colors shadow-inner"
+										>
+											<option value="Inter">INTER (ACCESSIBLE)</option>
+											<option value="IBM Plex Mono">
+												PLEX MONO (INDUSTRIAL)
+											</option>
+											<option value="Space Grotesk">GROTESK (MODERN)</option>
+											<option value="Uncut Sans">UNCUT (SWISS)</option>
+										</select>
+									</div>
 								</div>
 							</div>
 						</div>

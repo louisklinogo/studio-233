@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export function useUIState() {
 	const [isChatOpen, setIsChatOpen] = useState(false);
+	const [isBrandArchiveOpen, setIsBrandArchiveOpen] = useState(false);
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
 	const [showGrid, setShowGrid] = useState(false);
 	const [snapToGrid, setSnapToGrid] = useState(false);
@@ -105,6 +106,8 @@ export function useUIState() {
 	return {
 		isChatOpen,
 		setIsChatOpen,
+		isBrandArchiveOpen,
+		setIsBrandArchiveOpen,
 		isSettingsDialogOpen,
 		setIsSettingsDialogOpen,
 		showGrid,

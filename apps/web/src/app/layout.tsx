@@ -3,6 +3,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { BotIdClient } from "botid/client";
 import {
+	cabinetGrotesk,
 	carlito,
 	ibmPlexSans,
 	jetbrainsMono,
@@ -136,7 +137,7 @@ export default function RootLayout({
 				/>
 			</head>
 			<body
-				className={`${ibmPlexSans.variable} ${carlito.variable} ${poppins.variable} ${outfit.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-background text-foreground min-h-screen`}
+				className={`${cabinetGrotesk.variable} ${ibmPlexSans.variable} ${carlito.variable} ${poppins.variable} ${outfit.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-background text-foreground min-h-screen`}
 			>
 				<BotIdClient
 					protect={[
