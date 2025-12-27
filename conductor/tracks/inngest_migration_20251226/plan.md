@@ -27,11 +27,11 @@ Move the background job logic into the package.
 - [x] Task 3.4: Resolve all cross-package imports (@studio233/db, ai, rag) in the new location. 630f9c5
 - [x] Task: Conductor - User Manual Verification 'Function Porting' (Protocol in workflow.md) 630f9c5
 
-## Phase 4: Integration & Cleanup [checkpoint: ]
+## Phase 4: Integration & Cleanup [checkpoint: bc7004e]
 Wire the web app to the new package and remove the legacy code.
 
-- [ ] Task 4.1: Update `apps/web/src/app/api/inngest/route.ts` to import handlers and client from `@studio233/inngest`.
-- [ ] Task 4.2: Refactor `apps/web` call sites (TRPC routers and Server Actions) to use the shared package.
-- [ ] Task 4.3: Remove the `apps/web/src/inngest` directory.
-- [ ] Task 4.4: Verify the full build (`bun run build`) and perform a manual end-to-end smoke test.
-- [ ] Task: Conductor - User Manual Verification 'Integration & Cleanup' (Protocol in workflow.md)
+- [x] Task 4.1: Update `apps/web/src/app/api/inngest/route.ts` to import handlers and client from `@studio233/inngest`. bc7004e
+- [x] Task 4.2: Refactor `apps/web` call sites (TRPC routers and Server Actions) to use the shared package. bc7004e
+- [x] Task 4.3: Remove the `apps/web/src/inngest` directory. bc7004e
+- [x] Task 4.4: Verify the full build (`bun run build`) and perform a manual end-to-end smoke test. bc7004e
+- [x] Task: Conductor - User Manual Verification 'Integration & Cleanup' (Protocol in workflow.md) bc7004e
