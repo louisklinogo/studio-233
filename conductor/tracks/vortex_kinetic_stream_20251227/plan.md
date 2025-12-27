@@ -19,7 +19,7 @@
 - [x] Task: Create `GeneratedProduct` with wireframe and rendered states. (eae69a1)
 - [x] Task: Conductor - User Manual Verification 'Act II - The Workflow Engine Structure' (eae69a1)
 
-## Phase 4: Act III - Kinetic Animation (GSAP)
+## Phase 4: Act III - Kinetic Animation (GSAP) [checkpoint: 8066386]
 - [x] Task: Implement `useWorkflowTimeline` hook. (e502938)
 - [x] Task: Sequence "Act II (Manifesto)" -> "Zoom into Engine" -> "Data Packets" -> "Act V (Product Reveal)". (8aeb3ab)
 - [x] Task: Bind GSAP Timeline to ScrollTrigger with pinning logic. (fabbecb)
