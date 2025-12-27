@@ -14,11 +14,11 @@ Fixing the pixelation issue of the Hero "+" symbol by migrating from text-based 
 - [x] Task: Apply `shape-rendering="geometricPrecision"` and appropriate Tailwind classes (`text-[#FF4400]`, `will-change-transform`).
 - [x] Task: Conductor - User Manual Verification 'SVG Implementation' (Protocol in workflow.md) 5c4951b
 
-## Phase 3: Animation Hardening [ ]
+## Phase 3: Animation Hardening [checkpoint: 92e0163]
 - [x] Task: Update the GSAP timeline in `apps/web/src/components/landing/VortexContainer.tsx`.
 - [x] Task: Verify the `fromTo` tween targets the SVG correctly.
 - [x] Task: (Optional) Explicitly add `force3D: true` to the tween if jitter is observed during manual testing.
-- [ ] Task: Conductor - User Manual Verification 'Animation Hardening' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Animation Hardening' (Protocol in workflow.md) 92e0163
 
 ## Phase 4: Final Verification [ ]
 - [ ] Task: Write/Update a unit test to ensure the `VortexHeroV2` component renders the SVG and maintains the `plusRef` interface.
