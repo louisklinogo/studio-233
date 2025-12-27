@@ -1,5 +1,6 @@
 "use client";
 
+import gsap from "gsap";
 import React, {
 	forwardRef,
 	useImperativeHandle,
@@ -131,7 +132,7 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 		];
 
 		return (
-			<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+			<div className="absolute inset-0 flex items-center pointer-events-none">
 				<div
 					ref={trackRef}
 					className="flex flex-nowrap gap-12 md:gap-24 px-[50vw] items-center pointer-events-auto"

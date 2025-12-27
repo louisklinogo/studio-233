@@ -45,7 +45,7 @@ export const VortexHero = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 				{/* Left Text */}
 				<span
 					ref={studioRef}
-					className="relative inline-block will-change-transform"
+					className="relative inline-block will-change-transform z-50"
 				>
 					STUDIO
 				</span>
@@ -53,7 +53,7 @@ export const VortexHero = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 				{/* The Aperture (Central +) */}
 				<span
 					ref={plusRef}
-					className="relative inline-block mx-1 md:mx-2 text-[1.2em] will-change-transform origin-center z-50"
+					className="relative inline-block mx-1 md:mx-2 text-[1.2em] will-change-transform origin-center z-40"
 				>
 					{/* Inner element handles color to ensure it's white (the light) */}
 					<span className="block text-[#f4f4f0]">+</span>
@@ -62,7 +62,7 @@ export const VortexHero = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 				{/* Right Text */}
 				<span
 					ref={numericRef}
-					className="relative inline-block will-change-transform"
+					className="relative inline-block will-change-transform z-50"
 				>
 					233
 				</span>

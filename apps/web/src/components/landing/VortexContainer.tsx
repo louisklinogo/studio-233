@@ -1,3 +1,5 @@
+"use client";
+
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useEffect, useRef, useState } from "react";
@@ -47,15 +49,23 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 
 			// --- Phase 2: The Curtain Split ---
 			if (heroRef?.current) {
-				const { studio, plus, numeric } = heroRef.current;
+				const { studio, plus, numeric, surface } = heroRef.current;
+				console.log("VortexContainer: Hero elements found", {
+					studio,
+					plus,
+					numeric,
+					surface,
+				});
 
-				if (studio && plus && numeric) {
+				if (studio && plus && numeric && surface) {
+					// 1. Aperture Expansion
 					tl.to(
 						plus,
 						{
 							rotation: 90,
-							duration: 1,
-							ease: "power2.inOut",
+							scale: 3000,
+							duration: 1.5,
+							ease: "power3.inOut",
 						},
 						0,
 					);
@@ -63,8 +73,8 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 					tl.to(
 						studio,
 						{
-							x: -window.innerWidth * 0.4,
-							duration: 1,
+							x: -window.innerWidth * 0.6, // Push further to ensure clearance
+							duration: 1.5, // Match duration with aperture
 							ease: "power2.inOut",
 						},
 						0,
@@ -73,37 +83,79 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 					tl.to(
 						numeric,
 						{
-							x: window.innerWidth * 0.4,
-							duration: 1,
+							x: window.innerWidth * 0.6, // Push further to ensure clearance
+							duration: 1.5, // Match duration with aperture
 							ease: "power2.inOut",
 						},
 						0,
+					);
+
+					// Fade out the black surface slightly later to ensure seamless white-out
+					tl.to(
+						surface,
+						{
+							opacity: 0,
+							duration: 0.5,
+							ease: "none",
+						},
+						1.0,
 					);
 				}
 			}
 
 			// --- Phase 3: The Kinetic Stream (Horizontal Scroll) ---
 			if (trackRef?.current) {
-				const { track } = trackRef.current;
+				const { track, blocks } = trackRef.current;
 
-				if (track) {
-					// We calculate how much we need to scroll horizontally
-					// This should be the width of the track minus the viewport width
-					// Using a function to ensure it's calculated on refresh/resize
+				if (track && blocks && blocks.length > 0) {
 					const getScrollAmount = () => {
-						const trackWidth = track.offsetWidth;
+						const trackWidth = track.scrollWidth;
 						const windowWidth = window.innerWidth;
 						return -(trackWidth - windowWidth);
 					};
 
+					// Initial State: Track is visible/centered (via CSS/Flex), but blocks are hidden
+					gsap.set(track, {
+						opacity: 1,
+						scale: 1,
+						filter: "none",
+						y: 0,
+					});
+
+					// Set initial state for blocks (hidden, slightly down)
+					gsap.set(blocks, {
+						y: 200,
+						opacity: 0,
+						scale: 0.9,
+					});
+
+					// 1. "Woah" Entry: Staggered Block Reveal (The Box Effect)
+					tl.to(
+						blocks,
+						{
+							y: 0,
+							opacity: 1,
+							scale: 1,
+							stagger: {
+								amount: 1.0, // Spread the effect over 1s
+								from: "start", // Start from the first block (left)
+								grid: "auto",
+							},
+							duration: 1.0,
+							ease: "back.out(1.7)", // Pop effect
+						},
+						1.2,
+					);
+
+					// 2. The Horizontal Scroll (Begins after the reveal settles)
 					tl.to(
 						track,
 						{
 							x: getScrollAmount,
-							duration: 3,
+							duration: 4, // Long horizontal scroll
 							ease: "none",
 						},
-						0.5,
+						2.5, // Allow time for stagger to finish (1.2 + 1.0 + buffer)
 					);
 				}
 			}
