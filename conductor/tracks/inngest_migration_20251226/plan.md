@@ -2,21 +2,21 @@
 
 This plan outlines the refactoring of Inngest logic into a shared package within the monorepo.
 
-## Phase 1: Scaffolding & Core Infrastructure [checkpoint: ]
+## Phase 1: Scaffolding & Core Infrastructure [checkpoint: fbfef26]
 Establish the new package and its base configuration.
 
 - [x] Task 1.1: Create `packages/inngest` directory structure (src/events, src/functions). a814320
 - [x] Task 1.2: Configure `package.json`, `tsconfig.json`, and `index.ts` for `@studio233/inngest`. a814320
 - [x] Task 1.3: Initialize the Inngest client in `packages/inngest/src/client.ts`. a814320
-- [ ] Task: Conductor - User Manual Verification 'Scaffolding & Core Infrastructure' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Scaffolding & Core Infrastructure' (Protocol in workflow.md) fbfef26
 
-## Phase 2: Schema & Type Migration [checkpoint: ]
+## Phase 2: Schema & Type Migration [checkpoint: fbfef26]
 Move event definitions to the shared package to enable type-safe triggering across apps.
 
 - [x] Task 2.1: Write a unit test in `packages/inngest` to verify schema validation for core events. a814320
 - [x] Task 2.2: Port Zod event schemas from `apps/web/src/inngest/events.ts` to `packages/inngest/src/events`. a814320
 - [x] Task 2.3: Export event constants and types from the package. a814320
-- [ ] Task: Conductor - User Manual Verification 'Schema & Type Migration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Schema & Type Migration' (Protocol in workflow.md) fbfef26
 
 ## Phase 3: Function Porting [checkpoint: ]
 Move the background job logic into the package.
