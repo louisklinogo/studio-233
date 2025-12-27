@@ -7,11 +7,11 @@
 - [x] Task: Clean up existing `/vortex` page (remove unused horizontal scroll components if redundant). (7bec9c6)
 - [ ] Task: Conductor - User Manual Verification 'Foundation & Setup' (Protocol in workflow.md)
 
-## Phase 2: Act I - Hero Section Evolution
-- [ ] Task: Create `VortexHeroV2` with "System Manual" typography.
-- [ ] Task: Implement mouse-tracking coordinate logic (coordinates hook).
-- [ ] Task: Add "Identifier Barcode" visual element (audio-reactive style).
-- [ ] Task: Conductor - User Manual Verification 'Act I - Hero Section' (Protocol in workflow.md)
+## Phase 2: Act I - Hero Section Evolution [checkpoint: bea8b8f]
+- [x] Task: Create `VortexHeroV2` with "System Manual" typography. (7ca1a88)
+- [x] Task: Implement mouse-tracking coordinate logic (coordinates hook). (9609974)
+- [x] Task: Add "Identifier Barcode" visual element (audio-reactive style). (9609974)
+- [x] Task: Conductor - User Manual Verification 'Act I - Hero Section' (739df15)
 
 ## Phase 3: Act II - The Workflow Engine Structure
 - [ ] Task: Create `WorkflowEngine` container.
