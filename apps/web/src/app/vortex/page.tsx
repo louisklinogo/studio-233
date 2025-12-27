@@ -9,9 +9,9 @@ import {
 import { SystemHUD } from "@/components/landing/SystemHUD";
 import { VortexContainer } from "@/components/landing/VortexContainer";
 import {
-	VortexHero,
 	type VortexHeroHandle,
-} from "@/components/landing/VortexHero";
+	VortexHeroV2,
+} from "@/components/landing/VortexHeroV2";
 import { VortexLenis } from "@/components/landing/VortexLenis";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 
@@ -38,12 +38,9 @@ export default function VortexPage() {
 			>
 				{/* The Unified Kinetic Stream Container */}
 				<VortexContainer heroRef={heroRef} trackRef={trackRef}>
-					<VortexHero ref={heroRef} />
+					<VortexHeroV2 ref={heroRef} />
 					<KineticTrack ref={trackRef} />
 				</VortexContainer>
-
-				{/* Persistent System HUD */}
-				<SystemHUD />
 			</motion.div>
 		</VortexLenis>
 	);

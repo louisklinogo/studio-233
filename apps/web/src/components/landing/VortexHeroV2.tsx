@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-	forwardRef,
-	useEffect,
-	useImperativeHandle,
-	useRef,
-	useState,
-} from "react";
+import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { useMouseCoordinates } from "@/hooks/useMouseCoordinates";
 
 export interface VortexHeroHandle {
@@ -16,10 +10,6 @@ export interface VortexHeroHandle {
 	surface: HTMLDivElement | null;
 }
 
-/**
- * VortexHeroV2 - Act I: The System Manual
- * A high-fidelity, typography-driven hero inspired by industrial Swiss design.
- */
 export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 	const studioRef = useRef<HTMLSpanElement>(null);
 	const plusRef = useRef<HTMLSpanElement>(null);
@@ -49,7 +39,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 				}}
 			/>
 
-			{/* Mouse Coordinates HUD */}
+			{/* Mouse Coordinates HUD (Restored V1 Style) */}
 			<div className="absolute top-1/2 left-8 -translate-y-1/2 flex flex-col gap-1 pointer-events-none opacity-40">
 				<span className="text-[9px] font-mono tracking-widest text-[#1a1a1a]">
 					[X].{Math.round(mousePos.x).toString().padStart(3, "0")}PX
@@ -74,13 +64,13 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						Status: Active_Handshake
 					</span>
 					<span className="text-[9px] font-mono text-[#FF4400] uppercase tracking-widest font-bold">
-						P_PROTOCOL_STABLE
+						PROTOCOL_READY
 					</span>
 				</div>
 			</div>
 
 			{/* --- Main Headline (Act I) --- */}
-			<div className="relative z-20 mt-12">
+			<div className="relative z-20 mt-auto mb-auto">
 				<h1 className="text-[13vw] font-black tracking-tighter leading-[0.8] flex flex-col text-[#1a1a1a]">
 					<span
 						ref={studioRef}
@@ -104,61 +94,24 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						</span>
 					</span>
 				</h1>
-				<div className="mt-4 flex items-center gap-4">
-					<div className="h-[1px] w-24 bg-[#FF4400]" />
-					<span className="text-[10px] font-mono uppercase tracking-[0.5em] text-neutral-500">
-						The_Kinetic_Manual
-					</span>
-				</div>
 			</div>
 
-			{/* --- Bottom Interface --- */}
+			{/* --- Bottom Interface (Cleaned) --- */}
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-auto items-end z-20">
-				{/* Barcode / Visualizer */}
-				<div className="lg:col-span-4 space-y-4">
-					<div className="flex flex-col">
-						<span className="text-[8px] font-mono text-neutral-400 uppercase tracking-[0.5em] mb-2">
-							Internal_Logic
-						</span>
-						<span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#1a1a1a]">
-							Industrial_Substrate
-						</span>
-					</div>
-					<div className="flex items-end h-16 gap-[2px]">
-						{[...Array(24)].map((_, i) => (
-							<div
-								key={i}
-								className="bg-[#1a1a1a] transition-all duration-300"
-								style={{
-									width: i % 6 === 0 ? "3px" : "1px",
-									height: `${20 + (Math.sin(i + mousePos.x * 0.1) * 40 + 40)}%`,
-									opacity: 0.1 + (i / 24) * 0.4,
-								}}
-							/>
-						))}
-					</div>
+				{/* Col 1: Empty (Removed Barcode) */}
+				<div className="lg:col-span-4 h-12 flex items-end">
+					{/* Optional: Minimal decorative line instead of barcode */}
+					<div className="h-[1px] w-12 bg-[#FF4400]"></div>
 				</div>
 
-				{/* Abstract Section */}
-				<div className="lg:col-span-4 lg:pl-12 border-l border-neutral-200">
-					<div className="flex items-center gap-2 mb-4">
-						<div className="w-1.5 h-1.5 bg-[#FF4400]"></div>
-						<span className="text-[8px] font-mono text-neutral-500 uppercase tracking-widest">
-							Act_I_Substrate
-						</span>
-					</div>
-					<p className="text-xs lg:text-sm text-neutral-500 leading-relaxed max-w-sm font-medium uppercase tracking-wider">
-						A recursive framework for the calibration and deployment of
-						stand-out digital substrates. High-fidelity motion performance as
-						standard.
-					</p>
-				</div>
+				{/* Col 2: Empty (Removed Abstract Text) */}
+				<div className="lg:col-span-4"></div>
 
-				{/* Active Chapters */}
+				{/* Col 3: Active Chapters (Kept) */}
 				<div className="lg:col-span-4 flex justify-end">
 					<div className="text-right space-y-1">
 						<span className="text-[8px] font-mono text-neutral-400 uppercase tracking-[0.4em] block mb-2">
-							Active_Chapters
+							Sequence
 						</span>
 						{["01_SCHEMATIC", "02_PROCESSING", "03_RENDER"].map((chapter) => (
 							<span
