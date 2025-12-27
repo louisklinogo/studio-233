@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import { SystemHUD } from "@/components/landing/SystemHUD";
