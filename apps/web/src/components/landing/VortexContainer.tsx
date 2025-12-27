@@ -97,7 +97,9 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 			if (heroRef?.current) {
 				const { studio, plus, numeric, surface } = heroRef.current;
 				if (studio && plus && numeric && surface) {
+					// Ensure surface stays high enough to be seen but doesn't block track clicks later
 					gsap.set(surface, { zIndex: 50 });
+
 					tl.fromTo(
 						plus,
 						{ rotation: 0, scale: 1 },
@@ -106,39 +108,59 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 							scale: 150,
 							duration: 1.5,
 							ease: "power3.inOut",
-							force3D: true,
+							// removed force3D: true to fix SVG malformation
 						},
 						0,
 					);
+
+					// The Background Wipe: move the giant plus left to reveal paper grid
+					tl.to(
+						plus,
+						{
+							x: -window.innerWidth * 2,
+							duration: 2.5,
+							ease: "power2.inOut",
+						},
+						2.0,
+					);
+
 					tl.fromTo(
 						studio,
 						{ x: 0 },
 						{
-							x: -window.innerWidth * 0.7,
+							x: -window.innerWidth * 0.8,
 							duration: 1.5,
 							ease: "power2.inOut",
 						},
 						0,
 					);
+
+					// THE PERSISTENT 233: Move to edge and stay there
 					tl.fromTo(
 						numeric,
-						{ x: 0 },
-						{ x: window.innerWidth * 0.7, duration: 1.5, ease: "power2.inOut" },
+						{ x: 0, opacity: 1 },
+						{
+							x: () => {
+								const rect = numeric.getBoundingClientRect();
+								return window.innerWidth - rect.right - 60; // 60px from right
+							},
+							duration: 1.5,
+							ease: "power2.inOut",
+						},
 						0,
 					);
 
+					// Fade surface ONLY after track has started appearing
 					tl.fromTo(
 						surface,
 						{ opacity: 1, scaleY: 1 },
 						{
 							opacity: 0,
-							scaleY: 2,
-							duration: 1.2,
-							ease: "power2.inOut",
+							duration: 1.5,
+							ease: "none",
 							pointerEvents: "none",
-							transformOrigin: "center center",
 						},
-						0.8,
+						3.0,
 					);
 				}
 			}

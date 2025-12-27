@@ -26,5 +26,10 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Vortex Hero Scale Fix (Text to SVG Migration)
+## [x] Track: Vortex Hero Scale Fix (Text to SVG Migration)
 *Link: [./conductor/tracks/hero_scale_fix_20251227/](./conductor/tracks/hero_scale_fix_20251227/)*
+
+---
+
+## [~] Track: Vortex Animation & Interaction Refinement
+*Link: [./conductor/tracks/vortex_animations_20251227/](./conductor/tracks/vortex_animations_20251227/)*

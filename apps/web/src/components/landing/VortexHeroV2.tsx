@@ -91,7 +91,11 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 								<rect x="0" y="35" width="100" height="30" />
 							</svg>
 						</span>
-						<span ref={numericRef} className="will-change-transform">
+						<span
+							ref={numericRef}
+							className="inline-block will-change-transform"
+							data-testid="hero-numeric"
+						>
 							233
 						</span>
 						<span className="text-[4vw] font-medium align-top mt-[1.2vw] ml-[0.5vw]">
