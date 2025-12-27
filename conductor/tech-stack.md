@@ -3,7 +3,7 @@
 ## Frontend
 - **Framework:** Next.js 16 (App Router)
 - **Library:** React 19
-- **Canvas Rendering:** React Konva
+- **Canvas Rendering:** React Konva, React Flow (@xyflow/react)
 - **Styling:** Tailwind CSS
 - **Animation:** Framer Motion, GSAP
 - **State Management:** Jotai

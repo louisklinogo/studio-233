@@ -40,7 +40,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 			/>
 
 			{/* Mouse Coordinates HUD (Restored V1 Style) */}
-			<div className="absolute top-1/2 left-8 -translate-y-1/2 flex flex-col gap-1 pointer-events-none opacity-40">
+			<div className="absolute top-1/2 right-8 -translate-y-1/2 flex flex-col items-end gap-1 pointer-events-none opacity-40">
 				<span className="text-[9px] font-mono tracking-widest text-[#1a1a1a]">
 					[X].{Math.round(mousePos.x).toString().padStart(3, "0")}PX
 				</span>
@@ -52,18 +52,18 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 			{/* --- Top Metadata --- */}
 			<div className="flex justify-between items-start z-20">
 				<div className="flex flex-col">
-					<span className="text-[10px] font-mono text-neutral-400 uppercase tracking-[0.4em] mb-1">
+					<span className="text-[10px] font-hal text-neutral-400 uppercase tracking-[0.4em] mb-1">
 						System_Ref
 					</span>
-					<span className="text-[12px] font-mono text-[#1a1a1a] uppercase tracking-widest font-bold">
+					<span className="text-[12px] font-hal text-[#1a1a1a] uppercase tracking-widest font-bold">
 						VORTEX_STREAM_v2.5
 					</span>
 				</div>
 				<div className="text-right">
-					<span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest block">
+					<span className="text-[9px] font-hal text-neutral-400 uppercase tracking-widest block">
 						Status: Active_Handshake
 					</span>
-					<span className="text-[9px] font-mono text-[#FF4400] uppercase tracking-widest font-bold">
+					<span className="text-[9px] font-hal text-[#FF4400] uppercase tracking-widest font-bold">
 						PROTOCOL_READY
 					</span>
 				</div>
@@ -109,13 +109,13 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 				{/* Col 3: Active Chapters (Kept) */}
 				<div className="lg:col-span-4 flex justify-end">
 					<div className="text-right space-y-1">
-						<span className="text-[8px] font-mono text-neutral-400 uppercase tracking-[0.4em] block mb-2">
+						<span className="text-[8px] font-hal text-neutral-400 uppercase tracking-[0.4em] block mb-2">
 							Sequence
 						</span>
 						{["01_SCHEMATIC", "02_PROCESSING", "03_RENDER"].map((chapter) => (
 							<span
 								key={chapter}
-								className="text-[10px] font-mono block text-[#1a1a1a] tracking-wider hover:text-[#FF4400] transition-colors cursor-crosshair"
+								className="text-[10px] font-hal block text-[#1a1a1a] tracking-wider hover:text-[#FF4400] transition-colors cursor-crosshair"
 							>
 								{chapter}
 							</span>

@@ -21,5 +21,10 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Vortex Kinetic Stream Evolution (Braun Industrial + Kinetic)
+## [x] Track: Vortex Kinetic Stream Evolution (Braun Industrial + Kinetic)
 *Link: [./conductor/tracks/vortex_kinetic_stream_20251227/](./conductor/tracks/vortex_kinetic_stream_20251227/)*
+
+---
+
+## [~] Track: Vortex Hero Scale Fix (Text to SVG Migration)
+*Link: [./conductor/tracks/hero_scale_fix_20251227/](./conductor/tracks/hero_scale_fix_20251227/)*

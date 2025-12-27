@@ -19,6 +19,7 @@ studio+233 is the AI-native creative operating system designed to bridge the gap
 3. **Industrial Scale:** Transitioning from one-off creative sparks to mass-produced reality through robust batch processing and queue management.
 
 ## Key Features
+- **Vortex Kinetic Stream:** A cinematic, scroll-triggered narrative entry point that bridges identity with industrial workflow through high-fidelity motion.
 - **Infinite Canvas:** A high-performance spatial interface for organizing, generating, and manipulating creative assets.
 - **Agent Orchestration:** Specialized agents like **Vision Forge** (image processing), **Motion Director** (video), and **Insight Researcher** (analysis) working in concert.
 - **Batch Refinery:** An industrial-grade pipeline for high-volume asset processing and automated transformation.
