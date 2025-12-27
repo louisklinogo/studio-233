@@ -3,8 +3,8 @@
 ## Phase 1: Foundation & Setup
 - [x] Task: Update `metadata.json` for `vortex_kinetic_stream_20251227`.
 - [x] Task: Initialize `vortex-v2-evolution` branch. (b3340bf)
-- [x] Task: Verify GSAP and ScrollTrigger installation in `apps/web`. (b3340bf)
-- [ ] Task: Clean up existing `/vortex` page (remove unused horizontal scroll components if redundant).
+- [x] Task: Verify GSAP and ScrollTrigger installation in `apps/web`. (9cc8b86)
+- [x] Task: Clean up existing `/vortex` page (remove unused horizontal scroll components if redundant). (9cc8b86)
 - [ ] Task: Conductor - User Manual Verification 'Foundation & Setup' (Protocol in workflow.md)
 
 ## Phase 2: Act I - Hero Section Evolution
