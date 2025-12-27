@@ -1,6 +1,6 @@
 # Plan: Vortex Kinetic Stream
 
-## Phase 1: Infrastructure & Setup
+## Phase 1: Infrastructure & Setup [checkpoint: b13a9ad]
 - [x] Task: Create `VortexContainer` Component (66badfd)
     - Create a new component `src/components/landing/VortexContainer.tsx` that will act as the parent orchestrator.
     - Implement the basic HTML structure: A fixed viewport wrapper and the scrollable "track" height (e.g., 300vh).
