@@ -78,6 +78,7 @@ const HoverBlock: React.FC<HoverBlockProps> = ({
 export interface KineticTrackHandle {
 	track: HTMLDivElement | null;
 	blocks: HTMLElement[];
+	images: HTMLElement[];
 }
 
 export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
@@ -88,6 +89,9 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 			track: trackRef.current,
 			blocks: trackRef.current
 				? (gsap.utils.toArray(".kinetic-block") as HTMLElement[])
+				: [],
+			images: trackRef.current
+				? (gsap.utils.toArray(".kinetic-block img") as HTMLElement[])
 				: [],
 		}));
 

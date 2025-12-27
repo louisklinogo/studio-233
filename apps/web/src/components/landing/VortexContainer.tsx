@@ -103,9 +103,8 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 				}
 			}
 
-			// --- Phase 3: The Kinetic Stream (Horizontal Scroll) ---
 			if (trackRef?.current) {
-				const { track, blocks } = trackRef.current;
+				const { track, blocks, images } = trackRef.current;
 
 				if (track && blocks && blocks.length > 0) {
 					const getScrollAmount = () => {
@@ -113,6 +112,8 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						const windowWidth = window.innerWidth;
 						return -(trackWidth - windowWidth);
 					};
+
+					// ... (Keep existing setup code) ...
 
 					// Initial State: Track is visible/centered (via CSS/Flex), but blocks are hidden
 					gsap.set(track, {
@@ -127,6 +128,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						y: 200,
 						opacity: 0,
 						scale: 0.9,
+						skewX: 0,
 					});
 
 					// 1. "Woah" Entry: Staggered Block Reveal (The Box Effect)
@@ -137,12 +139,12 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 							opacity: 1,
 							scale: 1,
 							stagger: {
-								amount: 1.0, // Spread the effect over 1s
-								from: "start", // Start from the first block (left)
+								amount: 1.0,
+								from: "start",
 								grid: "auto",
 							},
 							duration: 1.0,
-							ease: "back.out(1.7)", // Pop effect
+							ease: "back.out(1.7)",
 						},
 						1.2,
 					);
@@ -155,10 +157,47 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 							duration: 4, // Long horizontal scroll
 							ease: "none",
 						},
-						2.5, // Allow time for stagger to finish (1.2 + 1.0 + buffer)
+						2.5,
 					);
+
+					// 3. Parallax for Images
+					if (images && images.length > 0) {
+						tl.to(
+							images,
+							{
+								xPercent: 50, // Significant parallax movement
+								duration: 4,
+								ease: "none",
+							},
+							2.5, // Sync with track scroll
+						);
+					}
 				}
 			}
+
+			// Velocity Skew Proxy
+			// We can't put onUpdate in the timeline scrollTrigger easily if we defined it above.
+			// We'll create a separate ScrollTrigger just for the physics effects.
+			ScrollTrigger.create({
+				trigger: wrapperRef.current,
+				start: "top top",
+				end: "bottom bottom",
+				scrub: 1,
+				onUpdate: (self) => {
+					if (trackRef?.current?.blocks) {
+						const skew = self.getVelocity() / -500;
+						const clampedSkew = Math.max(-15, Math.min(15, skew));
+
+						// Apply skew to blocks
+						gsap.to(trackRef.current.blocks, {
+							skewX: clampedSkew,
+							duration: 0.1,
+							ease: "power1.out",
+							overwrite: "auto",
+						});
+					}
+				},
+			});
 		}, wrapperRef);
 
 		return () => ctx.revert();
