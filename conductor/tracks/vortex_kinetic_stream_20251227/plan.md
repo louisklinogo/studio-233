@@ -10,7 +10,7 @@
     - Remove the internal `ScrollTrigger` pinning logic from `VortexHero` as the parent `VortexContainer` will handle the global timeline.
     - **Test:** Verify `VortexHero` renders correctly as a static element within the new container.
 
-## Phase 2: The Curtain Split (Hero Transition)
+## Phase 2: The Curtain Split (Hero Transition) [checkpoint: e40b863]
 - [x] Task: Implement Hero "Split" Animation (8dd863b)
     - In `VortexContainer`, set up the initial GSAP timeline.
     - Pin the main container.
