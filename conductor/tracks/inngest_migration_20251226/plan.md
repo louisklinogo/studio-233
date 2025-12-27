@@ -18,14 +18,14 @@ Move event definitions to the shared package to enable type-safe triggering acro
 - [x] Task 2.3: Export event constants and types from the package. a814320
 - [x] Task: Conductor - User Manual Verification 'Schema & Type Migration' (Protocol in workflow.md) fbfef26
 
-## Phase 3: Function Porting [checkpoint: ]
+## Phase 3: Function Porting [checkpoint: 630f9c5]
 Move the background job logic into the package.
 
-- [ ] Task 3.1: Port `brand-ingestion.ts` and its dependencies to `packages/inngest/src/functions`.
-- [ ] Task 3.2: Port `archive-vision-result.ts` and `process-workflow-run.ts`.
-- [ ] Task 3.3: Port `studio/process-workflow.ts` (the most complex function).
-- [ ] Task 3.4: Resolve all cross-package imports (@studio233/db, ai, rag) in the new location.
-- [ ] Task: Conductor - User Manual Verification 'Function Porting' (Protocol in workflow.md)
+- [x] Task 3.1: Port `brand-ingestion.ts` and its dependencies to `packages/inngest/src/functions`. 630f9c5
+- [x] Task 3.2: Port `archive-vision-result.ts` and `process-workflow-run.ts`. 630f9c5
+- [x] Task 3.3: Port `studio/process-workflow.ts` (the most complex function). 630f9c5
+- [x] Task 3.4: Resolve all cross-package imports (@studio233/db, ai, rag) in the new location. 630f9c5
+- [x] Task: Conductor - User Manual Verification 'Function Porting' (Protocol in workflow.md) 630f9c5
 
 ## Phase 4: Integration & Cleanup [checkpoint: ]
 Wire the web app to the new package and remove the legacy code.
