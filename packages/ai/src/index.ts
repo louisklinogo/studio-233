@@ -9,6 +9,7 @@ export type {
 	VisionAnalysisResult,
 } from "./schemas/vision-analysis";
 export type { CanvasCommand } from "./types/canvas";
+export { generateWithGemini } from "./utils/gemini";
 export type {
 	BackgroundRemovalInput,
 	BackgroundRemovalResult,

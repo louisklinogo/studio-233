@@ -1,6 +1,6 @@
 export const MODEL_CONFIG = {
 	orchestrator: {
-		model: "gemini-3-pro-preview",
+		model: "gemini-3-flash-preview",
 		temperature: 0.4,
 	},
 	vision: {
@@ -8,7 +8,7 @@ export const MODEL_CONFIG = {
 		temperature: 0.6,
 	},
 	motion: {
-		model: "gemini-3-pro-preview",
+		model: "gemini-3-flash-preview",
 		temperature: 0.3,
 	},
 	research: {
@@ -20,7 +20,7 @@ export const MODEL_CONFIG = {
 		temperature: 0.2,
 	},
 	storyboard: {
-		model: "gemini-3-pro-preview",
+		model: "gemini-3-flash-preview",
 		temperature: 0.75,
 	},
 	general: {

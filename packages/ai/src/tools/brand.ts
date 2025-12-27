@@ -1,7 +1,5 @@
-import { searchBrandKnowledge } from "@studio233/db/vector-search";
-import { Settings } from "llamaindex";
+import { retrievalService } from "@studio233/rag";
 import { z } from "zod";
-import { initLlamaIndex } from "../utils/llama-index";
 import { createTool } from "./factory";
 
 export const consultBrandGuidelinesTool = createTool({
@@ -19,16 +17,8 @@ export const consultBrandGuidelinesTool = createTool({
 			.describe("The workspace ID to look up guidelines for"),
 	}),
 	execute: async ({ context }) => {
-		initLlamaIndex();
-
-		// 1. Generate embedding for the query
-		const embedModel = new GeminiEmbedding({
-			model: "gemini-embedding-001",
-		});
-		const embedding = await embedModel.getTextEmbedding(context.query);
-
-		// 2. Search DB
-		const results = await searchBrandKnowledge(context.workspaceId, embedding);
+		// Search DB using RAG service
+		const results = await retrievalService(context.workspaceId, context.query);
 
 		if (results.length === 0) {
 			return {

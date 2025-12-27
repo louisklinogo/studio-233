@@ -20,7 +20,7 @@ export function withDevTools<
 	if (process.env.NODE_ENV === "development") {
 		return wrapLanguageModel({
 			model,
-			middleware: devToolsMiddleware,
+			middleware: devToolsMiddleware(),
 		}) as unknown as T;
 	}
 	return model;

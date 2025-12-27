@@ -93,5 +93,7 @@ export const disconnect = async () => {
 	}
 };
 
+export * from "./batch-store";
+
 export default prisma;
 export * from "../prisma/generated/client";

@@ -11,6 +11,7 @@ type Env = {
 	ffmpegPath?: string;
 	tavilyBaseUrl: string;
 	exaBaseUrl: string;
+	blobHostname?: string;
 };
 
 let cachedEnv: Env | null = null;
@@ -44,6 +45,7 @@ export function getEnv(): Env {
 		tavilyBaseUrl:
 			process.env.TAVILY_API_BASE_URL ?? "https://api.tavily.com/search",
 		exaBaseUrl: process.env.EXA_API_BASE_URL ?? "https://api.exa.ai/search",
+		blobHostname: process.env.BLOB_HOSTNAME,
 	};
 
 	return cachedEnv;
