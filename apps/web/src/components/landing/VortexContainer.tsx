@@ -1,11 +1,13 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useEffect, useRef, useState } from "react";
+import type { KineticTrackHandle } from "./KineticTrack";
 import type { VortexHeroHandle } from "./VortexHero";
 
 interface VortexContainerProps {
 	children?: React.ReactNode;
 	heroRef?: React.RefObject<VortexHeroHandle | null>;
+	trackRef?: React.RefObject<KineticTrackHandle | null>;
 }
 
 /**
@@ -15,6 +17,7 @@ interface VortexContainerProps {
 export const VortexContainer: React.FC<VortexContainerProps> = ({
 	children,
 	heroRef,
+	trackRef,
 }) => {
 	const [mounted, setMounted] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
@@ -47,7 +50,6 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 				const { studio, plus, numeric } = heroRef.current;
 
 				if (studio && plus && numeric) {
-					// 1. The "+" rotates 90 degrees (Quarter turn)
 					tl.to(
 						plus,
 						{
@@ -58,22 +60,20 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						0,
 					);
 
-					// 2. "STUDIO" moves LEFT (framing the content)
 					tl.to(
 						studio,
 						{
-							x: -window.innerWidth * 0.4, // Move towards left edge
+							x: -window.innerWidth * 0.4,
 							duration: 1,
 							ease: "power2.inOut",
 						},
 						0,
 					);
 
-					// 3. "233" moves RIGHT (framing the content)
 					tl.to(
 						numeric,
 						{
-							x: window.innerWidth * 0.4, // Move towards right edge
+							x: window.innerWidth * 0.4,
 							duration: 1,
 							ease: "power2.inOut",
 						},
@@ -81,10 +81,36 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 					);
 				}
 			}
+
+			// --- Phase 3: The Kinetic Stream (Horizontal Scroll) ---
+			if (trackRef?.current) {
+				const { track } = trackRef.current;
+
+				if (track) {
+					// We calculate how much we need to scroll horizontally
+					// This should be the width of the track minus the viewport width
+					// Using a function to ensure it's calculated on refresh/resize
+					const getScrollAmount = () => {
+						const trackWidth = track.offsetWidth;
+						const windowWidth = window.innerWidth;
+						return -(trackWidth - windowWidth);
+					};
+
+					tl.to(
+						track,
+						{
+							x: getScrollAmount,
+							duration: 3,
+							ease: "none",
+						},
+						0.5,
+					);
+				}
+			}
 		}, wrapperRef);
 
 		return () => ctx.revert();
-	}, [mounted, heroRef]);
+	}, [mounted, heroRef, trackRef]);
 
 	return (
 		<div
