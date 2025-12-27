@@ -25,7 +25,7 @@
     - Implement the horizontal layout using Flexbox (`flex-nowrap`).
     - Populate with the existing Manifesto data (text and images).
     - **Test:** Verify the content renders in a horizontal row (overflowing the viewport).
-- [ ] Task: Implement Horizontal Scroll Logic
+- [x] Task: Implement Horizontal Scroll Logic (828efe0)
     - In `VortexContainer`, add the horizontal translation to the main timeline.
     - Connect the `x` value of the `KineticTrack` to the scroll progress (e.g., `xPercent: -100 * (sections - 1)`).
     - **Test:** Verify that scrolling vertically translates the track horizontally.
