@@ -5,14 +5,14 @@ import { useMouseCoordinates } from "@/hooks/useMouseCoordinates";
 
 export interface VortexHeroHandle {
 	studio: HTMLSpanElement | null;
-	plus: HTMLSpanElement | null;
+	plus: HTMLSpanElement | SVGSVGElement | null;
 	numeric: HTMLSpanElement | null;
 	surface: HTMLDivElement | null;
 }
 
 export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 	const studioRef = useRef<HTMLSpanElement>(null);
-	const plusRef = useRef<HTMLSpanElement>(null);
+	const plusRef = useRef<SVGSVGElement>(null);
 	const numericRef = useRef<HTMLSpanElement>(null);
 	const surfaceRef = useRef<HTMLDivElement>(null);
 
@@ -79,11 +79,17 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						STUDIO
 					</span>
 					<span className="flex items-center">
-						<span
-							ref={plusRef}
-							className="inline-block mx-[0.05em] text-[#FF4400] origin-center will-change-transform"
-						>
-							+
+						<span className="inline-block mx-[0.05em] text-[#FF4400] origin-center will-change-transform h-[10vw] w-[10vw]">
+							<svg
+								ref={plusRef}
+								viewBox="0 0 100 100"
+								className="w-full h-full fill-current"
+								style={{ shapeRendering: "geometricPrecision" }}
+								data-testid="hero-plus-svg"
+							>
+								<rect x="35" y="0" width="30" height="100" />
+								<rect x="0" y="35" width="100" height="30" />
+							</svg>
 						</span>
 						<span ref={numericRef} className="will-change-transform">
 							233

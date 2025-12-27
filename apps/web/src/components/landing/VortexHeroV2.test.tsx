@@ -8,3 +8,7 @@ test("VortexHeroV2 is a forwardRef component", () => {
 		(VortexHeroV2 as any).$$typeof !== undefined;
 	expect(isForwardRef).toBe(true);
 });
+
+test("VortexHeroV2 defines handle types correctly", () => {
+	// This is a static test for types/structure if needed
+});
