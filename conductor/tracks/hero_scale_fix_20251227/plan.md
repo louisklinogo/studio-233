@@ -21,6 +21,6 @@ Fixing the pixelation issue of the Hero "+" symbol by migrating from text-based 
 - [x] Task: Conductor - User Manual Verification 'Animation Hardening' (Protocol in workflow.md) 92e0163
 
 ## Phase 4: Final Verification [ ]
-- [ ] Task: Write/Update a unit test to ensure the `VortexHeroV2` component renders the SVG and maintains the `plusRef` interface.
-- [ ] Task: Verify sharpness at 150x scale across different zoom levels in the browser.
+- [x] Task: Write/Update a unit test to ensure the `VortexHeroV2` component renders the SVG and maintains the `plusRef` interface.
+- [x] Task: Verify sharpness at 150x scale across different zoom levels in the browser.
 - [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
