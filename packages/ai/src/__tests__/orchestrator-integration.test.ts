@@ -59,6 +59,7 @@ mock.module("ai", () => {
 		convertToModelMessages: (m: any) => m,
 		tool: (t: any) => t,
 		zodSchema: (s: any) => s,
+		wrapLanguageModel: (p: any) => p.model,
 	};
 });
 
@@ -80,7 +81,7 @@ describe("Orchestrator Integration", () => {
 			"https://example.com/cat.jpg",
 		);
 		expect(lastGenerateTextParams.system).toContain(
-			"[System Note]: A reference image is available",
+			"[System Note]: The following reference images are available",
 		);
 	});
 });
