@@ -5,7 +5,7 @@
     - Create a new component `src/components/landing/VortexContainer.tsx` that will act as the parent orchestrator.
     - Implement the basic HTML structure: A fixed viewport wrapper and the scrollable "track" height (e.g., 300vh).
     - **Test:** Verify the component renders and creates the correct scrollable height.
-- [ ] Task: Refactor `VortexHero` for Composition
+- [x] Task: Refactor `VortexHero` for Composition (974b716)
     - Modify `VortexHero.tsx` to accept props or ref forwarding if necessary, or simply prepare it to be a child of `VortexContainer`.
     - Remove the internal `ScrollTrigger` pinning logic from `VortexHero` as the parent `VortexContainer` will handle the global timeline.
     - **Test:** Verify `VortexHero` renders correctly as a static element within the new container.
