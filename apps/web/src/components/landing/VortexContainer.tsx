@@ -5,6 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useEffect, useRef, useState } from "react";
 import type { KineticTrackHandle } from "./KineticTrack";
 import type { VortexHeroHandle } from "./VortexHero";
+import { WorkflowEngine, WorkflowEngineHandle } from "./WorkflowEngine";
 
 interface VortexContainerProps {
 	children?: React.ReactNode;
@@ -24,6 +25,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 	const [mounted, setMounted] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
+	const engineRef = useRef<WorkflowEngineHandle>(null);
 
 	useEffect(() => {
 		setMounted(true);
@@ -47,137 +49,155 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 				},
 			});
 
-			// --- Phase 2: The Curtain Split ---
+			// --- Phase 2: The Curtain Split (Act I -> Act II) ---
 			if (heroRef?.current) {
 				const { studio, plus, numeric, surface } = heroRef.current;
-				console.log("VortexContainer: Hero elements found", {
-					studio,
-					plus,
-					numeric,
-					surface,
-				});
 
 				if (studio && plus && numeric && surface) {
 					// 1. Aperture Expansion
 					tl.to(
 						plus,
-						{
-							rotation: 90,
-							scale: 3000,
-							duration: 1.5,
-							ease: "power3.inOut",
-						},
+						{ rotation: 90, scale: 3000, duration: 1.5, ease: "power3.inOut" },
 						0,
 					);
-
 					tl.to(
 						studio,
 						{
-							x: -window.innerWidth * 0.6, // Push further to ensure clearance
-							duration: 1.5, // Match duration with aperture
+							x: -window.innerWidth * 0.6,
+							duration: 1.5,
 							ease: "power2.inOut",
 						},
 						0,
 					);
-
 					tl.to(
 						numeric,
-						{
-							x: window.innerWidth * 0.6, // Push further to ensure clearance
-							duration: 1.5, // Match duration with aperture
-							ease: "power2.inOut",
-						},
+						{ x: window.innerWidth * 0.6, duration: 1.5, ease: "power2.inOut" },
 						0,
 					);
-
-					// Fade out the black surface slightly later to ensure seamless white-out
-					tl.to(
-						surface,
-						{
-							opacity: 0,
-							duration: 0.5,
-							ease: "none",
-						},
-						1.0,
-					);
+					tl.to(surface, { opacity: 0, duration: 0.5, ease: "none" }, 1.0);
 				}
 			}
 
+			// --- Phase 3: The Manifesto (Act II) ---
 			if (trackRef?.current) {
 				const { track, blocks, images } = trackRef.current;
 
 				if (track && blocks && blocks.length > 0) {
-					const getScrollAmount = () => {
-						const trackWidth = track.scrollWidth;
-						const windowWidth = window.innerWidth;
-						return -(trackWidth - windowWidth);
-					};
+					const getScrollAmount = () =>
+						-(track.scrollWidth - window.innerWidth);
 
-					// ... (Keep existing setup code) ...
+					// Initial State
+					gsap.set(track, { opacity: 1, scale: 1, filter: "none", y: 0 });
+					gsap.set(blocks, { y: 200, opacity: 0, scale: 0.9, skewX: 0 });
 
-					// Initial State: Track is visible/centered (via CSS/Flex), but blocks are hidden
-					gsap.set(track, {
-						opacity: 1,
-						scale: 1,
-						filter: "none",
-						y: 0,
-					});
-
-					// Set initial state for blocks (hidden, slightly down)
-					gsap.set(blocks, {
-						y: 200,
-						opacity: 0,
-						scale: 0.9,
-						skewX: 0,
-					});
-
-					// 1. "Woah" Entry: Staggered Block Reveal (The Box Effect)
+					// Reveal Blocks
 					tl.to(
 						blocks,
 						{
 							y: 0,
 							opacity: 1,
 							scale: 1,
-							stagger: {
-								amount: 1.0,
-								from: "start",
-								grid: "auto",
-							},
+							stagger: { amount: 1.0, from: "start", grid: "auto" },
 							duration: 1.0,
 							ease: "back.out(1.7)",
 						},
 						1.2,
 					);
 
-					// 2. The Horizontal Scroll (Begins after the reveal settles)
+					// Horizontal Scroll
 					tl.to(
 						track,
 						{
 							x: getScrollAmount,
-							duration: 4, // Long horizontal scroll
+							duration: 4,
 							ease: "none",
 						},
 						2.5,
 					);
 
-					// 3. Parallax for Images
+					// Parallax
 					if (images && images.length > 0) {
-						tl.to(
-							images,
-							{
-								xPercent: 50, // Significant parallax movement
-								duration: 4,
-								ease: "none",
-							},
-							2.5, // Sync with track scroll
-						);
+						tl.to(images, { xPercent: 50, duration: 4, ease: "none" }, 2.5);
 					}
 				}
 			}
 
-			// Velocity Skew Proxy
-			// We can't put onUpdate in the timeline scrollTrigger easily if we defined it above.
-			// We'll create a separate ScrollTrigger just for the physics effects.
+			// --- Phase 4: The Machine (Act III) ---
+			if (engineRef.current) {
+				const { container, canvas } = engineRef.current;
+
+				if (container && canvas?.canvasGroup) {
+					// 1. Reveal Engine Container (Fade in over manifesto)
+					tl.to(
+						container,
+						{
+							opacity: 1,
+							scale: 1,
+							duration: 1.5,
+							ease: "power2.inOut",
+							pointerEvents: "auto",
+						},
+						6.5,
+					); // Starts after manifesto scroll finishes
+
+					// 2. Zoom In Schematic
+					tl.fromTo(
+						canvas.canvasGroup,
+						{ scale: 2.0, opacity: 0 },
+						{ scale: 1.0, opacity: 1, duration: 1.5, ease: "power3.inOut" },
+						"<+=0.5",
+					);
+
+					// 3. Camera Pan Sequence (Simulated Data Flow)
+					// Pan to Input
+					tl.to(
+						canvas.canvasGroup,
+						{
+							x: 150,
+							scale: 1.1,
+							duration: 1.5,
+							ease: "power2.inOut",
+						},
+						"+=0.2",
+					);
+
+					// Pan to Processor
+					tl.to(
+						canvas.canvasGroup,
+						{
+							x: -150,
+							scale: 1.2,
+							duration: 1.5,
+							ease: "power2.inOut",
+						},
+						"+=0.5",
+					);
+
+					// Pan to Output
+					tl.to(
+						canvas.canvasGroup,
+						{
+							x: -450,
+							scale: 1.2,
+							duration: 1.5,
+							ease: "power2.inOut",
+						},
+						"+=0.5",
+					);
+
+					// 4. Reveal Product (If accessible, or simulate via stage setter)
+					// We'll use a call to trigger the internal state change in the canvas component
+					tl.call(
+						() => {
+							if (canvas.setProductStage) canvas.setProductStage("render");
+						},
+						[],
+						"+=0.5",
+					);
+				}
+			}
+
+			// Velocity Skew Proxy (Manifesto only)
 			ScrollTrigger.create({
 				trigger: wrapperRef.current,
 				start: "top top",
@@ -187,8 +207,6 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 					if (trackRef?.current?.blocks) {
 						const skew = self.getVelocity() / -500;
 						const clampedSkew = Math.max(-15, Math.min(15, skew));
-
-						// Apply skew to blocks
 						gsap.to(trackRef.current.blocks, {
 							skewX: clampedSkew,
 							duration: 0.1,
@@ -206,7 +224,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 	return (
 		<div
 			ref={wrapperRef}
-			className="relative w-full h-[500vh] bg-[#050505] z-40"
+			className="relative w-full h-[800vh] bg-[#050505] z-40"
 			data-testid="vortex-wrapper"
 		>
 			<div
@@ -215,6 +233,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 				data-testid="vortex-viewport"
 			>
 				{children}
+				<WorkflowEngine ref={engineRef} />
 			</div>
 		</div>
 	);

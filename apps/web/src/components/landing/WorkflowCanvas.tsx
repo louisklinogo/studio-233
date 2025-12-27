@@ -18,6 +18,14 @@ import React, {
 } from "react";
 
 // --- Types & Constants ---
+export interface WorkflowCanvasHandle {
+	setProductStage: (stage: "empty" | "wireframe" | "render" | "edited") => void;
+	setActivePacket: (packet: string | null) => void;
+	setZoom: (zoom: number) => void;
+	setCamera: (camera: { x: number; y: number }) => void;
+	canvasGroup: SVGGElement | null;
+}
+
 export interface NodeData {
 	id: string;
 	label: string;
@@ -179,12 +187,15 @@ export const WorkflowCanvas = forwardRef((props, ref) => {
 	const [zoom, setZoom] = useState(1);
 	const [camera, setCamera] = useState({ x: 600, y: 150 });
 
+	const canvasGroupRef = useRef<SVGGElement>(null);
+
 	// Expose controls for GSAP orchestration later
 	useImperativeHandle(ref, () => ({
 		setProductStage,
 		setActivePacket,
 		setZoom,
 		setCamera,
+		canvasGroup: canvasGroupRef.current,
 	}));
 
 	const getConnectorPath = (source: NodeData, target: NodeData) => {
@@ -216,6 +227,7 @@ export const WorkflowCanvas = forwardRef((props, ref) => {
 				</defs>
 
 				<g
+					ref={canvasGroupRef}
 					style={{
 						transform: `translate(50%, 50%) scale(${zoom}) translate(${-camera.x}px, ${-camera.y}px)`,
 						transition: "transform 1.2s cubic-bezier(0.16, 1, 0.3, 1)",
