@@ -7,6 +7,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import { useMouseCoordinates } from "@/hooks/useMouseCoordinates";
 
 export interface VortexHeroHandle {
 	studio: HTMLSpanElement | null;
@@ -25,7 +26,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 	const numericRef = useRef<HTMLSpanElement>(null);
 	const surfaceRef = useRef<HTMLDivElement>(null);
 
-	const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+	const mousePos = useMouseCoordinates();
 
 	useImperativeHandle(ref, () => ({
 		studio: studioRef.current,
@@ -33,17 +34,6 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 		numeric: numericRef.current,
 		surface: surfaceRef.current,
 	}));
-
-	useEffect(() => {
-		const handleMove = (e: MouseEvent) => {
-			setMousePos({
-				x: (e.clientX / window.innerWidth) * 100,
-				y: (e.clientY / window.innerHeight) * 100,
-			});
-		};
-		window.addEventListener("mousemove", handleMove);
-		return () => window.removeEventListener("mousemove", handleMove);
-	}, []);
 
 	return (
 		<div
