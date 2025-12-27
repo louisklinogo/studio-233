@@ -101,7 +101,13 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 					tl.fromTo(
 						plus,
 						{ rotation: 0, scale: 1 },
-						{ rotation: 90, scale: 150, duration: 1.5, ease: "power3.inOut" },
+						{
+							rotation: 90,
+							scale: 150,
+							duration: 1.5,
+							ease: "power3.inOut",
+							force3D: true,
+						},
 						0,
 					);
 					tl.fromTo(
