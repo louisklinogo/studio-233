@@ -13,12 +13,12 @@
 - [x] Task: Add "Identifier Barcode" visual element (audio-reactive style). (9609974)
 - [x] Task: Conductor - User Manual Verification 'Act I - Hero Section' (739df15)
 
-## Phase 3: Act II - The Workflow Engine Structure
-- [ ] Task: Create `WorkflowEngine` container.
-- [ ] Task: Implement `WorkflowCanvas` with crisp SVG Node rendering.
-- [ ] Task: Implement "Braun" Node styling (Swiss Orange accents, precise borders).
-- [ ] Task: Create `GeneratedProduct` with wireframe and rendered states.
-- [ ] Task: Conductor - User Manual Verification 'Act II - The Workflow Engine Structure' (Protocol in workflow.md)
+## Phase 3: Act II - The Workflow Engine Structure [checkpoint: 16b2acd]
+- [x] Task: Create `WorkflowEngine` container. (eae69a1)
+- [x] Task: Implement `WorkflowCanvas` with crisp SVG Node rendering. (eae69a1)
+- [x] Task: Implement "Braun" Node styling (Swiss Orange accents, precise borders). (eae69a1)
+- [x] Task: Create `GeneratedProduct` with wireframe and rendered states. (eae69a1)
+- [x] Task: Conductor - User Manual Verification 'Act II - The Workflow Engine Structure' (eae69a1)
 
 ## Phase 4: Act III - Kinetic Animation (GSAP)
 - [ ] Task: Implement `useWorkflowTimeline` hook.
