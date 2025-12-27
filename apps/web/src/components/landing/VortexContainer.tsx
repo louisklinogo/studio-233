@@ -26,6 +26,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const engineRef = useRef<WorkflowEngineHandle>(null);
+	const readoutRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		setMounted(true);
@@ -54,14 +55,20 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 				const { studio, plus, numeric, surface } = heroRef.current;
 
 				if (studio && plus && numeric && surface) {
-					// 1. Aperture Expansion
-					tl.to(
+					// Prepare for performance
+					gsap.set([studio, plus, numeric], { willChange: "transform" });
+
+					// 1. Aperture Expansion (Using fromTo for stable scrubbing)
+					tl.fromTo(
 						plus,
-						{ rotation: 90, scale: 3000, duration: 1.5, ease: "power3.inOut" },
+						{ rotation: 0, scale: 1 },
+						{ rotation: 90, scale: 150, duration: 1.5, ease: "power3.inOut" }, // Reduced scale from 3000 to 150 (safer)
 						0,
 					);
-					tl.to(
+
+					tl.fromTo(
 						studio,
+						{ x: 0 },
 						{
 							x: -window.innerWidth * 0.6,
 							duration: 1.5,
@@ -69,12 +76,20 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						},
 						0,
 					);
-					tl.to(
+
+					tl.fromTo(
 						numeric,
+						{ x: 0 },
 						{ x: window.innerWidth * 0.6, duration: 1.5, ease: "power2.inOut" },
 						0,
 					);
-					tl.to(surface, { opacity: 0, duration: 0.5, ease: "none" }, 1.0);
+
+					tl.fromTo(
+						surface,
+						{ opacity: 1 },
+						{ opacity: 0, duration: 0.5, ease: "none" },
+						1.0,
+					);
 				}
 			}
 
@@ -115,6 +130,37 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						2.5,
 					);
 
+					// 4. "The Drop": Select the last block ("process.") and drop it
+					const lastBlock = blocks[blocks.length - 1];
+					if (lastBlock) {
+						tl.to(
+							lastBlock,
+							{
+								y: window.innerHeight * 0.4,
+								rotation: 5,
+								opacity: 0,
+								duration: 1.2,
+								ease: "power2.in",
+							},
+							6.5,
+						);
+
+						// Act IV: The Bridge - Explanatory Text
+						if (readoutRef.current) {
+							tl.fromTo(
+								readoutRef.current,
+								{ opacity: 0, y: 20 },
+								{ opacity: 1, y: 0, duration: 1.0, ease: "power2.out" },
+								6.8,
+							);
+							tl.to(
+								readoutRef.current,
+								{ opacity: 0, y: -20, duration: 1.0, ease: "power2.in" },
+								8.5,
+							);
+						}
+					}
+
 					// Parallax
 					if (images && images.length > 0) {
 						tl.to(images, { xPercent: 50, duration: 4, ease: "none" }, 2.5);
@@ -122,23 +168,23 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 				}
 			}
 
-			// --- Phase 4: The Machine (Act III) ---
+			// --- Phase 4: The Machine (Act III/V) ---
 			if (engineRef.current) {
 				const { container, canvas } = engineRef.current;
 
 				if (container && canvas?.canvasGroup) {
-					// 1. Reveal Engine Container (Fade in over manifesto)
+					// 1. Reveal Engine Container (Fade in as 'process' drops)
 					tl.to(
 						container,
 						{
 							opacity: 1,
 							scale: 1,
 							duration: 1.5,
-							ease: "power2.inOut",
+							ease: "power3.out",
 							pointerEvents: "auto",
 						},
-						6.5,
-					); // Starts after manifesto scroll finishes
+						9.0,
+					); // Delay slightly more to let bridge text finish
 
 					// 2. Zoom In Schematic
 					tl.fromTo(
@@ -148,51 +194,39 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						"<+=0.5",
 					);
 
-					// 3. Camera Pan Sequence (Simulated Data Flow)
-					// Pan to Input
+					// 3. Camera Pan Sequence
 					tl.to(
 						canvas.canvasGroup,
-						{
-							x: 150,
-							scale: 1.1,
-							duration: 1.5,
-							ease: "power2.inOut",
-						},
+						{ x: 150, scale: 1.1, duration: 1.5, ease: "power2.inOut" },
 						"+=0.2",
 					);
-
-					// Pan to Processor
 					tl.to(
 						canvas.canvasGroup,
-						{
-							x: -150,
-							scale: 1.2,
-							duration: 1.5,
-							ease: "power2.inOut",
-						},
+						{ x: -150, scale: 1.2, duration: 1.5, ease: "power2.inOut" },
+						"+=0.5",
+					);
+					tl.to(
+						canvas.canvasGroup,
+						{ x: -450, scale: 1.2, duration: 1.5, ease: "power2.inOut" },
 						"+=0.5",
 					);
 
-					// Pan to Output
-					tl.to(
-						canvas.canvasGroup,
-						{
-							x: -450,
-							scale: 1.2,
-							duration: 1.5,
-							ease: "power2.inOut",
-						},
-						"+=0.5",
-					);
-
-					// 4. Reveal Product (If accessible, or simulate via stage setter)
-					// We'll use a call to trigger the internal state change in the canvas component
+					// 4. Reveal Product
 					tl.call(
 						() => {
 							if (canvas.setProductStage) canvas.setProductStage("render");
 						},
 						[],
 						"+=0.5",
+					);
+
+					// 5. UNLOCK INTERACTIVITY (Option 2)
+					tl.call(
+						() => {
+							if (canvas.setIsInteractive) canvas.setIsInteractive(true);
+						},
+						[],
+						"+=1.0",
 					);
 				}
 			}
@@ -233,6 +267,27 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 				data-testid="vortex-viewport"
 			>
 				{children}
+
+				{/* Act IV: The Bridge Readout */}
+				<div
+					ref={readoutRef}
+					className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 opacity-0"
+				>
+					<div className="flex flex-col items-center gap-4 text-center">
+						<span className="text-[10px] font-mono text-[#FF4400] uppercase tracking-[0.5em] font-bold">
+							Initializing_Logic_Engine
+						</span>
+						<h2 className="text-4xl md:text-6xl font-black text-[#1a1a1a] uppercase tracking-tighter">
+							Deterministic Output
+						</h2>
+						<div className="flex gap-2 items-center text-[9px] font-mono text-neutral-400 uppercase tracking-widest">
+							<span>Status: Calibration</span>
+							<div className="w-1 h-1 bg-[#FF4400] rounded-full animate-pulse" />
+							<span>v2.5_STABLE</span>
+						</div>
+					</div>
+				</div>
+
 				<WorkflowEngine ref={engineRef} />
 			</div>
 		</div>

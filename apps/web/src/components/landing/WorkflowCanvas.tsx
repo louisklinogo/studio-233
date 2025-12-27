@@ -23,6 +23,7 @@ export interface WorkflowCanvasHandle {
 	setActivePacket: (packet: string | null) => void;
 	setZoom: (zoom: number) => void;
 	setCamera: (camera: { x: number; y: number }) => void;
+	setIsInteractive: (isInteractive: boolean) => void;
 	canvasGroup: SVGGElement | null;
 }
 
@@ -186,17 +187,46 @@ export const WorkflowCanvas = forwardRef((props, ref) => {
 	const [activePacket, setActivePacket] = useState<string | null>(null);
 	const [zoom, setZoom] = useState(1);
 	const [camera, setCamera] = useState({ x: 600, y: 150 });
+	const [isInteractive, setIsInteractive] = useState(false);
 
 	const canvasGroupRef = useRef<SVGGElement>(null);
+	const isDragging = useRef(false);
+	const lastMousePos = useRef({ x: 0, y: 0 });
 
-	// Expose controls for GSAP orchestration later
+	// Expose controls for GSAP orchestration
 	useImperativeHandle(ref, () => ({
 		setProductStage,
 		setActivePacket,
 		setZoom,
 		setCamera,
+		setIsInteractive,
 		canvasGroup: canvasGroupRef.current,
 	}));
+
+	const handleMouseDown = (e: React.MouseEvent) => {
+		if (!isInteractive) return;
+		isDragging.current = true;
+		lastMousePos.current = { x: e.clientX, y: e.clientY };
+	};
+
+	const handleMouseMove = (e: React.MouseEvent) => {
+		if (!isDragging.current || !isInteractive) return;
+		const dx = (e.clientX - lastMousePos.current.x) / zoom;
+		const dy = (e.clientY - lastMousePos.current.y) / zoom;
+
+		setCamera((prev) => ({ x: prev.x - dx, y: prev.y - dy }));
+		lastMousePos.current = { x: e.clientX, y: e.clientY };
+	};
+
+	const handleMouseUp = () => {
+		isDragging.current = false;
+	};
+
+	const handleWheel = (e: React.WheelEvent) => {
+		if (!isInteractive) return;
+		const delta = e.deltaY * -0.001;
+		setZoom((prev) => Math.min(Math.max(0.5, prev + delta), 3));
+	};
 
 	const getConnectorPath = (source: NodeData, target: NodeData) => {
 		const startX = source.x + source.width / 2;
@@ -208,7 +238,14 @@ export const WorkflowCanvas = forwardRef((props, ref) => {
 	};
 
 	return (
-		<div className="w-full h-full relative overflow-hidden bg-[#fbfbfb] select-none">
+		<div
+			className={`w-full h-full relative overflow-hidden bg-[#fbfbfb] select-none ${isInteractive ? "cursor-grab active:cursor-grabbing" : "cursor-default"}`}
+			onMouseDown={handleMouseDown}
+			onMouseMove={handleMouseMove}
+			onMouseUp={handleMouseUp}
+			onMouseLeave={handleMouseUp}
+			onWheel={handleWheel}
+		>
 			<svg className="w-full h-full absolute inset-0">
 				<defs>
 					<pattern
