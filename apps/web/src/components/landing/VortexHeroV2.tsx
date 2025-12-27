@@ -76,8 +76,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						ref={studioRef}
 						className="flex items-center gap-[0.02em] will-change-transform"
 					>
-						STUDIO{" "}
-						<span className="text-neutral-300 font-light opacity-50">©</span>
+						STUDIO
 					</span>
 					<span className="flex items-center">
 						<span

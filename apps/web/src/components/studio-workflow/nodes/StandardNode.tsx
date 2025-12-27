@@ -47,16 +47,23 @@ export function StandardNode({
 	return (
 		<div
 			className={cn(
-				"group relative min-w-[160px] rounded-[2px] border transition-all duration-200",
-				"bg-[#f4f4f0] dark:bg-[#111111]", // Surface
+				"group relative min-w-[180px] rounded-[1px] border transition-all duration-200 shadow-sm overflow-hidden",
+				"bg-[#f4f4f0] dark:bg-[#111111]", // Surface matches canvas
 				selected
-					? "border-[#FF4D00] shadow-[0_0_0_1px_#FF4D00]"
-					: "border-neutral-300 dark:border-neutral-700 shadow-sm hover:border-neutral-400 dark:hover:border-neutral-600",
+					? "border-[#FF4400] shadow-[0_0_10px_rgba(255,68,0,0.1)]"
+					: "border-neutral-300 dark:border-neutral-700 hover:border-neutral-400",
 			)}
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			{/* MANUAL FLOATING TOOLBAR (Replaces NodeToolbar) */}
+			{/* Industrial Detail: Top Speaker Grill (Left) */}
+			<div className="absolute top-1 left-2 flex gap-0.5 opacity-20">
+				{[...Array(4)].map((_, i) => (
+					<div key={i} className="w-0.5 h-0.5 rounded-full bg-black" />
+				))}
+			</div>
+
+			{/* MANUAL FLOATING TOOLBAR */}
 			{selected && (
 				<div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white dark:bg-[#1a1a1a] p-1 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-xl z-50">
 					<button
@@ -93,18 +100,20 @@ export function StandardNode({
 			{/* Header Strip */}
 			<div
 				className={cn(
-					"px-2.5 py-1.5 flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 rounded-t-[1px]",
+					"px-3 py-2 flex items-center justify-between border-b border-neutral-200 rounded-t-[1px]",
 					headerColor,
 				)}
 			>
-				<span className="text-[9px] font-mono font-bold uppercase tracking-wider truncate max-w-[110px]">
+				<span className="text-[10px] font-mono font-bold uppercase tracking-[0.1em] truncate max-w-[120px]">
 					{data.label}
 				</span>
-				{/* Status LED */}
+				{/* Status LED (Pulsing Orange) */}
 				<div
 					className={cn(
-						"w-1.5 h-1.5 rounded-full transition-all duration-300",
-						statusColor,
+						"w-1.5 h-1.5 rounded-full",
+						data.status === "running"
+							? "bg-[#FF4400] animate-pulse shadow-[0_0_5px_#FF4400]"
+							: "bg-neutral-300",
 					)}
 				/>
 			</div>

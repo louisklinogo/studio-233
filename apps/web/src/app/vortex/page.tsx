@@ -6,6 +6,7 @@ import {
 	KineticTrack,
 	type KineticTrackHandle,
 } from "@/components/landing/KineticTrack";
+import { SystemCalibrationLoader } from "@/components/landing/SystemCalibrationLoader";
 import { SystemHUD } from "@/components/landing/SystemHUD";
 import { VortexContainer } from "@/components/landing/VortexContainer";
 import {
@@ -17,6 +18,7 @@ import { CustomCursor } from "@/components/ui/CustomCursor";
 
 export default function VortexPage() {
 	const [mounted, setMounted] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const heroRef = useRef<VortexHeroHandle>(null);
 	const trackRef = useRef<KineticTrackHandle>(null);
 
@@ -30,9 +32,13 @@ export default function VortexPage() {
 		<VortexLenis>
 			<CustomCursor />
 
+			{loading && (
+				<SystemCalibrationLoader onComplete={() => setLoading(false)} />
+			)}
+
 			<motion.div
 				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
+				animate={{ opacity: loading ? 0 : 1 }}
 				transition={{ duration: 1.5 }}
 				className="min-h-dvh bg-[#f4f4f0] text-neutral-50 font-sans selection:bg-[#D81E05] selection:text-white relative"
 			>

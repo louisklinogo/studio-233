@@ -25,7 +25,7 @@ export const WorkflowEngine = forwardRef<WorkflowEngineHandle, {}>(
 		return (
 			<section
 				ref={containerRef}
-				className="absolute inset-0 w-full h-screen bg-[#f4f4f0] overflow-hidden flex flex-col items-center justify-center p-8 lg:p-24 border-y border-neutral-200/60 opacity-0 pointer-events-none scale-150"
+				className="absolute inset-0 w-full h-screen bg-transparent overflow-hidden flex flex-col items-center justify-center p-8 lg:p-24 opacity-0 pointer-events-none scale-150"
 			>
 				{/* Section Metadata Headers (V2 Style) */}
 				<div className="absolute top-12 left-12 flex flex-col z-20">
@@ -50,7 +50,7 @@ export const WorkflowEngine = forwardRef<WorkflowEngineHandle, {}>(
 				</div>
 
 				{/* The Monolith Container (The Canvas Viewport) */}
-				<div className="w-full h-full max-w-[1400px] border border-neutral-200/80 shadow-[0_40px_100px_rgba(0,0,0,0.04)] rounded-sm overflow-hidden bg-white relative z-10 group">
+				<div className="w-full h-full max-w-[1400px] border border-neutral-200/80 shadow-[0_40px_100px_rgba(0,0,0,0.04)] rounded-sm overflow-hidden bg-transparent relative z-10 group">
 					<WorkflowCanvas ref={canvasRef} />
 				</div>
 
