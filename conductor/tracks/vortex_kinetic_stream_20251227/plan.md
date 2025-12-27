@@ -19,35 +19,18 @@
     - **Test:** Verify the animation plays correctly on scroll and the text moves to the edges.
 - [ ] Task: Conductor - User Manual Verification 'The Curtain Split' (Protocol in workflow.md)
 
-## Phase 3: The Kinetic Stream (Manifesto Implementation)
+## Phase 3: The Kinetic Stream (Manifesto Implementation) [checkpoint: 822c116]
 - [x] Task: Create `KineticTrack` Component (dc3bb14)
-    - Create `src/components/landing/KineticTrack.tsx`.
-    - Implement the horizontal layout using Flexbox (`flex-nowrap`).
-    - Populate with the existing Manifesto data (text and images).
-    - **Test:** Verify the content renders in a horizontal row (overflowing the viewport).
 - [x] Task: Implement Horizontal Scroll Logic (828efe0)
-    - In `VortexContainer`, add the horizontal translation to the main timeline.
-    - Connect the `x` value of the `KineticTrack` to the scroll progress (e.g., `xPercent: -100 * (sections - 1)`).
-    - **Test:** Verify that scrolling vertically translates the track horizontally.
-- [ ] Task: Conductor - User Manual Verification 'The Kinetic Stream' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'The Kinetic Stream' (Protocol in workflow.md)
 
-## Phase 4: Swiss Polish (Parallax & Physics)
-- [ ] Task: Implement Parallax Depth
-    - Select image elements within the track.
-    - Apply a secondary motion to them (e.g., `xPercent: 20`) relative to their container to create depth.
-- [ ] Task: Implement Velocity Skew
-    - Use `ScrollTrigger.velocity` or a proxy object to detect scroll speed.
-    - Apply `skewX` to the text elements based on this velocity.
-- [ ] Task: Implement Focus/Opacity Range
-    - Add a scroll listener (or use the timeline update) to calculate distance from center.
-    - Adjust `opacity` and `blur` for elements entering/exiting the viewport.
-- [ ] Task: Conductor - User Manual Verification 'Swiss Polish' (Protocol in workflow.md)
+## Phase 4: Swiss Polish (Parallax & Physics) [checkpoint: a6c7750]
+- [x] Task: Implement Parallax Depth
+- [x] Task: Implement Velocity Skew
+- [x] Task: Implement Focus/Opacity Range
+- [x] Task: Conductor - User Manual Verification 'Swiss Polish' (Protocol in workflow.md)
 
 ## Phase 5: Integration & Cleanup
-- [ ] Task: Replace Old Page Content
-    - Update `src/app/vortex/page.tsx` to use the new `VortexContainer` instead of the separate `VortexHero` and `VortexManifesto`.
-- [ ] Task: Final Polish & Performance Check
-    - Verify `will-change` properties.
-    - Ensure `ctx.revert()` is cleaning up correctly.
-    - Check for layout thrashing.
-- [ ] Task: Conductor - User Manual Verification 'Integration & Cleanup' (Protocol in workflow.md)
+- [x] Task: Replace Old Page Content
+- [x] Task: Final Polish & Performance Check
+- [x] Task: Conductor - User Manual Verification 'Integration & Cleanup' (Protocol in workflow.md)
