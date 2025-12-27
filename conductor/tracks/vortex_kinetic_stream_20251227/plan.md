@@ -1,8 +1,8 @@
 # Implementation Plan - Vortex Kinetic Stream Landing Page
 
 ## Phase 1: Foundation & Setup
-- [ ] Task: Update `metadata.json` for `vortex_kinetic_stream_20251227`.
-- [ ] Task: Initialize `vortex-v2-evolution` branch.
+- [x] Task: Update `metadata.json` for `vortex_kinetic_stream_20251227`.
+- [~] Task: Initialize `vortex-v2-evolution` branch.
 - [ ] Task: Verify GSAP and ScrollTrigger installation in `apps/web`.
 - [ ] Task: Clean up existing `/vortex` page (remove unused horizontal scroll components if redundant).
 - [ ] Task: Conductor - User Manual Verification 'Foundation & Setup' (Protocol in workflow.md)

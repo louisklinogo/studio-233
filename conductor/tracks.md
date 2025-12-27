@@ -21,5 +21,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [x] Track: Vortex Kinetic Stream (Horizontal Parallax)
+## [~] Track: Vortex Kinetic Stream Evolution (Braun Industrial + Kinetic)
 *Link: [./conductor/tracks/vortex_kinetic_stream_20251227/](./conductor/tracks/vortex_kinetic_stream_20251227/)*
