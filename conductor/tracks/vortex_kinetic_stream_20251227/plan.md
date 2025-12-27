@@ -26,7 +26,8 @@
 - [x] Task: Conductor - User Manual Verification 'Act III - Kinetic Animation' (fabbecb)
 
 ## Phase 5: Integration & Polish
-- [ ] Task: Assemble components into the main `/vortex` page in correct order (Hero -> Manifesto -> Engine).
-- [ ] Task: Implement "Curtain Split" transition for Hero elements.
-- [ ] Task: Mobile responsiveness and performance audit.
-- [ ] Task: Conductor - User Manual Verification 'Integration & Polish' (Protocol in workflow.md)
+- [x] Task: Assemble components into the main `/vortex` page in correct order (Hero -> Manifesto -> Engine). (3ded1ef)
+- [x] Task: Integrate `KineticTrack` (Manifesto) as Act V in the global timeline. (3ded1ef)
+- [x] Task: Implement "Curtain Split" transition for Hero elements. (3ded1ef)
+- [x] Task: Mobile responsiveness and performance audit. (3ded1ef)
+- [x] Task: Conductor - User Manual Verification 'Integration & Polish' (3ded1ef)
