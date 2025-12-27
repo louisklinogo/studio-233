@@ -1,0 +1,32 @@
+{
+	"name": "@studio233/inngest",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./client": {
+			"default": "./src/client.ts"
+		},
+		"./events": {
+			"default": "./src/events/index.ts"
+		},
+		"./functions": {
+			"default": "./src/functions/index.ts"
+		}
+	},
+	"scripts": {},
+	"devDependencies": {
+		"@studio233/config": "workspace:*"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@studio233/db": "workspace:*",
+		"@studio233/ai": "workspace:*",
+		"@studio233/rag": "workspace:*",
+		"inngest": "^3.45.1",
+		"zod": "catalog:"
+	}
+}
