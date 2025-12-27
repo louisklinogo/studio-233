@@ -2,11 +2,11 @@
 
 Refining the Hero-to-Track transition and hardening the Kinetic Track visuals to meet "Swiss-God" industrial standards.
 
-## Phase 1: Infrastructure & Transition Base [ ]
-- [~] Task: Update `VortexHeroHandle` and `VortexHeroV2.tsx` to ensure `numericRef` and `surface` are optimized for persistent display.
-- [ ] Task: Update `VortexContainer.tsx` GSAP timeline to keep the "233" (`numeric`) on screen at the right edge instead of flying out.
-- [ ] Task: Implement the "Background Wipe" transition logic where the orange surface is displaced by the incoming track.
-- [ ] Task: Conductor - User Manual Verification 'Infrastructure & Transition Base' (Protocol in workflow.md)
+## Phase 1: Infrastructure & Transition Base [checkpoint: c22052a]
+- [x] Task: Update `VortexHeroHandle` and `VortexHeroV2.tsx` to ensure `numericRef` and `surface` are optimized for persistent display.
+- [x] Task: Update `VortexContainer.tsx` GSAP timeline to keep the "233" (`numeric`) on screen at the right edge instead of flying out.
+- [x] Task: Implement the "Background Wipe" transition logic where the orange surface is displaced by the incoming track.
+- [x] Task: Conductor - User Manual Verification 'Infrastructure & Transition Base' (Protocol in workflow.md) c22052a
 
 ## Phase 2: The 233 Aperture Shutter [ ]
 - [ ] Task: Write failing test/verification for the "233" decryption/shutter animation (verifying ref accessibility and animation state).
