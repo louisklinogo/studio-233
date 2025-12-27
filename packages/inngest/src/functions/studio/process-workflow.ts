@@ -13,12 +13,16 @@ type WorkflowEdge = typeof workflowRequestedSchema extends { _output: any }
 
 // These types and functions are currently imported from apps/web.
 // For the shared package, we define the interfaces we expect.
-interface MediaFile {
+export interface MediaFile {
 	id: string;
 	url: string;
-	filename: string;
-	contentType: string;
-	size?: number;
+	name: string;
+	type: "image" | "video" | "audio";
+	format: string; // jpg, png, mp4, etc.
+	size: number;
+	width?: number;
+	height?: number;
+	duration?: number; // for video/audio
 	metadata?: Record<string, unknown>;
 }
 
@@ -42,10 +46,7 @@ interface PluginRunner {
 // Dependency Injection pattern for the registry logic
 export interface WorkflowContext {
 	getPlugin(pluginId: string): PluginRunner;
-	validateConfig(
-		pluginId: string,
-		config: Record<string, unknown>,
-	): Record<string, unknown>;
+	validateConfig(pluginId: string, config: Record<string, unknown>): any;
 	coerceMediaFile(file: unknown): MediaFile | null;
 }
 

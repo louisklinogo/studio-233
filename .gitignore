@@ -24,6 +24,7 @@ vectr/
 durable-llm-streams/
 .turbo/
 workflow-builder-template/
+studio-233-landing-inpspo/
 
 # Better Agents
 .better-agents/

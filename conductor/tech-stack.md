@@ -14,6 +14,7 @@
 - **Database ORM:** Prisma
 - **Authentication:** Better Auth
 - **Background Jobs:** Inngest
+- **Knowledge Processing (RAG):** LlamaIndex via `@studio233/rag`
 - **AI Orchestration:** Vercel AI SDK
 
 ## AI Models & Providers

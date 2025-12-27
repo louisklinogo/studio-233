@@ -1,0 +1,26 @@
+{
+	"name": "@studio233/rag",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		}
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@studio233/config": "workspace:*",
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@llamaindex/google": "^0.4.0",
+		"@llamaindex/readers": "^3.1.21",
+		"@llamaindex/postgres": "*",
+		"llamaindex": "^0.12.1",
+		"@studio233/db": "workspace:*",
+		"pg": "^8.12.0",
+		"pgvector": "^0.2.0",
+		"zod": "catalog:"
+	}
+}

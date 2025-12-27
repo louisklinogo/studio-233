@@ -40,6 +40,7 @@
 		"db:studio": "turbo -F @studio233/db db:studio",
 		"db:generate": "turbo -F @studio233/db db:generate",
 		"db:migrate": "turbo -F @studio233/db db:migrate",
+		"ai:dev": "bunx @ai-sdk/devtools",
 		"prepare": "husky",
 		"postinstall": "PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/ms-playwright bunx playwright install chromium"
 	},

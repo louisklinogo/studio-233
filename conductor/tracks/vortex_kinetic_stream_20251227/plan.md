@@ -1,36 +1,33 @@
-# Plan: Vortex Kinetic Stream
+# Implementation Plan - Vortex Kinetic Stream Landing Page
 
-## Phase 1: Infrastructure & Setup [checkpoint: b13a9ad]
-- [x] Task: Create `VortexContainer` Component (66badfd)
-    - Create a new component `src/components/landing/VortexContainer.tsx` that will act as the parent orchestrator.
-    - Implement the basic HTML structure: A fixed viewport wrapper and the scrollable "track" height (e.g., 300vh).
-    - **Test:** Verify the component renders and creates the correct scrollable height.
-- [x] Task: Refactor `VortexHero` for Composition (974b716)
-    - Modify `VortexHero.tsx` to accept props or ref forwarding if necessary, or simply prepare it to be a child of `VortexContainer`.
-    - Remove the internal `ScrollTrigger` pinning logic from `VortexHero` as the parent `VortexContainer` will handle the global timeline.
-    - **Test:** Verify `VortexHero` renders correctly as a static element within the new container.
+## Phase 1: Foundation & Setup
+- [ ] Task: Update `metadata.json` for `vortex_kinetic_stream_20251227`.
+- [ ] Task: Initialize `vortex-v2-evolution` branch.
+- [ ] Task: Verify GSAP and ScrollTrigger installation in `apps/web`.
+- [ ] Task: Clean up existing `/vortex` page (remove unused horizontal scroll components if redundant).
+- [ ] Task: Conductor - User Manual Verification 'Foundation & Setup' (Protocol in workflow.md)
 
-## Phase 2: The Curtain Split (Hero Transition) [checkpoint: e40b863]
-- [x] Task: Implement Hero "Split" Animation (8dd863b)
-    - In `VortexContainer`, set up the initial GSAP timeline.
-    - Pin the main container.
-    - Target the `VortexHero` elements (Studio, +, 233).
-    - Implement the "Curtain Split": `x` translation for text, `rotation` for the cross.
-    - **Test:** Verify the animation plays correctly on scroll and the text moves to the edges.
-- [ ] Task: Conductor - User Manual Verification 'The Curtain Split' (Protocol in workflow.md)
+## Phase 2: Act I - Hero Section Evolution
+- [ ] Task: Create `VortexHeroV2` with "System Manual" typography.
+- [ ] Task: Implement mouse-tracking coordinate logic (coordinates hook).
+- [ ] Task: Add "Identifier Barcode" visual element (audio-reactive style).
+- [ ] Task: Conductor - User Manual Verification 'Act I - Hero Section' (Protocol in workflow.md)
 
-## Phase 3: The Kinetic Stream (Manifesto Implementation) [checkpoint: 822c116]
-- [x] Task: Create `KineticTrack` Component (dc3bb14)
-- [x] Task: Implement Horizontal Scroll Logic (828efe0)
-- [x] Task: Conductor - User Manual Verification 'The Kinetic Stream' (Protocol in workflow.md)
+## Phase 3: Act II - The Workflow Engine Structure
+- [ ] Task: Create `WorkflowEngine` container.
+- [ ] Task: Implement `WorkflowCanvas` with crisp SVG Node rendering.
+- [ ] Task: Implement "Braun" Node styling (Swiss Orange accents, precise borders).
+- [ ] Task: Create `GeneratedProduct` with wireframe and rendered states.
+- [ ] Task: Conductor - User Manual Verification 'Act II - The Workflow Engine Structure' (Protocol in workflow.md)
 
-## Phase 4: Swiss Polish (Parallax & Physics) [checkpoint: a6c7750]
-- [x] Task: Implement Parallax Depth
-- [x] Task: Implement Velocity Skew
-- [x] Task: Implement Focus/Opacity Range
-- [x] Task: Conductor - User Manual Verification 'Swiss Polish' (Protocol in workflow.md)
+## Phase 4: Act III - Kinetic Animation (GSAP)
+- [ ] Task: Implement `useWorkflowTimeline` hook.
+- [ ] Task: Sequence "Act I (Hero)" -> "Zoom In" -> "Data Packets" -> "Act IV (Product Reveal)".
+- [ ] Task: Bind GSAP Timeline to ScrollTrigger with pinning logic.
+- [ ] Task: Conductor - User Manual Verification 'Act III - Kinetic Animation' (Protocol in workflow.md)
 
-## Phase 5: Integration & Cleanup
-- [x] Task: Replace Old Page Content
-- [x] Task: Final Polish & Performance Check
-- [x] Task: Conductor - User Manual Verification 'Integration & Cleanup' (Protocol in workflow.md)
+## Phase 5: Integration & Polish
+- [ ] Task: Assemble components into the main `/vortex` page.
+- [ ] Task: Implement "Curtain Split" transition for Hero elements.
+- [ ] Task: Mobile responsiveness and performance audit.
+- [ ] Task: Conductor - User Manual Verification 'Integration & Polish' (Protocol in workflow.md)

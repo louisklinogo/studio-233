@@ -1,0 +1,7 @@
+{
+	"id": "ai-sdk",
+	"name": "AI SDK Implementation Skill",
+	"description": "Implement Vercel AI SDK Core/RSC/UI patterns with streaming, tool calling, and telemetry grounded in our research notes.",
+	"version": "1.0.0",
+	"entryPoint": "GEMINI.md"
+}

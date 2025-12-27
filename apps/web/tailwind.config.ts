@@ -94,7 +94,7 @@ module.exports = {
 					"monospace",
 				],
 				sans: [
-					"var(--font-ibm-plex)",
+					"var(--font-cabinet)",
 					"ui-sans-serif",
 					"system-ui",
 					"sans-serif",
@@ -106,7 +106,7 @@ module.exports = {
 					"monospace",
 				],
 				heading: [
-					"var(--font-ibm-plex)",
+					"var(--font-cabinet)",
 					"ui-sans-serif",
 					"system-ui",
 					"sans-serif",

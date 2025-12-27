@@ -4,10 +4,6 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [x] Track: Fix LlamaIndex Build Errors and Introduce packages/rag
-*Link: [./conductor/tracks/llamaindex_build_fix_20251225/](./conductor/tracks/llamaindex_build_fix_20251225/)*
-
----
 
 ## [x] Track: Vision Analysis Resilience & Async Archival
 *Link: [./conductor/tracks/vision_resilience_20251226/](./conductor/tracks/vision_resilience_20251226/)*
@@ -20,7 +16,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [ ] Track: Migrate Inngest to Dedicated Package
+## [x] Track: Migrate Inngest to Dedicated Package
 *Link: [./conductor/tracks/inngest_migration_20251226/](./conductor/tracks/inngest_migration_20251226/)*
 
 ---
