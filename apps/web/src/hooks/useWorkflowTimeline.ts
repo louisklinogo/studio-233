@@ -45,76 +45,69 @@ export const useWorkflowTimeline = (
 
 			// --- Sequence Definition ---
 
-			// 1. Initial State
+			// 1. Initial State (Hidden, waiting for Manifesto to finish)
 			tl.set(refs.canvasGroup.current, {
-				scale: 1.5,
+				scale: 2.0, // Start zoomed out/in
 				x: 0,
 				y: 0,
 				opacity: 0,
 			});
 
-			// 2. Zoom In & Reveal Schematic
+			if (refs.productContainer.current) {
+				tl.set(refs.productContainer.current, { opacity: 0, scale: 0.8 });
+			}
+
+			// 2. Act III: The Machine Awakens (Zoom In)
 			tl.to(refs.canvasGroup.current, {
 				scale: 1,
 				opacity: 1,
-				duration: 1.5,
-				ease: "power3.inOut",
+				duration: 2.0,
+				ease: "power4.inOut",
 			});
 
-			// 3. Simulate Data Flow (Packet 1 -> 2)
-			// Note: We'll dispatch events or use state callbacks here in a real integration,
-			// but for the timeline visual, we animate the 'active' states via class or attributes if possible.
-			// For this hook, we'll focus on the Camera/Canvas movements.
+			// 3. Data Flow (Simulated)
+			// Move Camera to Input Node
+			tl.to(refs.canvasGroup.current, {
+				x: 150, // Shift to show input
+				scale: 1.1,
+				duration: 1.5,
+				ease: "power2.inOut",
+			});
 
-			// 4. Focus on Processor Node
-			tl.to(
-				refs.canvasGroup.current,
-				{
-					x: -150, // Pan to center processing nodes
-					scale: 1.2,
-					duration: 1.2,
-					ease: "power2.inOut",
-				},
-				"+=0.2",
-			);
+			// Pulse Input
+			tl.to({}, { duration: 0.5 }); // Wait
 
-			// 5. Processing Hold (Simulate calculation time)
-			tl.to({}, { duration: 1.5 });
+			// Move Camera to Processor
+			tl.to(refs.canvasGroup.current, {
+				x: -150, // Shift to processor
+				scale: 1.2,
+				duration: 1.5,
+				ease: "power2.inOut",
+			});
 
-			// 6. Pan to Output Node
-			tl.to(
-				refs.canvasGroup.current,
-				{
-					x: -450,
-					scale: 1.2,
-					duration: 1.2,
-					ease: "power2.inOut",
-				},
-				"+=0.1",
-			);
+			// Processing Churn
+			tl.to({}, { duration: 1.0 });
 
-			// 7. Reveal Product
+			// Move Camera to Output
+			tl.to(refs.canvasGroup.current, {
+				x: -450, // Shift to output
+				scale: 1.2,
+				duration: 1.5,
+				ease: "power2.inOut",
+			});
+
+			// 4. Act V: Product Reveal
 			if (refs.productContainer.current) {
-				tl.fromTo(
-					refs.productContainer.current,
-					{ opacity: 0, scale: 0.9 },
-					{ opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)" },
-					"-=0.5",
-				);
+				tl.to(refs.productContainer.current, {
+					opacity: 1,
+					scale: 1,
+					duration: 1.0,
+					ease: "elastic.out(1, 0.75)",
+				});
 			}
 
-			// 8. Zoom Out to Full View
-			tl.to(
-				refs.canvasGroup.current,
-				{
-					x: 0,
-					y: 0,
-					scale: 1,
-					duration: 1.5,
-					ease: "power3.inOut",
-				},
-				"+=1.0",
-			);
+			// Final Hold
+			tl.to({}, { duration: 1.0 });
 		}, refs.wrapper);
 
 		return () => ctx.revert();
