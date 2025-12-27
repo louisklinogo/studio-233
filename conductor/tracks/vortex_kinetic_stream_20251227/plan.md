@@ -11,7 +11,7 @@
     - **Test:** Verify `VortexHero` renders correctly as a static element within the new container.
 
 ## Phase 2: The Curtain Split (Hero Transition)
-- [ ] Task: Implement Hero "Split" Animation
+- [x] Task: Implement Hero "Split" Animation (8dd863b)
     - In `VortexContainer`, set up the initial GSAP timeline.
     - Pin the main container.
     - Target the `VortexHero` elements (Studio, +, 233).
