@@ -8,11 +8,11 @@ Refining the transition into a "Decryption Glyph" sequence, a "Kinetic Flip" han
 - [x] Task: Update `KineticTrack.tsx` to support vertical `flex-col` stacking and the `shutter-overlay` DOM structure.
 - [x] Task: Conductor - User Manual Verification 'Glyph Infrastructure' (Protocol in workflow.md) 592ce00
 
-## Phase 2: The Kinetic Flip Handover [ ]
-- [~] Task: Implement the "Kinetic Flip" in `VortexContainer.tsx` (centered 233 folds out, Black Box folds in).
-- [ ] Task: Synchronize the "Success Flash" orange border micro-interaction.
-- [ ] Task: Implement the exponential scale-up of the Black Box to fill the viewport.
-- [ ] Task: Conductor - User Manual Verification 'Flip Handover' (Protocol in workflow.md)
+## Phase 2: The Kinetic Flip Handover [checkpoint: 93e7930]
+- [x] Task: Implement the "Kinetic Flip" in `VortexContainer.tsx` (centered 233 folds out, Black Box folds in).
+- [x] Task: Synchronize the "Success Flash" orange border micro-interaction.
+- [x] Task: Implement the exponential scale-up of the Black Box to fill the viewport.
+- [x] Task: Conductor - User Manual Verification 'Flip Handover' (Protocol in workflow.md) 93e7930
 
 ## Phase 3: Vertical Magazine Reveal [ ]
 - [ ] Task: Implement the "Rising Plates" GSAP sequence in `VortexContainer.tsx`.
