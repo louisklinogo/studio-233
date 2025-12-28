@@ -14,11 +14,11 @@ Refining the transition into a "Decryption Glyph" sequence, a "Kinetic Flip" han
 - [x] Task: Implement the exponential scale-up of the Black Box to fill the viewport.
 - [x] Task: Conductor - User Manual Verification 'Flip Handover' (Protocol in workflow.md) 93e7930
 
-## Phase 3: Vertical Magazine Reveal [ ]
-- [~] Task: Implement the "Rising Plates" GSAP sequence in `VortexContainer.tsx`.
-- [ ] Task: Implement the "Mechanical Shutter" reveal (slide down) triggered when blocks hit the screen center.
-- [ ] Task: Integrate "Assembly Rails" HUD lines and dynamic metadata flickering.
-- [ ] Task: Conductor - User Manual Verification 'Vertical Magazine' (Protocol in workflow.md)
+## Phase 3: Vertical Magazine Reveal [checkpoint: d29acc8]
+- [x] Task: Implement the "Rising Plates" GSAP sequence in `VortexContainer.tsx`.
+- [x] Task: Implement the "Mechanical Shutter" reveal (slide down) triggered when blocks hit the screen center.
+- [x] Task: Integrate "Assembly Rails" HUD lines and dynamic metadata flickering.
+- [x] Task: Conductor - User Manual Verification 'Vertical Magazine' (Protocol in workflow.md) d29acc8
 
 ## Phase 4: Final Polish & Act Integration [ ]
 - [ ] Task: Perform full regression sweep of Act I -> II -> III.
