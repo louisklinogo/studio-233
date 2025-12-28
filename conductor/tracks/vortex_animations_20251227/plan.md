@@ -9,7 +9,7 @@ Refining the transition into a "Decryption Glyph" sequence, a "Kinetic Flip" han
 - [x] Task: Conductor - User Manual Verification 'Glyph Infrastructure' (Protocol in workflow.md) 592ce00
 
 ## Phase 2: The Kinetic Flip Handover [ ]
-- [ ] Task: Implement the "Kinetic Flip" in `VortexContainer.tsx` (centered 233 folds out, Black Box folds in).
+- [~] Task: Implement the "Kinetic Flip" in `VortexContainer.tsx` (centered 233 folds out, Black Box folds in).
 - [ ] Task: Synchronize the "Success Flash" orange border micro-interaction.
 - [ ] Task: Implement the exponential scale-up of the Black Box to fill the viewport.
 - [ ] Task: Conductor - User Manual Verification 'Flip Handover' (Protocol in workflow.md)
