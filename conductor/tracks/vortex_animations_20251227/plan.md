@@ -1,26 +1,27 @@
-# Implementation Plan: Vortex Animation & Interaction Refinement
+# Implementation Plan: Vortex Animation & Interaction Refinement (Kinetic Lock)
 
-Refining the Hero-to-Track transition and hardening the Kinetic Track visuals to meet "Swiss-God" industrial standards.
+Refining the transition into a "Decryption Glyph" sequence, a "Kinetic Flip" handover, and a "Vertical Magazine" manifesto.
 
-## Phase 1: Infrastructure & Transition Base [checkpoint: c22052a]
-- [x] Task: Update `VortexHeroHandle` and `VortexHeroV2.tsx` to ensure `numericRef` and `surface` are optimized for persistent display.
-- [x] Task: Update `VortexContainer.tsx` GSAP timeline to keep the "233" (`numeric`) on screen at the right edge instead of flying out.
-- [x] Task: Implement the "Background Wipe" transition logic where the orange surface is displaced by the incoming track.
-- [x] Task: Conductor - User Manual Verification 'Infrastructure & Transition Base' (Protocol in workflow.md) c22052a
+## Phase 1: Infrastructure & Glyph logic [ ]
+- [~] Task: Update `VortexHeroV2.tsx` to include `blackBoxRef`, `bracketsRef`, and the character cycling logic.
+- [ ] Task: Implement the "Decryption Glyph" method in `VortexHeroV2.tsx` to flicker through `[CANVAS]`, `[STUDIO]`, `[AGENTIC]`.
+- [ ] Task: Update `KineticTrack.tsx` to support vertical `flex-col` stacking and the `shutter-overlay` DOM structure.
+- [ ] Task: Conductor - User Manual Verification 'Glyph Infrastructure' (Protocol in workflow.md)
 
-## Phase 2: The 233 Aperture Shutter [ ]
-- [ ] Task: Write failing test/verification for the "233" decryption/shutter animation (verifying ref accessibility and animation state).
-- [ ] Task: Implement the mechanical "shutter/decryption" animation for the "233" text in `VortexHeroV2.tsx`.
-- [ ] Task: Sync the shutter lock-in with the arrival of the first Kinetic Track block in `VortexContainer.tsx`.
-- [ ] Task: Conductor - User Manual Verification 'The 233 Aperture Shutter' (Protocol in workflow.md)
+## Phase 2: The Kinetic Flip Handover [ ]
+- [ ] Task: Implement the "Kinetic Flip" in `VortexContainer.tsx` (centered 233 folds out, Black Box folds in).
+- [ ] Task: Synchronize the "Success Flash" orange border micro-interaction.
+- [ ] Task: Implement the exponential scale-up of the Black Box to fill the viewport.
+- [ ] Task: Conductor - User Manual Verification 'Flip Handover' (Protocol in workflow.md)
 
-## Phase 3: Kinetic Track Hardening [ ]
-- [ ] Task: Implement CSS-based parallax for `HoverBlock` images (Ref_01 - Ref_05) using GSAP or CSS variables.
-- [ ] Task: Add the "Vertical HUD Grid" component to the `KineticTrack` background with flickering coordinate text.
-- [ ] Task: Implement the "Orange Pulse" heartbeat on refiner words in `KineticTrack.tsx`.
-- [ ] Task: Conductor - User Manual Verification 'Kinetic Track Hardening' (Protocol in workflow.md)
+## Phase 3: Vertical Magazine Reveal [ ]
+- [ ] Task: Implement the "Rising Plates" GSAP sequence in `VortexContainer.tsx`.
+- [ ] Task: Implement the "Mechanical Shutter" reveal (slide down) triggered when blocks hit the screen center.
+- [ ] Task: Integrate "Assembly Rails" HUD lines and dynamic metadata flickering.
+- [ ] Task: Conductor - User Manual Verification 'Vertical Magazine' (Protocol in workflow.md)
 
-## Phase 4: Final Polish & Verification [ ]
-- [ ] Task: Perform a full regression sweep of the Vortex scroll flow to ensure Act transitions (I-V) remain smooth.
-- [ ] Task: Verify 60fps performance and hardware acceleration (force3D) across all new animations.
-- [ ] Task: Conductor - User Manual Verification 'Final Polish & Verification' (Protocol in workflow.md)
+## Phase 4: Final Polish & Act Integration [ ]
+- [ ] Task: Perform full regression sweep of Act I -> II -> III.
+- [ ] Task: Ensure scroll-back stability (no malformed states).
+- [ ] Task: Verify 60fps performance across the entire transition.
+- [ ] Task: Conductor - User Manual Verification 'Final Polish' (Protocol in workflow.md)

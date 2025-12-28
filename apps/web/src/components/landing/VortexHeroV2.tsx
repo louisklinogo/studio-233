@@ -8,6 +8,9 @@ export interface VortexHeroHandle {
 	plus: HTMLSpanElement | SVGSVGElement | null;
 	numeric: HTMLSpanElement | null;
 	surface: HTMLDivElement | null;
+	blackBox: HTMLDivElement | null;
+	brackets: HTMLDivElement | null;
+	setGlyphText: (text: string) => void;
 }
 
 export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
@@ -15,6 +18,10 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 	const plusRef = useRef<SVGSVGElement>(null);
 	const numericRef = useRef<HTMLSpanElement>(null);
 	const surfaceRef = useRef<HTMLDivElement>(null);
+	const blackBoxRef = useRef<HTMLDivElement>(null);
+	const bracketsRef = useRef<HTMLDivElement>(null);
+
+	const [glyphText, setGlyphText] = useState("233");
 
 	const mousePos = useMouseCoordinates();
 
@@ -23,12 +30,16 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 		plus: plusRef.current,
 		numeric: numericRef.current,
 		surface: surfaceRef.current,
+		blackBox: blackBoxRef.current,
+		brackets: bracketsRef.current,
+		setGlyphText: (text: string) => setGlyphText(text),
 	}));
 
 	return (
 		<div
 			ref={surfaceRef}
 			className="absolute inset-0 z-10 bg-[#f4f4f0] flex flex-col justify-between p-8 lg:p-12 overflow-hidden select-none font-sans"
+			data-testid="hero-surface"
 		>
 			{/* --- Background Elements --- */}
 			<div
@@ -38,6 +49,27 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 					backgroundSize: "40px 40px",
 				}}
 			/>
+
+			{/* --- The Matte Black Core (Central Box) --- */}
+			<div
+				ref={blackBoxRef}
+				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] bg-[#1a1a1a] z-[5] opacity-0 will-change-transform border border-white/5 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]"
+			/>
+
+			{/* --- Corner Brackets (Targeting UI) --- */}
+			<div
+				ref={bracketsRef}
+				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] z-[6] opacity-0 pointer-events-none"
+			>
+				{/* Top Left */}
+				<div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40" />
+				{/* Top Right */}
+				<div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40" />
+				{/* Bottom Left */}
+				<div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40" />
+				{/* Bottom Right */}
+				<div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/40" />
+			</div>
 
 			{/* Mouse Coordinates HUD (Restored V1 Style) */}
 			<div className="absolute top-1/2 right-8 -translate-y-1/2 flex flex-col items-end gap-1 pointer-events-none opacity-40">
@@ -56,7 +88,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						System_Ref
 					</span>
 					<span className="text-[12px] font-hal text-[#1a1a1a] uppercase tracking-widest font-bold">
-						VORTEX_STREAM_v2.5
+						VORTEX_STREAM_v3.0
 					</span>
 				</div>
 				<div className="text-right">
@@ -64,7 +96,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						Status: Active_Handshake
 					</span>
 					<span className="text-[9px] font-hal text-[#FF4400] uppercase tracking-widest font-bold">
-						PROTOCOL_READY
+						ACCELERATED_HANDSHAKE
 					</span>
 				</div>
 			</div>
@@ -78,7 +110,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 					>
 						STUDIO
 					</span>
-					<span className="flex items-center">
+					<span className="flex items-center relative">
 						<span className="inline-block mx-[0.05em] text-[#FF4400] origin-center will-change-transform h-[10vw] w-[10vw]">
 							<svg
 								ref={plusRef}
@@ -91,13 +123,18 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 								<rect x="0" y="35" width="100" height="30" />
 							</svg>
 						</span>
-						<span
-							ref={numericRef}
-							className="inline-block will-change-transform"
-							data-testid="hero-numeric"
-						>
-							233
+
+						{/* 3D Handover Container */}
+						<span className="relative flex items-center perspective-1000">
+							<span
+								ref={numericRef}
+								className="inline-block will-change-transform"
+								data-testid="hero-numeric"
+							>
+								{glyphText}
+							</span>
 						</span>
+
 						<span className="text-[4vw] font-medium align-top mt-[1.2vw] ml-[0.5vw]">
 							™
 						</span>
@@ -122,7 +159,7 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						<span className="text-[8px] font-hal text-neutral-400 uppercase tracking-[0.4em] block mb-2">
 							Sequence
 						</span>
-						{["01_SCHEMATIC", "02_PROCESSING", "03_RENDER"].map((chapter) => (
+						{["01_DECRYPT", "02_ASSEMBLY", "03_MANIFESTO"].map((chapter) => (
 							<span
 								key={chapter}
 								className="text-[10px] font-hal block text-[#1a1a1a] tracking-wider hover:text-[#FF4400] transition-colors cursor-crosshair"

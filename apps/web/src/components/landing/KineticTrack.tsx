@@ -23,34 +23,44 @@ const HoverBlock: React.FC<HoverBlockProps> = ({
 }) => {
 	const [isHovered, setIsHovered] = useState(false);
 	const isInteractive = !!imageUrl;
+	const isRefiner = [
+		"PURITY",
+		"LOGIC.",
+		"SIGNAL",
+		"CREATIVE",
+		"PROCESS.",
+	].includes(word.toUpperCase());
 
 	return (
 		<div
 			onMouseEnter={() => isInteractive && setIsHovered(true)}
 			onMouseLeave={() => isInteractive && setIsHovered(false)}
 			className={`
-                kinetic-block relative overflow-hidden px-4 py-2 sm:px-8 sm:py-4 bg-[#f4f4f0] border transition-colors duration-500
+                kinetic-block relative overflow-hidden px-4 py-2 sm:px-8 sm:py-4 bg-[#1a1a1a] border transition-colors duration-500
                 ${isInteractive ? "cursor-switch" : "cursor-default"}
-                ${isHovered ? "border-[#D81E05] z-10" : "border-neutral-300"}
+                ${isHovered ? "border-[#FF4400] z-10" : "border-white/10"}
                 ${className || ""}
             `}
 		>
-			<div className="relative z-20">
+			<div className="relative z-20 shutter-container overflow-hidden">
 				<span
 					className={`
                     kinetic-text inline-block will-change-transform
                     text-4xl md:text-7xl lg:text-9xl font-black tracking-tighter uppercase leading-none
-                    ${isHovered && isInteractive ? "text-[#D81E05]" : "text-black"}
+                    ${isHovered && isInteractive ? "text-[#FF4400]" : "text-white"}
+					${isRefiner && !isHovered ? "animate-pulse text-[#FF4400]/80" : ""}
                     transition-colors duration-300
                 `}
 				>
 					{word}
 				</span>
+				{/* The Mechanical Shutter - Initial height is 100% */}
+				<div className="shutter-overlay absolute inset-0 bg-[#1a1a1a] z-30 origin-bottom" />
 			</div>
 
 			{isInteractive && (
 				<div
-					className={`absolute top-1 right-1 w-1.5 h-1.5 transition-colors duration-300 ${isHovered ? "bg-[#D81E05]" : "bg-neutral-800"}`}
+					className={`absolute top-1 right-1 w-1.5 h-1.5 transition-colors duration-300 ${isHovered ? "bg-[#FF4400]" : "bg-white/20"}`}
 				/>
 			)}
 
@@ -62,10 +72,14 @@ const HoverBlock: React.FC<HoverBlockProps> = ({
 				>
 					<img
 						src={imageUrl}
-						className={`w-full h-full object-cover grayscale transition-transform duration-700 ${isHovered ? "scale-100" : "scale-125"}`}
+						className={`w-full h-full object-cover grayscale transition-transform duration-700 ${isHovered ? "scale-105" : "scale-150"}`}
+						style={{
+							transformOrigin: "center center",
+							transitionTimingFunction: "cubic-bezier(0.19, 1, 0.22, 1)",
+						}}
 						alt=""
 					/>
-					<div className="absolute inset-0 bg-[#D81E05] mix-blend-multiply opacity-20" />
+					<div className="absolute inset-0 bg-[#FF4400] mix-blend-multiply opacity-20" />
 					<div className="absolute bottom-2 left-2 text-[8px] font-mono text-white bg-black px-1 uppercase invert">
 						REF_{index}
 					</div>
@@ -96,7 +110,8 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 		}));
 
 		const sentence1 = [
-			{ w: "We" },
+			{ w: "At Studio+233," },
+			{ w: "we" },
 			{ w: "build" },
 			{ w: "for" },
 			{ w: "the" },
@@ -136,27 +151,31 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 		];
 
 		return (
-			<div className="absolute inset-0 flex items-center pointer-events-none">
+			<div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
 				<div
 					ref={trackRef}
-					className="flex flex-nowrap gap-12 md:gap-24 px-[50vw] items-center pointer-events-auto"
+					className="flex flex-col gap-8 md:gap-12 items-center justify-center pointer-events-auto"
 				>
-					{sentence1.map((item, i) => (
-						<HoverBlock
-							key={`s1-${i}`}
-							word={item.w}
-							imageUrl={item.img}
-							index={item.idx}
-						/>
-					))}
-					{sentence2.map((item, i) => (
-						<HoverBlock
-							key={`s2-${i}`}
-							word={item.w}
-							imageUrl={item.img}
-							index={item.idx}
-						/>
-					))}
+					<div className="flex flex-wrap gap-4 justify-center">
+						{sentence1.map((item, i) => (
+							<HoverBlock
+								key={`s1-${i}`}
+								word={item.w}
+								imageUrl={item.img}
+								index={item.idx}
+							/>
+						))}
+					</div>
+					<div className="flex flex-wrap gap-4 justify-center">
+						{sentence2.map((item, i) => (
+							<HoverBlock
+								key={`s2-${i}`}
+								word={item.w}
+								imageUrl={item.img}
+								index={item.idx}
+							/>
+						))}
+					</div>
 				</div>
 			</div>
 		);

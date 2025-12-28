@@ -23,5 +23,4 @@ studio+233 is the AI-native creative operating system designed to bridge the gap
 - **Infinite Canvas:** A high-performance spatial interface for organizing, generating, and manipulating creative assets.
 - **Agent Orchestration:** Specialized agents like **Vision Forge** (image processing), **Motion Director** (video), and **Insight Researcher** (analysis) working in concert.
 - **Batch Refinery:** An industrial-grade pipeline for high-volume asset processing and automated transformation.
-- **Workflow Designer:** A visual node-based builder for composing custom AI-powered production logic.
-- **Streaming Updates:** Watch AI agents generate and transform assets in real-time directly on the canvas.
+- **Workflow Designer:** A visual node-based builder for composing custom AI-powered batch processing workflows.

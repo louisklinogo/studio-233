@@ -1,36 +1,39 @@
-# Track Specification: Vortex Animation & Interaction Refinement
+# Track Specification: Vortex Animation & Interaction Refinement (Act II: The Kinetic Lock)
 
 ## 1. Overview
-**Goal:** Transform the transition from Act I (Hero) to Act II (Kinetic Track) into a high-fidelity, mechanical narrative where the brand ("233") acts as the physical origin point for the manifesto.
-**Problem:** Currently, the transition is a disconnected jump. The orange background fades prematurely, and the "233" flies off-screen, losing the "signal" before the "process" begins.
-**Solution:** Implement the "233 Aperture" mechanic. The "233" text becomes a persistent right-hand anchor that "prints" the Kinetic Track blocks into the viewport, bridging the Hero's energy with the Manifesto's logic.
+**Goal:** Implement a high-fidelity "Decryption -> Flip -> Rise" transition sequence. This replaces the previous horizontal scroll with a user-focused, vertical "Assembly Line" narrative.
+**Solution:** The "233" text will glyph through technical keywords before centering. At the center, it will perform a "Kinetic Flip" into a Matte Black Box that expands to cover the orange Hero field. The Manifesto will then emerge as a vertical sequence of rising plates with mechanical shutter reveals.
 
 ## 2. Functional Requirements
-### 2.1 The 233 Aperture Transition
-*   **Persistent Anchor:** Modify `VortexContainer.tsx` so the "233" (`numericRef`) slides to the far right edge but remains on screen.
-*   **Mechanical Shutter:** Implement a "decryption" animation for the "233" where it rapidly cycles through characters before locking into place as a fixed HUD element.
-*   **Background Bridge:** Sustain the orange background (`#FF4400`) during the initial blocks' emergence.
-*   **The Wipe:** Implement a horizontal "push" or "wipe" transition where the first block of the Kinetic Track appears to physically displace the orange background to reveal the "Paper" (#f4f4f0) grid.
+### 2.1 The Decryption Glyph (Act I Transition)
+*   **Keyword Cycling:** As "233" travels to the center, it must rapidly cycle through the following strings: `[CANVAS]`, `[STUDIO]`, `[AGENTIC]`, before locking back to `233`.
+*   **Slam Lock:** The final transition to `233` should feel heavy and mechanical.
 
-### 2.2 Kinetic Track Refinement
-*   **Mechanical Slide:** Adjust the entrance animation of `HoverBlock` elements to emerge from the right edge as if being "extruded" from the 233 Aperture.
-*   **Subtle Parallax:** Implement a parallax effect on the images (`REF_01` etc.) within the blocks, making them move slightly slower than the containing block.
-*   **Vertical HUD Grid:** Add thin, flickering vertical technical lines in the background of the `KineticTrack` that display dynamic coordinates.
-*   **Orange Pulse:** Integrate subtle orange (`#FF4400`) pulses or small progress indicators on specific "refiner" words (e.g., PURITY, LOGIC, SIGNAL) to maintain brand continuity.
+### 2.2 The Kinetic Flip (The Handover)
+*   **3D Handover:** Use `transform-style: preserve-3d` to rotate the "233" text 90° out (X-axis) and the Matte Black Box 90° in.
+*   **Visual Success Flash:** Animate a 1px orange (#FF4400) border around the box for 0.1s upon completion of the flip.
+*   **Exponential Expansion:** The box scales exponentially until it covers the viewport, revealing the black production environment.
+
+### 2.3 The Vertical Magazine (Manifesto)
+*   **Rising Plates:** Refactor `KineticTrack.tsx` into a vertical `flex-col` stack.
+*   **Mechanical Shutter:** Implement a `shutter-overlay` div for each block that slides vertically to reveal text when the block hits the screen center.
+*   **Interaction:** Link the shutter slide speed to the user's scroll velocity.
+
+### 2.4 HUD Integration (Act II Visuals)
+*   **Assembly Rails:** Two vertical dashed lines at the screen gutters.
+*   **Dynamic Metadata:** Flicker technical status logs (`[STATE: PROCESSING]`, `[COORD_Y]`) along these rails.
 
 ## 3. Non-Functional Requirements
-*   **Braun/Swiss Aesthetic:** Maintain extreme visual clarity. No blurry shadows; depth must be achieved through scale and parallax.
-*   **Apple-Grade Fluidity:** Ensure all GSAP transitions use physics-informed eases (`power4.out`, `expo.inOut`) to feel mechanical yet smooth.
-*   **Performance:** Animation must maintain 60fps. Use `force3D: true` and `will-change: transform` on all moving elements.
+*   **No WebGL:** All effects must be achieved using DOM, SVG, and GSAP.
+*   **Material Authenticity:** Use subtle grain overlays and sharp 1px borders to mimic industrial materials.
 
 ## 4. Acceptance Criteria
-*   [ ] The "233" text remains visible at the right edge during the entire transition to the Kinetic Track.
-*   [ ] The first words of the manifesto ("WE BUILD FOR...") appear to emerge directly from the 233 anchor point.
-*   [ ] The orange background is wiped away by the movement of the Kinetic Track, not faded.
-*   [ ] Parallax effect is visible and smooth within the interactive blocks.
-*   [ ] Technical HUD lines are present and move in sync with the grid.
+*   [ ] "233" successfully glyphs through keywords during its slide.
+*   [ ] The Kinetic Flip is seamless without visual gaps.
+*   [ ] The Black Box covers the entire viewport.
+*   [ ] Manifesto blocks rise vertically and shutter-reveal in the center.
+*   [ ] HUD lines and metadata are visible and responsive.
 
 ## 5. Out of Scope
-*   Modifying the `WorkflowEngine` nodes or logic (Act V).
-*   Changing the "Story" paragraphs or redaction logic (Act III).
-*   Adding 3D WebGL models (staying within DOM/SVG/CSS).
+*   Horizontal scrolling (completely removed).
+*   3D WebGL meshes.
