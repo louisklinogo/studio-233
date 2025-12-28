@@ -89,6 +89,41 @@ const HoverBlock: React.FC<HoverBlockProps> = ({
 	);
 };
 
+const IndustrialHUD = () => {
+	return (
+		<div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+			{/* Assembly Rails (Vertical Dashed Lines) */}
+			<div className="absolute inset-y-0 left-12 w-px border-l border-dashed border-white/20" />
+			<div className="absolute inset-y-0 right-12 w-px border-r border-dashed border-white/20" />
+
+			{/* Flickering Metadata along Rails */}
+			<div className="absolute top-[10%] left-16 flex flex-col gap-1">
+				<span className="text-[6px] font-mono text-white/40 uppercase tracking-widest animate-pulse">
+					[STATE: ACTIVE]
+				</span>
+				<span className="text-[6px] font-mono text-white/20 uppercase tracking-widest">
+					[DATA_COLLECTION: ON]
+				</span>
+			</div>
+
+			<div className="absolute bottom-[10%] right-16 text-right flex flex-col gap-1">
+				<span className="text-[6px] font-mono text-white/40 uppercase tracking-widest animate-pulse">
+					[TRAJECTORY_STATE: STABLE]
+				</span>
+				<span className="text-[6px] font-mono text-white/20 uppercase tracking-widest">
+					[REF_ID: KINETIC_TRANS]
+				</span>
+			</div>
+
+			{/* Focal Caliper Markers */}
+			<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[200px] pointer-events-none">
+				<div className="absolute top-0 left-8 right-8 h-px bg-white/5" />
+				<div className="absolute bottom-0 left-8 right-8 h-px bg-white/5" />
+			</div>
+		</div>
+	);
+};
+
 export interface KineticTrackHandle {
 	track: HTMLDivElement | null;
 	blocks: HTMLElement[];
@@ -151,10 +186,11 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 		];
 
 		return (
-			<div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+			<div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden bg-[#1a1a1a]">
+				<IndustrialHUD />
 				<div
 					ref={trackRef}
-					className="flex flex-col gap-8 md:gap-12 items-center justify-center pointer-events-auto"
+					className="relative w-full h-full flex flex-col gap-8 md:gap-12 items-center justify-center pointer-events-auto"
 				>
 					<div className="flex flex-wrap gap-4 justify-center">
 						{sentence1.map((item, i) => (

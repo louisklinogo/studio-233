@@ -15,7 +15,7 @@ Refining the transition into a "Decryption Glyph" sequence, a "Kinetic Flip" han
 - [x] Task: Conductor - User Manual Verification 'Flip Handover' (Protocol in workflow.md) 93e7930
 
 ## Phase 3: Vertical Magazine Reveal [ ]
-- [ ] Task: Implement the "Rising Plates" GSAP sequence in `VortexContainer.tsx`.
+- [~] Task: Implement the "Rising Plates" GSAP sequence in `VortexContainer.tsx`.
 - [ ] Task: Implement the "Mechanical Shutter" reveal (slide down) triggered when blocks hit the screen center.
 - [ ] Task: Integrate "Assembly Rails" HUD lines and dynamic metadata flickering.
 - [ ] Task: Conductor - User Manual Verification 'Vertical Magazine' (Protocol in workflow.md)
