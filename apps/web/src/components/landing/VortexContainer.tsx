@@ -95,15 +95,24 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						0,
 					);
 
-					// Decryption Glyph Flicker (Simulated in timeline)
+					// Decryption Glyph Flicker (Stable for scrubbing/scroll-back)
 					const keywords = ["[CANVAS]", "[STUDIO]", "[AGENTIC]", "233"];
-					keywords.forEach((word, i) => {
-						tl.call(
-							() => heroRef.current?.setGlyphText(word),
-							[],
-							0.8 + i * 0.2,
-						);
-					});
+					const glyphProxy = { i: 0 };
+					tl.to(
+						glyphProxy,
+						{
+							i: keywords.length - 1,
+							roundProps: "i",
+							duration: 0.8,
+							ease: "none",
+							onUpdate: () => {
+								heroRef.current?.setGlyphText(
+									keywords[Math.floor(glyphProxy.i)],
+								);
+							},
+						},
+						0.8,
+					);
 
 					// 1. Brackets Snap
 					tl.to(
