@@ -25,3 +25,9 @@ Refining the transition into a "Decryption Glyph" sequence, a "Kinetic Flip" han
 - [x] Task: Ensure scroll-back stability (no malformed states). [7c7d8aa]
 - [x] Task: Verify 60fps performance across the entire transition. [7c7d8aa]
 - [x] Task: Conductor - User Manual Verification 'Final Polish' (Protocol in workflow.md) [7c7d8aa]
+
+## Phase 5: Substrate Reveal & Refinery [checkpoint: 956d6e3]
+- [x] Task: Implement "Batch Asset Refinery" narrative in `ProductionEngine.tsx`.
+- [x] Task: Implement "Substrate Reveal" transition (dissolving stage background).
+- [x] Task: Refactor "Lockup" animation to "Upper-Left Corner" watermark style.
+- [x] Task: Activate image states for "Creative" and "Process" during extraction.
