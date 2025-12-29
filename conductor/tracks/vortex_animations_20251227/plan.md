@@ -8,20 +8,20 @@ Refining the transition into a "Decryption Glyph" sequence, a "Kinetic Flip" han
 - [x] Task: Update `KineticTrack.tsx` to support vertical `flex-col` stacking and the `shutter-overlay` DOM structure.
 - [x] Task: Conductor - User Manual Verification 'Glyph Infrastructure' (Protocol in workflow.md) 592ce00
 
-## Phase 2: The Kinetic Flip Handover [checkpoint: 93e7930]
-- [x] Task: Implement the "Kinetic Flip" in `VortexContainer.tsx` (centered 233 folds out, Black Box folds in).
+## Phase 2: The Rising Stage Handover [checkpoint: 7c7d8aa]
+- [x] Task: Implement the "Rising Stage" reveal (Matte Black section slides up to cover Hero).
 - [x] Task: Synchronize the "Success Flash" orange border micro-interaction.
-- [x] Task: Implement the exponential scale-up of the Black Box to fill the viewport.
-- [x] Task: Conductor - User Manual Verification 'Flip Handover' (Protocol in workflow.md) 93e7930
+- [x] Task: Implement the "Decryption Glyph" stable logic with GSAP proxy.
+- [x] Task: Conductor - User Manual Verification 'Rising Stage' (Protocol in workflow.md)
 
-## Phase 3: Vertical Magazine Reveal [checkpoint: d29acc8]
-- [x] Task: Implement the "Rising Plates" GSAP sequence in `VortexContainer.tsx`.
-- [x] Task: Implement the "Mechanical Shutter" reveal (slide down) triggered when blocks hit the screen center.
-- [x] Task: Integrate "Assembly Rails" HUD lines and dynamic metadata flickering.
-- [x] Task: Conductor - User Manual Verification 'Vertical Magazine' (Protocol in workflow.md) d29acc8
+## Phase 3: Typographic Monolith [checkpoint: d29acc8]
+- [x] Task: Refactor Manifesto into a cinematic 3-row horizontal block.
+- [x] Task: Implement the "Scanner Wave" staggered shutter reveal.
+- [x] Task: Integrate "Technical Reference" indices and Braun-style corner notches.
+- [x] Task: Conductor - User Manual Verification 'Monolith' (Protocol in workflow.md)
 
-## Phase 4: Final Polish & Act Integration [ ]
-- [ ] Task: Perform full regression sweep of Act I -> II -> III.
-- [ ] Task: Ensure scroll-back stability (no malformed states).
-- [ ] Task: Verify 60fps performance across the entire transition.
-- [ ] Task: Conductor - User Manual Verification 'Final Polish' (Protocol in workflow.md)
+## Phase 4: Final Polish & Act Integration [checkpoint: 7c7d8aa]
+- [x] Task: Perform full regression sweep of Act I -> II -> III. [5eb2145]
+- [x] Task: Ensure scroll-back stability (no malformed states). [7c7d8aa]
+- [x] Task: Verify 60fps performance across the entire transition. [7c7d8aa]
+- [x] Task: Conductor - User Manual Verification 'Final Polish' (Protocol in workflow.md) [7c7d8aa]

@@ -7,9 +7,10 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import { cn } from "@/lib/utils";
 
 interface HoverBlockProps {
-	word: string;
+	word: React.ReactNode;
 	imageUrl?: string;
 	index?: string;
 	className?: string;
@@ -23,47 +24,51 @@ const HoverBlock: React.FC<HoverBlockProps> = ({
 }) => {
 	const [isHovered, setIsHovered] = useState(false);
 	const isInteractive = !!imageUrl;
-	const isRefiner = [
-		"PURITY",
-		"LOGIC.",
-		"SIGNAL",
-		"CREATIVE",
-		"PROCESS.",
-	].includes(word.toUpperCase());
+	const isRefiner =
+		typeof word === "string" &&
+		["PURITY", "LOGIC.", "SIGNAL", "CREATIVE", "PROCESS."].includes(
+			word.toUpperCase(),
+		);
 
 	return (
 		<div
 			onMouseEnter={() => isInteractive && setIsHovered(true)}
 			onMouseLeave={() => isInteractive && setIsHovered(false)}
 			className={`
-                kinetic-block relative overflow-hidden px-4 py-2 sm:px-8 sm:py-4 bg-[#1a1a1a] border transition-colors duration-500
-                ${isInteractive ? "cursor-switch" : "cursor-default"}
-                ${isHovered ? "border-[#FF4400] z-10" : "border-white/10"}
-                ${className || ""}
-            `}
+	                kinetic-block relative overflow-hidden px-4 py-1 sm:px-6 sm:py-1 bg-[#1a1a1a] border transition-colors duration-500
+	                ${isInteractive ? "cursor-switch" : "cursor-default"}
+	                ${isHovered ? "border-[#FF4400] z-10" : "border-white/10"}
+	                ${className || ""}
+	            `}
 		>
+			{/* Technical Reference Notch (Top Right) */}
+			{isInteractive && (
+				<div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-[#FF4400] z-40" />
+			)}
 			<div className="relative z-20 shutter-container overflow-hidden">
 				<span
 					className={`
-                    kinetic-text inline-block will-change-transform
-                    text-4xl md:text-7xl lg:text-9xl font-black tracking-tighter uppercase leading-none
-                    ${isHovered && isInteractive ? "text-[#FF4400]" : "text-white"}
-					${isRefiner && !isHovered ? "animate-pulse text-[#FF4400]/80" : ""}
-                    transition-colors duration-300
-                `}
+	                    kinetic-text inline-block will-change-transform
+	                    text-3xl md:text-5xl lg:text-[4.5vw] font-black tracking-tighter uppercase leading-[0.85]
+	                    ${isHovered && isInteractive ? "text-[#FF4400]" : "text-white"}
+	                    transition-colors duration-300
+	                `}
 				>
 					{word}
+					{isInteractive && (
+						<span className="text-[10px] md:text-xs font-mono text-[#FF4400] align-top ml-1 tracking-normal">
+							{index}
+						</span>
+					)}
 				</span>
 				{/* The Mechanical Shutter - Initial height is 100% */}
 				<div className="shutter-overlay absolute inset-0 bg-[#1a1a1a] z-30 origin-bottom" />
-			</div>
-
+			</div>{" "}
 			{isInteractive && (
 				<div
 					className={`absolute top-1 right-1 w-1.5 h-1.5 transition-colors duration-300 ${isHovered ? "bg-[#FF4400]" : "bg-white/20"}`}
 				/>
 			)}
-
 			{imageUrl && (
 				<div
 					className={`absolute inset-0 z-10 transition-all duration-500 ease-out overflow-hidden pointer-events-none ${
@@ -145,7 +150,18 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 		}));
 
 		const sentence1 = [
-			{ w: "At Studio+233," },
+			{ w: "At" },
+			{
+				w: (
+					<>
+						Studio
+						<span className="text-[#FF4400] ml-[0.12em] mr-[0.1em] tracking-normal">
+							+
+						</span>
+						233,
+					</>
+				),
+			},
 			{ w: "we" },
 			{ w: "build" },
 			{ w: "for" },
@@ -172,46 +188,45 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 				idx: "03",
 			},
 			{ w: "to" },
-			{ w: "the" },
+			{
+				w: "the",
+				className: "target-word-the",
+			},
 			{
 				w: "creative",
 				img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=600",
 				idx: "04",
+				className: "target-word-creative",
 			},
 			{
 				w: "process.",
 				img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600",
 				idx: "05",
+				className: "target-word-process",
 			},
 		];
+
+		const allBlocks = [...sentence1, ...sentence2];
 
 		return (
 			<div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden bg-[#1a1a1a]">
 				<IndustrialHUD />
 				<div
 					ref={trackRef}
-					className="relative w-full h-full flex flex-col gap-8 md:gap-12 items-center justify-center pointer-events-auto"
+					className="relative w-full max-w-[95vw] lg:max-w-7xl mx-auto flex flex-wrap gap-x-4 gap-y-0 justify-center items-center pointer-events-auto"
 				>
-					<div className="flex flex-wrap gap-4 justify-center">
-						{sentence1.map((item, i) => (
-							<HoverBlock
-								key={`s1-${i}`}
-								word={item.w}
-								imageUrl={item.img}
-								index={item.idx}
-							/>
-						))}
-					</div>
-					<div className="flex flex-wrap gap-4 justify-center">
-						{sentence2.map((item, i) => (
-							<HoverBlock
-								key={`s2-${i}`}
-								word={item.w}
-								imageUrl={item.img}
-								index={item.idx}
-							/>
-						))}
-					</div>
+					{allBlocks.map((item, i) => (
+						<HoverBlock
+							key={`block-${i}`}
+							word={item.w}
+							imageUrl={item.img}
+							index={item.idx}
+							className={cn(
+								item.className || "debris-word",
+								"transition-none", // Disable CSS transitions during GSAP takeover
+							)}
+						/>
+					))}
 				</div>
 			</div>
 		);

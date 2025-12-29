@@ -17,6 +17,9 @@ export function useLenis() {
 			orientation: "vertical",
 			gestureOrientation: "vertical",
 			smoothWheel: true,
+			wheelMultiplier: 1,
+			touchMultiplier: 2,
+			lerp: 0.1,
 		});
 
 		lenisRef.current = lenis;

@@ -1,7 +1,14 @@
 "use client";
 
-import React, { forwardRef, useImperativeHandle, useRef } from "react";
+import React, {
+	forwardRef,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from "react";
 import { useMouseCoordinates } from "@/hooks/useMouseCoordinates";
+import { ScrambleText } from "./ScrambleText";
 
 export interface VortexHeroHandle {
 	studio: HTMLSpanElement | null;
@@ -25,6 +32,25 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 
 	const mousePos = useMouseCoordinates();
 
+	// Target Group Rotation Logic
+	const [targetGroup, setTargetGroup] = useState("CREATIVES");
+	const groups = [
+		"CREATIVES",
+		"AGENCIES",
+		"MEDIA_TEAMS",
+		"DESIGNERS",
+		"PRODUCERS",
+	];
+
+	useEffect(() => {
+		let i = 0;
+		const interval = setInterval(() => {
+			i = (i + 1) % groups.length;
+			setTargetGroup(groups[i]);
+		}, 3000);
+		return () => clearInterval(interval);
+	}, []);
+
 	useImperativeHandle(ref, () => ({
 		studio: studioRef.current,
 		plus: plusRef.current,
@@ -41,6 +67,25 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 			className="absolute inset-0 z-10 bg-[#f4f4f0] flex flex-col justify-between p-8 lg:p-12 overflow-hidden select-none font-sans"
 			data-testid="hero-surface"
 		>
+			<style jsx>{`
+				@keyframes terminal-blink {
+					0%, 100% { opacity: 1; }
+					50% { opacity: 0; }
+				}
+				.animate-terminal-blink {
+					animation: terminal-blink 1s step-end infinite;
+				}
+				@keyframes assembly-slide {
+					from { transform: translateY(0); }
+					to { transform: translateY(-50%); }
+				}
+				.animate-assembly-slide {
+					animation: assembly-slide 4s linear infinite;
+				}
+				.mask-fade-y {
+					mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+				}
+			`}</style>
 			{/* --- Background Elements --- */}
 			<div
 				className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -53,7 +98,8 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 			{/* --- The Matte Black Core (Central Box) --- */}
 			<div
 				ref={blackBoxRef}
-				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] bg-[#1a1a1a] z-[5] opacity-0 will-change-transform border border-white/5 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]"
+				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] bg-[#1a1a1a] z-[5] opacity-0 will-change-transform backface-hidden border border-white/5 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]"
+				style={{ transform: "rotateX(-90deg) translate(-50%, -50%)" }}
 			/>
 
 			{/* --- Corner Brackets (Targeting UI) --- */}
@@ -131,7 +177,16 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 								className="inline-block will-change-transform"
 								data-testid="hero-numeric"
 							>
-								{glyphText}
+								{glyphText.split("+").map((part, i, arr) => (
+									<React.Fragment key={i}>
+										{part}
+										{i < arr.length - 1 && (
+											<span className="text-[#FF4400] ml-[0.07em] mr-[0.05em] tracking-normal">
+												+
+											</span>
+										)}
+									</React.Fragment>
+								))}
 							</span>
 						</span>
 
@@ -140,6 +195,26 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						</span>
 					</span>
 				</h1>
+
+				<p className="font-satoshi text-[1.1vw] md:text-[1.3vw] lg:text-[0.9vw] text-neutral-400 uppercase tracking-[0.4em] mt-20 max-w-[60vw] leading-relaxed">
+					Industrial-grade AI orchestration engine <br />
+					for high-volume creative production
+					<span className="inline-flex items-center ml-6 text-[#1a1a1a] font-bold tracking-normal">
+						<span className="mr-2 text-neutral-300">//</span>
+						_FOR
+						<span className="text-[#FF4400] ml-2">
+							<ScrambleText
+								key={targetGroup}
+								text={targetGroup}
+								triggerOnce={false}
+								scrambleSpeed={20}
+							/>
+						</span>
+						<span className="animate-terminal-blink ml-1 text-[#FF4400]">
+							|
+						</span>
+					</span>
+				</p>
 			</div>
 
 			{/* --- Bottom Interface (Cleaned) --- */}

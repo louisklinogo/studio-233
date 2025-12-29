@@ -6,6 +6,7 @@ import {
 	KineticTrack,
 	type KineticTrackHandle,
 } from "@/components/landing/KineticTrack";
+import { ProductionEngine } from "@/components/landing/ProductionEngine";
 import { SystemCalibrationLoader } from "@/components/landing/SystemCalibrationLoader";
 import { SystemHUD } from "@/components/landing/SystemHUD";
 import { VortexContainer } from "@/components/landing/VortexContainer";
@@ -45,6 +46,12 @@ export default function VortexPage() {
 				{/* The Unified Kinetic Stream Container */}
 				<VortexContainer heroRef={heroRef} trackRef={trackRef}>
 					<VortexHeroV2 ref={heroRef} />
+
+					{/* The Automated Batch Refinery Simulation (Background for Monolith) */}
+					<div className="engine-layer absolute inset-0 opacity-0 pointer-events-none">
+						<ProductionEngine />
+					</div>
+
 					<KineticTrack ref={trackRef} />
 				</VortexContainer>
 			</motion.div>

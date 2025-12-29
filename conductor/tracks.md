@@ -31,5 +31,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Vortex Animation & Interaction Refinement
+## [x] Track: Vortex Animation & Interaction Refinement
 *Link: [./conductor/tracks/vortex_animations_20251227/](./conductor/tracks/vortex_animations_20251227/)*

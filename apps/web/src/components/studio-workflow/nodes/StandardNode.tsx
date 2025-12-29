@@ -41,8 +41,12 @@ export function StandardNode({
 			: data.category === "output"
 				? "bg-neutral-900 text-white"
 				: data.category === "generation"
-					? "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-					: "bg-white dark:bg-[#222] text-neutral-900 dark:text-white"; // process/default
+					? "bg-[#FF4400] text-white"
+					: data.category === "vision"
+						? "bg-[#3B4B59] text-white" // Braun Blue/Grey
+						: data.category === "logic"
+							? "bg-neutral-600 text-white"
+							: "bg-white dark:bg-[#222] text-neutral-900 dark:text-white"; // process/default
 
 	return (
 		<div
