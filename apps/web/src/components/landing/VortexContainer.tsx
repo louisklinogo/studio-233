@@ -278,6 +278,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 										return targetY - layoutTop;
 									},
 									scale: 0.6, // Smaller watermark style
+									transformOrigin: "left center", // Keep left edge pinned for perfect alignment
 									color: "#ffffff",
 									duration: 1.5,
 									ease: "expo.inOut",
@@ -285,7 +286,6 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 								11.5,
 							);
 						});
-
 						// 4. THE SUBSTRATE REVEAL: Production Engine comes in clear and strong
 						if (engineLayer) {
 							// Fade out the stage background to reveal the full engine
