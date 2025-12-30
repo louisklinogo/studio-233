@@ -9,8 +9,7 @@
 ## Phase 2: Workflow Refactoring
 - [x] Task: Refactor `packages/ai/src/workflows/vision-analysis.ts` to implement the Pre-download + Binary Injection pattern. [58bace6]
 - [x] Task: Integrate Vercel KV and Inngest idempotency for request coalescing. [e722199]
-- [ ] Task: Implement Fast-Fail logic with specific `AssetFetchError` and `BlobStorageError` types.
-- [ ] Task: Implement Fast-Fail logic with specific `AssetFetchError` and `BlobStorageError` types.
+- [x] Task: Implement Fast-Fail logic with specific `AssetFetchError` and `BlobStorageError` types. [cd0e5f1]
 - [ ] Task: Conductor - User Manual Verification 'Phase 2 Workflow Refactoring' (Protocol in workflow.md)
 
 ## Phase 3: Cleanup & Verification
