@@ -3,6 +3,7 @@ import type {
 	BrandKnowledgeIngested,
 	ProcessFashionItem,
 	VisionArchiveRequested,
+	VisionCleanupRequested,
 	WorkflowRequested,
 } from "./events";
 
@@ -11,6 +12,7 @@ type EventMap = {
 	"brand.knowledge.ingested": { data: BrandKnowledgeIngested };
 	"studio/process-fashion-item": { data: ProcessFashionItem };
 	"vision.archive.requested": { data: VisionArchiveRequested };
+	"vision.cleanup.requested": { data: VisionCleanupRequested };
 };
 
 export const inngest = new Inngest({

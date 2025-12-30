@@ -2,10 +2,19 @@ import { describe, expect, test } from "bun:test";
 import {
 	brandKnowledgeIngestedSchema,
 	visionArchiveRequestedSchema,
+	visionCleanupRequestedSchema,
 	workflowRequestedSchema,
 } from "../events";
 
 describe("Inngest Event Schemas", () => {
+	test("visionCleanupRequestedSchema validates correct data", () => {
+		const validData = {
+			path: "/tmp/vision-123",
+		};
+		const result = visionCleanupRequestedSchema.safeParse(validData);
+		expect(result.success).toBe(true);
+	});
+
 	test("brandKnowledgeIngestedSchema validates correct data", () => {
 		const validData = {
 			workspaceId: "ws_123",

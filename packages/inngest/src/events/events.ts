@@ -4,6 +4,7 @@ export const workflowRequestedEvent = "studio.workflow.requested" as const;
 export const brandKnowledgeIngestedEvent = "brand.knowledge.ingested" as const;
 export const processFashionItemEvent = "studio/process-fashion-item" as const;
 export const visionArchiveRequestedEvent = "vision.archive.requested" as const;
+export const visionCleanupRequestedEvent = "vision.cleanup.requested" as const;
 
 export const brandKnowledgeIngestedSchema = z.object({
 	workspaceId: z.string(),
@@ -24,6 +25,14 @@ export const visionArchiveRequestedSchema = z.object({
 
 export type VisionArchiveRequested = z.infer<
 	typeof visionArchiveRequestedSchema
+>;
+
+export const visionCleanupRequestedSchema = z.object({
+	path: z.string(),
+});
+
+export type VisionCleanupRequested = z.infer<
+	typeof visionCleanupRequestedSchema
 >;
 
 export const workflowRequestedSchema = z.object({

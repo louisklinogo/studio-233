@@ -1,4 +1,12 @@
-import { beforeAll, describe, expect, it, mock, spyOn } from "bun:test";
+import {
+	afterAll,
+	beforeAll,
+	describe,
+	expect,
+	it,
+	mock,
+	spyOn,
+} from "bun:test";
 import { MockLanguageModelV3 } from "ai/test";
 import * as BlobUtils from "../utils/blob-storage";
 import * as HashUtils from "../utils/hashing";
@@ -28,6 +36,10 @@ describe("visionAnalysisWorkflow [Refactor]", () => {
 		});
 		mockComputeSHA256.mockResolvedValue("test-sha256-hash");
 		mockUpload.mockResolvedValue("https://blob/store");
+	});
+
+	afterAll(() => {
+		mock.restore();
 	});
 
 	it("should download image, hash it, and inject binary into model", async () => {

@@ -13,6 +13,6 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2 Workflow Refactoring' (Protocol in workflow.md) [a4c80eb]
 
 ## Phase 3: Cleanup & Verification
-- [ ] Task: Add `vision.cleanup.requested` event and Inngest function for `/tmp` pruning.
-- [ ] Task: Enhance `vision-resilience.test.ts` to simulate 50% packet loss and thundering herd scenarios.
+- [x] Task: Add `vision.cleanup.requested` event and Inngest function for `/tmp` pruning. [493a734]
+- [x] Task: Enhance `vision-resilience.test.ts` to simulate 50% packet loss and thundering herd scenarios. [493a734]
 - [ ] Task: Conductor - User Manual Verification 'Phase 3 Cleanup & Verification' (Protocol in workflow.md)

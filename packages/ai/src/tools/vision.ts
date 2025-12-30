@@ -93,17 +93,30 @@ export const visionAnalysisTool = createTool({
 							? ((runtimeContext as any).threadId as string | undefined)
 							: undefined,
 				},
-				onResult: (result, imageHash) => {
+				onResult: (result, imageHash, tempPath) => {
 					const inngest = (runtimeContext as any)?.inngest;
 					if (inngest) {
-						return inngest.send({
-							name: "vision.archive.requested",
-							data: {
-								imageUrl,
-								imageHash,
-								metadata: result as any,
+						const events = [
+							{
+								name: "vision.archive.requested",
+								data: {
+									imageUrl,
+									imageHash,
+									metadata: result as any,
+								},
 							},
-						});
+						];
+
+						if (tempPath) {
+							events.push({
+								name: "vision.cleanup.requested" as any,
+								data: {
+									path: tempPath,
+								} as any,
+							});
+						}
+
+						return inngest.send(events);
 					}
 				},
 			},

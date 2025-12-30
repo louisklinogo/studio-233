@@ -1,4 +1,12 @@
-import { beforeAll, describe, expect, it, mock, spyOn } from "bun:test";
+import {
+	afterAll,
+	beforeAll,
+	describe,
+	expect,
+	it,
+	mock,
+	spyOn,
+} from "bun:test";
 import { MockLanguageModelV3 } from "ai/test";
 import * as BlobUtils from "../utils/blob-storage";
 import * as HashUtils from "../utils/hashing";
@@ -51,6 +59,10 @@ describe("visionAnalysisWorkflow Coalescing", () => {
 			return new Response(new Uint8Array([1, 2, 3, 4]).buffer);
 		});
 		mockComputeSHA256.mockResolvedValue("coalesce-hash");
+	});
+
+	afterAll(() => {
+		mock.restore();
 	});
 
 	it("should acquire lock before generating", async () => {

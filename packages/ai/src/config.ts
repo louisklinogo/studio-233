@@ -18,8 +18,16 @@ type Env = {
 
 let cachedEnv: Env | null = null;
 
+export function resetEnv(): void {
+	cachedEnv = null;
+}
+
 export function getEnv(): Env {
-	if (cachedEnv) return cachedEnv;
+	const isTest =
+		process.env.NODE_ENV === "test" ||
+		!!process.env.VITEST ||
+		!!process.env.BUN_TEST;
+	if (cachedEnv && !isTest) return cachedEnv;
 
 	const databaseUrl =
 		process.env.AI_DATABASE_URL ??
@@ -51,6 +59,12 @@ export function getEnv(): Env {
 		kvRestApiUrl: process.env.KV_REST_API_URL,
 		kvRestApiToken: process.env.KV_REST_API_TOKEN,
 	};
+
+	if (isTest) {
+		// During tests, always pull fresh from process.env to allow mocking
+		cachedEnv.kvRestApiUrl = process.env.KV_REST_API_URL;
+		cachedEnv.kvRestApiToken = process.env.KV_REST_API_TOKEN;
+	}
 
 	return cachedEnv;
 }
