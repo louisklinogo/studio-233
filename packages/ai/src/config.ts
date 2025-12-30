@@ -12,6 +12,8 @@ type Env = {
 	tavilyBaseUrl: string;
 	exaBaseUrl: string;
 	blobHostname?: string;
+	kvRestApiUrl?: string;
+	kvRestApiToken?: string;
 };
 
 let cachedEnv: Env | null = null;
@@ -46,6 +48,8 @@ export function getEnv(): Env {
 			process.env.TAVILY_API_BASE_URL ?? "https://api.tavily.com/search",
 		exaBaseUrl: process.env.EXA_API_BASE_URL ?? "https://api.exa.ai/search",
 		blobHostname: process.env.BLOB_HOSTNAME,
+		kvRestApiUrl: process.env.KV_REST_API_URL,
+		kvRestApiToken: process.env.KV_REST_API_TOKEN,
 	};
 
 	return cachedEnv;

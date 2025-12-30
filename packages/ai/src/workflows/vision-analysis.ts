@@ -1,4 +1,5 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createClient } from "@vercel/kv";
 import { generateObject, type LanguageModel } from "ai";
 
 import { getEnv } from "../config";
@@ -34,7 +35,7 @@ type VisionAnalysisTimeouts = {
 
 const DEFAULT_TIMEOUTS: VisionAnalysisTimeouts = {
 	blobListMs: 2_000,
-	fetchMs: 20_000, // Increased for robust fetch
+	fetchMs: 20_000,
 	geminiMs: 120_000,
 	uploadMs: 25_000,
 };
@@ -160,22 +161,111 @@ export async function runVisionAnalysisWorkflow(
 		throw error;
 	}
 
-	// --- OPTIMIZATION: Parallel Cache Check and Model Generation ---
-
-	// 2. Start Cache Lookup Promise
-	const cachePromise = loadCachedVisionAnalysis(imageHash, {
-		timeoutMs: timeouts,
-		abortSignal: options.abortSignal,
-	}).catch((err) => {
-		logger.warn("vision_analysis.cache_error", {
-			imageHash,
-			message: err.message,
+	// 2. Check Cache
+	try {
+		const cached = await loadCachedVisionAnalysis(imageHash, {
+			timeoutMs: timeouts,
+			abortSignal: options.abortSignal,
 		});
-		return null;
-	});
+		if (cached) {
+			logger.info("vision_analysis.cache_hit", {
+				imageHash,
+				durationMs: Date.now() - startedAt,
+				...logContext,
+			});
+			return cached;
+		}
+	} catch (e) {
+		// Continue
+	}
 
-	// 3. Start Generation Promise
-	const generationPromise = (async (): Promise<VisionAnalysisResult> => {
+	// 3. Request Coalescing (Locking)
+	const kv =
+		env.kvRestApiUrl && env.kvRestApiToken
+			? createClient({
+					url: env.kvRestApiUrl,
+					token: env.kvRestApiToken,
+				})
+			: null;
+
+	const lockKey = `vision:lock:${imageHash}`;
+	let lockAcquired = false;
+
+	if (kv) {
+		try {
+			// Try to acquire lock
+			// NX: Set only if not exists
+			// EX: Expire in 120 seconds (generous timeout for generation)
+			const result = await kv.set(lockKey, "processing", { nx: true, ex: 120 });
+
+			if (result === "OK") {
+				lockAcquired = true;
+			} else {
+				// Locked by another instance. Poll for result.
+				logger.info("vision_analysis.coalescing_wait", {
+					imageHash,
+					...logContext,
+				});
+				const pollStart = Date.now();
+				const POLL_INTERVAL = 1000;
+
+				while (Date.now() - pollStart < timeouts.geminiMs) {
+					// Check cache again
+					const cached = await loadCachedVisionAnalysis(imageHash, {
+						timeoutMs: timeouts,
+						abortSignal: options.abortSignal,
+					});
+					if (cached) {
+						logger.info("vision_analysis.coalescing_hit", {
+							imageHash,
+							...logContext,
+						});
+						return cached;
+					}
+
+					// Check if lock still exists (did the other instance die?)
+					const lockExists = await kv.exists(lockKey);
+					if (!lockExists) {
+						// Lock released but no cache? Try to acquire lock again to be safe.
+						const retryResult = await kv.set(lockKey, "processing", {
+							nx: true,
+							ex: 120,
+						});
+						if (retryResult === "OK") {
+							lockAcquired = true;
+							break; // Proceed to generate
+						}
+					}
+
+					if (options.abortSignal?.aborted) {
+						throw new Error("Aborted while waiting for coalesced request");
+					}
+
+					await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+				}
+
+				if (!lockAcquired) {
+					throw new Error("Timeout waiting for coalesced request");
+				}
+			}
+		} catch (e) {
+			logger.warn("vision_analysis.kv_error", {
+				error: e instanceof Error ? e.message : String(e),
+				...logContext,
+			});
+			// If KV fails, we default to proceeding (lockAcquired = true) to avoid outage
+			// But we must check if we successfully waited? No, if KV errors, we assume we should generate.
+			// But if we were polling and KV failed, we might want to break and generate.
+			if (!lockAcquired) {
+				lockAcquired = true; // Fallback: generate ourselves
+			}
+		}
+	} else {
+		lockAcquired = true; // No KV, always generate
+	}
+
+	// 4. Generation & Upload
+	try {
 		const key = env.googleApiKey;
 		if (!key) throw new Error("Google API key required for vision analysis");
 
@@ -259,24 +349,19 @@ export async function runVisionAnalysisWorkflow(
 		}
 
 		return parsedResult;
-	})();
-
-	// 4. The Race/Decision
-	try {
-		const cached = await cachePromise;
-		if (cached) {
-			logger.info("vision_analysis.cache_hit", {
-				imageHash,
-				durationMs: Date.now() - startedAt,
-				...logContext,
-			});
-			return cached;
+	} finally {
+		// 5. Release Lock
+		if (kv && lockAcquired) {
+			try {
+				await kv.del(lockKey);
+			} catch (e) {
+				logger.warn("vision_analysis.lock_release_failed", {
+					imageHash,
+					error: e instanceof Error ? e.message : String(e),
+				});
+			}
 		}
-	} catch (e) {
-		// Cache failed, fall through to generation
 	}
-
-	return await generationPromise;
 }
 
 export const visionAnalysisWorkflow = {
