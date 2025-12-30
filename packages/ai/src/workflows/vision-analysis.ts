@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject, type LanguageModel } from "ai";
 
@@ -14,6 +13,9 @@ import {
 	visionAnalysisInputSchema,
 	visionAnalysisOutputSchema,
 } from "../schemas/vision-analysis";
+import { uploadImageBufferToBlob } from "../utils/blob-storage";
+import { computeSHA256 } from "../utils/hashing";
+import { robustFetch } from "../utils/http";
 import { logger } from "../utils/logger";
 import { withDevTools } from "../utils/model";
 import { withTimeout } from "../utils/timeout";
@@ -32,7 +34,7 @@ type VisionAnalysisTimeouts = {
 
 const DEFAULT_TIMEOUTS: VisionAnalysisTimeouts = {
 	blobListMs: 2_000,
-	fetchMs: 3_000,
+	fetchMs: 20_000, // Increased for robust fetch
 	geminiMs: 120_000,
 	uploadMs: 25_000,
 };
@@ -122,17 +124,45 @@ export async function runVisionAnalysisWorkflow(
 		...(options.logContext ?? {}),
 	};
 
-	const imageHash = createHash("md5").update(input.imageUrl).digest("hex");
+	// 1. Download & Hash Phase (Pre-computation)
+	let imageBuffer: Uint8Array;
+	let imageHash: string;
 
-	logger.info("vision_analysis.start", {
-		imageHash,
-		imageUrl: input.imageUrl,
-		...logContext,
-	});
+	try {
+		const fetchResponse = await robustFetch(input.imageUrl, {
+			timeout: timeouts.fetchMs,
+			retryDelay: 1000,
+			maxRetries: 3,
+		});
+
+		if (!fetchResponse.ok) {
+			throw new Error(
+				`Failed to fetch image: ${fetchResponse.status} ${fetchResponse.statusText}`,
+			);
+		}
+
+		const arrayBuffer = await fetchResponse.arrayBuffer();
+		imageBuffer = new Uint8Array(arrayBuffer);
+		imageHash = await computeSHA256(imageBuffer);
+
+		logger.info("vision_analysis.download_complete", {
+			imageHash,
+			size: imageBuffer.length,
+			durationMs: Date.now() - startedAt,
+			...logContext,
+		});
+	} catch (error) {
+		logger.error("vision_analysis.download_failed", {
+			imageUrl: input.imageUrl,
+			error: error instanceof Error ? error.message : String(error),
+			...logContext,
+		});
+		throw error;
+	}
 
 	// --- OPTIMIZATION: Parallel Cache Check and Model Generation ---
 
-	// 1. Start Cache Lookup Promise
+	// 2. Start Cache Lookup Promise
 	const cachePromise = loadCachedVisionAnalysis(imageHash, {
 		timeoutMs: timeouts,
 		abortSignal: options.abortSignal,
@@ -144,13 +174,10 @@ export async function runVisionAnalysisWorkflow(
 		return null;
 	});
 
-	// 2. Start Generation Promise
+	// 3. Start Generation Promise
 	const generationPromise = (async (): Promise<VisionAnalysisResult> => {
 		const key = env.googleApiKey;
 		if (!key) throw new Error("Google API key required for vision analysis");
-
-		// Use original URL directly
-		const analysisImageUrl = input.imageUrl;
 
 		let model: LanguageModel;
 		let modelId: string;
@@ -186,7 +213,8 @@ export async function runVisionAnalysisWorkflow(
 									type: "text",
 									text: "Analyze this image according to the protocol.",
 								},
-								{ type: "image", image: new URL(analysisImageUrl) },
+								// Binary Injection: Pass buffer directly
+								{ type: "image", image: imageBuffer },
 							],
 						},
 					],
@@ -205,6 +233,17 @@ export async function runVisionAnalysisWorkflow(
 		});
 
 		// TRIGGER ASYNC ARCHIVAL (Off-path)
+		// Upload source image to Blob for resilience/cache future use
+		uploadImageBufferToBlob(Buffer.from(imageBuffer), {
+			filename: `vision/source/${imageHash}`,
+			addRandomSuffix: false,
+		}).catch((e) => {
+			logger.warn("vision_analysis.source_upload_failed", {
+				imageHash,
+				error: e.message,
+			});
+		});
+
 		if (options.onResult) {
 			try {
 				const trigger = options.onResult(parsedResult, imageHash);
@@ -222,7 +261,7 @@ export async function runVisionAnalysisWorkflow(
 		return parsedResult;
 	})();
 
-	// 3. The Race/Decision
+	// 4. The Race/Decision
 	try {
 		const cached = await cachePromise;
 		if (cached) {

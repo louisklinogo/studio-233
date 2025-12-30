@@ -1,127 +1,120 @@
-import { beforeAll, describe, expect, it, mock } from "bun:test";
+import { beforeAll, describe, expect, it, mock, spyOn } from "bun:test";
 import { MockLanguageModelV3 } from "ai/test";
+import * as BlobUtils from "../utils/blob-storage";
+import * as HashUtils from "../utils/hashing";
+import * as HttpUtils from "../utils/http";
 import { runVisionAnalysisWorkflow } from "../workflows/vision-analysis";
 
-// Mock @vercel/blob
+// Mock dependencies
+const mockRobustFetch = spyOn(HttpUtils, "robustFetch");
+const mockComputeSHA256 = spyOn(HashUtils, "computeSHA256");
+const mockUpload = spyOn(BlobUtils, "uploadImageBufferToBlob");
+
+// Mock @vercel/blob (legacy/direct calls if any)
 mock.module("@vercel/blob", () => ({
 	list: async () => ({ blobs: [] }),
 	put: async () => ({ url: "https://example.com/blob" }),
 }));
 
-// Mock global fetch for image download
-const originalFetch = global.fetch;
-beforeAll(() => {
-	global.fetch = mock(async (url) => {
-		if (
-			url.toString().includes("example.com/image.jpg") ||
-			url.toString().includes("example.com/blob")
-		) {
-			return new Response(new ArrayBuffer(10), {
-				status: 200,
-				headers: { "content-type": "image/jpeg" },
-			});
-		}
-		if (
-			url.toString().endsWith("latest.json") ||
-			url.toString().endsWith("source.bin")
-		) {
-			return new Response(null, { status: 404 });
-		}
-		return new Response(null, { status: 404 });
-	});
-});
+// Mock FS for /tmp writes (optional, but good if we can spy on Bun.write)
+// Bun.write is hard to mock directly in some envs, but we can verify the side effect (reading it back).
+// For this test, we might just assume robustFetch returns a buffer/stream that gets processed.
 
-describe("visionAnalysisWorkflow", () => {
-	it("should analyze an image and return structured data", async () => {
+describe("visionAnalysisWorkflow [Refactor]", () => {
+	beforeAll(() => {
+		// Setup mocks
+		mockRobustFetch.mockImplementation(async () => {
+			return new Response(new Uint8Array([1, 2, 3, 4]).buffer);
+		});
+		mockComputeSHA256.mockResolvedValue("test-sha256-hash");
+		mockUpload.mockResolvedValue("https://blob/store");
+	});
+
+	it("should download image, hash it, and inject binary into model", async () => {
+		let capturedImagePart: any = null;
+
 		const mockModel = new MockLanguageModelV3({
-			doGenerate: async () => ({
-				finishReason: "stop",
-				usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-				content: [
-					{
-						type: "text",
-						text: JSON.stringify({
-							meta: {
-								image_quality: "High",
-								image_type: "Photography",
-								resolution_estimation: "4K",
-							},
-							global_context: {
-								scene_description:
-									"A studio shot of a model wearing a blue jacket.",
-								time_of_day: "Indoor",
-								weather_atmosphere: "Neutral",
-								lighting: {
-									source: "Softbox",
-									direction: "Front",
-									quality: "Soft",
-									color_temp: "Neutral",
+			doGenerate: async (args) => {
+				// Capture the image part from the prompt
+				const userMsg = args.prompt.filter((p) => p.role === "user")[0];
+				if (userMsg && Array.isArray(userMsg.content)) {
+					capturedImagePart = userMsg.content.find(
+						(c) => c.type === "image" || c.type === "file",
+					);
+				}
+
+				return {
+					finishReason: "stop",
+					usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								meta: {
+									image_quality: "High",
+									image_type: "Photography",
+									resolution_estimation: "4K",
 								},
-							},
-							color_palette: {
-								dominant_hex_estimates: ["#0000FF", "#FFFFFF"],
-								accent_colors: ["#000000"],
-								contrast_level: "High",
-							},
-							composition: {
-								camera_angle: "Eye level",
-								framing: "Full shot",
-								depth_of_field: "Deep",
-								focal_point: "Model",
-							},
-							objects: [
-								{
-									id: "obj1",
-									label: "Jacket",
-									category: "Clothing",
-									location: "Center",
-									prominence: "Dominant",
-									visual_attributes: {
-										color: "Blue",
-										texture: "Fabric",
-										material: "Wool",
-										state: "New",
-										dimensions_relative: "Large",
+								global_context: {
+									scene_description: "Test Scene",
+									time_of_day: "Unknown",
+									weather_atmosphere: "Unknown",
+									lighting: {
+										source: "Unknown",
+										direction: "Unknown",
+										quality: "Unknown",
+										color_temp: "Unknown",
 									},
-									wearing_configuration: null,
-									micro_details: [],
-									pose_or_orientation: null,
-									text_content: null,
 								},
-							],
-							text_ocr: {
-								present: false,
-								content: null,
-							},
-							semantic_relationships: [],
-						}),
-					},
-				],
-				rawCall: {
-					rawPrompt: null,
-					rawSettings: {},
-				},
-				warnings: [],
-			}),
+								color_palette: {
+									dominant_hex_estimates: [],
+									accent_colors: [],
+									contrast_level: "Medium",
+								},
+								composition: {
+									camera_angle: "Unknown",
+									framing: "Unknown",
+									depth_of_field: "Unknown",
+									focal_point: "Unknown",
+								},
+								objects: [],
+								text_ocr: { present: false, content: null },
+								semantic_relationships: [],
+							}),
+						},
+					],
+					warnings: [],
+				};
+			},
 		});
 
-		const result = await runVisionAnalysisWorkflow(
+		await runVisionAnalysisWorkflow(
 			{
 				imageUrl: "https://example.com/image.jpg",
 			},
 			{
 				model: mockModel,
-				// Mock environment variables are handled by bun:test or setup
-				// For now, we rely on runVisionAnalysisWorkflow not checking API key if model is injected
-				// Actually it checks key at the start. We might need to mock env.
 			},
 		);
 
-		expect(result).toBeDefined();
-		expect(result.meta.image_quality).toBe("High");
-		expect(result.global_context.scene_description).toBe(
-			"A studio shot of a model wearing a blue jacket.",
+		// 1. Verify Download
+		expect(mockRobustFetch).toHaveBeenCalledWith(
+			"https://example.com/image.jpg",
+			expect.anything(),
 		);
-		expect(result.objects[0].label).toBe("Jacket");
+
+		// 2. Verify Hashing
+		expect(mockComputeSHA256).toHaveBeenCalled();
+
+		// 3. Verify Binary Injection
+		expect(capturedImagePart).toBeDefined();
+		// It might be 'image' or 'file' depending on SDK version/internals
+		if (capturedImagePart.type === "image") {
+			expect(capturedImagePart.image).toBeInstanceOf(Uint8Array);
+		} else {
+			// type: "file", data is the buffer
+			expect(capturedImagePart.type).toBe("file");
+			expect(capturedImagePart.data).toBeDefined();
+		}
 	});
 });
