@@ -46,53 +46,33 @@ const SeedAttachmentsLoader: React.FC<{
 		processedSeedsRef.current = seeds;
 
 		const toFiles = async () => {
-			const remoteFiles: {
+			const filesToAdd: {
 				url: string;
 				filename: string;
 				mediaType: string;
 			}[] = [];
-			const filePromises: Promise<File | null>[] = [];
 
 			for (const seed of seeds) {
 				// If it's a remote URL (http/https), pass it directly
 				if (seed.url.startsWith("http")) {
-					remoteFiles.push({
+					filesToAdd.push({
 						url: seed.url,
 						filename: seed.filename,
-						mediaType: seed.mimeType || "application/octet-stream",
+						mediaType: seed.mimeType || "image/png",
 					});
 				} else {
-					// For data/blob URLs, we must convert to File
-					filePromises.push(
-						(async () => {
-							try {
-								const res = await fetch(seed.url);
-								const blob = await res.blob();
-								return new File([blob], seed.filename, {
-									type:
-										seed.mimeType || blob.type || "application/octet-stream",
-								});
-							} catch (e) {
-								console.error("Failed to load seed attachment:", e);
-								return null;
-							}
-						})(),
-					);
+					// For data/blob URLs, we treat them as 'remote' so they keep their local URL
+					// PromptInput will handle the conversion to File if needed during submission
+					filesToAdd.push({
+						url: seed.url,
+						filename: seed.filename,
+						mediaType: seed.mimeType || "image/png",
+					});
 				}
 			}
 
-			// Add remote files instantly
-			if (remoteFiles.length > 0) {
-				attachmentsApi.addRemote(remoteFiles);
-			}
-
-			// Process local files
-			if (filePromises.length > 0) {
-				const results = await Promise.all(filePromises);
-				const files = results.filter((f): f is File => f !== null);
-				if (files.length > 0) {
-					attachmentsApi.add(files);
-				}
+			if (filesToAdd.length > 0) {
+				attachmentsApi.addRemote(filesToAdd);
 			}
 
 			onConsumed?.();
