@@ -1,5 +1,5 @@
 import type { FileUIPart, ToolUIPart, UIMessage } from "ai";
-import React from "react";
+import React, { useState } from "react";
 import {
 	Conversation,
 	ConversationContent,
@@ -7,6 +7,8 @@ import {
 } from "@/components/ai-elements/conversation";
 import {
 	Message,
+	MessageAction,
+	MessageActions,
 	MessageAttachment,
 	MessageAttachments,
 	MessageContent,
@@ -20,6 +22,7 @@ import {
 	ToolOutput,
 } from "@/components/ai-elements/tool";
 import { Logo } from "@/components/icons";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { AspectRatioPicker } from "./AspectRatioPicker";
 import type { AspectRatio } from "./AspectRatioSelector";
 
@@ -29,6 +32,7 @@ interface ChatListProps {
 	emptyState?: React.ReactNode;
 	showStreamingStatus?: boolean;
 	onToolInteraction?: (toolCallId: string, result: AspectRatio) => void;
+	onReload?: () => void;
 }
 
 const isFilePart = (part: UIMessage["parts"][number]): part is FileUIPart =>
@@ -77,7 +81,16 @@ export const ChatList: React.FC<ChatListProps> = ({
 	emptyState,
 	showStreamingStatus,
 	onToolInteraction,
+	onReload,
 }) => {
+	const [copiedId, setCopiedId] = useState<string | null>(null);
+
+	const handleCopy = (id: string, text: string) => {
+		navigator.clipboard.writeText(text);
+		setCopiedId(id);
+		setTimeout(() => setCopiedId(null), 2000);
+	};
+
 	const cleanText = (text: string) => {
 		const withoutSystemDirective = text.replace(
 			/^\s*\[System:[^\]]*\]\s*/i,
@@ -99,10 +112,15 @@ export const ChatList: React.FC<ChatListProps> = ({
 								description="I can help you generate images, edit videos, and more. Just ask!"
 							/>
 						)
-					: messages.map((message) => {
+					: messages.map((message, index) => {
 							const toolParts = toolInvocationsToParts(message);
 							const resolvedParts = [...(message.parts ?? []), ...toolParts];
 							const attachmentParts = resolvedParts.filter(isFilePart);
+							const isLastMessage = index === messages.length - 1;
+							const fullText = resolvedParts
+								.filter((p) => p.type === "text")
+								.map((p) => (p as any).text)
+								.join("\n");
 
 							return (
 								<Message
@@ -111,13 +129,13 @@ export const ChatList: React.FC<ChatListProps> = ({
 									className="max-w-full"
 								>
 									<MessageContent className="max-w-full break-words space-y-2">
-										{resolvedParts.map((part, index) => {
+										{resolvedParts.map((part, pIndex) => {
 											if (part.type === "text") {
 												const text = cleanText(part.text);
 												if (!text) return null;
 
 												return (
-													<MessageResponse key={`${message.id}-text-${index}`}>
+													<MessageResponse key={`${message.id}-text-${pIndex}`}>
 														{text}
 													</MessageResponse>
 												);
@@ -132,7 +150,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 													if (part.state === "output-available") {
 														return (
 															<div
-																key={`${message.id}-tool-${index}`}
+																key={`${message.id}-tool-${pIndex}`}
 																className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-md text-sm text-neutral-500"
 															>
 																Selected Aspect Ratio: {part.output}
@@ -142,7 +160,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 
 													return (
 														<AspectRatioPicker
-															key={`${message.id}-tool-${index}`}
+															key={`${message.id}-tool-${pIndex}`}
 															message={part.input?.message}
 															onSelect={(ratio) => {
 																if (onToolInteraction && toolPart.toolCallId) {
@@ -155,7 +173,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 
 												return (
 													<Tool
-														key={`${message.id}-tool-${index}`}
+														key={`${message.id}-tool-${pIndex}`}
 														defaultOpen={part.state !== "input-streaming"}
 													>
 														<ToolHeader type={part.type} state={part.state} />
@@ -177,15 +195,38 @@ export const ChatList: React.FC<ChatListProps> = ({
 										})}
 										{attachmentParts.length > 0 && (
 											<MessageAttachments>
-												{attachmentParts.map((part, index) => (
+												{attachmentParts.map((part, aIndex) => (
 													<MessageAttachment
-														key={`${message.id}-attachment-${index}`}
+														key={`${message.id}-attachment-${aIndex}`}
 														data={part}
 													/>
 												))}
 											</MessageAttachments>
 										)}
 									</MessageContent>
+
+									{message.role === "assistant" && (
+										<MessageActions>
+											{isLastMessage && onReload && (
+												<MessageAction onClick={onReload} label="Retry">
+													<SwissIcons.Refresh size={12} />
+												</MessageAction>
+											)}
+											<MessageAction
+												onClick={() => handleCopy(message.id, fullText)}
+												label="Copy"
+											>
+												{copiedId === message.id ? (
+													<SwissIcons.Check
+														size={12}
+														className="text-green-500"
+													/>
+												) : (
+													<SwissIcons.Copy size={12} />
+												)}
+											</MessageAction>
+										</MessageActions>
+									)}
 								</Message>
 							);
 						})}
