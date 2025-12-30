@@ -1,4 +1,5 @@
 import { describe, expect, it, mock } from "bun:test";
+import { AssetFetchError } from "../errors";
 import { robustFetch } from "../utils/http";
 
 describe("robustFetch", () => {
@@ -53,7 +54,7 @@ describe("robustFetch", () => {
 					maxRetries: 2,
 					retryDelay: 10,
 				}),
-			).rejects.toThrow("Persistent error");
+			).rejects.toThrow(AssetFetchError);
 			expect(attempts).toBe(3); // 1 initial + 2 retries
 		} finally {
 			global.fetch = originalFetch;

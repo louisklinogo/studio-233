@@ -1,4 +1,5 @@
 import { describe, expect, it, mock } from "bun:test";
+import { BlobStorageError } from "../errors";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
 
 // Mock @vercel/blob
@@ -38,5 +39,12 @@ describe("uploadImageBufferToBlob", () => {
 		});
 
 		expect(url).toMatch(/https:\/\/blob\.com\/test-prefix\/.*-.*\.png/);
+	});
+
+	it("should throw BlobStorageError if buffer is missing", async () => {
+		// @ts-ignore
+		await expect(uploadImageBufferToBlob(null)).rejects.toThrow(
+			BlobStorageError,
+		);
 	});
 });

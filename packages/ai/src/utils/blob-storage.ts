@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { put } from "@vercel/blob";
 
+import { BlobStorageError } from "../errors";
 import { withTimeout } from "./timeout";
 
 type UploadOptions = {
@@ -32,7 +33,10 @@ export async function uploadImageBufferToBlob(
 	options: UploadOptions = {},
 ): Promise<string> {
 	if (!buffer) {
-		throw new Error("uploadImageBufferToBlob: buffer is required");
+		throw new BlobStorageError(
+			"uploadImageBufferToBlob: buffer is required",
+			"validation",
+		);
 	}
 
 	const contentType = options.contentType ?? "image/png";
@@ -40,7 +44,10 @@ export async function uploadImageBufferToBlob(
 	const addRandomSuffix = options.addRandomSuffix ?? true;
 
 	if (options.access && options.access !== "public") {
-		throw new Error("Private blob uploads are not supported in this helper");
+		throw new BlobStorageError(
+			"Private blob uploads are not supported in this helper",
+			"validation",
+		);
 	}
 
 	let key: string;
@@ -70,9 +77,9 @@ export async function uploadImageBufferToBlob(
 	} catch (error) {
 		const hint =
 			"Failed to upload image to Vercel Blob. Ensure BLOB_READ_WRITE_TOKEN is configured.";
-		if (error instanceof Error) {
-			error.message = `${hint} Original error: ${error.message}`;
-		}
-		throw error;
+		throw new BlobStorageError(
+			`${hint} Original error: ${error instanceof Error ? error.message : String(error)}`,
+			"put",
+		);
 	}
 }

@@ -1,3 +1,4 @@
+import { AssetFetchError } from "../errors";
 import { logger } from "./logger";
 
 export type RobustFetchOptions = {
@@ -79,7 +80,9 @@ export async function robustFetch(
 		}
 	}
 
-	throw (
-		lastError ?? new Error(`Failed to fetch ${url} after ${maxRetries} retries`)
+	throw new AssetFetchError(
+		lastError?.message ?? `Failed to fetch ${url} after ${maxRetries} retries`,
+		undefined,
+		String(url),
 	);
 }
