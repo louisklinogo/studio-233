@@ -7,7 +7,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1 Core Infrastructure' (Protocol in workflow.md) [e524075]
 
 ## Phase 2: Workflow Refactoring
-- [ ] Task: Refactor `packages/ai/src/workflows/vision-analysis.ts` to implement the Pre-download + Binary Injection pattern.
+- [x] Task: Refactor `packages/ai/src/workflows/vision-analysis.ts` to implement the Pre-download + Binary Injection pattern. [58bace6]
 - [ ] Task: Integrate Vercel KV and Inngest idempotency for request coalescing.
 - [ ] Task: Implement Fast-Fail logic with specific `AssetFetchError` and `BlobStorageError` types.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2 Workflow Refactoring' (Protocol in workflow.md)
