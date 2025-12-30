@@ -3,8 +3,15 @@ import { robustFetch } from "../utils/http";
 
 describe("robustFetch", () => {
 	it("should succeed on first try", async () => {
-		const result = await robustFetch("https://example.com");
-		expect(result.ok).toBe(true);
+		const originalFetch = global.fetch;
+		global.fetch = async () => new Response("ok", { status: 200 });
+
+		try {
+			const result = await robustFetch("https://example.com");
+			expect(result.ok).toBe(true);
+		} finally {
+			global.fetch = originalFetch;
+		}
 	});
 
 	it("should retry on failure and eventually succeed", async () => {

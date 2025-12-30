@@ -3,7 +3,7 @@
 ## Phase 1: Core Infrastructure
 - [x] Task: Create `packages/ai/src/utils/http.ts` with `robustFetch` (Retries, Backoff, Bun-optimized). [0b86f07]
 - [x] Task: Update `packages/ai/src/utils/blob-storage.ts` to support `addRandomSuffix: false`. [fa6607a]
-- [ ] Task: Create `packages/ai/src/utils/hashing.ts` using `Bun.CryptoHasher` for stream-based SHA-256.
+- [x] Task: Create `packages/ai/src/utils/hashing.ts` using `Bun.CryptoHasher` for stream-based SHA-256. [0a7732d]
 - [ ] Task: Conductor - User Manual Verification 'Phase 1 Core Infrastructure' (Protocol in workflow.md)
 
 ## Phase 2: Workflow Refactoring
