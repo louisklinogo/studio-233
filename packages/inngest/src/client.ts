@@ -18,4 +18,7 @@ type EventMap = {
 export const inngest = new Inngest({
 	id: "studio-233",
 	schemas: new EventSchemas().fromRecord<EventMap>(),
+	// Force dev mode if no signing key is present to prevent accidental cloud syncs
+	isDev:
+		process.env.NODE_ENV !== "production" || !process.env.INNGEST_SIGNING_KEY,
 });

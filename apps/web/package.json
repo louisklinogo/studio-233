@@ -11,7 +11,7 @@
 		"format:check": "biome format src",
 		"format:write": "biome format --write src",
 		"check-types": "tsc --noEmit",
-		"inngest:dev": "inngest-cli dev -u http://localhost:3001/api/inngest"
+		"inngest:dev": "inngest-cli dev"
 	},
 	"dependencies": {
 		"@ai-sdk/google": "^3.0.1",
