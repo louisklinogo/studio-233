@@ -11,6 +11,7 @@ type UploadOptions = {
 	access?: "public" | "private";
 	abortSignal?: AbortSignal;
 	timeoutMs?: number;
+	addRandomSuffix?: boolean;
 };
 
 function coerceBuffer(source: Buffer | Uint8Array | ArrayBuffer): Buffer {
@@ -36,13 +37,20 @@ export async function uploadImageBufferToBlob(
 
 	const contentType = options.contentType ?? "image/png";
 	const extension = resolveExtension(contentType, options.extension);
+	const addRandomSuffix = options.addRandomSuffix ?? true;
 
 	if (options.access && options.access !== "public") {
 		throw new Error("Private blob uploads are not supported in this helper");
 	}
-	const key = options.filename
-		? `${options.prefix ?? "studio233/ai"}/${options.filename}`
-		: `${options.prefix ?? "studio233/ai"}/${Date.now()}-${randomUUID()}.${extension}`;
+
+	let key: string;
+	if (options.filename) {
+		key = addRandomSuffix
+			? `${options.prefix ?? "studio233/ai"}/${Date.now()}-${randomUUID()}-${options.filename}`
+			: `${options.prefix ?? "studio233/ai"}/${options.filename}`;
+	} else {
+		key = `${options.prefix ?? "studio233/ai"}/${Date.now()}-${randomUUID()}.${extension}`;
+	}
 
 	try {
 		const timeoutMs = options.timeoutMs ?? 60_000;
@@ -53,6 +61,7 @@ export async function uploadImageBufferToBlob(
 				await put(key, coerceBuffer(buffer), {
 					access: "public",
 					contentType,
+					addRandomSuffix,
 				}),
 			options.abortSignal,
 		);
