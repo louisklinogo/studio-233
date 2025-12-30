@@ -6,12 +6,18 @@ import { z } from "zod";
 import { getEnv } from "../config";
 import { GEMINI_TEXT_MODEL } from "../model-config";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
+import { robustFetch } from "../utils/http";
+import { logger } from "../utils/logger";
 import { withDevTools } from "../utils/model";
 
 const env = getEnv();
 
 async function downloadImageBuffer(imageUrl: string) {
-	const response = await fetch(imageUrl);
+	const response = await robustFetch(imageUrl, {
+		maxRetries: 3,
+		retryDelay: 1000,
+		timeoutMs: 20000,
+	});
 	if (!response.ok) {
 		throw new Error(
 			`Failed to download image: ${response.status} ${response.statusText}`,

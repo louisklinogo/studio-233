@@ -3,12 +3,17 @@ import sharp from "sharp";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { robustFetch } from "../utils/http";
 
 const env = getEnv();
 
 // Helper to download image
 async function downloadImage(url: string): Promise<Buffer> {
-	const response = await fetch(url);
+	const response = await robustFetch(url, {
+		maxRetries: 3,
+		retryDelay: 1000,
+		timeoutMs: 20000,
+	});
 	if (!response.ok)
 		throw new Error(`Failed to download image: ${response.statusText}`);
 	return Buffer.from(await response.arrayBuffer());

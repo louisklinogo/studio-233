@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getEnv } from "../config";
 import { GEMINI_IMAGE_MODEL } from "../model-config";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
+import { robustFetch } from "../utils/http";
 import { withDevTools } from "../utils/model";
 
 const env = getEnv();
@@ -15,9 +16,21 @@ async function removeBackgroundWithGemini(imageUrl: string, apiKey?: string) {
 	const key = apiKey ?? env.googleApiKey;
 	if (!key) throw new Error("No Google API key found for fallback");
 
-	const google = createGoogleGenerativeAI({ apiKey: key });
+	const response = await robustFetch(imageUrl, {
+		maxRetries: 3,
+		retryDelay: 1000,
+		timeoutMs: 20000,
+	});
 
-	const imagePart = { type: "image" as const, image: new URL(imageUrl) };
+	if (!response.ok) {
+		throw new Error(
+			`Failed to download image: ${response.status} ${response.statusText}`,
+		);
+	}
+
+	const imageBuffer = new Uint8Array(await response.arrayBuffer());
+
+	const google = createGoogleGenerativeAI({ apiKey: key });
 
 	const result = await generateText({
 		model: withDevTools(google(GEMINI_IMAGE_MODEL)),
@@ -29,7 +42,7 @@ async function removeBackgroundWithGemini(imageUrl: string, apiKey?: string) {
 						type: "text",
 						text: "Remove the background from this image. Return ONLY the image with transparent background. Keep the subject intact.",
 					},
-					imagePart,
+					{ type: "image", image: imageBuffer },
 				],
 			},
 		],

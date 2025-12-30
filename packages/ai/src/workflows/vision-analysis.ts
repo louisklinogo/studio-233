@@ -1,3 +1,4 @@
+import { readFile, writeFile } from "node:fs/promises";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createClient } from "@vercel/kv";
 import { generateObject, type LanguageModel } from "ai";
@@ -150,17 +151,37 @@ export async function runVisionAnalysisWorkflow(
 		}
 
 		// Tee the stream: one for hashing, one for writing to /tmp
+
 		const [s1, s2] = fetchResponse.body.tee();
 
 		// Calculate hash in parallel with writing
+
 		const hashPromise = computeSHA256(s1);
-		const writePromise = Bun.write(tempPath, s2);
+
+		// Universal write logic using Web APIs + FS fallback
+
+		const writeToFile = async (
+			path: string,
+			stream: ReadableStream<Uint8Array>,
+		) => {
+			const response = new Response(stream);
+
+			const buffer = await response.arrayBuffer();
+
+			await writeFile(path, new Uint8Array(buffer));
+		};
+
+		const writePromise = writeToFile(tempPath, s2);
 
 		[imageHash] = await Promise.all([hashPromise, writePromise]);
 
 		// Read back for binary injection (Gemini)
-		// We read from the file we just wrote to ensure it's there and valid
-		imageBuffer = new Uint8Array(await Bun.file(tempPath).arrayBuffer());
+
+		// We use the buffer we already have in memory from the write step if possible,
+
+		// but for simplicity and to ensure file-sync, we read back.
+
+		imageBuffer = new Uint8Array(await readFile(tempPath));
 
 		logger.info("vision_analysis.download_complete", {
 			imageHash,

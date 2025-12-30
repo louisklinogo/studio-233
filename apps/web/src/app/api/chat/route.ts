@@ -105,9 +105,7 @@ export async function POST(req: Request) {
 		 * Ingests all base64 images in the message history and replaces them with Blob URLs.
 		 * This prevents sending massive payloads to the agent and resolves downstream fetch errors.
 		 */
-		const ingestImagesInHistory = async (
-			msgs: any[],
-		): Promise<string | null> => {
+		const ingestImagesInHistory = async (msgs: any[]): Promise<string[]> => {
 			const ingestionPromises: Promise<void>[] = [];
 
 			// 1. Launch all ingestions in parallel
@@ -154,8 +152,8 @@ export async function POST(req: Request) {
 				await Promise.all(ingestionPromises);
 			}
 
-			// 3. Deterministically find the latest URL by scanning the array in order
-			let latestUrl: string | null = null;
+			// 3. Deterministically find all URLs by scanning the array in order
+			const allUrls: string[] = [];
 			for (const msg of msgs) {
 				if (!msg.content || !Array.isArray(msg.content)) continue;
 				for (const part of msg.content) {
@@ -164,25 +162,27 @@ export async function POST(req: Request) {
 						typeof part.data === "string" &&
 						part.data.startsWith("http")
 					) {
-						latestUrl = part.data;
+						if (!allUrls.includes(part.data)) allUrls.push(part.data);
 					}
 					if (part.type === "image") {
 						if (
 							typeof part.image === "string" &&
 							part.image.startsWith("http")
 						) {
-							latestUrl = part.image;
+							if (!allUrls.includes(part.image)) allUrls.push(part.image);
 						} else if (part.image instanceof URL) {
-							latestUrl = part.image.toString();
+							const urlStr = part.image.toString();
+							if (!allUrls.includes(urlStr)) allUrls.push(urlStr);
 						}
 					}
 				}
 			}
 
-			return latestUrl;
+			return allUrls;
 		};
 
-		const latestImageUrl = await ingestImagesInHistory(coreMessages);
+		const latestImageUrls = await ingestImagesInHistory(coreMessages);
+		const latestImageUrl = latestImageUrls[latestImageUrls.length - 1];
 
 		// Await session now
 		const session = await sessionPromise;
@@ -266,7 +266,7 @@ export async function POST(req: Request) {
 		}
 
 		// 3. Run Agent Stream
-		const stream = streamAgentResponse("orchestrator", {
+		const stream = await streamAgentResponse("orchestrator", {
 			messages: coreMessages,
 			maxSteps,
 			abortSignal: req.signal,
@@ -405,6 +405,7 @@ export async function POST(req: Request) {
 				context: {
 					canvas,
 					latestImageUrl,
+					latestImageUrls,
 					threadId: currentThreadId,
 					runtimeContext: {
 						runAgent: generateAgentResponse,

@@ -1,6 +1,7 @@
 import {
 	archiveVisionResult,
 	brandIngestion,
+	cleanupVisionTemp,
 	createProcessStudioWorkflow,
 	inngest,
 	processFashionItem,

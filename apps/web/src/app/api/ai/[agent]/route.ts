@@ -49,7 +49,7 @@ export async function POST(
 	}
 
 	if (body.messages?.length) {
-		const stream = streamAgentResponse(agentKey, {
+		const stream = await streamAgentResponse(agentKey, {
 			messages: body.messages,
 			maxSteps: body.maxSteps,
 			abortSignal: req.signal,
