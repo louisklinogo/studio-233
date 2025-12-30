@@ -6,11 +6,11 @@
 - [x] Task: Create `packages/ai/src/utils/hashing.ts` using `Bun.CryptoHasher` for stream-based SHA-256. [0a7732d]
 - [x] Task: Conductor - User Manual Verification 'Phase 1 Core Infrastructure' (Protocol in workflow.md) [e524075]
 
-## Phase 2: Workflow Refactoring
+## Phase 2: Workflow Refactoring [checkpoint: a4c80eb]
 - [x] Task: Refactor `packages/ai/src/workflows/vision-analysis.ts` to implement the Pre-download + Binary Injection pattern. [58bace6]
 - [x] Task: Integrate Vercel KV and Inngest idempotency for request coalescing. [e722199]
 - [x] Task: Implement Fast-Fail logic with specific `AssetFetchError` and `BlobStorageError` types. [cd0e5f1]
-- [ ] Task: Conductor - User Manual Verification 'Phase 2 Workflow Refactoring' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2 Workflow Refactoring' (Protocol in workflow.md) [a4c80eb]
 
 ## Phase 3: Cleanup & Verification
 - [ ] Task: Add `vision.cleanup.requested` event and Inngest function for `/tmp` pruning.
