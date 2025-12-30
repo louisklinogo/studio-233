@@ -70,7 +70,7 @@ export async function uploadImageBufferToBlob(
 					access: "public",
 					contentType,
 					addRandomSuffix,
-					addOverwrite: options.allowOverwrite ?? false, // Fixed option name
+					allowOverwrite: options.allowOverwrite ?? false,
 				} as any),
 			options.abortSignal,
 		);

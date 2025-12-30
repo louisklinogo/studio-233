@@ -205,7 +205,7 @@ export function ChatPanel({
 		status,
 		sendMessage,
 		addToolOutput,
-		reload,
+		regenerate,
 	} = useChat(chatOptions as any);
 
 	const handleToolInteraction = useCallback(
@@ -441,7 +441,7 @@ export function ChatPanel({
 								messages={messages as UIMessage[]}
 								showStreamingStatus={showStreamingStatus}
 								onToolInteraction={handleToolInteraction}
-								onReload={reload}
+								onReload={regenerate}
 							/>
 						)}
 					</div>

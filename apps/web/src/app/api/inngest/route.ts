@@ -36,6 +36,7 @@ const handlers = serve({
 		archiveVisionResult,
 		processFashionItem,
 		processWorkflowRun,
+		cleanupVisionTemp,
 	],
 });
 

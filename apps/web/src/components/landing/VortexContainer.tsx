@@ -320,7 +320,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						const viewfinder = canvasRef?.current?.viewfinder;
 						const inner = canvasRef?.current?.inner;
 
-						if (canvasLayer && viewfinder && inner) {
+						if (canvasLayer && viewfinder && inner && engineLayer) {
 							// 1. Handover: Fade Engine out, Fade Canvas in
 							tl.to(engineLayer, { opacity: 0, duration: 1.0 }, 15.0);
 

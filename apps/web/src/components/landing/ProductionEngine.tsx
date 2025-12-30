@@ -25,7 +25,7 @@ interface NodeData {
 	y: number;
 	width: number;
 	height: number;
-	icon: React.ElementType;
+	icon: React.ComponentType<{ size?: number; className?: string }>;
 	metrics: { label: string; value: string }[];
 }
 

@@ -15,6 +15,12 @@ import {
 	MessageResponse,
 } from "@/components/ai-elements/message";
 import {
+	Source,
+	Sources,
+	SourcesContent,
+	SourcesTrigger,
+} from "@/components/ai-elements/sources";
+import {
 	Tool,
 	ToolContent,
 	ToolHeader,
@@ -37,6 +43,9 @@ interface ChatListProps {
 
 const isFilePart = (part: UIMessage["parts"][number]): part is FileUIPart =>
 	part.type === "file";
+
+const isSourcePart = (part: UIMessage["parts"][number]): boolean =>
+	part.type === "source-url" || part.type === "source-document";
 
 const isToolPart = (
 	part: UIMessage["parts"][number],
@@ -116,6 +125,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 							const toolParts = toolInvocationsToParts(message);
 							const resolvedParts = [...(message.parts ?? []), ...toolParts];
 							const attachmentParts = resolvedParts.filter(isFilePart);
+							const sourceParts = resolvedParts.filter(isSourcePart);
 							const isLastMessage = index === messages.length - 1;
 							const fullText = resolvedParts
 								.filter((p) => p.type === "text")
@@ -123,111 +133,134 @@ export const ChatList: React.FC<ChatListProps> = ({
 								.join("\n");
 
 							return (
-								<Message
-									key={message.id}
-									from={message.role === "user" ? "user" : "assistant"}
-									className="max-w-full"
-								>
-									<MessageContent className="max-w-full break-words space-y-2">
-										{resolvedParts.map((part, pIndex) => {
-											if (part.type === "text") {
-												const text = cleanText(part.text);
-												if (!text) return null;
+								<div key={message.id} className="w-full">
+									{message.role === "assistant" && sourceParts.length > 0 && (
+										<Sources>
+											<SourcesTrigger count={sourceParts.length} />
+											<SourcesContent>
+												{sourceParts.map((part: any, sIndex) => (
+													<Source
+														key={`${message.id}-source-${sIndex}`}
+														href={part.url || part.href}
+														title={part.title || part.url || part.href}
+													/>
+												))}
+											</SourcesContent>
+										</Sources>
+									)}
+									<Message
+										from={message.role === "user" ? "user" : "assistant"}
+										className="max-w-full"
+									>
+										<MessageContent className="max-w-full break-words space-y-2">
+											{resolvedParts.map((part, pIndex) => {
+												if (part.type === "text") {
+													const text = cleanText(part.text);
+													if (!text) return null;
 
-												return (
-													<MessageResponse key={`${message.id}-text-${pIndex}`}>
-														{text}
-													</MessageResponse>
-												);
-											}
+													return (
+														<MessageResponse
+															key={`${message.id}-text-${pIndex}`}
+														>
+															{text}
+														</MessageResponse>
+													);
+												}
 
-											if (isToolPart(part)) {
-												const toolPart = part as ToolUIPart<
-													Record<string, any>
-												> & { toolCallId?: string };
+												if (isToolPart(part)) {
+													const toolPart = part as ToolUIPart<
+														Record<string, any>
+													> & { toolCallId?: string };
 
-												if (part.type === "tool-askForAspectRatio") {
-													if (part.state === "output-available") {
+													if (part.type === "tool-askForAspectRatio") {
+														if (part.state === "output-available") {
+															return (
+																<div
+																	key={`${message.id}-tool-${pIndex}`}
+																	className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-md text-sm text-neutral-500"
+																>
+																	Selected Aspect Ratio: {part.output}
+																</div>
+															);
+														}
+
 														return (
-															<div
+															<AspectRatioPicker
 																key={`${message.id}-tool-${pIndex}`}
-																className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-md text-sm text-neutral-500"
-															>
-																Selected Aspect Ratio: {part.output}
-															</div>
+																message={part.input?.message}
+																onSelect={(ratio) => {
+																	if (
+																		onToolInteraction &&
+																		toolPart.toolCallId
+																	) {
+																		onToolInteraction(
+																			toolPart.toolCallId,
+																			ratio,
+																		);
+																	}
+																}}
+															/>
 														);
 													}
 
 													return (
-														<AspectRatioPicker
+														<Tool
 															key={`${message.id}-tool-${pIndex}`}
-															message={part.input?.message}
-															onSelect={(ratio) => {
-																if (onToolInteraction && toolPart.toolCallId) {
-																	onToolInteraction(toolPart.toolCallId, ratio);
-																}
-															}}
-														/>
+															defaultOpen={part.state !== "input-streaming"}
+														>
+															<ToolHeader type={part.type} state={part.state} />
+															<ToolContent>
+																{part.input !== undefined &&
+																part.input !== null ? (
+																	<ToolInput input={part.input} />
+																) : null}
+																<ToolOutput
+																	output={part.output}
+																	errorText={part.errorText}
+																/>
+															</ToolContent>
+														</Tool>
 													);
 												}
 
-												return (
-													<Tool
-														key={`${message.id}-tool-${pIndex}`}
-														defaultOpen={part.state !== "input-streaming"}
-													>
-														<ToolHeader type={part.type} state={part.state} />
-														<ToolContent>
-															{part.input !== undefined &&
-															part.input !== null ? (
-																<ToolInput input={part.input} />
-															) : null}
-															<ToolOutput
-																output={part.output}
-																errorText={part.errorText}
-															/>
-														</ToolContent>
-													</Tool>
-												);
-											}
-
-											return null;
-										})}
-										{attachmentParts.length > 0 && (
-											<MessageAttachments>
-												{attachmentParts.map((part, aIndex) => (
-													<MessageAttachment
-														key={`${message.id}-attachment-${aIndex}`}
-														data={part}
-													/>
-												))}
-											</MessageAttachments>
-										)}
-									</MessageContent>
-
-									{message.role === "assistant" && (
-										<MessageActions>
-											{isLastMessage && onReload && (
-												<MessageAction onClick={onReload} label="Retry">
-													<SwissIcons.Refresh size={12} />
-												</MessageAction>
+												return null;
+											})}
+											{attachmentParts.length > 0 && (
+												<MessageAttachments>
+													{attachmentParts.map((part, aIndex) => (
+														<MessageAttachment
+															key={`${message.id}-attachment-${aIndex}`}
+															data={part}
+														/>
+													))}
+												</MessageAttachments>
 											)}
-											<MessageAction
-												onClick={() => handleCopy(message.id, fullText)}
-												label="Copy"
-											>
-												{copiedId === message.id ? (
-													<SwissIcons.Check
-														size={12}
-														className="text-green-500"
-													/>
-												) : (
-													<SwissIcons.Copy size={12} />
+										</MessageContent>
+
+										{message.role === "assistant" && (
+											<MessageActions>
+												{isLastMessage && onReload && (
+													<MessageAction onClick={onReload} label="Retry">
+														<SwissIcons.Refresh size={12} />
+													</MessageAction>
 												)}
-											</MessageAction>
-										</MessageActions>
-									)}
-								</Message>
+												<MessageAction
+													onClick={() => handleCopy(message.id, fullText)}
+													label="Copy"
+												>
+													{copiedId === message.id ? (
+														<SwissIcons.Check
+															size={12}
+															className="text-green-500"
+														/>
+													) : (
+														<SwissIcons.Copy size={12} />
+													)}
+												</MessageAction>
+											</MessageActions>
+										)}
+									</Message>
+								</div>
 							);
 						})}
 

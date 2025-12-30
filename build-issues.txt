@@ -1,142 +1,128 @@
-, "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
-prisma:query COMMIT
+[DEBUG] Creating rate limiter: 15 tokens per 60 m
+[DEBUG] Creating rate limiter: 50 tokens per 24 h
+{
+  level: 'warn',
+  event: 'robust_fetch.attempt_failed',
+  ts: '2025-12-30T09:15:57.198Z',
+  url: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/gemini/text-to-image/1767079803626-6411c4c9-2996-4cba-ae38-a33dd7f48c80-wN4IJLjQtoxBd4GmKChku4KDYa6gSH.jpeg',
+  attempt: 0,
+  message: 'This operation was aborted'
+}
 {
   level: 'info',
-  event: 'agent.context.latest_image_detected',
-  ts: '2025-12-30T06:54:28.948Z',
-  imageUrl: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/077b8fd4-b483-4032-b4bb-16e97300d431.jpg-1765990242056-AmTfh3zPhHjNcC32NUDxBcX7NKGjah.png',
-  count: 1,
-  agent: 'orchestrator'
-}
- PUT /api/inngest 200 in 2.5s (compile: 826ms, render: 1672ms)
- PUT /api/inngest 200 in 94ms (compile: 54ms, render: 40ms)
-{
-  level: 'error',
-  event: 'vision_analysis.download_failed',
-  ts: '2025-12-30T06:54:42.001Z',
-  imageUrl: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/077b8fd4-b483-4032-b4bb-16e97300d431.jpg-1765990242056-AmTfh3zPhHjNcC32NUDxBcX7NKGjah.png',
-  error: 'Bun is not defined',
-  mode: 'full',
-  toolCallId: 'sSGxDiqJiowGeRqs',
-  threadId: 'cmjs8f3af0004t9cr005vkh8x'
+  event: 'robust_fetch.retry',
+  ts: '2025-12-30T09:15:57.222Z',
+  url: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/gemini/text-to-image/1767079803626-6411c4c9-2996-4cba-ae38-a33dd7f48c80-wN4IJLjQtoxBd4GmKChku4KDYa6gSH.jpeg',
+  attempt: 1,
+  delay: 1000
 }
 {
-  level: 'error',
-  event: 'tool.vision-analysis.failed',
-  ts: '2025-12-30T06:54:42.003Z',
-  durationMs: 483,
-  message: 'Bun is not defined',
-  parameterKeys: []
+  level: 'warn',
+  event: 'robust_fetch.attempt_failed',
+  ts: '2025-12-30T09:15:57.228Z',
+  url: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/vision/ingest/ec91253f133602f31df6e9920a7c8af80af604762de2094b3d328b9057eab2c9/1766560872488-a833a0c2-5b9a-4d67-8ec3-7a4c36e443b8.jpeg',
+  attempt: 0,
+  message: 'This operation was aborted'
 }
+{
+  level: 'info',
+  event: 'robust_fetch.retry',
+  ts: '2025-12-30T09:15:57.232Z',
+  url: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/vision/ingest/ec91253f133602f31df6e9920a7c8af80af604762de2094b3d328b9057eab2c9/1766560872488-a833a0c2-5b9a-4d67-8ec3-7a4c36e443b8.jpeg',
+  attempt: 1,
+  delay: 1000
+}
+POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
+ PUT /api/inngest 200 in 3.7s (compile: 361ms, render: 3.4s)
+{
+  level: 'info',
+  event: 'vision_analysis.download_complete',
+  ts: '2025-12-30T09:16:05.546Z',
+  imageHash: 'ec91253f133602f31df6e9920a7c8af80af604762de2094b3d328b9057eab2c9',
+  tempPath: '/tmp/vision-9m2chay1',
+  size: 25339,
+  durationMs: 31898,
+  mode: 'quick',
+  toolCallId: 'Ns9kFwgGyWosRA4k',
+  threadId: 'cmjsdfftt0000tvcr0x8lzi9k'
+}
+{
+  level: 'info',
+  event: 'vision_analysis.download_complete',
+  ts: '2025-12-30T09:16:06.380Z',
+  imageHash: 'afcfb79594ffb7b978ac16df0c6d9bdca682f1a602bcb07eed8bd02d858a4bff',
+  tempPath: '/tmp/vision-9h4ext2e',
+  size: 486205,
+  durationMs: 32891,
+  mode: 'quick',
+  toolCallId: 'oCbs0uBRy3a99oaN',
+  threadId: 'cmjsdfftt0000tvcr0x8lzi9k'
+}
+ PUT /api/inngest 200 in 8.8s (compile: 68ms, render: 8.8s)
+ PUT /api/inngest 200 in 195ms (compile: 71ms, render: 124ms)
+ PUT /api/inngest 200 in 275ms (compile: 66ms, render: 209ms)
+{
+  level: 'info',
+  event: 'vision_analysis.model_complete',
+  ts: '2025-12-30T09:16:38.507Z',
+  imageHash: 'ec91253f133602f31df6e9920a7c8af80af604762de2094b3d328b9057eab2c9',
+  model: 'gemini-3-flash-preview',
+  durationMs: 64859,
+  mode: 'quick',
+  toolCallId: 'Ns9kFwgGyWosRA4k',
+  threadId: 'cmjsdfftt0000tvcr0x8lzi9k'
+}
+ PUT /api/inngest 200 in 152ms (compile: 57ms, render: 95ms)
+ PUT /api/inngest 200 in 94ms (compile: 38ms, render: 56ms)
+{
+  level: 'warn',
+  event: 'vision_analysis.source_upload_failed',
+  ts: '2025-12-30T09:16:44.584Z',
+  imageHash: 'ec91253f133602f31df6e9920a7c8af80af604762de2094b3d328b9057eab2c9',
+  error: 'Failed to upload image to Vercel Blob. Ensure BLOB_READ_WRITE_TOKEN is configured. Original error: Vercel Blob: This blob already exists, use `allowOverwrite: true` if you want to overwrite it. Or `addRandomSuffix: true` to generate a unique filename. Read more about this error in our documentation: https://vercel.link/blob-allow-overwrite'
+}
+ PUT /api/inngest 200 in 121ms (compile: 47ms, render: 74ms)
+ PUT /api/inngest 200 in 84ms (compile: 38ms, render: 46ms)
+{
+  level: 'info',
+  event: 'vision_analysis.model_complete',
+  ts: '2025-12-30T09:17:00.919Z',
+  imageHash: 'afcfb79594ffb7b978ac16df0c6d9bdca682f1a602bcb07eed8bd02d858a4bff',
+  model: 'gemini-3-flash-preview',
+  durationMs: 87429,
+  mode: 'quick',
+  toolCallId: 'oCbs0uBRy3a99oaN',
+  threadId: 'cmjsdfftt0000tvcr0x8lzi9k'
+}
+ PUT /api/inngest 200 in 304ms (compile: 39ms, render: 265ms)
 {
   level: 'info',
   event: 'agent.orchestrator.stream_step_finish',
-  ts: '2025-12-30T06:54:42.112Z',
-  toolCalls: [ { name: 'visionAnalysis', args: {} } ],
+  ts: '2025-12-30T09:17:01.797Z',
+  toolCalls: [
+    { name: 'visionAnalysis', args: [Object] },
+    { name: 'visionAnalysis', args: [Object] }
+  ],
   finishReason: 'tool-calls'
 }
-ReferenceError: Bun is not defined
-    at computeSHA256 (../../packages/ai/src/utils/hashing.ts:8:17)
-    at Object.runVisionAnalysisWorkflow [as run] (../../packages/ai/src/workflows/vision-analysis.ts:156:36)
-    at async toolOptions.execute (../../packages/ai/src/runtime/tools.ts:111:12)
-   6 |  input: string | Buffer | Uint8Array | ReadableStream<Uint8Array>,
-   7 | ): Promise<string> {
->  8 |  const hasher = new Bun.CryptoHasher("sha256");
-     |                 ^
-   9 |
-  10 |  if (input instanceof ReadableStream) {
-  11 |          const reader = input.getReader();
- ⨯ unhandledRejection: ReferenceError: Bun is not defined
-    at computeSHA256 (../../packages/ai/src/utils/hashing.ts:8:17)
-    at Object.runVisionAnalysisWorkflow [as run] (../../packages/ai/src/workflows/vision-analysis.ts:156:36)
-    at async toolOptions.execute (../../packages/ai/src/runtime/tools.ts:111:12)
-   6 |  input: string | Buffer | Uint8Array | ReadableStream<Uint8Array>,
-   7 | ): Promise<string> {
->  8 |  const hasher = new Bun.CryptoHasher("sha256");
-     |                 ^
-   9 |
-  10 |  if (input instanceof ReadableStream) {
-  11 |          const reader = input.getReader();
- ⨯ unhandledRejection:  ReferenceError: Bun is not defined
-    at computeSHA256 (../../packages/ai/src/utils/hashing.ts:8:17)
-    at Object.runVisionAnalysisWorkflow [as run] (../../packages/ai/src/workflows/vision-analysis.ts:156:36)
-    at async toolOptions.execute (../../packages/ai/src/runtime/tools.ts:111:12)
-   6 |  input: string | Buffer | Uint8Array | ReadableStream<Uint8Array>,
-   7 | ): Promise<string> {
->  8 |  const hasher = new Bun.CryptoHasher("sha256");
-     |                 ^
-   9 |
-  10 |  if (input instanceof ReadableStream) {
-  11 |          const reader = input.getReader();
 prisma:query INSERT INTO "public"."agent_tool_call" ("id","threadId","name","arguments","status","createdAt") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ToolCallStatus"),$6) ON CONFLICT ("id") DO UPDATE SET "name" = $7, "arguments" = $8, "status" = CAST($9::text AS "public"."ToolCallStatus") WHERE ("public"."agent_tool_call"."id" = $10 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
- PUT /api/inngest 200 in 65ms (compile: 25ms, render: 40ms)
-{
-  level: 'error',
-  event: 'vision_analysis.download_failed',
-  ts: '2025-12-30T06:54:47.605Z',
-  imageUrl: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/077b8fd4-b483-4032-b4bb-16e97300d431.jpg-1765990242056-AmTfh3zPhHjNcC32NUDxBcX7NKGjah.png',
-  error: 'Bun is not defined',
-  mode: 'full',
-  toolCallId: 'V749jg6dp17b4iIE',
-  threadId: 'cmjs8f3af0004t9cr005vkh8x'
-}
-{
-  level: 'error',
-  event: 'tool.vision-analysis.failed',
-  ts: '2025-12-30T06:54:47.607Z',
-  durationMs: 674,
-  message: 'Bun is not defined',
-  parameterKeys: [ 'mode', 'imageUrl' ]
-}
-{
-  level: 'info',
-  event: 'agent.orchestrator.stream_step_finish',
-  ts: '2025-12-30T06:54:47.615Z',
-  toolCalls: [ { name: 'visionAnalysis', args: [Object] } ],
-  finishReason: 'tool-calls'
-}
-ReferenceError: Bun is not defined
-    at computeSHA256 (../../packages/ai/src/utils/hashing.ts:8:17)
-    at Object.runVisionAnalysisWorkflow [as run] (../../packages/ai/src/workflows/vision-analysis.ts:156:36)
-    at async toolOptions.execute (../../packages/ai/src/runtime/tools.ts:111:12)
-   6 |  input: string | Buffer | Uint8Array | ReadableStream<Uint8Array>,
-   7 | ): Promise<string> {
->  8 |  const hasher = new Bun.CryptoHasher("sha256");
-     |                 ^
-   9 |
-  10 |  if (input instanceof ReadableStream) {
-  11 |          const reader = input.getReader();
- ⨯ unhandledRejection: ReferenceError: Bun is not defined
-    at computeSHA256 (../../packages/ai/src/utils/hashing.ts:8:17)
-    at Object.runVisionAnalysisWorkflow [as run] (../../packages/ai/src/workflows/vision-analysis.ts:156:36)
-    at async toolOptions.execute (../../packages/ai/src/runtime/tools.ts:111:12)
-   6 |  input: string | Buffer | Uint8Array | ReadableStream<Uint8Array>,
-   7 | ): Promise<string> {
->  8 |  const hasher = new Bun.CryptoHasher("sha256");
-     |                 ^
-   9 |
-  10 |  if (input instanceof ReadableStream) {
-  11 |          const reader = input.getReader();
- ⨯ unhandledRejection:  ReferenceError: Bun is not defined
-    at computeSHA256 (../../packages/ai/src/utils/hashing.ts:8:17)
-    at Object.runVisionAnalysisWorkflow [as run] (../../packages/ai/src/workflows/vision-analysis.ts:156:36)
-    at async toolOptions.execute (../../packages/ai/src/runtime/tools.ts:111:12)
-   6 |  input: string | Buffer | Uint8Array | ReadableStream<Uint8Array>,
-   7 | ): Promise<string> {
->  8 |  const hasher = new Bun.CryptoHasher("sha256");
-     |                 ^
-   9 |
-  10 |  if (input instanceof ReadableStream) {
-  11 |          const reader = input.getReader();
 prisma:query INSERT INTO "public"."agent_tool_call" ("id","threadId","name","arguments","status","createdAt") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ToolCallStatus"),$6) ON CONFLICT ("id") DO UPDATE SET "name" = $7, "arguments" = $8, "status" = CAST($9::text AS "public"."ToolCallStatus") WHERE ("public"."agent_tool_call"."id" = $10 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
- PUT /api/inngest 200 in 70ms (compile: 29ms, render: 41ms)
+ PUT /api/inngest 200 in 2.2s (compile: 48ms, render: 2.2s)
+{
+  level: 'warn',
+  event: 'vision_analysis.source_upload_failed',
+  ts: '2025-12-30T09:17:08.985Z',
+  imageHash: 'afcfb79594ffb7b978ac16df0c6d9bdca682f1a602bcb07eed8bd02d858a4bff',
+  error: 'Failed to upload image to Vercel Blob. Ensure BLOB_READ_WRITE_TOKEN is configured. Original error: Vercel Blob: This blob already exists, use `allowOverwrite: true` if you want to overwrite it. Or `addRandomSuffix: true` to generate a unique filename. Read more about this error in our documentation: https://vercel.link/blob-allow-overwrite'
+}
+ PUT /api/inngest 200 in 234ms (compile: 95ms, render: 139ms)
+ PUT /api/inngest 200 in 461ms (compile: 180ms, render: 281ms)
+ ✓ Compiled in 6.6s
+ PUT /api/inngest 200 in 6.7s (compile: 195ms, render: 6.6s)
 prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
 prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
 prisma:query UPDATE "public"."agent_tool_call" SET "status" = CAST($1::text AS "public"."ToolCallStatus"), "result" = $2, "completedAt" = $3 WHERE ("public"."agent_tool_call"."id" = $4 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
-prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
-prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
 prisma:query UPDATE "public"."agent_tool_call" SET "status" = CAST($1::text AS "public"."ToolCallStatus"), "result" = $2, "completedAt" = $3 WHERE ("public"."agent_tool_call"."id" = $4 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
 prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
- POST /api/chat 200 in 48s (compile: 20.9s, render: 27.1s)
- PUT /api/inngest 200 in 153ms (compile: 30ms, render: 124ms)
- PUT /api/inngest 200 in 175ms (compile: 51ms, render: 123ms)
+ POST /api/chat 200 in 4.3min (compile: 26.2s, render: 3.8min)
+PUT /api/inngest 200 in 162ms (compile: 56ms, render: 106ms)

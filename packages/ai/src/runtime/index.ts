@@ -93,7 +93,7 @@ export async function hardenImageMessages(
 								const response = await robustFetch(url, {
 									maxRetries: 3,
 									retryDelay: 1000,
-									timeoutMs: 20000,
+									timeoutMs: 45000,
 								});
 								if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -297,8 +297,14 @@ export async function generateAgentResponse(
 	}
 
 	if (allUserImages.length > 0) {
-		logger.info("agent.context.latest_image_detected", {
-			imageUrl: allUserImages[allUserImages.length - 1],
+		logger.info("agent.context.images_detected", {
+			imageUrls:
+				allUserImages.length > 5
+					? [
+							...allUserImages.slice(0, 5),
+							`...and ${allUserImages.length - 5} more`,
+						]
+					: allUserImages,
 			count: allUserImages.length,
 			agent: agentKey,
 		});
@@ -416,8 +422,14 @@ export async function streamAgentResponse(
 	}
 
 	if (allUserImages.length > 0) {
-		logger.info("agent.context.latest_image_detected", {
-			imageUrl: allUserImages[allUserImages.length - 1],
+		logger.info("agent.context.images_detected", {
+			imageUrls:
+				allUserImages.length > 5
+					? [
+							...allUserImages.slice(0, 5),
+							`...and ${allUserImages.length - 5} more`,
+						]
+					: allUserImages,
 			count: allUserImages.length,
 			agent: agentKey,
 		});

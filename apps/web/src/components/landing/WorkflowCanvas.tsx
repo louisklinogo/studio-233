@@ -86,7 +86,11 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasHandle, {}>(
 			(params: Connection) =>
 				setEdges((eds) =>
 					addEdge(
-						{ ...params, animated: true, style: { stroke: "#FF4400" } },
+						{
+							...params,
+							animated: true,
+							style: { stroke: "#FF4400", strokeWidth: 1.5 },
+						},
 						eds,
 					),
 				),

@@ -139,6 +139,13 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 	(_props, ref) => {
 		const trackRef = useRef<HTMLDivElement>(null);
 
+		interface TrackItem {
+			w: React.ReactNode;
+			img?: string;
+			idx?: string;
+			className?: string;
+		}
+
 		useImperativeHandle(ref, () => ({
 			track: trackRef.current,
 			blocks: trackRef.current
@@ -149,7 +156,7 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 				: [],
 		}));
 
-		const sentence1 = [
+		const sentence1: TrackItem[] = [
 			{ w: "At" },
 			{
 				w: (
@@ -179,7 +186,7 @@ export const KineticTrack = forwardRef<KineticTrackHandle, {}>(
 			},
 		];
 
-		const sentence2 = [
+		const sentence2: TrackItem[] = [
 			{ w: "Restoring" },
 			{ w: "the" },
 			{

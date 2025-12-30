@@ -448,6 +448,7 @@ export async function POST(req: Request) {
 
 		// Return UI message (data) stream so tool parts are preserved
 		return stream.toUIMessageStreamResponse({
+			sendSources: true,
 			headers: {
 				"X-Thread-Id": currentThreadId,
 			},

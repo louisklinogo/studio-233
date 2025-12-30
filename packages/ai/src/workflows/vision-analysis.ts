@@ -135,7 +135,7 @@ export async function runVisionAnalysisWorkflow(
 
 	try {
 		const fetchResponse = await robustFetch(input.imageUrl, {
-			timeout: timeouts.fetchMs,
+			timeoutMs: timeouts.fetchMs,
 			retryDelay: 1000,
 			maxRetries: 3,
 		});

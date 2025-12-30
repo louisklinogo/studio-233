@@ -31,7 +31,10 @@ export async function computeSHA256(
 		data = new Uint8Array(input);
 	}
 
-	const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+	const hashBuffer = await crypto.subtle.digest(
+		"SHA-256",
+		data.slice().buffer as ArrayBuffer,
+	);
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
