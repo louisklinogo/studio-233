@@ -84,9 +84,19 @@ export async function hardenImageMessages(
 
 			const hardenedContent = await Promise.all(
 				msg.content.map(async (part: any) => {
-					if (part?.type === "image") {
-						const url =
-							part.image instanceof URL ? part.image.toString() : part.image;
+					// Handle both 'image' parts and 'file' parts that are images
+					const isImage = part?.type === "image";
+					const isImageFile =
+						part?.type === "file" &&
+						typeof part.mediaType === "string" &&
+						part.mediaType.startsWith("image/");
+
+					if (isImage || isImageFile) {
+						const url = isImage
+							? part.image instanceof URL
+								? part.image.toString()
+								: part.image
+							: part.data;
 
 						if (typeof url === "string" && url.startsWith("http")) {
 							try {
@@ -98,7 +108,9 @@ export async function hardenImageMessages(
 								if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
 								const contentType =
-									response.headers.get("content-type") ?? "image/png";
+									response.headers.get("content-type") ??
+									part.mediaType ??
+									"image/png";
 								const buffer = new Uint8Array(await response.arrayBuffer());
 
 								return {
@@ -111,7 +123,7 @@ export async function hardenImageMessages(
 									url,
 									error: error instanceof Error ? error.message : String(error),
 								});
-								// Fallback to original (SDK might still try to fetch it)
+								// Fallback to original
 								return part;
 							}
 						}
@@ -323,6 +335,8 @@ export async function generateAgentResponse(
 				if (stepNumber === 0) {
 					return {
 						toolChoice: { type: "tool", toolName: "visionAnalysis" },
+						// Force quick mode for automatic triggers to ensure low latency
+						args: { mode: "quick" },
 					} as any;
 				}
 				return { toolChoice: "auto" } as any;
@@ -447,6 +461,8 @@ export async function streamAgentResponse(
 				if (stepNumber === 0) {
 					return {
 						toolChoice: { type: "tool", toolName: "visionAnalysis" },
+						// Force quick mode for automatic triggers to ensure low latency
+						args: { mode: "quick" },
 					} as any;
 				}
 				return { toolChoice: "auto" } as any;
