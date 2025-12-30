@@ -65,10 +65,8 @@ export const auth = betterAuth<BetterAuthOptions>({
 			async sendVerificationOTP({ email, otp, type }) {
 				if (!email || !otp) return;
 				if (!process.env.RESEND_API_KEY) {
-					if (process.env.NODE_ENV !== "production") {
-						console.warn("RESEND_API_KEY missing; cannot send OTP email.");
-					}
-					return;
+					console.error("RESEND_API_KEY missing; cannot send OTP email.");
+					throw new Error("Internal server error: Email configuration missing");
 				}
 				const subjectPrefix =
 					type === "sign-in"
@@ -80,8 +78,9 @@ export const auth = betterAuth<BetterAuthOptions>({
 					type === "sign-in"
 						? `Your one-time access code is: ${otp}.\n\nIf you did not request this code, you can ignore this email.`
 						: `Your verification code is: ${otp}.`;
-				void resendClient.emails
-					.send({
+
+				try {
+					const { error } = await resendClient.emails.send({
 						from:
 							process.env.RESEND_FROM_EMAIL ||
 							"Studio233 Auth <no-reply@studio233.ai>",
@@ -89,12 +88,16 @@ export const auth = betterAuth<BetterAuthOptions>({
 						subject: subjectPrefix,
 						text,
 						html: buildOtpEmailHtml({ otp, type }),
-					})
-					.catch((error) => {
-						if (process.env.NODE_ENV !== "production") {
-							console.error("Failed to send OTP email via Resend", error);
-						}
 					});
+
+					if (error) {
+						console.error("Failed to send OTP email via Resend:", error);
+						throw new Error("Failed to send verification email");
+					}
+				} catch (err) {
+					console.error("Unexpected error sending OTP email:", err);
+					throw err;
+				}
 			},
 		}),
 	],

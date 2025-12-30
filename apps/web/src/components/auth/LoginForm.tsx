@@ -8,13 +8,9 @@ import { type AuthFetchContext, authClient } from "@/lib/auth-client";
 import { SwissIcons } from "../ui/SwissIcons";
 import { FederatedLoginButton } from "./FederatedLoginButton";
 import { LoginFormReceipt } from "./variants/LoginFormReceipt";
-import { LoginFormSignal } from "./variants/LoginFormSignal";
-
-type Variant = "signal" | "receipt";
 
 export function LoginForm() {
 	const [mode, setMode] = useState<"federated" | "email">("federated");
-	const [variant, setVariant] = useState<Variant>("signal");
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSwitchingAccount, setIsSwitchingAccount] = useState(false);
 	const router = useRouter();
@@ -74,31 +70,6 @@ export function LoginForm() {
 			setIsSwitchingAccount(false);
 		}
 	};
-
-	// Braun Industrial Toggle Component
-	const ToggleVariant = ({
-		active,
-		onClick,
-		label,
-	}: {
-		active: boolean;
-		onClick: () => void;
-		label: string;
-	}) => (
-		<button
-			onClick={onClick}
-			className={`relative px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] transition-all duration-300 ${
-				active
-					? "bg-[#1a1a1a] text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.5)] border-t border-l border-white/5 border-b border-black"
-					: "text-neutral-600 hover:text-neutral-400"
-			}`}
-		>
-			{active && (
-				<div className="absolute top-0 left-0 w-full h-[1px] bg-[#FF4D00]/50" />
-			)}
-			<span className="relative z-10">{label}</span>
-		</button>
-	);
 
 	// Braun Industrial Toggle Component
 	const ToggleSwitch = ({
@@ -183,31 +154,6 @@ export function LoginForm() {
 					/>
 				</div>
 
-				{/* Secondary Interface Mode Toggle (Only visible in Email Mode) */}
-				<AnimatePresence>
-					{mode === "email" && (
-						<motion.div
-							initial={{ opacity: 0, height: 0 }}
-							animate={{ opacity: 1, height: "auto" }}
-							exit={{ opacity: 0, height: 0 }}
-							className="flex justify-end -mt-4 mb-4"
-						>
-							<div className="flex bg-[#050505] p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)] border border-[#1a1a1a]">
-								<ToggleVariant
-									active={variant === "signal"}
-									onClick={() => setVariant("signal")}
-									label="Signal"
-								/>
-								<ToggleVariant
-									active={variant === "receipt"}
-									onClick={() => setVariant("receipt")}
-									label="Receipt"
-								/>
-							</div>
-						</motion.div>
-					)}
-				</AnimatePresence>
-
 				<AnimatePresence mode="wait">
 					{mode === "federated" ? (
 						<motion.div
@@ -239,8 +185,7 @@ export function LoginForm() {
 							exit={{ opacity: 0, y: -10 }}
 							className="py-0"
 						>
-							{variant === "signal" && <LoginFormSignal />}
-							{variant === "receipt" && <LoginFormReceipt />}
+							<LoginFormReceipt />
 						</motion.div>
 					)}
 				</AnimatePresence>
