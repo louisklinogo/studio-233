@@ -115,6 +115,28 @@ export async function hardenImageMessages(
 								return part;
 							}
 						}
+
+						if (typeof url === "string" && url.startsWith("data:")) {
+							try {
+								const match = /^data:([^;]+);base64,(.+)$/.exec(url);
+								if (match) {
+									const contentType = match[1];
+									const base64 = match[2];
+									const buffer = new Uint8Array(
+										Buffer.from(base64 ?? "", "base64"),
+									);
+									return {
+										type: "image",
+										image: buffer,
+										mimeType: contentType,
+									};
+								}
+							} catch (error) {
+								logger.warn("runtime.harden_data_url_failed", {
+									error: error instanceof Error ? error.message : String(error),
+								});
+							}
+						}
 					}
 					return part;
 				}),
@@ -255,7 +277,11 @@ export async function generateAgentResponse(
 					part.image.toString().startsWith("http")
 				) {
 					allUserImages.push(part.image.toString());
-				} else if (part.type === "image" && typeof part.image === "string") {
+				} else if (
+					part.type === "image" &&
+					typeof part.image === "string" &&
+					part.image.startsWith("http")
+				) {
 					allUserImages.push(part.image);
 				}
 			}
@@ -370,7 +396,11 @@ export async function streamAgentResponse(
 					part.image.toString().startsWith("http")
 				) {
 					allUserImages.push(part.image.toString());
-				} else if (part.type === "image" && typeof part.image === "string") {
+				} else if (
+					part.type === "image" &&
+					typeof part.image === "string" &&
+					part.image.startsWith("http")
+				) {
 					allUserImages.push(part.image);
 				}
 			}

@@ -130,6 +130,21 @@ export async function POST(req: Request) {
 									if (url) part.data = url;
 								}),
 							);
+						} else if (data instanceof Uint8Array || Buffer.isBuffer(data)) {
+							// Handle raw binary data from AI SDK local files
+							const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
+							const hash = createHash("sha256").update(buffer).digest("hex");
+							const prefix = `vision/ingest/${hash}`;
+
+							ingestionPromises.push(
+								uploadImageBufferToBlob(buffer, {
+									contentType: part.mediaType,
+									prefix,
+									filename: "source.bin",
+								}).then((url) => {
+									if (url) part.data = url;
+								}),
+							);
 						}
 					}
 
@@ -139,6 +154,22 @@ export async function POST(req: Request) {
 						if (typeof image === "string" && image.startsWith("data:")) {
 							ingestionPromises.push(
 								ingestBase64(image, "image/png").then((url) => {
+									if (url) part.image = url;
+								}),
+							);
+						} else if (image instanceof Uint8Array || Buffer.isBuffer(image)) {
+							const buffer = Buffer.isBuffer(image)
+								? image
+								: Buffer.from(image);
+							const hash = createHash("sha256").update(buffer).digest("hex");
+							const prefix = `vision/ingest/${hash}`;
+
+							ingestionPromises.push(
+								uploadImageBufferToBlob(buffer, {
+									contentType: "image/png",
+									prefix,
+									filename: "source.bin",
+								}).then((url) => {
 									if (url) part.image = url;
 								}),
 							);

@@ -23,6 +23,8 @@ export const archiveVisionResult = inngest.createFunction(
 					contentType: "application/json",
 					prefix: `vision/metadata/${imageHash}`,
 					filename: "latest.json",
+					addRandomSuffix: false, // CRITICAL: This allows deterministic cache hits
+					allowOverwrite: true,
 				}),
 			]);
 		});

@@ -13,6 +13,7 @@ type UploadOptions = {
 	abortSignal?: AbortSignal;
 	timeoutMs?: number;
 	addRandomSuffix?: boolean;
+	allowOverwrite?: boolean;
 };
 
 function coerceBuffer(source: Buffer | Uint8Array | ArrayBuffer): Buffer {
@@ -69,7 +70,8 @@ export async function uploadImageBufferToBlob(
 					access: "public",
 					contentType,
 					addRandomSuffix,
-				}),
+					addOverwrite: options.allowOverwrite ?? false, // Fixed option name
+				} as any),
 			options.abortSignal,
 		);
 

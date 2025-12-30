@@ -35,7 +35,7 @@ type VisionAnalysisTimeouts = {
 };
 
 const DEFAULT_TIMEOUTS: VisionAnalysisTimeouts = {
-	blobListMs: 2_000,
+	blobListMs: 10_000, // Increased to handle Vercel Blob latency
 	fetchMs: 20_000,
 	geminiMs: 120_000,
 	uploadMs: 25_000,
@@ -367,6 +367,9 @@ export async function runVisionAnalysisWorkflow(
 		uploadImageBufferToBlob(Buffer.from(imageBuffer), {
 			filename: `vision/source/${imageHash}`,
 			addRandomSuffix: false,
+			// If we are not using random suffixes (content-addressing), we must allow overwrites
+			// to make the operation idempotent and avoid "blob already exists" errors.
+			allowOverwrite: true,
 		}).catch((e) => {
 			logger.warn("vision_analysis.source_upload_failed", {
 				imageHash,
