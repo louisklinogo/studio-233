@@ -1,160 +1,133 @@
-paco@paco:~/projects/studio+233$ bun run build
-$ turbo build
-turbo 2.6.3
-
-• Packages in scope: @studio233/ai, @studio233/api, @studio233/auth, @studio233/canvas, @studio233/config, @studio233/db, @studio233/ui, canvas, web
-• Running build in 9 packages
-• Remote caching disabled
-┌─ web#build > cache miss, executing 3a06d18019face30
-
-$ next build
- [INFO] Monorepo Root: /home/paco/projects/studio+233
-   ▲ Next.js 16.0.10 (Turbopack, Cache Components)
-   - Environments: .env.local
-
-   Creating an optimized production build ...
- [INFO] Monorepo Root: /home/paco/projects/studio+233
-Turbopack build encountered 1 warnings:
-./node_modules/.bun/@opentelemetry+instrumentation@0.208.0+460773ef8ff1e07c/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
-Package import-in-the-middle can't be external
-The request import-in-the-middle matches serverExternalPackages (or the default list).
-The package resolves to a different version when requested from the project directory (2.0.1) compared to the package requested from the importing module (2.0.0).
-Make sure to install the same version of the package in both locations.
-
-
-
-> Build error occurred
-Error: Turbopack build failed with 5 errors:
-./apps/web/src/inngest/functions/brand-ingestion.ts:1:1
-Module not found: Can't resolve '@llamaindex/google'
-> 1 | import { GeminiEmbedding } from "@llamaindex/google";
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  2 | import { PDFReader } from "@llamaindex/readers/pdf";
-  3 | import * as fs from "fs/promises";
-  4 | import {
-
-
-
-Import trace:
-  App Route:
-    ./apps/web/src/inngest/functions/brand-ingestion.ts
-    ./apps/web/src/app/api/inngest/route.ts
-
-https://nextjs.org/docs/messages/module-not-found
-
-
-./apps/web/src/inngest/functions/brand-ingestion.ts:2:1
-Module not found: Can't resolve '@llamaindex/readers/pdf'
-  1 | import { GeminiEmbedding } from "@llamaindex/google";
-> 2 | import { PDFReader } from "@llamaindex/readers/pdf";
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  3 | import * as fs from "fs/promises";
-  4 | import {
-  5 |   Document,
-
-
-
-Import trace:
-  App Route:
-    ./apps/web/src/inngest/functions/brand-ingestion.ts
-    ./apps/web/src/app/api/inngest/route.ts
-
-https://nextjs.org/docs/messages/module-not-found
-
-
-./packages/ai/src/tools/brand.ts:1:1
-Module not found: Can't resolve '@studio233/db/vector-search'
-> 1 | import { searchBrandKnowledge } from "@studio233/db/vector-search";
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  2 | import { Settings } from "llamaindex";
-  3 | import { z } from "zod";
-  4 | import { initLlamaIndex } from "../utils/llama-index";
-
-
-
-Import trace:
-  App Route:
-    ./packages/ai/src/tools/brand.ts
-    ./packages/ai/src/runtime/tools.ts
-    ./packages/ai/src/runtime/index.ts
-    ./apps/web/src/app/api/ai/[agent]/route.ts
-
-https://nextjs.org/docs/messages/module-not-found
-
-
-./apps/web/src/inngest/functions/brand-ingestion.ts:4:1
-Module not found: Can't resolve 'llamaindex'
-   2 | import { PDFReader } from "@llamaindex/readers/pdf";
-   3 | import * as fs from "fs/promises";
->  4 | import {
-     | ^^^^^^^^
->  5 |  Document,
-     | ^^^^^^^^^^
->  6 |  PGVectorStore,
-     | ^^^^^^^^^^
->  7 |  Settings,
-     | ^^^^^^^^^^
->  8 |  StorageContext,
-     | ^^^^^^^^^^
->  9 |  VectorStoreIndex,
-     | ^^^^^^^^^^
-> 10 | } from "llamaindex";
-     | ^^^^^^^^^^^^^^^^^^^^^
-  11 | import * as os from "os";
-  12 | import * as path from "path";
-  13 | import { inngest } from "../client";
-
-
-
-Import trace:
-  App Route:
-    ./apps/web/src/inngest/functions/brand-ingestion.ts
-    ./apps/web/src/app/api/inngest/route.ts
-
-https://nextjs.org/docs/messages/module-not-found
-
-
-./packages/ai/src/utils/llama-index.ts:1:1
-Export GeminiEmbedding doesn't exist in target module
-> 1 | import { GeminiEmbedding, Settings } from "llamaindex";
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  2 | import { getEnv } from "../config";
-  3 |
-  4 | const env = getEnv();
-
-The export GeminiEmbedding was not found in module [project]/node_modules/.bun/llamaindex@0.12.1+e814ba02f5a3c2ea/node_modules/llamaindex/dist/index.react-server.js [
-app-route] (ecmascript).
-Did you mean to import getTopKEmbeddings?
-All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-
-Import trace:
-  App Route:
-    ./packages/ai/src/utils/llama-index.ts
-    ./packages/ai/src/tools/brand.ts
-    ./packages/ai/src/runtime/tools.ts
-    ./packages/ai/src/runtime/index.ts
-    ./apps/web/src/app/api/ai/[agent]/route.ts
-
-
-    at <unknown> (./apps/web/src/inngest/functions/brand-ingestion.ts:1:1)
-    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
-    at <unknown> (./apps/web/src/inngest/functions/brand-ingestion.ts:2:1)
-    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
-    at <unknown> (./packages/ai/src/tools/brand.ts:1:1)
-    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
-    at <unknown> (./apps/web/src/inngest/functions/brand-ingestion.ts:4:1)
-    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
-    at <unknown> (./packages/ai/src/utils/llama-index.ts:1:1)
-error: script "build" exited with code 1
-command finished with error: command (/home/paco/projects/studio+233/apps/web) /home/paco/.bun/bin/bun run build exited (1)
-└─ web#build ──
-web#build: command (/home/paco/projects/studio+233/apps/web) /home/paco/.bun/bin/bun run build exited (1)
-
- Tasks:    0 successful, 1 total
-Cached:    0 cached, 1 total
-  Time:    4m57.973s
-Failed:    web#build
-
- ERROR  run failed: command  exited (1)
-error: script "build" exited with code 1
-paco@paco:~/projects/studio+233$ 
+prisma:query COMMIT
+{
+  level: 'info',
+  event: 'agent.context.latest_image_detected',
+  ts: '2025-12-30T01:03:41.648Z',
+  imageUrl: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/8ea7a5cb-15b4-4419-be46-a629eb9684cc.jpeg-1767055923019-eJiy5fuQtCu0A7Z64TnTLABqaZ726R.png',
+  count: 1,
+  agent: 'orchestrator'
+}
+[DEBUG] Rate limiter enabled: AW7kAAIncDI0ODVkOTg2MGUyNzg0ZDcxYWMwMTYyZTA2MjEzYzFmOHAyMjgzODg
+[DEBUG] KV_REST_API_URL present: true
+[DEBUG] KV_REST_API_TOKEN present: true
+[DEBUG] Creating rate limiter: 5 tokens per 60 s
+[DEBUG] Creating rate limiter: 15 tokens per 60 m
+[DEBUG] Creating rate limiter: 50 tokens per 24 h
+{
+  level: 'info',
+  event: 'vision_analysis.start',
+  ts: '2025-12-30T01:04:11.277Z',
+  imageHash: '30a01a97767966f7f11d449c87968594',
+  imageUrl: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/8ea7a5cb-15b4-4419-be46-a629eb9684cc.jpeg-1767055923019-eJiy5fuQtCu0A7Z64TnTLABqaZ726R.png',
+  mode: 'quick',
+  toolCallId: 'Gp3ijrzvFwaCkjWe',
+  threadId: 'cmjrvvz3100068ncrc0omlcg3'
+}
+POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
+{
+  level: 'warn',
+  event: 'vision_analysis.blob_list_failed',
+  ts: '2025-12-30T01:04:16.433Z',
+  prefix: 'vision/metadata/30a01a97767966f7f11d449c87968594/',
+  message: 'vision_analysis.blob_list timed out after 2000ms'
+}
+{
+  level: 'error',
+  event: 'tool.vision-analysis.failed',
+  ts: '2025-12-30T01:04:23.261Z',
+  durationMs: 12127,
+  message: 'Failed to download https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/8ea7a5cb-15b4-4419-be46-a629eb9684cc.jpeg-1767055923019-eJiy5fuQtCu0A7Z64TnTLABqaZ726R.png: TypeError: fetch failed',
+  parameterKeys: [ 'mode', 'imageUrl' ]
+}
+{
+  level: 'info',
+  event: 'agent.orchestrator.stream_step_finish',
+  ts: '2025-12-30T01:04:23.336Z',
+  toolCalls: [ { name: 'visionAnalysis', args: [Object] } ],
+  finishReason: 'tool-calls'
+}
+prisma:query INSERT INTO "public"."agent_tool_call" ("id","threadId","name","arguments","status","createdAt") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ToolCallStatus"),$6) ON CONFLICT ("id") DO UPDATE SET "name" = $7, "arguments" = $8, "status" = CAST($9::text AS "public"."ToolCallStatus") WHERE ("public"."agent_tool_call"."id" = $10 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
+{
+  level: 'info',
+  event: 'vision_analysis.start',
+  ts: '2025-12-30T01:04:40.190Z',
+  imageHash: '30a01a97767966f7f11d449c87968594',
+  imageUrl: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/8ea7a5cb-15b4-4419-be46-a629eb9684cc.jpeg-1767055923019-eJiy5fuQtCu0A7Z64TnTLABqaZ726R.png',
+  mode: 'quick',
+  toolCallId: 'cOlnKhIlm9msTPNj',
+  threadId: 'cmjrvvz3100068ncrc0omlcg3'
+}
+{
+  level: 'warn',
+  event: 'vision_analysis.blob_list_failed',
+  ts: '2025-12-30T01:04:43.066Z',
+  prefix: 'vision/metadata/30a01a97767966f7f11d449c87968594/',
+  message: 'vision_analysis.blob_list timed out after 2000ms'
+}
+{
+  level: 'info',
+  event: 'vision_analysis.model_complete',
+  ts: '2025-12-30T01:04:53.101Z',
+  imageHash: '30a01a97767966f7f11d449c87968594',
+  model: 'gemini-3-flash-preview',
+  durationMs: 12912,
+  mode: 'quick',
+  toolCallId: 'cOlnKhIlm9msTPNj',
+  threadId: 'cmjrvvz3100068ncrc0omlcg3'
+}
+{
+  level: 'info',
+  event: 'agent.orchestrator.stream_step_finish',
+  ts: '2025-12-30T01:04:53.118Z',
+  toolCalls: [ { name: 'visionAnalysis', args: [Object] } ],
+  finishReason: 'tool-calls'
+}
+prisma:query INSERT INTO "public"."agent_tool_call" ("id","threadId","name","arguments","status","createdAt") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."ToolCallStatus"),$6) ON CONFLICT ("id") DO UPDATE SET "name" = $7, "arguments" = $8, "status" = CAST($9::text AS "public"."ToolCallStatus") WHERE ("public"."agent_tool_call"."id" = $10 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
+prisma:query SELECT "public"."session"."id", "public"."session"."expiresAt", "public"."session"."token", "public"."session"."createdAt", "public"."session"."updatedAt", "public"."session"."ipAddress", "public"."session"."userAgent", "public"."session"."userId" FROM "public"."session" WHERE "public"."session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."emailVerified", "public"."user"."image", "public"."user"."createdAt", "public"."user"."updatedAt", "public"."user"."hasCompletedOnboarding" FROM "public"."user" WHERE "public"."user"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."project"."id", "public"."project"."name", "public"."project"."updatedAt" FROM "public"."project" WHERE "public"."project"."userId" = $1 ORDER BY "public"."project"."updatedAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."session"."id", "public"."session"."expiresAt", "public"."session"."token", "public"."session"."createdAt", "public"."session"."updatedAt", "public"."session"."ipAddress", "public"."session"."userAgent", "public"."session"."userId" FROM "public"."session" WHERE "public"."session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."emailVerified", "public"."user"."image", "public"."user"."createdAt", "public"."user"."updatedAt", "public"."user"."hasCompletedOnboarding" FROM "public"."user" WHERE "public"."user"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."project"."id", "public"."project"."name", "public"."project"."description", "public"."project"."thumbnail", "public"."project"."workspaceId", "public"."project"."createdAt", "public"."project"."updatedAt" FROM "public"."project" WHERE ("public"."project"."id" = $1 AND "public"."project"."userId" = $2) LIMIT $3 OFFSET $4
+ GET /api/trpc/project.getById,project.getRecent?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjrvfazk00038ncr5kb9zrh4%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 200 in 2.3s (compile: 712ms, render: 1610ms)
+Error [AI_DownloadError]: Failed to download https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/8ea7a5cb-15b4-4419-be46-a629eb9684cc.jpeg-1767055923019-eJiy5fuQtCu0A7Z64TnTLABqaZ726R.png: TypeError: fetch failed
+    at ignore-listed frames {
+  url: 'https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/default-samples/8ea7a5cb-15b4-4419-be46-a629eb9684cc.jpeg-1767055923019-eJiy5fuQtCu0A7Z64TnTLABqaZ726R.png',
+  statusCode: undefined,
+  statusText: undefined,
+  [cause]: TypeError: fetch failed
+      at ignore-listed frames {
+    [cause]: Error [ConnectTimeoutError]: Connect Timeout Error (attempted address: 2lkalc8atjuztgjx.public.blob.vercel-storage.com:443, timeout: 10000ms)
+        at ignore-listed frames {
+      code: 'UND_ERR_CONNECT_TIMEOUT'
+    }
+  }
+}
+[DEBUG] Rate limiter enabled: AW7kAAIncDI0ODVkOTg2MGUyNzg0ZDcxYWMwMTYyZTA2MjEzYzFmOHAyMjgzODg
+[DEBUG] KV_REST_API_URL present: true
+[DEBUG] KV_REST_API_TOKEN present: true
+[DEBUG] Creating rate limiter: 5 tokens per 60 s
+[DEBUG] Creating rate limiter: 15 tokens per 60 m
+[DEBUG] Creating rate limiter: 50 tokens per 24 h
+ POST /api/chat 200 in 86s (compile: 75ms, render: 86s)
+prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
+prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
+prisma:query UPDATE "public"."agent_tool_call" SET "status" = CAST($1::text AS "public"."ToolCallStatus"), "result" = $2, "completedAt" = $3 WHERE ("public"."agent_tool_call"."id" = $4 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
+prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
+prisma:query INSERT INTO "public"."agent_message" ("id","threadId","role","type","content","createdAt") VALUES ($1,$2,CAST($3::text AS "public"."AgentMessageRole"),CAST($4::text AS "public"."AgentMessageType"),$5,$6) RETURNING "public"."agent_message"."id", "public"."agent_message"."threadId", "public"."agent_message"."role"::text, "public"."agent_message"."type"::text, "public"."agent_message"."content", "public"."agent_message"."inputTokens", "public"."agent_message"."outputTokens", "public"."agent_message"."toolCallId", "public"."agent_message"."createdAt"
+prisma:query UPDATE "public"."agent_tool_call" SET "status" = CAST($1::text AS "public"."ToolCallStatus"), "result" = $2, "completedAt" = $3 WHERE ("public"."agent_tool_call"."id" = $4 AND 1=1) RETURNING "public"."agent_tool_call"."id", "public"."agent_tool_call"."threadId", "public"."agent_tool_call"."name", "public"."agent_tool_call"."arguments", "public"."agent_tool_call"."result", "public"."agent_tool_call"."status"::text, "public"."agent_tool_call"."latencyMs", "public"."agent_tool_call"."createdAt", "public"."agent_tool_call"."completedAt"
+POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
+prisma:query SELECT "public"."session"."id", "public"."session"."expiresAt", "public"."session"."token", "public"."session"."createdAt", "public"."session"."updatedAt", "public"."session"."ipAddress", "public"."session"."userAgent", "public"."session"."userId" FROM "public"."session" WHERE "public"."session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."session"."id", "public"."session"."expiresAt", "public"."session"."token", "public"."session"."createdAt", "public"."session"."updatedAt", "public"."session"."ipAddress", "public"."session"."userAgent", "public"."session"."userId" FROM "public"."session" WHERE "public"."session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."emailVerified", "public"."user"."image", "public"."user"."createdAt", "public"."user"."updatedAt", "public"."user"."hasCompletedOnboarding" FROM "public"."user" WHERE "public"."user"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."user"."id", "public"."user"."name", "public"."user"."email", "public"."user"."emailVerified", "public"."user"."image", "public"."user"."createdAt", "public"."user"."updatedAt", "public"."user"."hasCompletedOnboarding" FROM "public"."user" WHERE "public"."user"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."project"."id", "public"."project"."name", "public"."project"."updatedAt" FROM "public"."project" WHERE "public"."project"."userId" = $1 ORDER BY "public"."project"."updatedAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."project"."id", "public"."project"."name", "public"."project"."description", "public"."project"."thumbnail", "public"."project"."workspaceId", "public"."project"."createdAt", "public"."project"."updatedAt" FROM "public"."project" WHERE ("public"."project"."id" = $1 AND "public"."project"."userId" = $2) LIMIT $3 OFFSET $4
+ GET /api/trpc/project.getById,project.getRecent?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjrvfazk00038ncr5kb9zrh4%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 200 in 3.7s (compile: 715ms, render: 3.0s)
+[DEBUG] Rate limiter enabled: AW7kAAIncDI0ODVkOTg2MGUyNzg0ZDcxYWMwMTYyZTA2MjEzYzFmOHAyMjgzODg
+[DEBUG] KV_REST_API_URL present: true
+[DEBUG] KV_REST_API_TOKEN present: true
+[DEBUG] Creating rate limiter: 5 tokens per 60 s
+[DEBUG] Creating rate limiter: 15 tokens per 60 m
+[DEBUG] Creating rate limiter: 50 tokens per 24 h
+POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.

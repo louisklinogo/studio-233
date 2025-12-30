@@ -3,6 +3,10 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import {
+	InfiniteCanvas,
+	type InfiniteCanvasHandle,
+} from "@/components/landing/InfiniteCanvas";
+import {
 	KineticTrack,
 	type KineticTrackHandle,
 } from "@/components/landing/KineticTrack";
@@ -22,6 +26,7 @@ export default function VortexPage() {
 	const [loading, setLoading] = useState(true);
 	const heroRef = useRef<VortexHeroHandle>(null);
 	const trackRef = useRef<KineticTrackHandle>(null);
+	const canvasRef = useRef<InfiniteCanvasHandle>(null);
 
 	useEffect(() => {
 		setMounted(true);
@@ -44,12 +49,21 @@ export default function VortexPage() {
 				className="min-h-dvh bg-[#f4f4f0] text-neutral-50 font-sans selection:bg-[#D81E05] selection:text-white relative"
 			>
 				{/* The Unified Kinetic Stream Container */}
-				<VortexContainer heroRef={heroRef} trackRef={trackRef}>
+				<VortexContainer
+					heroRef={heroRef}
+					trackRef={trackRef}
+					canvasRef={canvasRef}
+				>
 					<VortexHeroV2 ref={heroRef} />
 
 					{/* The Automated Batch Refinery Simulation (Background for Monolith) */}
 					<div className="engine-layer absolute inset-0 opacity-0 pointer-events-none">
 						<ProductionEngine />
+					</div>
+
+					{/* The Spatial Result Layer (Infinite Canvas) */}
+					<div className="canvas-layer absolute inset-0 opacity-0 pointer-events-none">
+						<InfiniteCanvas ref={canvasRef} />
 					</div>
 
 					<KineticTrack ref={trackRef} />

@@ -3,6 +3,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import React, { useEffect, useRef, useState } from "react";
+import type { InfiniteCanvasHandle } from "./InfiniteCanvas";
 import type { KineticTrackHandle } from "./KineticTrack";
 import type { VortexHeroHandle } from "./VortexHeroV2";
 
@@ -10,6 +11,7 @@ interface VortexContainerProps {
 	children?: React.ReactNode;
 	heroRef?: React.RefObject<VortexHeroHandle | null>;
 	trackRef?: React.RefObject<KineticTrackHandle | null>;
+	canvasRef?: React.RefObject<InfiniteCanvasHandle | null>;
 }
 
 /**
@@ -19,6 +21,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 	children,
 	heroRef,
 	trackRef,
+	canvasRef,
 }) => {
 	const [mounted, setMounted] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
@@ -310,18 +313,61 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 								12.0,
 							);
 						}
+
+						// --- Act IV: Spatial Handover (Infinite Canvas) ---
+						const canvasLayer =
+							viewportRef.current?.querySelector(".canvas-layer");
+						const viewfinder = canvasRef?.current?.viewfinder;
+						const inner = canvasRef?.current?.inner;
+
+						if (canvasLayer && viewfinder && inner) {
+							// 1. Handover: Fade Engine out, Fade Canvas in
+							tl.to(engineLayer, { opacity: 0, duration: 1.0 }, 15.0);
+
+							tl.to(
+								canvasLayer,
+								{
+									opacity: 1,
+									pointerEvents: "auto",
+									duration: 1.0,
+								},
+								15.5,
+							);
+
+							// 2. Viewfinder Expansion: The portal opens
+							tl.fromTo(
+								viewfinder,
+								{ width: "600px", height: "600px", borderRadius: "4px" },
+								{
+									width: "100%",
+									height: "100%",
+									borderRadius: "0px",
+									duration: 2.0,
+									ease: "power2.inOut",
+								},
+								16.0,
+							);
+
+							// 3. Inner Scale Sync
+							tl.fromTo(
+								inner,
+								{ scale: 0.7 },
+								{ scale: 1, duration: 2.0, ease: "power2.inOut" },
+								16.0,
+							);
+						}
 					}
 				}
 			}
 		}, wrapperRef);
 
 		return () => ctx.revert();
-	}, [mounted, heroRef, trackRef]);
+	}, [mounted, heroRef, trackRef, canvasRef]);
 
 	return (
 		<div
 			ref={wrapperRef}
-			className="relative w-full h-[2000vh] bg-[#f4f4f0] z-40"
+			className="relative w-full h-[3000vh] bg-[#f4f4f0] z-40"
 			data-testid="vortex-wrapper"
 		>
 			{/* --- Global SVG Filters --- */}

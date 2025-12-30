@@ -10,7 +10,8 @@
 		"lint": "biome lint src",
 		"format:check": "biome format src",
 		"format:write": "biome format --write src",
-		"check-types": "tsc --noEmit"
+		"check-types": "tsc --noEmit",
+		"inngest:dev": "inngest-cli dev -u http://localhost:3001/api/inngest"
 	},
 	"dependencies": {
 		"@ai-sdk/google": "^3.0.1",
@@ -150,5 +151,8 @@
 		"postcss": "^8",
 		"tailwindcss": "^3.4.1",
 		"typescript": "^5"
-	}
+	},
+	"trustedDependencies": [
+		"inngest-cli"
+	]
 }
