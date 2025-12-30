@@ -1,6 +1,23 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
+	"globalPassThroughEnv": [
+		"DATABASE_URL",
+		"DIRECT_DATABASE_URL",
+		"BLOB_READ_WRITE_TOKEN",
+		"GOOGLE_GENERATIVE_AI_API_KEY",
+		"FAL_KEY",
+		"KV_REST_API_TOKEN",
+		"KV_REST_API_URL",
+		"GOOGLE_CLIENT_ID",
+		"GOOGLE_CLIENT_SECRET",
+		"BETTER_AUTH_SECRET",
+		"CORS_ORIGIN",
+		"BETTER_AUTH_URL",
+		"RESEND_API_KEY",
+		"RESEND_FROM_EMAIL",
+		"PLAYWRIGHT_BROWSERS_PATH"
+	],
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
