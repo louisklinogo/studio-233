@@ -5,7 +5,7 @@
     - [ ] Create `packages/ai/src/tools/render-html.ts` with strict schema.
     - [ ] Unit test: Verify execution wraps `htmlRenderWorkflow`.
     - [ ] Unit test: Verify validation fails if `html` is missing.
-- [ ] Task: Refactor `htmlToCanvas` Tool
+- [x] Task: Refactor `htmlToCanvas` Tool (3da37af)
     - [ ] Modify `packages/ai/src/tools/html-to-canvas.ts`.
     - [ ] Remove `html`/`css` from input schema.
     - [ ] Unit test: Verify it strictly requires `brief`.
