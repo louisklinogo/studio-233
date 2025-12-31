@@ -22,12 +22,20 @@ const htmlToCanvasInputSchema = z.preprocess((val: any) => {
 
 export const htmlToCanvasTool = createTool({
 	id: "html-to-canvas",
-	description: "Generate HTML/CSS and render to an image added to the canvas.",
+	description:
+		"DESIGN tool. Generate HTML/CSS from a high-level text brief and render it to an image. Use this for 'Make a poster' or 'Design a landing page'. Do NOT pass raw HTML/CSS code here; use 'render-html' for that.",
 	inputSchema: htmlToCanvasInputSchema,
 	outputSchema: canvasToolOutputSchema,
 	execute: async ({ context }) => {
 		const { renderWidth, renderHeight, renderScale, background, ...htmlInput } =
 			context;
+
+		// Explicit check to help confused agents
+		if ((htmlInput as any).html || (htmlInput as any).css) {
+			throw new Error(
+				"html-to-canvas does not accept raw HTML/CSS. Use 'render-html' tool for direct code rendering, or provide only a 'brief' for design generation.",
+			);
+		}
 
 		const htmlResult = await htmlGeneratorWorkflow.run(htmlInput);
 
