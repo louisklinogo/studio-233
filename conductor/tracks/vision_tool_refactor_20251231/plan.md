@@ -1,6 +1,6 @@
 # Implementation Plan - Vision Tooling Refactor
 
-## Phase 1: Tool Implementation
+## Phase 1: Tool Implementation [checkpoint: db0fd5b]
 - [x] Task: Implement `renderHtml` Tool (ecfb185)
     - [ ] Create `packages/ai/src/tools/render-html.ts` with strict schema.
     - [ ] Unit test: Verify execution wraps `htmlRenderWorkflow`.
