@@ -1,3 +1,8 @@
+import type {
+	GenerationSettings,
+	PlacedImage,
+	PlacedVideo,
+} from "@studio233/canvas";
 import {
 	ChevronDown,
 	ChevronUp,
@@ -27,11 +32,6 @@ import {
 } from "@/components/ui/context-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type {
-	GenerationSettings,
-	PlacedImage,
-	PlacedVideo,
-} from "@studio233/canvas";
 import { exportVideoAsGif } from "@/utils/gif-export";
 import { checkOS } from "@/utils/os-utils";
 import { ShortcutBadge } from "./ShortcutBadge";

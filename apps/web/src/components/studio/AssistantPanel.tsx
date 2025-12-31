@@ -1,3 +1,4 @@
+import { GenerationSettings } from "@studio233/canvas";
 import { motion } from "framer-motion";
 import {
 	ChevronRight,
@@ -30,7 +31,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { styleModels } from "@/lib/models";
 import { cn } from "@/lib/utils";
-import { GenerationSettings } from "@studio233/canvas";
 
 interface AssistantPanelProps {
 	prompt: string;

@@ -1,3 +1,4 @@
+import type { BrandContext } from "@studio233/brand/types";
 import type { ModelMessage } from "ai";
 
 export type AgentMessage = ModelMessage;
@@ -13,6 +14,7 @@ export type ToolCallInfo = {
 export type AgentRunOptions = {
 	messages?: AgentMessage[];
 	prompt?: string;
+	brandContext?: BrandContext;
 	abortSignal?: AbortSignal;
 	metadata?: {
 		context?: Record<string, unknown>;

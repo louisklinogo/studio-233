@@ -6,6 +6,7 @@ import {
 import { generateThreadTitle } from "@studio233/ai/runtime/titling";
 import { uploadImageBufferToBlob } from "@studio233/ai/utils/blob-storage";
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
+import { resolveBrandContext } from "@studio233/brand";
 import { prisma as db, Prisma } from "@studio233/db";
 import { inngest } from "@studio233/inngest";
 import { list } from "@vercel/blob";
@@ -21,7 +22,10 @@ export async function POST(req: Request) {
 		const sessionPromise = getSessionWithRetry(headers);
 		let threadPromise: Promise<any> | undefined;
 		if (threadId) {
-			threadPromise = db.agentThread.findUnique({ where: { id: threadId } });
+			threadPromise = db.agentThread.findUnique({
+				where: { id: threadId },
+				include: { project: { select: { workspaceId: true } } },
+			});
 		}
 
 		// Convert to CoreMessage[] directly - convertToModelMessages handles tool messages
@@ -103,17 +107,14 @@ export async function POST(req: Request) {
 
 		/**
 		 * Ingests all base64 images in the message history and replaces them with Blob URLs.
-		 * This prevents sending massive payloads to the agent and resolves downstream fetch errors.
 		 */
 		const ingestImagesInHistory = async (msgs: any[]): Promise<string[]> => {
 			const ingestionPromises: Promise<void>[] = [];
 
-			// 1. Launch all ingestions in parallel
 			for (const msg of msgs) {
 				if (!msg.content || !Array.isArray(msg.content)) continue;
 
 				for (const part of msg.content) {
-					// Handle 'file' parts
 					if (
 						part.type === "file" &&
 						typeof part.mediaType === "string" &&
@@ -131,7 +132,6 @@ export async function POST(req: Request) {
 								}),
 							);
 						} else if (data instanceof Uint8Array || Buffer.isBuffer(data)) {
-							// Handle raw binary data from AI SDK local files
 							const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
 							const hash = createHash("sha256").update(buffer).digest("hex");
 							const prefix = `vision/ingest/${hash}`;
@@ -148,7 +148,6 @@ export async function POST(req: Request) {
 						}
 					}
 
-					// Handle 'image' parts
 					if (part.type === "image") {
 						const image = part.image;
 						if (typeof image === "string" && image.startsWith("data:")) {
@@ -178,12 +177,10 @@ export async function POST(req: Request) {
 				}
 			}
 
-			// 2. Wait for all ingestions to complete
 			if (ingestionPromises.length > 0) {
 				await Promise.all(ingestionPromises);
 			}
 
-			// 3. Deterministically find all URLs by scanning the array in order
 			const allUrls: string[] = [];
 			for (const msg of msgs) {
 				if (!msg.content || !Array.isArray(msg.content)) continue;
@@ -215,49 +212,72 @@ export async function POST(req: Request) {
 		const latestImageUrls = await ingestImagesInHistory(coreMessages);
 		const latestImageUrl = latestImageUrls[latestImageUrls.length - 1];
 
-		// Await session now
+		// Await session and thread now
 		const session = await sessionPromise;
+		const thread = threadPromise ? await threadPromise : null;
 
-		let currentThreadId = threadId;
+		// Determine Workspace ID for context
+		let workspaceId: string | undefined;
+		if (thread?.project?.workspaceId) {
+			workspaceId = thread.project.workspaceId;
+		} else if (canvas?.projectId) {
+			const project = await db.project.findUnique({
+				where: { id: canvas.projectId },
+				select: { workspaceId: true },
+			});
+			workspaceId = project?.workspaceId ?? undefined;
+		}
+
+		// Parallel Brand Context Resolution
 		const lastMessage = coreMessages[coreMessages.length - 1];
 		const userMessageContent =
+			lastMessage?.role === "user" ? lastMessage.content : "";
+		const queryStr =
+			typeof userMessageContent === "string" ? userMessageContent : "";
+
+		let brandContext;
+		if (workspaceId) {
+			brandContext = await resolveBrandContext(workspaceId, queryStr);
+		}
+
+		let currentThreadId = threadId;
+		const userMessageToPersist =
 			lastMessage?.role === "user" ? lastMessage.content : null;
 
 		// 1. Handle Thread Creation/Validation
 		if (!currentThreadId) {
-			// Transaction: Create Thread + First Message
 			const initialTitle =
 				messages[0]?.content?.slice(0, 50) || "New Conversation";
 
-			const thread = await db.$transaction(async (tx) => {
+			const newThread = await db.$transaction(async (tx) => {
 				const t = await tx.agentThread.create({
 					data: {
 						title: initialTitle,
 						userId: session?.user?.id,
+						projectId: canvas?.projectId,
 					},
 				});
 
-				if (userMessageContent) {
+				if (userMessageToPersist) {
 					await tx.agentMessage.create({
 						data: {
 							threadId: t.id,
 							role: "USER",
-							content: userMessageContent as any,
+							content: userMessageToPersist as any,
 						},
 					});
 				}
 				return t;
 			});
 
-			currentThreadId = thread.id;
+			currentThreadId = newThread.id;
 
-			// Trigger AI Title Generation in background
 			if (messages[0]?.content && typeof messages[0].content === "string") {
 				waitUntil(
 					generateThreadTitle(messages[0].content)
 						.then(async (betterTitle) => {
 							await db.agentThread.update({
-								where: { id: (thread as any).id },
+								where: { id: (newThread as any).id },
 								data: { title: betterTitle },
 							});
 						})
@@ -265,9 +285,6 @@ export async function POST(req: Request) {
 				);
 			}
 		} else {
-			// If provided, ensure it exists and user has access (if session exists)
-			const thread = await threadPromise;
-
 			if (!thread) {
 				return new Response(JSON.stringify({ error: "Thread not found" }), {
 					status: 404,
@@ -284,13 +301,12 @@ export async function POST(req: Request) {
 				});
 			}
 
-			// Persist the NEW User Message (outside transaction, single op)
-			if (userMessageContent) {
+			if (userMessageToPersist) {
 				await db.agentMessage.create({
 					data: {
 						threadId: currentThreadId,
 						role: "USER",
-						content: userMessageContent as any,
+						content: userMessageToPersist as any,
 					},
 				});
 			}
@@ -300,14 +316,9 @@ export async function POST(req: Request) {
 		const stream = await streamAgentResponse("orchestrator", {
 			messages: coreMessages,
 			maxSteps,
+			brandContext,
 			abortSignal: req.signal,
 			onToolCall: async (toolCall) => {
-				// Persist tool call request
-				// Note: Tool calls are also part of the final assistant message structure,
-				// but saving them individually allows real-time tracking if needed.
-				// For now, we rely on the final message persistence for the complete record,
-				// OR we can keep this for granular status updates.
-				// The schema has `AgentToolCall`, let's use it.
 				const now = new Date();
 				const args = (toolCall.arguments ?? {}) as any;
 
@@ -327,7 +338,6 @@ export async function POST(req: Request) {
 					},
 				});
 
-				// If the runtime provides a result at this stage, persist it immediately.
 				if (toolCall.result !== undefined) {
 					await db.agentToolCall
 						.update({
@@ -338,46 +348,25 @@ export async function POST(req: Request) {
 								completedAt: now,
 							},
 						})
-						.catch(() => {
-							// Ignore if tool call wasn't found (e.g. race condition)
-						});
+						.catch(() => {});
 				}
 			},
 			onFinish: async ({ response }) => {
-				// 4. Persist Generated Assistant Messages (including tool calls/results)
-				// response.messages contains the *newly generated* messages
 				const newMessages = response.messages;
 
 				for (const msg of newMessages) {
-					// Map role to enum
 					let role: "ASSISTANT" | "TOOL" = "ASSISTANT";
 					if (msg.role === "tool") role = "TOOL";
-
-					// For tool messages, content is array of results
-					// For assistant messages, content is text + tool calls
 
 					await db.agentMessage.create({
 						data: {
 							threadId: currentThreadId,
 							role: role,
 							content: msg.content as any,
-							// If it's an assistant message with tool calls, we might want to link them?
-							// The schema puts `toolCallId` on the message.
-							// But `AgentMessage` has one `toolCallId` field (optional).
-							// A message can have multiple tool calls.
-							// Our schema might be designed for 1:1 or 1:N differently.
-							// Schema: `toolCall AgentToolCall? @relation(...)` -> 1:1.
-							// This implies `AgentMessage` with role TOOL is linked to ONE tool call.
-							// But `Assistant` message can *request* multiple tools.
-							// The `content` JSON will store the full structure.
 						},
 					});
 
-					// If it was a tool call, update the status in AgentToolCall table
 					if (msg.role === "tool") {
-						// msg.content is array of tool results.
-						// We need to iterate and update.
-						// content: [{ type: 'tool-result', toolCallId: '...', result: ... }]
 						const contentArray = Array.isArray(msg.content)
 							? msg.content
 							: [msg.content];
@@ -395,9 +384,7 @@ export async function POST(req: Request) {
 											completedAt: new Date(),
 										},
 									})
-									.catch(() => {
-										// Ignore if tool call wasn't found (e.g. race condition or created differently)
-									});
+									.catch(() => {});
 								continue;
 							}
 
@@ -424,9 +411,7 @@ export async function POST(req: Request) {
 											completedAt: new Date(),
 										},
 									})
-									.catch(() => {
-										// Ignore if tool call wasn't found
-									});
+									.catch(() => {});
 							}
 						}
 					}
@@ -438,6 +423,7 @@ export async function POST(req: Request) {
 					latestImageUrl,
 					latestImageUrls,
 					threadId: currentThreadId,
+					workspaceId,
 					runtimeContext: {
 						runAgent: generateAgentResponse,
 						inngest,
@@ -446,7 +432,6 @@ export async function POST(req: Request) {
 			},
 		});
 
-		// Return UI message (data) stream so tool parts are preserved
 		return stream.toUIMessageStreamResponse({
 			sendSources: true,
 			headers: {
@@ -466,7 +451,7 @@ export async function POST(req: Request) {
 					status: 503,
 					headers: {
 						"Content-Type": "application/json",
-						"Retry-After": "5", // Retry in 5 seconds
+						"Retry-After": "5",
 					},
 				},
 			);

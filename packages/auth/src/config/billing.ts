@@ -24,8 +24,14 @@ const coerceNumber = (value: string | undefined, fallback: number) => {
 export const billingConfig = {
 	welcomeCredits: coerceNumber(process.env.BILLING_WELCOME_CREDITS, 25),
 	planCreditMap,
-	defaultPlanCredits: coerceNumber(process.env.BILLING_DEFAULT_PLAN_CREDITS, 250),
-	batchCreditCostPerImage: coerceNumber(process.env.BATCH_CREDIT_COST_PER_IMAGE, 1),
+	defaultPlanCredits: coerceNumber(
+		process.env.BILLING_DEFAULT_PLAN_CREDITS,
+		250,
+	),
+	batchCreditCostPerImage: coerceNumber(
+		process.env.BATCH_CREDIT_COST_PER_IMAGE,
+		1,
+	),
 	getPlanCredits(planSlug?: string | null) {
 		if (planSlug && planCreditMap.has(planSlug)) {
 			return planCreditMap.get(planSlug) ?? this.defaultPlanCredits;

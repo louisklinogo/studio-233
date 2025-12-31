@@ -1,4 +1,4 @@
-import { prisma, CreditEntryType, Prisma } from "@studio233/db";
+import { CreditEntryType, Prisma, prisma } from "@studio233/db";
 import { DuplicateLedgerEntryError, InsufficientCreditsError } from "./errors";
 
 type LedgerEntryInput = {
@@ -20,7 +20,10 @@ export class CreditLedgerService {
 	}
 
 	async grantCredits(input: LedgerEntryInput): Promise<number> {
-		return this.writeEntry({ ...input, entryType: input.entryType ?? CreditEntryType.GRANT });
+		return this.writeEntry({
+			...input,
+			entryType: input.entryType ?? CreditEntryType.GRANT,
+		});
 	}
 
 	async refundCredits(input: LedgerEntryInput): Promise<number> {
@@ -29,16 +32,25 @@ export class CreditLedgerService {
 
 	async consumeCredits(input: LedgerEntryInput): Promise<number> {
 		const amount = Math.abs(input.amount);
-		return this.writeEntry({ ...input, amount: -amount, entryType: CreditEntryType.CONSUME });
+		return this.writeEntry({
+			...input,
+			amount: -amount,
+			entryType: CreditEntryType.CONSUME,
+		});
 	}
 
 	private async writeEntry(input: LedgerEntryInput): Promise<number> {
-		const { userId, amount, entryType, description, reference, metadata } = input;
-		const metadataValue: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput =
+		const { userId, amount, entryType, description, reference, metadata } =
+			input;
+		const metadataValue:
+			| Prisma.InputJsonValue
+			| Prisma.NullableJsonNullValueInput =
 			metadata === undefined ? Prisma.JsonNull : metadata;
 		return prisma.$transaction(async (tx) => {
 			if (reference) {
-				const existing = await tx.creditLedger.findFirst({ where: { reference } });
+				const existing = await tx.creditLedger.findFirst({
+					where: { reference },
+				});
 				if (existing) {
 					throw new DuplicateLedgerEntryError();
 				}

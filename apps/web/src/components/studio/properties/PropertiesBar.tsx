@@ -1,3 +1,9 @@
+import type {
+	CanvasElement,
+	DrawingElement,
+	ShapeElement,
+	TextElement,
+} from "@studio233/canvas";
 import {
 	AlignCenter,
 	AlignLeft,
@@ -20,12 +26,6 @@ import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type {
-	CanvasElement,
-	DrawingElement,
-	ShapeElement,
-	TextElement,
-} from "@studio233/canvas";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { FontSelector } from "./FontSelector";
 import { FontSizeSelector } from "./FontSizeSelector";

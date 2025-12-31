@@ -4,21 +4,21 @@ import { type NextRequest } from "next/server";
 import { createContext } from "@/server/trpc/context";
 import { appRouter } from "@/server/trpc/routers/_app";
 
-const handler = (req: NextRequest) =>
-	fetchRequestHandler({
+const handler = (req: NextRequest) => {
+	console.log(`[TRPC API] Incoming request: ${req.url}`);
+	return fetchRequestHandler({
 		endpoint: "/api/trpc",
 		req,
 		router: appRouter,
 		createContext: () => createContext(req),
-		onError:
-			process.env.NODE_ENV === "development"
-				? ({ path, error }) => {
-						console.error(
-							`❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,
-						);
-					}
-				: undefined,
+		onError: ({ path, error }) => {
+			console.error(
+				`❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,
+			);
+			if (error.cause) console.error("Error cause:", error.cause);
+		},
 	});
+};
 
 const protectedHandler = async (req: NextRequest) => {
 	// Only check for bots on POST requests (mutations) and on Vercel

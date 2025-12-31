@@ -1,11 +1,11 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { upload } from "@vercel/blob/client";
+import { motion } from "framer-motion";
 import React, { useRef, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
-import { useFalClient } from "@/hooks/useFalClient";
-import { useUIState } from "@/hooks/useUIState";
-import { uploadImageDirect } from "@/lib/handlers/generation-handler";
+import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 
 interface BrandAssetUploadProps {
@@ -22,8 +22,6 @@ export function BrandAssetUpload({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
-	const { customApiKey, setIsApiKeyDialogOpen } = useUIState();
-	const falClient = useFalClient(customApiKey);
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 
@@ -50,47 +48,75 @@ export function BrandAssetUpload({
 			const fileList = Array.from(files);
 			for (let i = 0; i < fileList.length; i++) {
 				const file = fileList[i];
-				const progress = Math.round(((i + 0.1) / fileList.length) * 100);
-				setUploadProgress(progress);
 				onStatusChange?.(
 					`UPLOADING: ${file.name.toUpperCase()} [${i + 1}/${fileList.length}]`,
 				);
 
-				// Read file as data URL
-				const reader = new FileReader();
-				const dataUrl = await new Promise<string>((resolve, reject) => {
-					reader.onload = () => resolve(reader.result as string);
-					reader.onerror = reject;
-					reader.readAsDataURL(file);
+				// 1. Upload to Vercel Blob directly from client
+				const blob = await upload(`brand/${workspaceId}/${file.name}`, file, {
+					access: "public",
+					handleUploadUrl: "/api/upload",
+					onUploadProgress: (progress) => {
+						const totalProgress = Math.round(
+							((i + progress.percentage / 100) / fileList.length) * 100,
+						);
+						setUploadProgress(totalProgress);
+					},
 				});
 
-				// 1. Upload to storage (FAL)
-				const uploadResult = await uploadImageDirect(
-					dataUrl,
-					falClient,
-					() => {}, // No toast
-					setIsApiKeyDialogOpen,
-				);
-
 				onStatusChange?.(`REGISTERING: ${file.name.toUpperCase()}`);
+				console.log("[BrandAssetUpload] Registering with DB:", {
+					name: file.name,
+					url: blob.url,
+					workspaceId,
+				});
 
 				// 2. Register in DB as Brand Asset
 				await registerAsset.mutateAsync({
 					name: file.name,
-					url: uploadResult.url,
+					url: blob.url,
 					size: file.size,
-					mimeType: file.type,
+					mimeType: file.type || "application/octet-stream",
 					workspaceId,
 					isBrandAsset: true,
 				});
+				console.log("[BrandAssetUpload] DB Registration successful");
 			}
 
-			onStatusChange?.("ALL_ASSETS_RELIQUISHED_SUCCESSFULLY");
-		} catch (error) {
-			console.error("Failed to upload brand assets:", error);
-			onStatusChange?.(
-				`UPLOAD_FAILURE: ${error instanceof Error ? error.message.toUpperCase() : "UNKNOWN_ERROR"}`,
-			);
+			onStatusChange?.("ASSET_SYNCHRONIZATION_COMPLETE");
+
+			// Clear status after delay
+			setTimeout(() => onStatusChange?.(null), 5000);
+		} catch (error: any) {
+			// Industrial Error Extraction
+			console.error("[BrandAssetUpload] Critical System Fault:", error);
+			if (error.stack) console.error("Stack:", error.stack);
+			if (error.data) console.error("Error Data:", error.data);
+			if (error.cause) console.error("Error Cause:", error.cause);
+
+			let faultMessage = "SYSTEM_SUBSURFACE_ERROR";
+
+			// Handle TRPC specifically
+			if (error?.shape?.message) {
+				faultMessage = error.shape.message;
+			} else if (error?.message) {
+				faultMessage = error.message;
+			} else if (typeof error === "string") {
+				faultMessage = error;
+			} else if (error && typeof error === "object") {
+				try {
+					faultMessage = error.error || JSON.stringify(error);
+				} catch {
+					faultMessage = "UNSERIALIZABLE_FAULT_DETECTED";
+				}
+			}
+
+			const formattedFault = String(faultMessage)
+				.toUpperCase()
+				.replace(/\s+/g, "_")
+				.slice(0, 48); // Cap length for header visibility
+
+			onStatusChange?.(`CRITICAL_FAULT: ${formattedFault}`);
 		} finally {
 			setIsUploading(false);
 			setUploadProgress(0);
@@ -99,7 +125,7 @@ export function BrandAssetUpload({
 	};
 
 	return (
-		<div className="space-y-2">
+		<div className="relative w-full h-full">
 			<input
 				type="file"
 				ref={fileInputRef}
@@ -111,35 +137,41 @@ export function BrandAssetUpload({
 
 			<button
 				onClick={() => fileInputRef.current?.click()}
-				disabled={isUploading || registerAsset.isPending}
-				className="w-full py-2.5 border border-dashed border-neutral-300 dark:border-neutral-700 bg-white/50 dark:bg-black/50 rounded-[2px] font-mono text-[10px] uppercase text-neutral-400 hover:text-[#FF4D00] hover:border-[#FF4D00] transition-all flex items-center justify-center gap-2 group"
+				disabled={isUploading}
+				className={cn(
+					"w-full h-full flex flex-col items-center justify-center transition-all relative overflow-hidden rounded-sm group",
+					isUploading
+						? "bg-neutral-50 dark:bg-black/40 cursor-wait"
+						: "bg-white dark:bg-black border border-dashed border-neutral-200 dark:border-white/10 hover:border-[#FF4D00] hover:bg-neutral-50 dark:hover:bg-[#FF4D00]/5",
+				)}
 			>
 				{isUploading ? (
 					<>
-						<SwissIcons.Spinner
-							size={12}
-							className="animate-spin text-[#FF4D00]"
+						{/* Upward filling progress background */}
+						<motion.div
+							initial={{ height: 0 }}
+							animate={{ height: `${uploadProgress}%` }}
+							className="absolute bottom-0 left-0 right-0 bg-[#FF4D00]/10 pointer-events-none"
 						/>
-						<span className="text-[#FF4D00]">Processing_{uploadProgress}%</span>
+						<SwissIcons.Spinner
+							size={20}
+							className="animate-spin text-[#FF4D00] relative z-10 mb-2"
+						/>
+						<span className="font-mono text-[8px] text-[#FF4D00] font-bold relative z-10 uppercase tracking-widest">
+							{uploadProgress}%
+						</span>
 					</>
 				) : (
 					<>
-						<span className="group-hover:translate-x-[-2px] transition-transform">
+						<span className="text-3xl font-light text-neutral-300 group-hover:text-[#FF4D00] transition-colors mb-1">
 							+
 						</span>
-						Add_Brand_Asset
+						<span className="font-mono text-[7px] text-neutral-400 group-hover:text-[#FF4D00] uppercase tracking-[0.2em] transition-colors">
+							Add_Asset
+						</span>
 					</>
 				)}
 			</button>
-
-			{isUploading && (
-				<div className="h-0.5 w-full bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
-					<div
-						className="h-full bg-[#FF4D00] transition-all duration-300"
-						style={{ width: `${uploadProgress}%` }}
-					/>
-				</div>
-			)}
 		</div>
 	);
 }

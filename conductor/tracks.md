@@ -38,3 +38,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ## [x] Track: Brand Architecture Interface Hardening
 *Link: [./conductor/tracks/brand_ui_hardening_20251231/](./conductor/tracks/brand_ui_hardening_20251231/)*
+
+---
+
+## [x] Track: Implement Ambient Brand Awareness via Layered Context Resolution
+*Link: [./conductor/tracks/brand_ambient_context_20251231/](./conductor/tracks/brand_ambient_context_20251231/)*

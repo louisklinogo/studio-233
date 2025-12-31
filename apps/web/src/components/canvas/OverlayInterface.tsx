@@ -2370,7 +2370,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					{isBrandArchiveOpen && project?.workspaceId && (
 						<motion.div
 							initial={{ width: 0, opacity: 0, marginRight: 0 }}
-							animate={{ width: 400, opacity: 1, marginRight: 16 }}
+							animate={{ width: 450, opacity: 1, marginRight: 16 }}
 							exit={{ width: 0, opacity: 0, marginRight: 0 }}
 							transition={{ duration: 0.3, ease: "easeInOut" }}
 							className="h-[calc(100%-2rem)] my-4 rounded-lg border border-border z-[9999] relative flex-shrink-0 bg-transparent shadow-2xl overflow-hidden"
@@ -2379,6 +2379,47 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 								isOpen={isBrandArchiveOpen}
 								onClose={() => setIsBrandArchiveOpen(false)}
 								workspaceId={project.workspaceId}
+								onAddAsset={(asset) => {
+									const img = new window.Image();
+									img.crossOrigin = "anonymous";
+									img.onload = () => {
+										const aspectRatio = img.width / img.height;
+										const maxSize = 300;
+										let width = maxSize;
+										let height = maxSize / aspectRatio;
+
+										if (height > maxSize) {
+											height = maxSize;
+											width = maxSize * aspectRatio;
+										}
+
+										const centered = centerInViewport(
+											viewport,
+											canvasSize,
+											width,
+											height,
+										);
+
+										setImages((prev) => [
+											...prev,
+											{
+												id: `brand-${asset.id}-${Date.now()}`,
+												src: asset.url,
+												x: centered.x,
+												y: centered.y,
+												width,
+												height,
+												rotation: 0,
+												meta: {
+													assetId: asset.id,
+													isBrandAsset: true,
+												},
+											},
+										]);
+										saveToHistory();
+									};
+									img.src = asset.url;
+								}}
 								className="h-full w-full border-none shadow-none rounded-none"
 							/>
 						</motion.div>

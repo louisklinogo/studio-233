@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
 import type {
+	CanvasElement,
 	HistoryState,
 	PlacedImage,
 	PlacedVideo,
 	SelectionBox,
 } from "@studio233/canvas";
-import type { CanvasElement } from "@studio233/canvas";
+import { useCallback, useEffect, useState } from "react";
 
 export function useCanvasState() {
 	const [images, setImages] = useState<PlacedImage[]>([]);

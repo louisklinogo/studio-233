@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import { BrandAssetUpload } from "@/components/studio/brand/BrandAssetUpload";
+import { BraunAssetStaging } from "@/components/ui/BraunAssetStaging";
 import {
 	Popover,
 	PopoverContent,
@@ -161,7 +162,7 @@ function OperationalNote({ message }: { message: string }) {
 	);
 }
 
-type BrandSector = "VISUAL" | "PALETTE" | "ARCHIVE";
+type BrandSector = "VISUAL" | "PALETTE" | "ARCHIVE" | "INTELLIGENCE";
 
 // Font Mapping - Connects friendly names to project-level CSS variables
 const FONT_OPTIONS = [
@@ -197,11 +198,14 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 	const queryClient = useQueryClient();
 	const [statusMessage, setStatusMessage] = useState<string | null>(null);
 	const [activeSector, setActiveSector] = useState<BrandSector>("VISUAL");
+	const [archiveFilter, setArchiveFilter] = useState<
+		"ALL" | "IMAGE" | "DOCUMENT"
+	>("ALL");
 
 	// Local state for instant preview feedback
 	const [localFont, setLocalFont] = useState<string>("Cabinet Grotesk");
-	const [localPrimary, setLocalPrimary] = useState<string>("#FF4D00");
-	const [localAccent, setLocalAccent] = useState<string>("#00FF00");
+	const [localPrimary, setLocalPrimary] = useState<string>("#111111");
+	const [localAccent, setLocalAccent] = useState<string>("#888888");
 
 	const { data: workspace } = useQuery(
 		trpc.workspace.getById.queryOptions({
@@ -221,6 +225,12 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 
 	const { data: brandAssets, isLoading: isAssetsLoading } = useQuery(
 		trpc.workspace.getBrandAssets.queryOptions({
+			workspaceId,
+		}),
+	);
+
+	const { data: intelligence, isLoading: isIntellLoading } = useQuery(
+		trpc.workspace.getIntelligence.queryOptions({
 			workspaceId,
 		}),
 	);
@@ -270,8 +280,9 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 
 	const SECTORS = [
 		{ id: "VISUAL", label: "01_VISUAL_LANGUAGE", icon: SwissIcons.Type },
-		{ id: "PALETTE", label: "02_CORE_PALETTE", icon: SwissIcons.Contrast },
+		{ id: "PALETTE", label: "02_CORE_PALETTE", icon: SwissIcons.Palette },
 		{ id: "ARCHIVE", label: "03_ASSET_ARCHIVE", icon: SwissIcons.Archive },
+		{ id: "INTELLIGENCE", label: "04_SYSTEM_KNOWLEDGE", icon: SwissIcons.Dna },
 	] as const;
 
 	return (
@@ -289,20 +300,55 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 						Configure Brand Archive
 					</h1>
 				</div>
-				<div className="hidden md:flex flex-col items-end gap-1">
-					<div className="flex items-center gap-2">
-						<div
-							className={cn(
-								"w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]",
-								isInitialized && "animate-pulse",
-							)}
-						/>
-						<span className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest">
-							{isInitialized ? "ACTIVE_SYNC" : "OFFLINE_PEND"}
-						</span>
+				<div className="flex flex-col items-end gap-2">
+					<div className="flex items-center gap-3 px-3 py-1.5 bg-neutral-50 dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-sm">
+						{statusMessage ? (
+							<div className="flex items-center gap-2">
+								<div
+									className={cn(
+										"w-1.5 h-1.5 rounded-full",
+										statusMessage.includes("FAILURE") ||
+											statusMessage.includes("FAULT")
+											? "bg-red-500 shadow-[0_0_8px_#ef4444] animate-pulse"
+											: "bg-[#FF4D00] shadow-[0_0_8px_#ff4d00] animate-pulse",
+									)}
+								/>
+								<span
+									className={cn(
+										"font-mono text-[9px] uppercase tracking-widest",
+										statusMessage.includes("FAILURE") ||
+											statusMessage.includes("FAULT")
+											? "text-red-500 font-bold"
+											: "text-[#FF4D00]",
+									)}
+								>
+									{statusMessage}
+								</span>
+							</div>
+						) : (
+							<div className="flex items-center gap-2 opacity-40">
+								<div className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
+								<span className="font-mono text-[9px] uppercase tracking-widest text-neutral-400">
+									SYSTEM_READY // V1.0.4-ARCH
+								</span>
+							</div>
+						)}
 					</div>
-					<div className="font-mono text-[10px] text-neutral-400 uppercase">
-						REF: {workspaceId.toUpperCase().slice(0, 12)}
+					<div className="hidden md:flex flex-col items-end gap-1">
+						<div className="flex items-center gap-2">
+							<div
+								className={cn(
+									"w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]",
+									isInitialized && "animate-pulse",
+								)}
+							/>
+							<span className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest">
+								{isInitialized ? "ACTIVE_SYNC" : "OFFLINE_PEND"}
+							</span>
+						</div>
+						<div className="font-mono text-[10px] text-neutral-400 uppercase">
+							REF: {workspaceId.toUpperCase().slice(0, 12)}
+						</div>
 					</div>
 				</div>
 			</header>
@@ -437,16 +483,48 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 								description="Logo variations and brand marks indexed for the RAG engine. Context_Assets: LINKED"
 							>
 								<div className="space-y-8">
+									{/* Archive Control Bar */}
+									<div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-4">
+										<div className="flex gap-1 bg-neutral-100 dark:bg-neutral-900 p-1 rounded-sm">
+											{(["ALL", "IMAGE", "DOCUMENT"] as const).map((filter) => (
+												<button
+													key={filter}
+													onClick={() => setArchiveFilter(filter)}
+													className={cn(
+														"px-4 py-1.5 font-mono text-[9px] uppercase tracking-widest rounded-[1px] transition-all",
+														archiveFilter === filter
+															? "bg-white dark:bg-[#1a1a1a] text-[#FF4D00] shadow-sm font-bold"
+															: "text-neutral-500 hover:text-neutral-900 dark:hover:text-white",
+													)}
+												>
+													{filter === "ALL"
+														? "SYSTEM_TOTAL"
+														: filter === "IMAGE"
+															? "ID_MARKS"
+															: "RULEBOOKS"}
+												</button>
+											))}
+										</div>
+										<div className="font-mono text-[9px] text-neutral-400">
+											NODE_COUNT:{" "}
+											{brandAssets?.filter(
+												(a) =>
+													archiveFilter === "ALL" ||
+													(archiveFilter === "IMAGE"
+														? a.type === "IMAGE"
+														: a.type === "DOCUMENT"),
+											).length || 0}
+										</div>
+									</div>
+
 									{!hasLogo && !isAssetsLoading && (
-										<div className="p-12 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm flex flex-col items-center justify-center text-center space-y-4 bg-neutral-50/30 dark:bg-white/5">
-											<div className="w-16 h-16 rounded-full border border-neutral-200 dark:border-neutral-800 flex items-center justify-center bg-white dark:bg-black shadow-inner">
-												<SwissIcons.Box
-													size={24}
-													className="text-[#FF4D00] animate-pulse"
-												/>
+										<div className="group p-12 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm flex flex-col items-center justify-center text-center space-y-6 bg-neutral-50/30 dark:bg-white/5 transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/10">
+											{/* The Staging Asset */}
+											<div className="relative">
+												<BraunAssetStaging />
 											</div>
 											<div className="max-w-md space-y-2">
-												<h3 className="font-mono text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-widest">
+												<h3 className="font-sans text-[11px] font-bold text-neutral-900 dark:text-white uppercase tracking-widest">
 													DNA_PRIORS_NOT_SET
 												</h3>
 												<p className="font-mono text-[10px] text-neutral-500 uppercase leading-relaxed">
@@ -458,46 +536,65 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 											</div>
 										</div>
 									)}
-
 									<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-px bg-neutral-100 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-900 overflow-hidden rounded-sm">
-										{brandAssets?.map((asset: any, idx: number) => (
-											<motion.div
-												key={asset.id}
-												initial={{ opacity: 0, scale: 0.95 }}
-												animate={{ opacity: 1, scale: 1 }}
-												transition={{ delay: idx * 0.05 }}
-												className="group relative aspect-square bg-white dark:bg-[#050505] flex flex-col p-4 transition-all hover:z-10 hover:shadow-2xl"
-											>
-												<div className="flex-1 flex items-center justify-center overflow-hidden mb-4 p-2">
-													<img
-														src={asset.url}
-														alt={asset.name}
-														className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 scale-90 group-hover:scale-100"
-													/>
-												</div>
-												<div className="space-y-2 pt-2 border-t border-neutral-50 dark:border-neutral-900">
-													<div className="flex justify-between items-start">
-														<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-tighter">
-															REF:{asset.id.slice(0, 6)}
-														</span>
-														<button
-															onClick={() =>
-																deleteAsset.mutate({ id: asset.id })
-															}
-															className="text-neutral-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-														>
-															<SwissIcons.Trash size={10} />
-														</button>
+										{brandAssets
+											?.filter(
+												(asset) =>
+													archiveFilter === "ALL" ||
+													(archiveFilter === "IMAGE"
+														? asset.type === "IMAGE"
+														: asset.type === "DOCUMENT"),
+											)
+											.map((asset: any, idx: number) => (
+												<motion.div
+													key={asset.id}
+													initial={{ opacity: 0, scale: 0.95 }}
+													animate={{ opacity: 1, scale: 1 }}
+													transition={{ delay: idx * 0.05 }}
+													className="group relative aspect-square bg-white dark:bg-[#050505] flex flex-col p-4 transition-all hover:z-10 hover:shadow-2xl"
+												>
+													<div className="flex-1 flex items-center justify-center overflow-hidden mb-4 p-2">
+														{asset.type === "DOCUMENT" ? (
+															<div className="w-full h-full flex flex-col items-center justify-center space-y-2 bg-neutral-50 dark:bg-neutral-900/50 rounded-sm">
+																<SwissIcons.Archive
+																	size={32}
+																	className="text-neutral-300"
+																/>
+																<span className="font-mono text-[8px] text-neutral-400">
+																	GUIDE_PDF
+																</span>
+															</div>
+														) : (
+															<img
+																src={asset.url}
+																alt={asset.name}
+																className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 scale-90 group-hover:scale-100"
+															/>
+														)}
 													</div>
-													<span className="font-mono text-[9px] text-neutral-600 dark:text-neutral-400 uppercase truncate block font-bold tracking-tight">
-														{asset.name.split(".")[0]}
-													</span>
-												</div>
-												{/* Corner Accents */}
-												<div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-neutral-200 dark:border-neutral-800 opacity-50" />
-												<div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-neutral-200 dark:border-neutral-800 opacity-50 group-hover:border-[#FF4D00] group-hover:opacity-100" />
-											</motion.div>
-										))}
+													<div className="space-y-2 pt-2 border-t border-neutral-50 dark:border-neutral-900">
+														<div className="flex justify-between items-start">
+															<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-tighter">
+																REF:{asset.id.slice(0, 6)}
+															</span>
+															<button
+																onClick={() =>
+																	deleteAsset.mutate({ id: asset.id })
+																}
+																className="text-neutral-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+															>
+																<SwissIcons.Trash size={10} />
+															</button>
+														</div>
+														<span className="font-mono text-[9px] text-neutral-600 dark:text-neutral-400 uppercase truncate block font-bold tracking-tight">
+															{asset.name.split(".")[0]}
+														</span>
+													</div>
+													{/* Corner Accents */}
+													<div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-neutral-200 dark:border-neutral-800 opacity-50" />
+													<div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-neutral-200 dark:border-neutral-800 opacity-50 group-hover:border-[#FF4D00] group-hover:opacity-100" />
+												</motion.div>
+											))}
 
 										<div className="aspect-square bg-neutral-50 dark:bg-[#0a0a0a] flex items-center justify-center">
 											<div className="w-full h-full p-4">
@@ -510,6 +607,147 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 									</div>
 
 									<OperationalNote message="Uploaded assets are automatically vector-indexed for high-fidelity brand recall during agentic generation." />
+								</div>
+							</BrandSection>
+						)}
+
+						{activeSector === "INTELLIGENCE" && (
+							<BrandSection
+								key="intelligence"
+								title="System Knowledge Hub"
+								description="Technical readout of the RAG (Retrieval-Augmented Generation) cortex. This data is used to provide agents with brand-safe autonomous reasoning."
+							>
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+									{/* Vector Health Status */}
+									<div className="p-6 border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-black rounded-sm space-y-6">
+										<div className="flex items-center justify-between">
+											<span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
+												VEC_HEALTH_AUDIT
+											</span>
+											<div
+												className={cn(
+													"flex items-center gap-2 px-2 py-0.5 rounded-full border text-[8px] font-mono",
+													intelligence?.systemState === "STABLE"
+														? "border-emerald-500/20 text-emerald-500 bg-emerald-500/5"
+														: "border-neutral-500/20 text-neutral-500 bg-neutral-500/5",
+												)}
+											>
+												<div
+													className={cn(
+														"w-1 h-1 rounded-full",
+														intelligence?.systemState === "STABLE"
+															? "bg-emerald-500 animate-pulse"
+															: "bg-neutral-500",
+													)}
+												/>
+												{intelligence?.systemState || "OFFLINE"}
+											</div>
+										</div>
+
+										<div className="space-y-2">
+											<div className="text-4xl font-black tracking-tighter text-neutral-900 dark:text-white flex items-baseline gap-2">
+												{intelligence?.totalNodes || 0}
+												<span className="text-xs font-mono text-neutral-400 uppercase tracking-normal">
+													Nodes_Indexed
+												</span>
+											</div>
+											<div className="h-1 w-full bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
+												<motion.div
+													initial={{ width: 0 }}
+													animate={{
+														width: intelligence?.totalNodes ? "100%" : "0%",
+													}}
+													className="h-full bg-[#FF4D00]"
+												/>
+											</div>
+										</div>
+
+										<div className="pt-4 border-t border-neutral-100 dark:border-neutral-900">
+											<OperationalNote
+												message={
+													intelligence?.totalNodes
+														? "Cortex initialized. Agents possess sufficient brand context for autonomous generation."
+														: "Cortex void. Upload brand guidelines (PDF) to initialize agentic reasoning."
+												}
+											/>
+										</div>
+									</div>
+
+									{/* Source Ledger */}
+									<div className="p-6 border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-black rounded-sm flex flex-col">
+										<span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 mb-6">
+											INDEXED_SOURCES_LEDGER
+										</span>
+
+										<div className="flex-1 space-y-3 overflow-y-auto max-h-[300px] scrollbar-swiss pr-2">
+											{intelligence?.sources &&
+											intelligence.sources.length > 0 ? (
+												intelligence.sources.map((source, i) => (
+													<div
+														key={i}
+														className="flex items-center justify-between p-3 border border-neutral-100 dark:border-neutral-900 bg-white dark:bg-neutral-900/30 rounded-sm"
+													>
+														<div className="flex items-center gap-3">
+															<SwissIcons.Archive
+																size={12}
+																className="text-[#FF4D00]"
+															/>
+															<span className="font-mono text-[10px] uppercase text-neutral-700 dark:text-neutral-300 truncate max-w-[180px]">
+																{source.name}
+															</span>
+														</div>
+														<span className="font-mono text-[9px] text-neutral-400">
+															{source.nodeCount} CHUNKS
+														</span>
+													</div>
+												))
+											) : (
+												<div className="h-full flex flex-col items-center justify-center text-center opacity-30 space-y-2 py-12">
+													<SwissIcons.Dna size={24} />
+													<span className="font-mono text-[9px] uppercase tracking-widest">
+														No_Knowledge_Detected
+													</span>
+												</div>
+											)}
+										</div>
+									</div>
+								</div>
+
+								{/* Knowledge Map Visualization (Geometric Placeholder) */}
+								<div className="mt-8 p-10 border border-neutral-100 dark:border-neutral-900 bg-neutral-50/30 dark:bg-neutral-900/10 rounded-sm overflow-hidden relative min-h-[200px] flex items-center justify-center">
+									<div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+										<div className="grid grid-cols-12 h-full w-full">
+											{Array.from({ length: 12 }).map((_, i) => (
+												<div
+													key={i}
+													className="border-r border-neutral-900 dark:border-white"
+												/>
+											))}
+										</div>
+									</div>
+
+									<div className="relative flex flex-col items-center gap-4 text-center">
+										<div className="flex gap-4">
+											{Array.from({ length: 5 }).map((_, i) => (
+												<motion.div
+													key={i}
+													animate={{
+														height: [20, 40, 20],
+														opacity: [0.3, 0.6, 0.3],
+													}}
+													transition={{
+														duration: 2 + i * 0.5,
+														repeat: Infinity,
+														ease: "easeInOut",
+													}}
+													className="w-1 bg-[#FF4D00] rounded-full"
+												/>
+											))}
+										</div>
+										<span className="font-mono text-[8px] uppercase tracking-[0.4em] text-[#FF4D00] animate-pulse">
+											Active_Cortex_Stream
+										</span>
+									</div>
 								</div>
 							</BrandSection>
 						)}

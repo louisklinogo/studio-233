@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react";
 import type {
 	CanvasElement,
 	DrawingElement,
@@ -6,6 +5,7 @@ import type {
 	ShapeElement,
 	TextElement,
 } from "@studio233/canvas";
+import { useCallback, useState } from "react";
 
 export function useCanvasElements() {
 	const [elements, setElements] = useState<CanvasElement[]>([]);

@@ -45,9 +45,7 @@ export function withValidation<TInput, TOutput>(
 /**
  * Type guard to check if an output has a canvas command
  */
-export function hasCanvasCommand(
-	output: unknown,
-): output is {
+export function hasCanvasCommand(output: unknown): output is {
 	command: NonNullable<z.infer<typeof canvasToolOutputSchema>["command"]>;
 } {
 	if (

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const workflowRequestedEvent = "studio.workflow.requested" as const;
 export const brandKnowledgeIngestedEvent = "brand.knowledge.ingested" as const;
+export const brandVisionSyncEvent = "brand.asset.vision_sync" as const;
 export const processFashionItemEvent = "studio/process-fashion-item" as const;
 export const visionArchiveRequestedEvent = "vision.archive.requested" as const;
 export const visionCleanupRequestedEvent = "vision.cleanup.requested" as const;

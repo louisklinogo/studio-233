@@ -1,5 +1,5 @@
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
-import { Prisma, prisma } from "@studio233/db";
+import { AssetType, Prisma, prisma } from "@studio233/db";
 import { inngest } from "@studio233/inngest";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -7,13 +7,13 @@ import { publicProcedure, router } from "../init";
 
 export const assetRouter = router({
 	/**
-	 * Register a new asset (e.g. after uploading to FAL)
+	 * Register a new asset (e.g. after uploading to Vercel Blob)
 	 */
 	register: publicProcedure
 		.input(
 			z.object({
 				name: z.string(),
-				url: z.string().url(),
+				url: z.string(),
 				size: z.number(),
 				mimeType: z.string(),
 				workspaceId: z.string(),
@@ -22,6 +22,7 @@ export const assetRouter = router({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
+			console.log("[AssetRouter] Registering asset starting:", input.name);
 			const headers = new Headers(ctx.req?.headers);
 			const session = await getSessionWithRetry(headers);
 
@@ -37,33 +38,59 @@ export const assetRouter = router({
 			if (!workspace || workspace.userId !== session.user.id) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Workspace not found or unauthorized",
+					message: "Workspace access denied",
 				});
 			}
 
+			// Infer AssetType from mimeType using strict Enum
+			let assetType: AssetType = AssetType.OTHER;
+			if (input.mimeType.startsWith("image/")) assetType = AssetType.IMAGE;
+			else if (input.mimeType.startsWith("video/")) assetType = AssetType.VIDEO;
+			else if (input.mimeType.startsWith("audio/")) assetType = AssetType.AUDIO;
+			else if (input.mimeType === "application/pdf")
+				assetType = AssetType.DOCUMENT;
+
+			console.log(`[AssetRouter] Intent: ${assetType} (${input.mimeType})`);
+
+			// Proceed with raw creation - let Prisma handle validation errors naturally
 			const asset = await prisma.asset.create({
 				data: {
 					name: input.name,
 					url: input.url,
 					size: input.size,
 					mimeType: input.mimeType,
+					type: assetType,
 					workspaceId: input.workspaceId,
 					isBrandAsset: input.isBrandAsset,
-					metadata: input.metadata as Prisma.InputJsonValue,
+					metadata: (input.metadata as Prisma.InputJsonValue) ?? {},
 				},
 			});
 
-			// If it's a PDF brand asset, trigger ingestion
-			if (input.isBrandAsset && input.mimeType === "application/pdf") {
-				await inngest.send({
-					name: "brand.knowledge.ingested",
-					data: {
-						workspaceId: input.workspaceId,
-						assetId: asset.id,
-						url: input.url,
-						filename: input.name,
-					},
-				});
+			console.log("[AssetRouter] Asset persisted successfully:", asset.id);
+
+			// Background Ingestion (Async)
+			if (input.isBrandAsset) {
+				if (input.mimeType === "application/pdf") {
+					await inngest.send({
+						name: "brand.knowledge.ingested",
+						data: {
+							workspaceId: input.workspaceId,
+							assetId: asset.id,
+							url: input.url,
+							filename: input.name,
+						},
+					});
+				} else if (input.mimeType.startsWith("image/")) {
+					await inngest.send({
+						name: "brand.asset.vision_sync",
+						data: {
+							workspaceId: input.workspaceId,
+							assetId: asset.id,
+							url: input.url,
+							filename: input.name,
+						},
+					});
+				}
 			}
 
 			return asset;

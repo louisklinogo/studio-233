@@ -1,5 +1,5 @@
-import { config } from "dotenv";
 import path from "node:path";
+import { config } from "dotenv";
 import { defineConfig, env } from "prisma/config";
 
 const rootDir = path.resolve(process.cwd(), "../..");

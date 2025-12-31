@@ -13,6 +13,7 @@
 - **API Framework:** tRPC (Server)
 - **Database ORM:** Prisma
 - **Authentication:** Better Auth
+- **Identity Management:** Dedicated `@studio233/brand` package for context resolution
 - **Background Jobs:** Inngest
 - **Knowledge Processing (RAG):** LlamaIndex via `@studio233/rag`
 - **AI Orchestration:** Vercel AI SDK with Resilient Design-Render Pipeline (Architecture of Intent: `renderHtml` vs `htmlToCanvas`) and Content-Addressable Storage (CAS)

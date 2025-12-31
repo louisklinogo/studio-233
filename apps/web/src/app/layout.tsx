@@ -139,18 +139,20 @@ export default function RootLayout({
 			<body
 				className={`${cabinetGrotesk.variable} ${ibmPlexSans.variable} ${satoshi.variable} ${poppins.variable} ${outfit.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-background text-foreground min-h-screen`}
 			>
-				<BotIdClient
-					protect={[
-						{
-							path: "/api/trpc/*",
-							method: "POST",
-						},
-						{
-							path: "/api/fal",
-							method: "POST",
-						},
-					]}
-				/>
+				{process.env.NODE_ENV === "production" && (
+					<BotIdClient
+						protect={[
+							{
+								path: "/api/trpc/*",
+								method: "POST",
+							},
+							{
+								path: "/api/fal",
+								method: "POST",
+							},
+						]}
+					/>
+				)}
 				<CoreProviders>{children}</CoreProviders>
 				<Analytics />
 			</body>

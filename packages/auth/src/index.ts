@@ -43,7 +43,7 @@ const authPlugins = polarClient
 		]
 	: [];
 
-export const auth = betterAuth<BetterAuthOptions>({
+const authOptions: BetterAuthOptions = {
 	baseURL: process.env.BETTER_AUTH_URL,
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
@@ -111,7 +111,17 @@ export const auth = betterAuth<BetterAuthOptions>({
 			},
 		},
 	},
-});
+};
+
+const globalForAuth = globalThis as unknown as {
+	auth: typeof auth | undefined;
+};
+
+export const auth = globalForAuth.auth ?? betterAuth(authOptions);
+
+if (process.env.NODE_ENV !== "production") {
+	globalForAuth.auth = auth;
+}
 
 export type Session = typeof auth.$Infer.Session.session;
 export type User = typeof auth.$Infer.Session.user;

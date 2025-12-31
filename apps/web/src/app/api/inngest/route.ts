@@ -1,6 +1,7 @@
 import {
 	archiveVisionResult,
 	brandIngestion,
+	brandVisionSync,
 	cleanupOldBlobs,
 	cleanupVisionTemp,
 	createProcessStudioWorkflow,
@@ -34,6 +35,7 @@ const handlers = serve({
 	functions: [
 		processStudioWorkflow,
 		brandIngestion,
+		brandVisionSync,
 		archiveVisionResult,
 		processFashionItem,
 		cleanupVisionTemp,

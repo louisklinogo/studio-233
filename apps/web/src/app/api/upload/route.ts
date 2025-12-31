@@ -1,7 +1,9 @@
+import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { type HandleUploadBody, handleUpload } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request): Promise<NextResponse> {
+	console.log("[Upload API] Request received");
 	const body = (await request.json()) as HandleUploadBody;
 
 	try {
@@ -12,13 +14,23 @@ export async function POST(request: Request): Promise<NextResponse> {
 				pathname: string,
 				/* clientPayload */
 			) => {
-				// Generate a client token for the browser to upload the file
-				// ⚠️ Authenticate and authorize users before generating the token.
-				// Otherwise, you're allowing anonymous uploads.
+				console.log("[Upload API] Generating token for:", pathname);
+				const headers = new Headers(request.headers);
 
-				// TODO: Add authentication check here if needed
-				// const user = await auth.currentUser();
-				// if (!user) throw new Error('Unauthorized');
+				let session;
+				try {
+					session = await getSessionWithRetry(headers);
+				} catch (sessionError) {
+					console.error("[Upload API] Session retrieval failed:", sessionError);
+					throw new Error("SESSION_RETRIEVAL_FAULT");
+				}
+
+				if (!session) {
+					console.warn("[Upload API] Unauthorized attempt");
+					throw new Error("UNAUTHORIZED_UPLOAD_REQUEST");
+				}
+
+				console.log("[Upload API] Authorized user:", session.user.id);
 
 				return {
 					allowedContentTypes: [
@@ -26,27 +38,25 @@ export async function POST(request: Request): Promise<NextResponse> {
 						"image/png",
 						"image/gif",
 						"image/webp",
+						"application/pdf",
 					],
 					addRandomSuffix: true,
 					tokenPayload: JSON.stringify({
-						// optional, sent to your server on upload completion
-						// you could pass a user id or other metadata here
+						userId: session.user.id,
 					}),
 				};
 			},
 			onUploadCompleted: async ({ blob, tokenPayload }) => {
-				// Get notified of client upload completion
-				// ⚠️ This will not work on `localhost` websites,
-				// Use ngrok or similar to get the full upload flow
-				console.log("blob uploaded", blob.url);
+				console.log("[Upload API] Upload completed:", blob.url);
 			},
 		});
 
 		return NextResponse.json(jsonResponse);
 	} catch (error) {
+		console.error("[Upload API] Error handled:", error);
 		return NextResponse.json(
 			{ error: (error as Error).message },
-			{ status: 400 }, // The webhook will retry 5 times automatically if the status code is 500-599
+			{ status: 400 },
 		);
 	}
 }

@@ -1,6 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import type { BrandContext } from "@studio233/brand/types";
 import { generateText, stepCountIs, streamText } from "ai";
-
 import { getEnv } from "../config";
 import { getModelConfig } from "../model-config";
 import { logger } from "../utils/logger";
@@ -13,6 +13,53 @@ import {
 } from "./agent-config";
 import { buildToolset } from "./tools";
 import type { AgentRunOptions } from "./types";
+
+export function injectBrandContext(
+	basePrompt: string,
+	context?: BrandContext,
+): string {
+	if (!context) return basePrompt;
+
+	const { identity, knowledge, visualDna, assets } = context;
+
+	const protocol = `
+<IDENTITY_PROTOCOL>
+  <CORE_PALETTE>
+    PRIMARY: ${identity.primaryColor}
+    ACCENT: ${identity.accentColor}
+  </CORE_PALETTE>
+  <TYPOGRAPHY>
+    ACTIVE_FONT: ${identity.fontFamily}
+  </TYPOGRAPHY>
+  ${
+		knowledge.length > 0
+			? `
+  <KNOWLEDGE_RETRIEVAL_FRAGMENTS>
+    ${knowledge.map((k) => `- "${k}"`).join("\n    ")}
+  </KNOWLEDGE_RETRIEVAL_FRAGMENTS>`
+			: ""
+	}
+  ${
+		visualDna.length > 0
+			? `
+  <VISUAL_DNA_SUMMARY>
+    ${visualDna.map((d) => `- ${d}`).join("\n    ")}
+  </VISUAL_DNA_SUMMARY>`
+			: ""
+	}
+  ${
+		assets.length > 0
+			? `
+  <PRIMARY_MARKS>
+    ${assets.map((a) => `- ${a.name}: ${a.url}`).join("\n    ")}
+  </PRIMARY_MARKS>`
+			: ""
+	}
+</IDENTITY_PROTOCOL>
+`.trim();
+
+	return `${basePrompt}\n\n${protocol}`;
+}
 
 export type { AgentKey } from "./agent-config";
 export {
@@ -322,7 +369,11 @@ export async function generateAgentResponse(
 		});
 	}
 
-	const systemPrompt = buildSystemPrompt(agentKey, allUserImages);
+	const baseSystemPrompt = buildSystemPrompt(agentKey, allUserImages);
+	const systemPrompt = injectBrandContext(
+		baseSystemPrompt,
+		options.brandContext,
+	);
 
 	const forceVisionAnalysis =
 		!!model.tools &&
@@ -449,7 +500,11 @@ export async function streamAgentResponse(
 		});
 	}
 
-	const systemPrompt = buildSystemPrompt(agentKey, allUserImages);
+	const baseSystemPrompt = buildSystemPrompt(agentKey, allUserImages);
+	const systemPrompt = injectBrandContext(
+		baseSystemPrompt,
+		options.brandContext,
+	);
 
 	const forceVisionAnalysis =
 		!!model.tools &&

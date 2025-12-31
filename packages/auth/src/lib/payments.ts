@@ -9,7 +9,9 @@ export function getPolarClient(): Polar | null {
 	const accessToken = process.env.POLAR_ACCESS_TOKEN;
 	if (!accessToken) {
 		if (process.env.NODE_ENV !== "production") {
-			console.warn("POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.");
+			console.warn(
+				"POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.",
+			);
 		}
 		cachedClient = null;
 		return cachedClient;

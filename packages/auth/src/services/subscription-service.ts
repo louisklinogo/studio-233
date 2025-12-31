@@ -1,11 +1,11 @@
-import {
-	Prisma,
-	SubscriptionStatus as DbSubscriptionStatus,
-	CreditEntryType,
-} from "@studio233/db";
 import type { Subscription } from "@polar-sh/sdk/models/components/subscription";
 import type { SubscriptionStatus as PolarSubscriptionStatus } from "@polar-sh/sdk/models/components/subscriptionstatus";
-import { prisma } from "@studio233/db";
+import {
+	CreditEntryType,
+	SubscriptionStatus as DbSubscriptionStatus,
+	Prisma,
+	prisma,
+} from "@studio233/db";
 import { billingConfig } from "../config/billing";
 import { CreditLedgerService } from "./credit-ledger-service";
 import { MissingUserReferenceError } from "./errors";
@@ -36,7 +36,8 @@ export class SubscriptionService {
 		const metadataSlug =
 			subscription.product.metadata?.["planSlug"] ??
 			subscription.product.metadata?.["slug"];
-		const planSlug = typeof metadataSlug === "string" ? metadataSlug : undefined;
+		const planSlug =
+			typeof metadataSlug === "string" ? metadataSlug : undefined;
 		const data: Prisma.SubscriptionUncheckedCreateInput = {
 			userId,
 			provider: "polar",
@@ -46,7 +47,7 @@ export class SubscriptionService {
 			status,
 			currentPeriodEnd: subscription.currentPeriodEnd ?? undefined,
 			cancelAt: subscription.cancelAtPeriodEnd
-				? subscription.currentPeriodEnd ?? undefined
+				? (subscription.currentPeriodEnd ?? undefined)
 				: undefined,
 			canceledAt: subscription.canceledAt ?? undefined,
 			meta: {

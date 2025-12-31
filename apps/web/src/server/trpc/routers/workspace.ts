@@ -302,4 +302,49 @@ export const workspaceRouter = router({
 				data: { isBrandAsset: input.isBrandAsset },
 			});
 		}),
+
+	/**
+	 * Get summarized intelligence readout from indexed brand knowledge
+	 */
+	getIntelligence: publicProcedure
+		.input(z.object({ workspaceId: z.string() }))
+		.query(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+			if (!session) {
+				throw new TRPCError({ code: "UNAUTHORIZED" });
+			}
+
+			// 1. Get raw knowledge nodes
+			const knowledge = await prisma.brandKnowledge.findMany({
+				where: { workspace_id: input.workspaceId },
+				select: {
+					id: true,
+					metadata: true,
+					createdAt: true,
+				},
+			});
+
+			// 2. Aggregate sources
+			const sourceMap = new Map<string, { name: string; nodeCount: number }>();
+			for (const node of knowledge) {
+				const meta = (node.metadata as any) || {};
+				const source = meta.filename || "System_Memory";
+				const existing = sourceMap.get(source) || {
+					name: source,
+					nodeCount: 0,
+				};
+				sourceMap.set(source, {
+					...existing,
+					nodeCount: existing.nodeCount + 1,
+				});
+			}
+
+			return {
+				totalNodes: knowledge.length,
+				sources: Array.from(sourceMap.values()),
+				lastIndexed: knowledge.length > 0 ? knowledge[0].createdAt : null,
+				systemState: knowledge.length > 0 ? "STABLE" : "UNINITIALIZED",
+			};
+		}),
 });

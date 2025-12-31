@@ -1,14 +1,9 @@
 {
-    "extends": "@studio233/config/typescript",
-    "compilerOptions": {
-        "outDir": "dist",
-        "rootDir": "src"
-    },
-    "include": [
-        "src"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist"
-    ]
+	"extends": "@studio233/config/typescript",
+	"compilerOptions": {
+		"outDir": "dist",
+		"rootDir": "src"
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "dist"]
 }

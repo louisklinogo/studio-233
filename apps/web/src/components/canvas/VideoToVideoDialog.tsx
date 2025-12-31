@@ -1,3 +1,4 @@
+import { VideoGenerationSettings } from "@studio233/canvas";
 import { ChevronRight, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { SpinnerIcon } from "@/components/icons";
@@ -15,7 +16,6 @@ import {
 	getVideoModelById,
 	type VideoModelConfig,
 } from "@/lib/video-models";
-import { VideoGenerationSettings } from "@studio233/canvas";
 import {
 	ModelPricingDisplay,
 	VideoModelOptions,
