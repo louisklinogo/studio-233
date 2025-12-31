@@ -141,7 +141,7 @@ function inferPluginId(node: WorkflowNode): string | null {
  */
 export const createProcessStudioWorkflow = (ctx: WorkflowContext) =>
 	inngest.createFunction(
-		{ id: "process-studio-workflow", concurrency: 8 },
+		{ id: "process-studio-workflow", concurrency: 5 },
 		{ event: workflowRequestedEvent },
 		async ({ event, step }) => {
 			const payload = workflowRequestedSchema.parse(event.data);
