@@ -70,27 +70,29 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
 					</motion.button>
 				</PopoverTrigger>
 				<PopoverContent
-					className="w-fit p-4 bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-neutral-800 rounded-sm shadow-2xl"
+					className="w-fit p-3 bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-neutral-800 rounded-sm shadow-2xl"
 					side="right"
 					align="start"
 					sideOffset={12}
 				>
-					<div className="space-y-4">
-						<div className="flex items-center justify-between mb-2">
-							<span className="font-mono text-[10px] text-[#FF4D00] font-bold uppercase tracking-widest">
+					<div className="space-y-3">
+						<div className="flex items-center justify-between mb-1">
+							<span className="font-mono text-[9px] text-[#FF4D00] font-bold uppercase tracking-widest">
 								Color_Calibration
 							</span>
 							<div className="w-2 h-[1px] bg-neutral-300 dark:bg-neutral-700" />
 						</div>
-						<HexColorPicker color={color} onChange={onChange} />
+						<div className="w-[160px] h-[160px] [&>.react-colorful]:w-full [&>.react-colorful]:h-full">
+							<HexColorPicker color={color} onChange={onChange} />
+						</div>
 						<div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-900">
-							<span className="font-mono text-[10px] text-neutral-400">
+							<span className="font-mono text-[9px] text-neutral-400">
 								HEX:
 							</span>
 							<input
 								value={inputValue}
 								onChange={(e) => handleInputChange(e.target.value)}
-								className="bg-transparent font-mono text-xs uppercase focus:outline-none text-neutral-900 dark:text-white w-20"
+								className="bg-transparent font-mono text-[11px] uppercase focus:outline-none text-neutral-900 dark:text-white w-20"
 							/>
 						</div>
 					</div>

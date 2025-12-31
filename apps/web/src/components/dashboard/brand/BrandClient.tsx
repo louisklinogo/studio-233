@@ -271,7 +271,7 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 	const SECTORS = [
 		{ id: "VISUAL", label: "01_VISUAL_LANGUAGE", icon: SwissIcons.Type },
 		{ id: "PALETTE", label: "02_CORE_PALETTE", icon: SwissIcons.Contrast },
-		{ id: "ARCHIVE", label: "03_ASSET_ARCHIVE", icon: SwissIcons.Box },
+		{ id: "ARCHIVE", label: "03_ASSET_ARCHIVE", icon: SwissIcons.Archive },
 	] as const;
 
 	return (
@@ -280,7 +280,7 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 			<header className="flex items-end justify-between border-b border-neutral-200 dark:border-neutral-800 pb-6 shrink-0">
 				<div className="space-y-2">
 					<div className="flex items-center gap-2">
-						<div className="w-2 h-2 bg-[#FF4D00]" />
+						<SwissIcons.Dna className="text-[#FF4D00]" size={16} />
 						<span className="font-mono text-xs tracking-[0.3em] text-[#FF4D00]">
 							SYSTEM_BRAND_DNA
 						</span>

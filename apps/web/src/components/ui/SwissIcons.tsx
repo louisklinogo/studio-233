@@ -69,6 +69,84 @@ export const SwissIcons = {
 		</svg>
 	),
 
+	// BRAND -> The Signature (Identity)
+	// Braun-style geometric abstraction of a stamp or unique mark
+	Brand: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect
+				x="4"
+				y="4"
+				width="16"
+				height="16"
+				stroke="currentColor"
+				strokeWidth="2"
+			/>
+			<path d="M8 8H16V12H8V8Z" fill="currentColor" />
+			<rect x="8" y="14" width="8" height="2" fill="currentColor" />
+		</svg>
+	),
+
+	// BRAND -> The DNA (Core)
+	// Braun-style representation of structural alignment
+	Dna: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect x="6" y="4" width="2" height="16" fill="currentColor" />
+			<rect x="16" y="4" width="2" height="16" fill="currentColor" />
+			<path d="M6 8H18" stroke="currentColor" strokeWidth="2" />
+			<path d="M6 16H18" stroke="currentColor" strokeWidth="2" />
+			<circle cx="12" cy="12" r="2" fill="#FF4D00" />
+		</svg>
+	),
+
+	// BRAND -> The Archive (Storage)
+	// Simplified industrial drawer/container
+	Archive: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<path d="M3 4H21V8H3V4Z" stroke="currentColor" strokeWidth="2" />
+			<path d="M4 8V20H20V8" stroke="currentColor" strokeWidth="2" />
+			<rect x="10" y="12" width="4" height="2" fill="currentColor" />
+		</svg>
+	),
+
+	// BRAND -> The Palette (Color)
+	// Braun-style geometric abstraction of a color grid or physical index
+	Palette: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<rect x="4" y="4" width="6" height="6" fill="currentColor" />
+			<rect x="14" y="4" width="6" height="6" fill="currentColor" />
+			<rect x="4" y="14" width="6" height="6" fill="currentColor" />
+			<rect x="14" y="14" width="6" height="6" fill="#FF4D00" />
+		</svg>
+	),
+
 	// HUB -> The Grid (Structure)
 	Grid: ({ size = 24, ...props }: IconProps) => (
 		<svg

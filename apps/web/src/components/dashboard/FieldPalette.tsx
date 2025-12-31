@@ -212,7 +212,7 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 		{
 			label: "BRAND",
 			href: "/brand",
-			icon: SwissIcons.Layout,
+			icon: SwissIcons.Brand,
 			type: "BRAND",
 		},
 	];

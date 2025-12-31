@@ -155,6 +155,12 @@ export function BrandPanel({
 	const currentFontOption =
 		FONT_OPTIONS.find((f) => f.id === localFont) || FONT_OPTIONS[0];
 
+	const sectors: { id: PanelSector; label: string; icon: any }[] = [
+		{ id: "VISUAL", label: "VISUAL", icon: SwissIcons.Type },
+		{ id: "PALETTE", label: "PALETTE", icon: SwissIcons.Palette },
+		{ id: "ARCHIVE", label: "ARCHIVE", icon: SwissIcons.Archive },
+	];
+
 	return (
 		<div
 			className={cn(
@@ -165,9 +171,12 @@ export function BrandPanel({
 			{/* Header - Simplified as requested */}
 			<div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-[#f4f4f0] dark:bg-[#0a0a0a] shrink-0">
 				<div className="flex items-center justify-between">
-					<h2 className="font-sans text-sm font-bold uppercase tracking-widest text-neutral-900 dark:text-white">
-						Brand Archive
-					</h2>
+					<div className="flex items-center gap-2">
+						<SwissIcons.Brand size={16} className="text-[#FF4D00]" />
+						<h2 className="font-sans text-sm font-bold uppercase tracking-widest text-neutral-900 dark:text-white">
+							Brand Archive
+						</h2>
+					</div>
 					<button
 						onClick={onClose}
 						className="w-6 h-6 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded-sm"
@@ -179,24 +188,32 @@ export function BrandPanel({
 
 			{/* Sub-Navigation (Tabs) */}
 			<div className="flex bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 p-1 shrink-0">
-				{(["VISUAL", "PALETTE", "ARCHIVE"] as PanelSector[]).map((sector) => (
+				{sectors.map((sector) => (
 					<button
-						key={sector}
-						onClick={() => setActiveSector(sector)}
+						key={sector.id}
+						onClick={() => setActiveSector(sector.id)}
 						className={cn(
-							"flex-1 py-2 text-[9px] font-mono uppercase tracking-widest transition-all rounded-[1px] relative",
-							activeSector === sector
+							"flex-1 py-2 text-[9px] font-mono uppercase tracking-widest transition-all rounded-[1px] relative flex items-center justify-center gap-2",
+							activeSector === sector.id
 								? "bg-white dark:bg-[#1a1a1a] text-[#FF4D00] font-bold shadow-sm"
 								: "text-neutral-500 hover:text-neutral-900 dark:hover:text-white",
 						)}
 					>
-						{activeSector === sector && (
+						<sector.icon
+							size={10}
+							className={cn(
+								activeSector === sector.id
+									? "text-[#FF4D00]"
+									: "text-neutral-400",
+							)}
+						/>
+						{activeSector === sector.id && (
 							<motion.div
 								layoutId="panelTabIndicator"
 								className="absolute bottom-0 left-1/4 right-1/4 h-[1px] bg-[#FF4D00]"
 							/>
 						)}
-						{sector}
+						{sector.id}
 					</button>
 				))}
 			</div>
