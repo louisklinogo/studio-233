@@ -14,7 +14,7 @@
 ## Phase 2: System Wiring & Intelligence
 - [x] Task: Register Tools & Update Config (bc86e8b)
     - [ ] Update `packages/ai/src/runtime/agent-config.ts` to include `renderHtml`.
-- [ ] Task: Update Agent Prompts (The "Brain" Upgrade)
+- [x] Task: Update Agent Prompts (The "Brain" Upgrade) (5e0977f)
     - [ ] Update `ORCHESTRATOR_PROMPT` in `packages/ai/src/prompts/orchestrator.ts` with new Decision Logic table.
     - [ ] Update `VISION_FORGE_PROMPT` in `packages/ai/src/prompts/vision-forge.ts` with new Decision Logic table.
 - [ ] Task: Conductor - User Manual Verification 'System Wiring & Intelligence' (Protocol in workflow.md)
