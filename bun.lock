@@ -293,6 +293,7 @@
         "@studio233/ai": "workspace:*",
         "@studio233/db": "workspace:*",
         "@studio233/rag": "workspace:*",
+        "@vercel/blob": "^1.1.1",
         "inngest": "^3.45.1",
         "zod": "catalog:",
       },

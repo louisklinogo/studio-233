@@ -15,7 +15,7 @@
 - **Authentication:** Better Auth
 - **Background Jobs:** Inngest
 - **Knowledge Processing (RAG):** LlamaIndex via `@studio233/rag`
-- **AI Orchestration:** Vercel AI SDK with Content-Addressable Storage (CAS) and Resilient Fetch Pipeline
+- **AI Orchestration:** Vercel AI SDK with Resilient Design-Render Pipeline (Architecture of Intent: `renderHtml` vs `htmlToCanvas`) and Content-Addressable Storage (CAS)
 
 ## AI Models & Providers
 - **Agent Intelligence:** Google Gemini (Gemini 2.5/3 Pro/Flash)
@@ -29,6 +29,8 @@
 ## Tooling
 - **Language:** TypeScript
 - **Package Manager:** Bun
+- **Testing:** Bun Native Testing Framework (`bun:test`)
 - **Runtime Standards:** Web Standard APIs (crypto.subtle, Streams) for cross-runtime (Bun/Node.js) stability
 - **Linting & Formatting:** Biome
 - **Monorepo Management:** Turborepo
+- **Runtime Environment:** Bun

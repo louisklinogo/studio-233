@@ -2058,17 +2058,6 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 				)}
 
 				{/* Main content */}
-				{/* Brand Archive - slide in from left */}
-				<AnimatePresence>
-					{isBrandArchiveOpen && project?.workspaceId && (
-						<BrandPanel
-							isOpen={isBrandArchiveOpen}
-							onClose={() => setIsBrandArchiveOpen(false)}
-							workspaceId={project.workspaceId}
-							className="h-[calc(100%-2rem)] my-4 ml-4"
-						/>
-					)}
-				</AnimatePresence>
 
 				<main
 					ref={containerRef}
@@ -2376,6 +2365,26 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					</div>
 				</main>
 
+				{/* Brand Archive - slide in from right */}
+				<AnimatePresence>
+					{isBrandArchiveOpen && project?.workspaceId && (
+						<motion.div
+							initial={{ width: 0, opacity: 0, marginRight: 0 }}
+							animate={{ width: 400, opacity: 1, marginRight: 16 }}
+							exit={{ width: 0, opacity: 0, marginRight: 0 }}
+							transition={{ duration: 0.3, ease: "easeInOut" }}
+							className="h-[calc(100%-2rem)] my-4 rounded-lg border border-border z-[9999] relative flex-shrink-0 bg-transparent shadow-2xl overflow-hidden"
+						>
+							<BrandPanel
+								isOpen={isBrandArchiveOpen}
+								onClose={() => setIsBrandArchiveOpen(false)}
+								workspaceId={project.workspaceId}
+								className="h-full w-full border-none shadow-none rounded-none"
+							/>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
 				{/* Chat Panel - slide in from right */}
 				<AnimatePresence>
 					{isChatOpen && (
@@ -2494,9 +2503,15 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 				<>
 					<ChatBar
 						isChatOpen={isChatOpen}
-						onToggleChat={() => setIsChatOpen(!isChatOpen)}
+						onToggleChat={() => {
+							if (!isChatOpen) setIsBrandArchiveOpen(false);
+							setIsChatOpen(!isChatOpen);
+						}}
 						isArchiveOpen={isBrandArchiveOpen}
-						onToggleArchive={() => setIsBrandArchiveOpen(!isBrandArchiveOpen)}
+						onToggleArchive={() => {
+							if (!isBrandArchiveOpen) setIsChatOpen(false);
+							setIsBrandArchiveOpen(!isBrandArchiveOpen);
+						}}
 					/>
 					<ZoomControls
 						viewport={viewport}

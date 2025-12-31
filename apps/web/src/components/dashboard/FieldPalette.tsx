@@ -209,6 +209,12 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 			icon: SwissIcons.Circle,
 			type: "STUDIO",
 		},
+		{
+			label: "BRAND",
+			href: "/brand",
+			icon: SwissIcons.Layout,
+			type: "BRAND",
+		},
 	];
 
 	const handleSignOut = async () => {

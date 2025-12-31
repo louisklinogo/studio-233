@@ -1,6 +1,7 @@
 import {
 	archiveVisionResult,
 	brandIngestion,
+	cleanupOldBlobs,
 	cleanupVisionTemp,
 	createProcessStudioWorkflow,
 	inngest,
@@ -35,8 +36,8 @@ const handlers = serve({
 		brandIngestion,
 		archiveVisionResult,
 		processFashionItem,
-		processWorkflowRun,
 		cleanupVisionTemp,
+		cleanupOldBlobs,
 	],
 });
 

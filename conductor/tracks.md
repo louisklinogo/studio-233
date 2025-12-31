@@ -32,3 +32,9 @@ This file tracks all major tracks for the project. Each track has its own detail
 ---
 
 ## [x] Track: Vortex Animation & Interaction Refinement
+*Link: [./conductor/tracks/vortex_animations_20251227/](./conductor/tracks/vortex_animations_20251227/)*
+
+---
+
+## [x] Track: Brand Architecture Interface Hardening
+*Link: [./conductor/tracks/brand_ui_hardening_20251231/](./conductor/tracks/brand_ui_hardening_20251231/)*
