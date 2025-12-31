@@ -19,7 +19,7 @@
     - [ ] Update `VISION_FORGE_PROMPT` in `packages/ai/src/prompts/vision-forge.ts` with new Decision Logic table.
 - [ ] Task: Conductor - User Manual Verification 'System Wiring & Intelligence' (Protocol in workflow.md)
 
-## Phase 3: Validation
+## Phase 3: Validation [checkpoint: 6f4117d]
 - [x] Task: End-to-End Integration Test (ca2ac55)
     - [ ] Create `packages/ai/src/__tests__/vision-tooling-architecture.test.ts`.
     - [ ] Test agent routing logic for "Design this" vs "Render this".
