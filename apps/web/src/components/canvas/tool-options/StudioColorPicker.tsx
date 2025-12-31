@@ -1,12 +1,14 @@
 "use client";
 
-import React from "react";
+import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 
 interface StudioColorPickerProps {
@@ -22,50 +24,66 @@ export const StudioColorPicker: React.FC<StudioColorPickerProps> = ({
 	className,
 	label,
 }) => {
+	const [inputValue, setInputValue] = useState(color);
+
+	useEffect(() => {
+		setInputValue(color);
+	}, [color]);
+
+	const handleInputChange = (val: string) => {
+		setInputValue(val);
+		if (/^#[0-9A-F]{6}$/i.test(val) || /^#[0-9A-F]{3}$/i.test(val)) {
+			onChange(val);
+		}
+	};
+
 	return (
-		<Popover>
-			<PopoverTrigger asChild>
-				<button
-					className={cn(
-						"h-8 px-2 flex items-center gap-2 min-w-[80px]",
-						"bg-white dark:bg-[#1a1a1a]",
-						"border border-neutral-200 dark:border-neutral-800",
-						"hover:bg-neutral-50 dark:hover:bg-neutral-800",
-						"transition-colors rounded-sm group",
-						className,
-					)}
-				>
-					<div
-						className="w-3 h-3 rounded-[1px] border border-neutral-200 dark:border-neutral-700 shadow-sm"
+		<div className={cn("flex items-center", className)}>
+			<Popover>
+				<PopoverTrigger asChild>
+					<motion.button
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className={cn(
+							"w-6 h-6 rounded-sm border border-neutral-200 dark:border-neutral-800 relative cursor-pointer shadow-sm shrink-0 overflow-hidden",
+						)}
 						style={{ backgroundColor: color }}
-					/>
-					<span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white">
-						{label || color.toUpperCase()}
-					</span>
-				</button>
-			</PopoverTrigger>
-			<PopoverContent
-				className="w-auto p-3 rounded-sm border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#1a1a1a]"
-				side="bottom"
-				align="start"
-				sideOffset={4}
-			>
-				<div className="flex flex-col gap-3">
-					<HexColorPicker color={color} onChange={onChange} />
-					<div className="flex items-center gap-2">
-						<div
-							className="w-6 h-6 rounded-[2px] border border-neutral-200 dark:border-neutral-700"
-							style={{ backgroundColor: color }}
-						/>
-						<input
-							type="text"
-							value={color.toUpperCase()}
-							onChange={(e) => onChange(e.target.value)}
-							className="flex-1 h-6 px-2 text-[10px] font-mono uppercase border border-neutral-200 dark:border-neutral-800 rounded-[2px] bg-transparent focus:outline-none focus:border-neutral-400"
-						/>
+					>
+						<div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/10 transition-opacity">
+							<SwissIcons.Edit
+								size={10}
+								className="text-white drop-shadow-md"
+							/>
+						</div>
+					</motion.button>
+				</PopoverTrigger>
+				<PopoverContent
+					className="w-fit p-4 bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-neutral-800 rounded-sm shadow-2xl"
+					side="bottom"
+					align="start"
+					sideOffset={8}
+				>
+					<div className="space-y-4">
+						<div className="flex items-center justify-between mb-2">
+							<span className="font-mono text-[10px] text-[#FF4D00] font-bold uppercase tracking-widest">
+								Color_Calibration
+							</span>
+							<div className="w-2 h-[1px] bg-neutral-300 dark:bg-neutral-700" />
+						</div>
+						<HexColorPicker color={color} onChange={onChange} />
+						<div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-900">
+							<span className="font-mono text-[10px] text-neutral-400">
+								HEX:
+							</span>
+							<input
+								value={inputValue}
+								onChange={(e) => handleInputChange(e.target.value)}
+								className="bg-transparent font-mono text-xs uppercase focus:outline-none text-neutral-900 dark:text-white w-20"
+							/>
+						</div>
 					</div>
-				</div>
-			</PopoverContent>
-		</Popover>
+				</PopoverContent>
+			</Popover>
+		</div>
 	);
 };
