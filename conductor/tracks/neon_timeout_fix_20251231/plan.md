@@ -1,12 +1,13 @@
 # Plan: DB Connection Resilience (Neon Timeout Fix)
 
-## Phase 1: Configuration Hardening
+## Phase 1: Configuration Hardening [checkpoint: 197d150]
+- [x] Task: Update `.env.example` with recommended Neon timeout parameters (`connect_timeout=30&pool_timeout=30`). 8c955f0
 - [x] Task: Apply optimized timeout parameters to `.env.local` database connection strings. [local_only]
 - [x] Task: Audit `packages/db/src/index.ts` to ensure Prisma client is configured with appropriate pooling for serverless environments. f86fb23
-- [~] Task: Conductor - User Manual Verification 'Configuration Hardening' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Configuration Hardening' (Protocol in workflow.md)
 
 ## Phase 2: Resilience Layer Enhancement (TDD)
-- [ ] Task: Conductor - Write failing test for `getSessionWithRetry` in `packages/auth` that simulates a "Connection terminated" error.
+- [~] Task: Conductor - Write failing test for `getSessionWithRetry` in `packages/auth` that simulates a "Connection terminated" error.
 - [ ] Task: Update `isTransientNetworkError` in `packages/auth/src/lib/session.ts` to include Prisma/Neon connection timeout strings.
 - [ ] Task: Verify tests pass with the enhanced error detection and retry logic.
 - [ ] Task: Conductor - User Manual Verification 'Resilience Layer Enhancement' (Protocol in workflow.md)
