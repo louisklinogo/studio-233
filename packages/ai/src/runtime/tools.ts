@@ -5,6 +5,7 @@ import { consultBrandGuidelinesTool } from "../tools/brand";
 import { canvasTextToImageTool } from "../tools/canvas";
 import type { ToolDefinition } from "../tools/factory";
 import { delegateToAgentTool } from "../tools/orchestration";
+import { renderHtmlTool } from "../tools/render-html";
 import {
 	imageAnalyzerTool,
 	moodboardTool,
@@ -46,6 +47,7 @@ const TOOL_DEFINITIONS = {
 	paletteExtractor: paletteExtractorTool,
 	storyboard: storyboardTool,
 	htmlToCanvas: htmlToCanvasTool,
+	renderHtml: renderHtmlTool,
 	htmlGenerator: htmlGeneratorTool,
 	layoutDesigner: layoutDesignerTool,
 	textToVideo: textToVideoTool,
