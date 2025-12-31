@@ -12,7 +12,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Tool Implementation' (Protocol in workflow.md)
 
 ## Phase 2: System Wiring & Intelligence
-- [ ] Task: Register Tools & Update Config
+- [x] Task: Register Tools & Update Config (bc86e8b)
     - [ ] Update `packages/ai/src/runtime/agent-config.ts` to include `renderHtml`.
 - [ ] Task: Update Agent Prompts (The "Brain" Upgrade)
     - [ ] Update `ORCHESTRATOR_PROMPT` in `packages/ai/src/prompts/orchestrator.ts` with new Decision Logic table.
