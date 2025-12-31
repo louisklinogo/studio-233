@@ -20,7 +20,7 @@
 - [ ] Task: Conductor - User Manual Verification 'System Wiring & Intelligence' (Protocol in workflow.md)
 
 ## Phase 3: Validation
-- [ ] Task: End-to-End Integration Test
+- [x] Task: End-to-End Integration Test (ca2ac55)
     - [ ] Create `packages/ai/src/__tests__/vision-tooling-architecture.test.ts`.
     - [ ] Test agent routing logic for "Design this" vs "Render this".
 - [ ] Task: Conductor - User Manual Verification 'Validation' (Protocol in workflow.md)
