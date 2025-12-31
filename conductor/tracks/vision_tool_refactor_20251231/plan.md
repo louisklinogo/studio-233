@@ -11,7 +11,7 @@
     - [ ] Unit test: Verify it strictly requires `brief`.
 - [ ] Task: Conductor - User Manual Verification 'Tool Implementation' (Protocol in workflow.md)
 
-## Phase 2: System Wiring & Intelligence
+## Phase 2: System Wiring & Intelligence [checkpoint: 581e2e4]
 - [x] Task: Register Tools & Update Config (bc86e8b)
     - [ ] Update `packages/ai/src/runtime/agent-config.ts` to include `renderHtml`.
 - [x] Task: Update Agent Prompts (The "Brain" Upgrade) (5e0977f)
