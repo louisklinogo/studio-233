@@ -17,7 +17,8 @@ function isTransientNetworkError(error: unknown): boolean {
 		(message?.includes("EAI_AGAIN") ?? false) ||
 		(message?.includes("ETIMEDOUT") ?? false) ||
 		(message?.includes("getaddrinfo") ?? false) ||
-		(message?.includes("ECONNRESET") ?? false)
+		(message?.includes("ECONNRESET") ?? false) ||
+		(message?.includes("Connection terminated") ?? false)
 	);
 }
 
