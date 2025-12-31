@@ -12,7 +12,7 @@
 - [x] Task: Verify tests pass with the enhanced error detection and retry logic. be4b5d2
 - [x] Task: Conductor - User Manual Verification 'Resilience Layer Enhancement' (Protocol in workflow.md)
 
-## Phase 3: Final Verification
-- [~] Task: Run all `better-auth` related tests to ensure no regressions in session management.
-- [ ] Task: Perform manual cold-start verification by letting the local DB idle and then refreshing the login page.
-- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
+## Phase 3: Final Verification [checkpoint: be4b5d2]
+- [x] Task: Run all `better-auth` related tests to ensure no regressions in session management. be4b5d2
+- [x] Task: Perform manual cold-start verification by letting the local DB idle and then refreshing the login page. be4b5d2
+- [x] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md) be4b5d2
