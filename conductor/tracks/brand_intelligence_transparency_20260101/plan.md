@@ -5,7 +5,7 @@ This plan follows the standard TDD workflow. We will implement the intelligence 
 ## Phase 1: Knowledge Extraction & Moodboard Support
 Refactor the vision analysis pipeline to distinguish between Brand Marks and Inspiration, using Gemini 3 Pro.
 
-- [ ] Task: Update Inngest events and schemas to support Moodboard classification
+- [x] Task: Update Inngest events and schemas to support Moodboard classification [3b1dc72]
 - [ ] Task: Refactor `brand-vision-sync.ts` to implement Abstract DNA extraction logic
 - [ ] Task: Update `BrandAssetUpload` component to include the "Braun Mode Switch" (Toggle)
 - [ ] Task: Write tests for Mode-aware asset registration in `assetRouter`
