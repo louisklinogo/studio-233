@@ -683,6 +683,105 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 								title="System Knowledge Hub"
 								description="Technical readout of the RAG (Retrieval-Augmented Generation) cortex. This data is used to provide agents with brand-safe autonomous reasoning."
 							>
+								{/* 01. Brand Manifesto Hero Card */}
+								{intelligence?.brandSummary && (
+									<motion.div
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										className="mb-8 p-10 bg-neutral-900 text-white rounded-sm relative overflow-hidden group"
+									>
+										{/* Corner Accents */}
+										<div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF4D00]" />
+										<div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF4D00]" />
+
+										<div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12">
+											<div className="lg:col-span-8 space-y-6">
+												<div className="flex items-center gap-3">
+													<SwissIcons.Dna
+														className="text-[#FF4D00]"
+														size={16}
+													/>
+													<span className="font-mono text-[10px] tracking-[0.4em] text-[#FF4D00] uppercase">
+														System_Deduction_Identity
+													</span>
+												</div>
+												<h2 className="text-4xl font-black tracking-tighter leading-[0.9] uppercase italic">
+													{intelligence.brandSummary.manifesto}
+												</h2>
+												<div className="flex flex-wrap gap-4 pt-4 border-t border-white/10">
+													<div className="space-y-1">
+														<span className="font-mono text-[8px] text-neutral-500 uppercase tracking-widest block">
+															Voice_Tone
+														</span>
+														<div className="flex gap-2">
+															{intelligence.brandSummary.voice.map(
+																(v: string) => (
+																	<span
+																		key={v}
+																		className="font-mono text-[10px] text-neutral-300 uppercase"
+																	>
+																		// {v}
+																	</span>
+																),
+															)}
+														</div>
+													</div>
+													<div className="w-px h-8 bg-white/10 hidden md:block" />
+													<div className="space-y-1">
+														<span className="font-mono text-[8px] text-neutral-500 uppercase tracking-widest block">
+															Visual_Aesthetic
+														</span>
+														<div className="flex gap-2">
+															{intelligence.brandSummary.visual_dna.map(
+																(v: string) => (
+																	<span
+																		key={v}
+																		className="font-mono text-[10px] text-neutral-300 uppercase"
+																	>
+																		// {v}
+																	</span>
+																),
+															)}
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div className="lg:col-span-4 space-y-6">
+												<span className="font-mono text-[8px] text-neutral-500 uppercase tracking-widest block border-b border-white/10 pb-2">
+													Core_Principles
+												</span>
+												<div className="space-y-4">
+													{intelligence.brandSummary.principles.map(
+														(p: any, i: number) => (
+															<div key={i} className="space-y-1">
+																<div className="flex items-center gap-2">
+																	<span className="font-mono text-[10px] text-[#FF4D00]">
+																		0{i + 1}
+																	</span>
+																	<h4 className="font-mono text-[10px] font-bold uppercase tracking-wider">
+																		{p.title}
+																	</h4>
+																</div>
+																<p className="text-[10px] text-neutral-400 leading-snug">
+																	{p.description}
+																</p>
+															</div>
+														),
+													)}
+												</div>
+											</div>
+										</div>
+
+										{/* Subtle Grid Background */}
+										<div className="absolute inset-0 opacity-[0.05] pointer-events-none grid grid-cols-12 grid-rows-6">
+											{Array.from({ length: 72 }).map((_, i) => (
+												<div key={i} className="border-[0.5px] border-white" />
+											))}
+										</div>
+									</motion.div>
+								)}
+
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 									{/* Vector Health Status */}
 									<div className="p-6 border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-black rounded-sm space-y-6">
