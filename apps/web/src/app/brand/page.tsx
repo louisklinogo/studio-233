@@ -35,7 +35,14 @@ export default async function BrandPage(props: {
 		return redirect("/dashboard");
 	}
 
-	const selectedWorkspaceId = searchParams.workspaceId || workspaces[0].id;
+	// Validate workspaceId from searchParams matches a workspace the user owns
+	const requestedWorkspaceId = searchParams.workspaceId;
+	const isValidWorkspace =
+		requestedWorkspaceId &&
+		workspaces.some((w) => w.id === requestedWorkspaceId);
+	const selectedWorkspaceId = isValidWorkspace
+		? requestedWorkspaceId
+		: workspaces[0].id;
 
 	return (
 		<DashboardShell user={user}>

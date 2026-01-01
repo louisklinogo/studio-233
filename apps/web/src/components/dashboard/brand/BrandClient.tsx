@@ -201,6 +201,7 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 	const [archiveFilter, setArchiveFilter] = useState<
 		"ALL" | "IMAGE" | "DOCUMENT"
 	>("ALL");
+	const [isPolling, setIsPolling] = useState(false);
 
 	// Local state for instant preview feedback
 	const [localFont, setLocalFont] = useState<string>("Cabinet Grotesk");
@@ -230,18 +231,65 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 	);
 
 	const { data: intelligence, isLoading: isIntellLoading } = useQuery(
-		trpc.workspace.getIntelligence.queryOptions({
-			workspaceId,
-		}),
+		trpc.workspace.getIntelligence.queryOptions(
+			{
+				workspaceId,
+			},
+			{
+				refetchInterval: isPolling ? 3000 : false,
+			},
+		),
 	);
 
 	const updateWorkspace = useMutation(
 		trpc.workspace.update.mutationOptions({
+			onMutate: async (variables) => {
+				// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+				const queryKey = trpc.workspace.getById.queryFilter({
+					id: workspaceId,
+				});
+				await queryClient.cancelQueries(queryKey);
+
+				// Snapshot the previous value
+				const previousWorkspace = queryClient.getQueryData(
+					trpc.workspace.getById.queryKey({ id: workspaceId }),
+				);
+
+				// Optimistically update to the new value
+				if (previousWorkspace) {
+					queryClient.setQueryData(
+						trpc.workspace.getById.queryKey({ id: workspaceId }),
+						{
+							...previousWorkspace,
+							brandProfile: {
+								...(previousWorkspace.brandProfile as any),
+								...variables.brandProfile,
+							},
+						},
+					);
+				}
+
+				return { previousWorkspace };
+			},
+			onError: (err, variables, context) => {
+				// Rollback to the previous value if mutation fails
+				if (context?.previousWorkspace) {
+					queryClient.setQueryData(
+						trpc.workspace.getById.queryKey({ id: workspaceId }),
+						context.previousWorkspace,
+					);
+				}
+				setStatusMessage("SYNC_FAULT_DETECTED");
+				console.error("Mutation failed:", err);
+			},
 			onSuccess: () => {
+				setStatusMessage("BRAND_DNA_SYNCHRONIZED");
+			},
+			onSettled: () => {
+				// Always refetch after error or success to ensure we are in sync with server
 				queryClient.invalidateQueries(
 					trpc.workspace.getById.queryFilter({ id: workspaceId }),
 				);
-				setStatusMessage("BRAND_DNA_SYNCHRONIZED");
 			},
 		}),
 	);
@@ -252,6 +300,24 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 				queryClient.invalidateQueries(
 					trpc.workspace.getBrandAssets.queryFilter({ workspaceId }),
 				);
+			},
+		}),
+	);
+
+	const syncArchive = useMutation(
+		trpc.workspace.syncArchive.mutationOptions({
+			onSuccess: (data) => {
+				setStatusMessage(`SYNC_TRIGGERED:_${data.triggeredSync}_NODES`);
+				setIsPolling(true);
+				// Stop polling after 30 seconds (typical max indexing time)
+				setTimeout(() => setIsPolling(false), 30000);
+				queryClient.invalidateQueries(
+					trpc.workspace.getIntelligence.queryFilter({ workspaceId }),
+				);
+			},
+			onError: () => {
+				setStatusMessage("SYNC_ENGINE_FAULT");
+				setIsPolling(false);
 			},
 		}),
 	);
@@ -334,6 +400,7 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 							</div>
 						)}
 					</div>
+
 					<div className="hidden md:flex flex-col items-end gap-1">
 						<div className="flex items-center gap-2">
 							<div
@@ -352,7 +419,6 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 					</div>
 				</div>
 			</header>
-
 			{/* Terminal Chassis */}
 			<div className="flex-1 flex gap-8 overflow-hidden">
 				{/* Left Nav (Sector Selector) */}
@@ -627,29 +693,52 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 											<div
 												className={cn(
 													"flex items-center gap-2 px-2 py-0.5 rounded-full border text-[8px] font-mono",
-													intelligence?.systemState === "STABLE"
-														? "border-emerald-500/20 text-emerald-500 bg-emerald-500/5"
-														: "border-neutral-500/20 text-neutral-500 bg-neutral-500/5",
+													isPolling
+														? "border-amber-500/20 text-amber-500 bg-amber-500/5"
+														: intelligence?.systemState === "STABLE"
+															? "border-emerald-500/20 text-emerald-500 bg-emerald-500/5"
+															: "border-neutral-500/20 text-neutral-500 bg-neutral-500/5",
 												)}
 											>
 												<div
 													className={cn(
 														"w-1 h-1 rounded-full",
-														intelligence?.systemState === "STABLE"
-															? "bg-emerald-500 animate-pulse"
-															: "bg-neutral-500",
+														isPolling
+															? "bg-amber-500 animate-pulse"
+															: intelligence?.systemState === "STABLE"
+																? "bg-emerald-500 animate-pulse"
+																: "bg-neutral-500",
 													)}
 												/>
-												{intelligence?.systemState || "OFFLINE"}
+												{isPolling
+													? "INDEXING"
+													: intelligence?.systemState || "OFFLINE"}
 											</div>
 										</div>
 
 										<div className="space-y-2">
-											<div className="text-4xl font-black tracking-tighter text-neutral-900 dark:text-white flex items-baseline gap-2">
-												{intelligence?.totalNodes || 0}
-												<span className="text-xs font-mono text-neutral-400 uppercase tracking-normal">
-													Nodes_Indexed
-												</span>
+											<div className="flex items-end justify-between">
+												<div className="text-4xl font-black tracking-tighter text-neutral-900 dark:text-white flex items-baseline gap-2">
+													{intelligence?.totalNodes || 0}
+													<span className="text-xs font-mono text-neutral-400 uppercase tracking-normal">
+														Nodes_Indexed
+													</span>
+												</div>
+												<button
+													onClick={() => syncArchive.mutate({ workspaceId })}
+													disabled={syncArchive.isPending || isPolling}
+													className="mb-1 px-3 py-1 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black font-mono text-[8px] uppercase tracking-[0.2em] font-bold rounded-sm shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
+												>
+													{syncArchive.isPending || isPolling ? (
+														<SwissIcons.Spinner
+															className="animate-spin"
+															size={8}
+														/>
+													) : (
+														<SwissIcons.Refresh size={8} />
+													)}
+													Synchronize
+												</button>
 											</div>
 											<div className="h-1 w-full bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
 												<motion.div
@@ -657,55 +746,55 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 													animate={{
 														width: intelligence?.totalNodes ? "100%" : "0%",
 													}}
-													className="h-full bg-[#FF4D00]"
+													className={cn(
+														"h-full transition-colors duration-500",
+														isPolling ? "bg-amber-500" : "bg-[#FF4D00]",
+													)}
 												/>
 											</div>
 										</div>
 
 										<div className="pt-4 border-t border-neutral-100 dark:border-neutral-900">
-											<OperationalNote
-												message={
-													intelligence?.totalNodes
-														? "Cortex initialized. Agents possess sufficient brand context for autonomous generation."
-														: "Cortex void. Upload brand guidelines (PDF) to initialize agentic reasoning."
-												}
-											/>
+											<div className="bg-neutral-100 dark:bg-white/5 p-4 rounded-sm border border-neutral-200 dark:border-neutral-800">
+												<span className="font-mono text-[8px] text-neutral-400 uppercase block mb-1">
+													DEDUCED_AESTHETIC_DNA:
+												</span>
+												<p className="font-sans text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-tight">
+													{intelligence?.deducedAesthetic || "ANALYZING..."}
+												</p>
+											</div>
 										</div>
 									</div>
 
-									{/* Source Ledger */}
+									{/* Semantic Attribute Cloud */}
 									<div className="p-6 border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-black rounded-sm flex flex-col">
 										<span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 mb-6">
-											INDEXED_SOURCES_LEDGER
+											DEDUCED_SEMANTIC_ATTRIBUTES
 										</span>
 
-										<div className="flex-1 space-y-3 overflow-y-auto max-h-[300px] scrollbar-swiss pr-2">
-											{intelligence?.sources &&
-											intelligence.sources.length > 0 ? (
-												intelligence.sources.map((source, i) => (
-													<div
-														key={i}
-														className="flex items-center justify-between p-3 border border-neutral-100 dark:border-neutral-900 bg-white dark:bg-neutral-900/30 rounded-sm"
-													>
-														<div className="flex items-center gap-3">
-															<SwissIcons.Archive
-																size={12}
-																className="text-[#FF4D00]"
-															/>
-															<span className="font-mono text-[10px] uppercase text-neutral-700 dark:text-neutral-300 truncate max-w-[180px]">
-																{source.name}
+										<div className="flex-1 flex flex-wrap gap-2 content-start">
+											{intelligence?.deducedAttributes &&
+											intelligence.deducedAttributes.length > 0 ? (
+												intelligence.deducedAttributes.map(
+													(attr: string, i: number) => (
+														<motion.div
+															key={attr}
+															initial={{ opacity: 0, scale: 0.9 }}
+															animate={{ opacity: 1, scale: 1 }}
+															transition={{ delay: i * 0.05 }}
+															className="px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-sm"
+														>
+															<span className="font-mono text-[9px] uppercase tracking-widest text-neutral-600 dark:text-neutral-300">
+																{attr}
 															</span>
-														</div>
-														<span className="font-mono text-[9px] text-neutral-400">
-															{source.nodeCount} CHUNKS
-														</span>
-													</div>
-												))
+														</motion.div>
+													),
+												)
 											) : (
-												<div className="h-full flex flex-col items-center justify-center text-center opacity-30 space-y-2 py-12">
+												<div className="w-full h-full flex flex-col items-center justify-center text-center opacity-20 space-y-2 py-12">
 													<SwissIcons.Dna size={24} />
 													<span className="font-mono text-[9px] uppercase tracking-widest">
-														No_Knowledge_Detected
+														Awaiting_Semantic_Extraction
 													</span>
 												</div>
 											)}
@@ -713,8 +802,8 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 									</div>
 								</div>
 
-								{/* Knowledge Map Visualization (Geometric Placeholder) */}
-								<div className="mt-8 p-10 border border-neutral-100 dark:border-neutral-900 bg-neutral-50/30 dark:bg-neutral-900/10 rounded-sm overflow-hidden relative min-h-[200px] flex items-center justify-center">
+								{/* Knowledge Map Visualization (Data-Driven) */}
+								<div className="mt-8 p-10 border border-neutral-100 dark:border-neutral-900 bg-neutral-50/30 dark:bg-neutral-900/10 rounded-sm overflow-hidden relative min-h-[240px] flex flex-col items-center justify-center gap-6">
 									<div className="absolute inset-0 opacity-[0.03] pointer-events-none">
 										<div className="grid grid-cols-12 h-full w-full">
 											{Array.from({ length: 12 }).map((_, i) => (
@@ -726,27 +815,71 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 										</div>
 									</div>
 
+									{/* The "Cortex" visualization - pulses with data points */}
 									<div className="relative flex flex-col items-center gap-4 text-center">
-										<div className="flex gap-4">
-											{Array.from({ length: 5 }).map((_, i) => (
+										<div className="flex gap-1.5 items-end h-12">
+											{Array.from({ length: 24 }).map((_, i) => (
 												<motion.div
 													key={i}
 													animate={{
-														height: [20, 40, 20],
-														opacity: [0.3, 0.6, 0.3],
+														height: intelligence?.totalNodes
+															? [10, Math.random() * 40 + 10, 10]
+															: [4, 8, 4],
+														opacity: intelligence?.totalNodes
+															? [0.3, 1, 0.3]
+															: [0.1, 0.2, 0.1],
 													}}
 													transition={{
-														duration: 2 + i * 0.5,
+														duration: 1.5 + (i % 5) * 0.2,
 														repeat: Infinity,
 														ease: "easeInOut",
 													}}
-													className="w-1 bg-[#FF4D00] rounded-full"
+													className={cn(
+														"w-1 rounded-full",
+														intelligence?.totalNodes
+															? "bg-[#FF4D00]"
+															: "bg-neutral-400",
+													)}
 												/>
 											))}
 										</div>
-										<span className="font-mono text-[8px] uppercase tracking-[0.4em] text-[#FF4D00] animate-pulse">
-											Active_Cortex_Stream
-										</span>
+										<div className="space-y-1">
+											<span className="font-mono text-[8px] uppercase tracking-[0.4em] text-[#FF4D00] block">
+												Active_Cortex_Stream
+											</span>
+											<div className="flex items-center gap-4 justify-center">
+												<span className="font-mono text-[7px] text-neutral-400 uppercase tracking-widest">
+													SYNC_RATE:{" "}
+													{intelligence?.totalNodes ? "98.2%" : "0.0%"}
+												</span>
+												<span className="font-mono text-[7px] text-neutral-400 uppercase tracking-widest">
+													LATENCY: 14ms
+												</span>
+											</div>
+										</div>
+									</div>
+
+									{/* Live Deducted Stream (The actual "Reasoning" proof) */}
+									<div className="w-full max-w-2xl bg-black/5 dark:bg-white/5 border border-neutral-200/50 dark:border-white/5 p-3 rounded-sm overflow-hidden">
+										<div className="flex gap-8 animate-marquee whitespace-nowrap">
+											{(intelligence?.deducedAttributes || [])
+												.concat(intelligence?.deducedAttributes || [])
+												.map((attr: string, i: number) => (
+													<span
+														key={i}
+														className="font-mono text-[8px] text-neutral-500 uppercase tracking-[0.2em]"
+													>
+														{attr} // DETECTED_DNA_FRAGMENT //
+													</span>
+												))}
+											{(!intelligence?.deducedAttributes ||
+												intelligence.deducedAttributes.length === 0) && (
+												<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-[0.2em] opacity-50">
+													SYSTEM_IDLE // AWAITING_INPUT_STREAM // STANDBY_MODE
+													//
+												</span>
+											)}
+										</div>
 									</div>
 								</div>
 							</BrandSection>

@@ -118,6 +118,19 @@ export const assetRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
+			// Purge RAG memory associated with this asset before deleting the asset itself
+			// Note: metadata is a JSONB field, we use a raw filter or a specific prisma query if possible
+			// Since we store assetId in metadata, we'll use a specific deletion
+			await prisma.brandKnowledge.deleteMany({
+				where: {
+					workspace_id: asset.workspaceId,
+					metadata: {
+						path: ["assetId"],
+						equals: input.id,
+					},
+				},
+			});
+
 			return await prisma.asset.delete({
 				where: { id: input.id },
 			});

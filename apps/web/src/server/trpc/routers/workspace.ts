@@ -1,5 +1,6 @@
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { prisma } from "@studio233/db";
+import { inngest } from "@studio233/inngest";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../init";
@@ -29,9 +30,9 @@ export const workspaceRouter = router({
 				description: z.string().max(500).optional(),
 				brandProfile: z
 					.object({
-						primaryColor: z.string(),
-						accentColor: z.string(),
-						fontFamily: z.string(),
+						primaryColor: z.string().optional(),
+						accentColor: z.string().optional(),
+						fontFamily: z.string().optional(),
 					})
 					.optional(),
 			}),
@@ -150,9 +151,9 @@ export const workspaceRouter = router({
 				description: z.string().max(500).optional(),
 				brandProfile: z
 					.object({
-						primaryColor: z.string(),
-						accentColor: z.string(),
-						fontFamily: z.string(),
+						primaryColor: z.string().optional(),
+						accentColor: z.string().optional(),
+						fontFamily: z.string().optional(),
 					})
 					.optional(),
 			}),
@@ -321,15 +322,22 @@ export const workspaceRouter = router({
 				select: {
 					id: true,
 					metadata: true,
+					text: true,
 					createdAt: true,
 				},
+				orderBy: { createdAt: "desc" },
 			});
 
-			// 2. Aggregate sources
+			// 2. Aggregate sources and extract insights
 			const sourceMap = new Map<string, { name: string; nodeCount: number }>();
+			const deducedAttributes = new Set<string>();
+			let deducedAesthetic = "";
+
 			for (const node of knowledge) {
 				const meta = (node.metadata as any) || {};
 				const source = meta.filename || "System_Memory";
+
+				// Track sources
 				const existing = sourceMap.get(source) || {
 					name: source,
 					nodeCount: 0,
@@ -338,13 +346,102 @@ export const workspaceRouter = router({
 					...existing,
 					nodeCount: existing.nodeCount + 1,
 				});
+
+				// Extract semantic insights from text or metadata
+				if (node.text.includes("DESIGN_AESTHETIC:")) {
+					const match = node.text.match(/DESIGN_AESTHETIC: (.*)/);
+					if (match && !deducedAesthetic) deducedAesthetic = match[1];
+				}
+
+				if (node.text.includes("DETECTED_ELEMENTS:")) {
+					const match = node.text.match(/DETECTED_ELEMENTS: (.*)/);
+					if (match) {
+						match[1].split(",").forEach((attr) => {
+							const trimmed = attr.trim().toUpperCase();
+							if (trimmed && deducedAttributes.size < 12) {
+								deducedAttributes.add(trimmed);
+							}
+						});
+					}
+				}
 			}
 
 			return {
 				totalNodes: knowledge.length,
 				sources: Array.from(sourceMap.values()),
+				deducedAttributes: Array.from(deducedAttributes),
+				deducedAesthetic: deducedAesthetic || "Awaiting further analysis...",
 				lastIndexed: knowledge.length > 0 ? knowledge[0].createdAt : null,
 				systemState: knowledge.length > 0 ? "STABLE" : "UNINITIALIZED",
+			};
+		}),
+
+	/**
+	 * Manually synchronize and repair the brand archive indexing state
+	 */
+	syncArchive: publicProcedure
+		.input(z.object({ workspaceId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+			if (!session) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+			// 1. Get all brand assets
+			const assets = await prisma.asset.findMany({
+				where: {
+					workspaceId: input.workspaceId,
+					isBrandAsset: true,
+				},
+			});
+
+			// 2. Get all indexed asset IDs from metadata
+			// Note: We use queryRaw because metadata is a JSONB field and assetId is nested
+			const indexedAssetIds = await prisma.brandKnowledge.findMany({
+				where: { workspace_id: input.workspaceId },
+				select: { metadata: true },
+			});
+
+			const indexedIds = new Set(
+				indexedAssetIds
+					.map((k: any) => k.metadata?.assetId)
+					.filter((id) => !!id),
+			);
+
+			// 3. Find missing assets and trigger sync
+			const missingAssets = assets.filter((asset) => !indexedIds.has(asset.id));
+			let triggeredCount = 0;
+
+			for (const asset of missingAssets) {
+				if (asset.mimeType === "application/pdf") {
+					await inngest.send({
+						name: "brand.knowledge.ingested",
+						data: {
+							workspaceId: input.workspaceId,
+							assetId: asset.id,
+							url: asset.url,
+							filename: asset.name,
+						},
+					});
+					triggeredCount++;
+				} else if (asset.mimeType.startsWith("image/")) {
+					await inngest.send({
+						name: "brand.asset.vision_sync",
+						data: {
+							workspaceId: input.workspaceId,
+							assetId: asset.id,
+							url: asset.url,
+							filename: asset.name,
+						},
+					});
+					triggeredCount++;
+				}
+			}
+
+			return {
+				totalChecked: assets.length,
+				alreadyIndexed: indexedIds.size,
+				triggeredSync: triggeredCount,
+				status: triggeredCount > 0 ? "SYNCHRONIZING" : "STABLE",
 			};
 		}),
 });

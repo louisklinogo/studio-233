@@ -10,6 +10,7 @@ model Workspace {
   assets       Asset[]
   brandKnowledge BrandKnowledge[]
   brandProfile Json?     @db.Json
+  brandSummary Json?     @db.Json
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, slug])

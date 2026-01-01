@@ -3,10 +3,18 @@ import { inngest } from "../client";
 import { brandKnowledgeIngestedEvent } from "../events";
 
 export const brandIngestion = inngest.createFunction(
-	{ id: "brand-ingestion", name: "Brand Knowledge Ingestion" },
+	{
+		id: "brand-ingestion",
+		name: "Brand Knowledge Ingestion",
+		throttle: {
+			limit: 1,
+			period: "1m",
+			key: "event.data.workspaceId",
+		},
+	},
 	{ event: brandKnowledgeIngestedEvent },
 	async ({ event, step }) => {
-		const { url, workspaceId, filename } = event.data;
+		const { url, workspaceId, filename, assetId } = event.data;
 
 		await step.run("index-and-store", async () => {
 			const dbUrl = process.env.DATABASE_URL;
@@ -23,6 +31,7 @@ export const brandIngestion = inngest.createFunction(
 			return await brandIngestionService({
 				url,
 				workspaceId,
+				assetId,
 				filename,
 				dbUrl,
 			});

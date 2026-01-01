@@ -37,13 +37,13 @@ type VisionAnalysisTimeouts = {
 const DEFAULT_TIMEOUTS: VisionAnalysisTimeouts = {
 	blobListMs: 10_000, // Increased to handle Vercel Blob latency
 	fetchMs: 20_000,
-	geminiMs: 120_000,
+	geminiMs: 300_000, // 5 minutes for heavy vision tasks
 	uploadMs: 25_000,
 };
 
 const QUICK_TIMEOUTS: VisionAnalysisTimeouts = {
 	...DEFAULT_TIMEOUTS,
-	geminiMs: 60_000,
+	geminiMs: 300_000, // Even quick mode needs breathing room for complex images
 };
 
 export type VisionAnalysisWorkflowOptions = {

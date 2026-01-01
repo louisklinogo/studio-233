@@ -43,3 +43,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ## [x] Track: Implement Ambient Brand Awareness via Layered Context Resolution
 *Link: [./conductor/tracks/brand_ambient_context_20251231/](./conductor/tracks/brand_ambient_context_20251231/)*
+
+---
+
+## [ ] Track: Enhance Brand Hub transparency with semantic intelligence synthesis and data-driven Cortex visualization.
+*Link: [./conductor/tracks/brand_intelligence_transparency_20260101/](./conductor/tracks/brand_intelligence_transparency_20260101/)*

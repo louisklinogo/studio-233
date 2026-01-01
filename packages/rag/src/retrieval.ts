@@ -2,7 +2,14 @@ import { searchBrandKnowledge } from "@studio233/db/vector-search";
 import { Settings } from "llamaindex";
 
 export async function retrievalService(workspaceId: string, query: string) {
-	if (!Settings.embedModel) {
+	let isInitialized = false;
+	try {
+		isInitialized = !!Settings.embedModel;
+	} catch (e) {
+		isInitialized = false;
+	}
+
+	if (!isInitialized) {
 		throw new Error(
 			"LlamaIndex embedModel not initialized. Call initLlamaIndex first.",
 		);

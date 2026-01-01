@@ -8,18 +8,40 @@ function normalizeHeaders(source: HeaderSource): Headers {
 }
 
 function isTransientNetworkError(error: unknown): boolean {
-	const code = (error as any)?.code as string | undefined;
-	const message = (error as any)?.message as string | undefined;
-	return (
-		code === "EAI_AGAIN" ||
-		code === "ETIMEDOUT" ||
-		code === "ECONNRESET" ||
-		(message?.includes("EAI_AGAIN") ?? false) ||
-		(message?.includes("ETIMEDOUT") ?? false) ||
-		(message?.includes("getaddrinfo") ?? false) ||
-		(message?.includes("ECONNRESET") ?? false) ||
-		(message?.includes("Connection terminated") ?? false)
-	);
+	if (!error) return false;
+
+	const err = error as any;
+	const code = err.code as string | undefined;
+	const message = err.message as string | undefined;
+	const status = err.status as string | undefined;
+	const bodyMessage = err.body?.message as string | undefined;
+	const bodyCode = err.body?.code as string | undefined;
+
+	const isTransientCode = (c: string | undefined) =>
+		c === "EAI_AGAIN" ||
+		c === "ETIMEDOUT" ||
+		c === "ECONNRESET" ||
+		c === "ECONNREFUSED" ||
+		c === "P2024" || // Prisma: Connection timed out
+		c === "P2028"; // Prisma: Transaction API error
+
+	const isTransientMessage = (m: string | undefined) =>
+		m?.includes("EAI_AGAIN") ||
+		m?.includes("ETIMEDOUT") ||
+		m?.includes("getaddrinfo") ||
+		m?.includes("ECONNRESET") ||
+		m?.includes("Connection terminated") ||
+		m?.includes("timed out") ||
+		m?.includes("Timeout");
+
+	if (isTransientCode(code) || isTransientCode(bodyCode)) return true;
+	if (isTransientMessage(message) || isTransientMessage(bodyMessage))
+		return true;
+
+	// Check for wrapped errors (Better Auth often wraps Prisma errors)
+	if (err.cause) return isTransientNetworkError(err.cause);
+
+	return false;
 }
 
 export async function getSessionWithRetry(

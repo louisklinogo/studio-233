@@ -12,3 +12,10 @@
 10. 🚧 Toolbar upgrades: undo/redo/delete/clear, fit/minimap, run with missing-integration checks, and quick add controls aligned to Braun-ish Swiss UI.
 11. 🚧 Persistence + rollout: store sidebar/minimap/view prefs, snapshot workflow versions, gate new `/studio` behind a flag and swap when stable.
 12. 🚧 Coverage: add unit/integration tests for store mutations, TRPC workflow CRUD/run, React Flow interactions (connect/add), autosave, and log rendering.
+
+
+
+---------------------------------------
+When one lands on dashboard page, do we need to do an onboarding journey using cards or something? esp for the brand management part?
+
+When one deletes, whats the ux? i think rn there is none?

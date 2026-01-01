@@ -44,7 +44,7 @@ export function getDatabaseResources(): PrismaResource {
 		// Connection timeouts (critical for serverless DBs that sleep)
 		connectionTimeoutMillis: process.env.PGCONNECT_TIMEOUT
 			? Number(process.env.PGCONNECT_TIMEOUT)
-			: 30_000, // 30s to establish connection
+			: 90_000, // Increased to 90s to establish connection
 		idleTimeoutMillis: process.env.PGIDLE_TIMEOUT
 			? Number(process.env.PGIDLE_TIMEOUT)
 			: 30_000, // Close idle connections after 30s

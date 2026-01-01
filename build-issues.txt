@@ -1,700 +1,131 @@
+ ○ Compiling /api/trpc/[trpc] ...
+[DEBUG] Rate limiter enabled: AW7kAAIncDI0ODVkOTg2MGUyNzg0ZDcxYWMwMTYyZTA2MjEzYzFmOHAyMjgzODg
+[DEBUG] KV_REST_API_URL present: true
+[DEBUG] KV_REST_API_TOKEN present: true
+[DEBUG] Creating rate limiter: 5 tokens per 60 s
+[DEBUG] Creating rate limiter: 15 tokens per 60 m
+[DEBUG] Creating rate limiter: 50 tokens per 24 h
+POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
+[DEBUG] Rate limiter enabled: AW7kAAIncDI0ODVkOTg2MGUyNzg0ZDcxYWMwMTYyZTA2MjEzYzFmOHAyMjgzODg
+[DEBUG] KV_REST_API_URL present: true
+[DEBUG] KV_REST_API_TOKEN present: true
+[DEBUG] Creating rate limiter: 5 tokens per 60 s
+[DEBUG] Creating rate limiter: 15 tokens per 60 m
+[DEBUG] Creating rate limiter: 50 tokens per 24 h
+POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
+[TRPC API] Incoming request: http://0.0.0.0:3001/api/trpc/workspace.getById,workspace.getBrandAssets,workspace.getIntelligence?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%222%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%7D
+[TRPC Context] Creating context for GET http://0.0.0.0:3001/api/trpc/workspace.getById,workspace.getBrandAssets,workspace.getIntelligence?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%222%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%7D
+prisma:error 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
 
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
 
-> /conductor:newTrack Investigate and resolve why we are having issues with this tool and why agent has issues with it. We are not looking for
-  fickle fix but a holistic solution covering possible re-architecture, schema design and any other related area.
+2026-01-01T04:21:14.496Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
 
-  2025-12-31 02:13:10.279 [info] {
-    level: 'info',
-    event: 'agent.vision.step_finish',
-    ts: '2025-12-31T02:13:10.278Z',
-    toolCalls: [ { name: 'canvasTextToImage', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:13:10.280 [info] {
-    level: 'info',
-    event: 'agent.orchestrator.stream_step_finish',
-    ts: '2025-12-31T02:13:10.279Z',
-    toolCalls: [ { name: 'delegateToAgent', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:12:14.449 [error] {
-    level: 'error',
-    event: 'tool.html-to-canvas.validation_failed',
-    ts: '2025-12-31T02:12:14.448Z',
-    durationMs: 0,
-    message: 'Invalid tool input: Invalid input: expected string, received undefined',
-    receivedParameters: {
-      css: "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');\n" +
-        '\n' +
-        'body {\n' +
-        '    margin: 0;\n' +
-        '    padding: 0;\n' +
-        '    background-color: #FF0000;\n' +
-        "    font-family: 'Inter', sans-serif;\n" +
-        '    color: #000;\n' +
-        '    display: flex;\n' +
-        '    justify-content: center;\n' +
-        '    align-items: center;\n' +
-        '    height: 100vh;\n' +
-        '}\n' +
-        '\n' +
-        '.poster {\n' +
-        '    width: 768px;\n' +
-        '    height: 1376px;\n' +
-        '    background-color: #FF0000;\n' +
-        '    display: grid;\n' +
-        '    grid-template-columns: repeat(4, 1fr);\n' +
-        '    grid-template-rows: repeat(8, 1fr);\n' +
-        '    border: 20px solid #000;\n' +
-        '    box-sizing: border-box;\n' +
-        '    position: relative;\n' +
-        '}\n' +
-        '\n' +
-        '.grid-item {\n' +
-        '    border: 2px solid #000;\n' +
-        '    display: flex;\n' +
-        '    align-items: center;\n' +
-        '    justify-content: center;\n' +
-        '    padding: 10px;\n' +
-        '    overflow: hidden;\n' +
-        '    background-color: #FF0000;\n' +
-        '}\n' +
-        '\n' +
-        '.text-huge {\n' +
-        '    font-size: 140px;\n' +
-        '    line-height: 0.8;\n' +
-        '    letter-spacing: -5px;\n' +
-        '    text-transform: uppercase;\n' +
-        '    font-weight: 900;\n' +
-        '    text-align: center;\n' +
-        '}\n' +
-        '\n' +
-        '.text-medium {\n' +
-        '    font-size: 60px;\n' +
-        '    font-weight: 900;\n' +
-        '    text-transform: uppercase;\n' +
-        '}\n' +
-        '\n' +
-        '.text-small {\n' +
-        '    font-size: 20px;\n' +
-        '    font-weight: 700;\n' +
-        '    text-transform: uppercase;\n' +
-        '    line-height: 1.2;\n' +
-        '}\n' +
-        '\n' +
-        '.image-container {\n' +
-        '    grid-column: span 2;\n' +
-        '    grid-row: span 2;\n' +
-        '    background-color: #000;\n' +
-        '    position: relative;\n' +
-        '}\n' +
-        '\n' +
-        '.image-container img {\n' +
-        '    width: 100%;\n' +
-        '    height: 100%;\n' +
-        '    object-fit: cover;\n' +
-        '    filter: grayscale(100%) contrast(150%) brightness(80%);\n' +
-        '    mix-blend-mode: multiply;\n' +
-        '}\n' +
-        '\n' +
-        '.image-container::after {\n' +
-        "    content: '';\n" +
-        '    position: absolute;\n' +
-        '    top: 0;\n' +
-        '    left: 0;\n' +
-        '    width: 100%;\n' +
-        '    height: 100%;\n' +
-        '    background-color: #FF0000;\n' +
-        '    mix-blend-mode: screen;\n' +
-        '    pointer-events: none;\n' +
-        '}\n' +
-        '\n' +
-        '.header-date { grid-column: span 3; grid-row: 1; justify-content: flex-start; }\n' +
-        '.header-icon { grid-column: 4; grid-row: 1; }\n' +
-        '\n' +
-        '.brand-name-1 { grid-column: span 4; grid-row: 2; }\n' +
-        '.brand-name-2 { grid-column: span 4; grid-row: 3; }\n' +
-        '\n' +
-        '.sub-text-1 { grid-column: span 2; grid-row: 4; }\n' +
-        '.img-1 { grid-column: 3 / span 2; grid-row: 4 / span 2; }\n' +
-        '\n' +
-        '.sub-text-2 { grid-column: span 2; grid-row: 5; }\n' +
-        '\n' +
-        '.brand-name-3 { grid-column: span 4; grid-row: 6; }\n' +
-        '\n' +
-        '.footer-loc { grid-column: span 2; grid-row: 7; justify-content: flex-start; }\n' +
-        '.footer-arrow { grid-column: 3 / span 2; grid-row: 7; font-size: 100px; }\n' +
-        '\n' +
-        '.footer-details { grid-column: span 4; grid-row: 8; align-items: flex-end; justify-content: space-between; display: flex; padding:    
-  20px; }\n' +
-        '\n' +
-        '.black-bg { background-color: #000; color: #FF0000; }',
-      html: '<div class="poster">\n' +
-        '    <div class="grid-item header-date">\n' +
-        '        <div class="text-medium">24/02/24</div>\n' +
-        '    </div>\n' +
-        '    <div class="grid-item header-icon black-bg">\n' +
-        '        <div class="text-medium">C</div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="grid-item brand-name-1">\n' +
-        '        <div class="text-huge">CIMANTI</div>\n' +
-        '    </div>\n' +
-        '    <div class="grid-item brand-name-2">\n' +
-        '        <div class="text-huge">KOS</div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="grid-item sub-text-1">\n' +
-        '        <div class="text-medium">SS24</div>\n' +
-        '    </div>\n' +
-        '    <div class="grid-item img-1 image-container">\n' +
-        '        <img
-  src="https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/gemini/text-to-image/1767146496850-7fdb6125-6eca-4ed3-9049-9a2f8eb9eb40-PnL4tQ8h
-  RynHBoqDZuXh2OaU1FXp8z.jpeg" alt="Streetwear">\n' +
-        '    </div>\n' +
-        '    <div class="grid-item sub-text-2 black-bg">\n' +
-        '        <div class="text-medium">URBAN</div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="grid-item brand-name-3">\n' +
-        '        <div class="text-huge">COLLECTION</div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="grid-item footer-loc">\n' +
-        '        <div class="text-medium">TOKYO</div>\n' +
-        '    </div>\n' +
-        '    <div class="grid-item footer-arrow">\n' +
-        '        >>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="grid-item footer-details">\n' +
-        '        <div class="text-small">LONDON / NYC / PARIS<br>CIMANTIKOS.COM</div>\n' +
-        '        <div class="text-small">LIMITED RELEASE<br>DROP 01</div>\n' +
-        '    </div>\n' +
-        '</div>'
-    },
-    issues: [
-      {
-        expected: 'string',
-        code: 'invalid_type',
-        path: [Array],
-        message: 'Invalid input: expected string, received undefined'
-      }
-    ]
-  }
-  2025-12-31 02:12:14.453 [info] {
-    level: 'info',
-    event: 'agent.orchestrator.stream_step_finish',
-    ts: '2025-12-31T02:12:14.452Z',
-    toolCalls: [ { name: 'htmlToCanvas', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:12:20.168 [error] {
-    level: 'error',
-    event: 'tool.html-to-canvas.validation_failed',
-    ts: '2025-12-31T02:12:20.168Z',
-    durationMs: 1,
-    message: 'Invalid tool input: Invalid input: expected string, received undefined',
-    receivedParameters: {
-      css: '.poster { background: red; width: 100px; height: 100px; }',
-      html: '<div class="poster"></div>'
-    },
-    issues: [
-      {
-        expected: 'string',
-        code: 'invalid_type',
-        path: [Array],
-        message: 'Invalid input: expected string, received undefined'
-      }
-    ]
-  }
-  2025-12-31 02:12:20.174 [info] {
-    level: 'info',
-    event: 'agent.orchestrator.stream_step_finish',
-    ts: '2025-12-31T02:12:20.173Z',
-    toolCalls: [ { name: 'htmlToCanvas', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:12:23.561 [error] {
-    level: 'error',
-    event: 'tool.html-to-canvas.validation_failed',
-    ts: '2025-12-31T02:12:23.561Z',
-    durationMs: 1,
-    message: 'Invalid tool input: Invalid input: expected string, received undefined',
-    receivedParameters: {
-      html: '<div class="text">CIMANTIKOS</div>',
-      css: 'body { background: #FF0000; } .text { font-size: 50px; color: black; font-weight: bold; }'
-    },
-    issues: [
-      {
-        expected: 'string',
-        code: 'invalid_type',
-        path: [Array],
-        message: 'Invalid input: expected string, received undefined'
-      }
-    ]
-  }
-  2025-12-31 02:12:23.564 [info] {
-    level: 'info',
-    event: 'agent.orchestrator.stream_step_finish',
-    ts: '2025-12-31T02:12:23.563Z',
-    toolCalls: [ { name: 'htmlToCanvas', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:12:47.127 [error] {
-    level: 'error',
-    event: 'tool.html-to-canvas.validation_failed',
-    ts: '2025-12-31T02:12:47.126Z',
-    durationMs: 0,
-    message: 'Invalid tool input: Invalid input: expected string, received undefined',
-    receivedParameters: {
-      css: '\n' +
-        "    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Space+Mono&display=swap');\n" +
-        '\n' +
-        '    :root {\n' +
-        '      --brand-red: #FF0000;\n' +
-        '      --brand-black: #000000;\n' +
-        '    }\n' +
-        '\n' +
-        '    * {\n' +
-        '      box-sizing: border-box;\n' +
-        '      margin: 0;\n' +
-        '      padding: 0;\n' +
-        '    }\n' +
-        '\n' +
-        '    body {\n' +
-        '      background-color: var(--brand-red);\n' +
-        '      color: var(--brand-black);\n' +
-        "      font-family: 'Inter', sans-serif;\n" +
-        '      width: 1080px;\n' +
-        '      height: 1920px;\n' +
-        '      overflow: hidden;\n' +
-        '      display: grid;\n' +
-        '      grid-template-columns: repeat(12, 1fr);\n' +
-        '      grid-template-rows: repeat(16, 1fr);\n' +
-        '      padding: 60px;\n' +
-        '      position: relative;\n' +
-        '    }\n' +
-        '\n' +
-        '    .main-title {\n' +
-        '      grid-column: 1 / 13;\n' +
-        '      grid-row: 1 / 6;\n' +
-        '      font-size: 210px;\n' +
-        '      line-height: 0.8;\n' +
-        '      letter-spacing: -12px;\n' +
-        '      text-transform: uppercase;\n' +
-        '      word-break: break-all;\n' +
-        '      z-index: 10;\n' +
-        '      margin-top: 20px;\n' +
-        '    }\n' +
-        '\n' +
-        '    .image-container {\n' +
-        '      grid-column: 4 / 13;\n' +
-        '      grid-row: 6 / 15;\n' +
-        '      position: relative;\n' +
-        '      overflow: hidden;\n' +
-        '      border: 8px solid var(--brand-black);\n' +
-        '    }\n' +
-        '\n' +
-        '    .image-container img {\n' +
-        '      width: 100%;\n' +
-        '      height: 100%;\n' +
-        '      object-fit: cover;\n' +
-        '      filter: grayscale(100%) contrast(1.5);\n' +
-        '      mix-blend-mode: multiply;\n' +
-        '    }\n' +
-        '\n' +
-        '    .sidebar-info {\n' +
-        '      grid-column: 1 / 4;\n' +
-        '      grid-row: 6 / 15;\n' +
-        '      display: flex;\n' +
-        '      flex-direction: column;\n' +
-        '      justify-content: space-between;\n' +
-        '      padding-top: 20px;\n' +
-        "      font-family: 'Space Mono', monospace;\n" +
-        '      font-weight: bold;\n' +
-        '      font-size: 32px;\n' +
-        '      border-top: 8px solid var(--brand-black);\n' +
-        '    }\n' +
-        '\n' +
-        '    .ss24-footer {\n' +
-        '      grid-column: 1 / 13;\n' +
-        '      grid-row: 15 / 17;\n' +
-        '      display: flex;\n' +
-        '      align-items: flex-end;\n' +
-        '      justify-content: space-between;\n' +
-        '      border-top: 8px solid var(--brand-black);\n' +
-        '      font-size: 140px;\n' +
-        '      line-height: 1;\n' +
-        '    }\n' +
-        '\n' +
-        '    .locations {\n' +
-        '      writing-mode: vertical-rl;\n' +
-        '      text-transform: uppercase;\n' +
-        '      grid-column: 12 / 13;\n' +
-        '      grid-row: 6 / 14;\n' +
-        '      display: flex;\n' +
-        '      justify-content: space-between;\n' +
-        '      font-size: 24px;\n' +
-        '      padding-left: 20px;\n' +
-        "      font-family: 'Space Mono', monospace;\n" +
-        '    }\n' +
-        '  ',
-      html: '\n' +
-        '    <div class="main-title">CIMAN<br>TIKOS</div>\n' +
-        '    \n' +
-        '    <div class="sidebar-info">\n' +
-        '      <div>URBAN<br>COLLECTION</div>\n' +
-        '      <div style="transform: rotate(-90deg) translateX(-100%); transform-origin: left bottom; white-space: nowrap; margin-bottom:     
-  20px;">ESTABLISHED 2024</div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="image-container">\n' +
-        '      <img
-  src="https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/gemini/text-to-image/1767146496850-7fdb6125-6eca-4ed3-9049-9a2f8eb9eb40-PnL4tQ8h
-  RynHBoqDZuXh2OaU1FXp8z.jpeg" alt="Collection Image">\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="locations">\n' +
-        '      <span>TOKYO</span>\n' +
-        '      <span>LONDON</span>\n' +
-        '      <span>NYC</span>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="ss24-footer">\n' +
-        '      <span>SS24</span>\n' +
-        `      <span style="font-size: 32px; padding-bottom: 25px; font-family: 'Space Mono', monospace;">© STUDIO+233</span>\n` +
-        '    </div>\n' +
-        '  '
-    },
-    issues: [
-      {
-        expected: 'string',
-        code: 'invalid_type',
-        path: [Array],
-        message: 'Invalid input: expected string, received undefined'
-      }
-    ]
-  }
-  2025-12-31 02:12:47.128 [info] {
-    level: 'info',
-    event: 'agent.vision.step_finish',
-    ts: '2025-12-31T02:12:47.127Z',
-    toolCalls: [ { name: 'htmlToCanvas', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:12:50.412 [error] {
-    level: 'error',
-    event: 'tool.html-to-canvas.validation_failed',
-    ts: '2025-12-31T02:12:50.408Z',
-    durationMs: 0,
-    message: 'Invalid tool input: Invalid input: expected string, received undefined',
-    receivedParameters: {
-      html: '<div><h1>CIMANTIKOS</h1></div>',
-      css: 'body { background: red; color: black; font-family: sans-serif; height: 1920px; width: 1080px; } h1 { font-size: 100px; }'
-    },
-    issues: [
-      {
-        expected: 'string',
-        code: 'invalid_type',
-        path: [Array],
-        message: 'Invalid input: expected string, received undefined'
-      }
-    ]
-  }
-  2025-12-31 02:12:50.412 [info] {
-    level: 'info',
-    event: 'agent.vision.step_finish',
-    ts: '2025-12-31T02:12:50.409Z',
-    toolCalls: [ { name: 'htmlToCanvas', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:12:27.031 [info] [Delegation] Routing to vision with task: "The user wants a poster for their brand 'CIMANTIKO..."
-  2025-12-31 02:12:35.109 [error] {
-    level: 'error',
-    event: 'tool.html-generator.validation_failed',
-    ts: '2025-12-31T02:12:35.108Z',
-    durationMs: 1,
-    message: 'Invalid tool input: Invalid input: expected string, received undefined',
-    receivedParameters: {
-      css: '\n' +
-        "    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Space+Mono&display=swap');\n" +
-        '\n' +
-        '    :root {\n' +
-        '      --brand-red: #FF0000;\n' +
-        '      --brand-black: #000000;\n' +
-        '    }\n' +
-        '\n' +
-        '    * {\n' +
-        '      box-sizing: border-box;\n' +
-        '      margin: 0;\n' +
-        '      padding: 0;\n' +
-        '    }\n' +
-        '\n' +
-        '    body {\n' +
-        '      background-color: var(--brand-red);\n' +
-        '      color: var(--brand-black);\n' +
-        "      font-family: 'Inter', sans-serif;\n" +
-        '      width: 1080px;\n' +
-        '      height: 1920px;\n' +
-        '      overflow: hidden;\n' +
-        '      display: grid;\n' +
-        '      grid-template-columns: repeat(12, 1fr);\n' +
-        '      grid-template-rows: repeat(16, 1fr);\n' +
-        '      padding: 40px;\n' +
-        '      position: relative;\n' +
-        '    }\n' +
-        '\n' +
-        '    .main-title {\n' +
-        '      grid-column: 1 / 13;\n' +
-        '      grid-row: 2 / 6;\n' +
-        '      font-size: 160px;\n' +
-        '      line-height: 0.85;\n' +
-        '      letter-spacing: -8px;\n' +
-        '      text-transform: uppercase;\n' +
-        '      word-break: break-all;\n' +
-        '      z-index: 10;\n' +
-        '    }\n' +
-        '\n' +
-        '    .image-container {\n' +
-        '      grid-column: 4 / 13;\n' +
-        '      grid-row: 6 / 15;\n' +
-        '      position: relative;\n' +
-        '      overflow: hidden;\n' +
-        '      border: 4px solid var(--brand-black);\n' +
-        '    }\n' +
-        '\n' +
-        '    .image-container img {\n' +
-        '      width: 100%;\n' +
-        '      height: 100%;\n' +
-        '      object-fit: cover;\n' +
-        '      filter: grayscale(100%) contrast(1.2);\n' +
-        '      mix-blend-mode: multiply;\n' +
-        '    }\n' +
-        '\n' +
-        '    .sidebar-info {\n' +
-        '      grid-column: 1 / 4;\n' +
-        '      grid-row: 6 / 16;\n' +
-        '      display: flex;\n' +
-        '      flex-direction: column;\n' +
-        '      justify-content: space-between;\n' +
-        '      padding-top: 20px;\n' +
-        "      font-family: 'Space Mono', monospace;\n" +
-        '      font-weight: bold;\n' +
-        '      font-size: 24px;\n' +
-        '      border-top: 4px solid var(--brand-black);\n' +
-        '    }\n' +
-        '\n' +
-        '    .ss24 {\n' +
-        '      font-size: 120px;\n' +
-        '      grid-column: 1 / 13;\n' +
-        '      grid-row: 15 / 17;\n' +
-        '      display: flex;\n' +
-        '      align-items: flex-end;\n' +
-        '      justify-content: space-between;\n' +
-        '      border-top: 4px solid var(--brand-black);\n' +
-        '    }\n' +
-        '\n' +
-        '    .locations {\n' +
-        '      writing-mode: vertical-rl;\n' +
-        '      text-transform: uppercase;\n' +
-        '      grid-column: 12 / 13;\n' +
-        '      grid-row: 6 / 14;\n' +
-        '      display: flex;\n' +
-        '      justify-content: space-between;\n' +
-        '      font-size: 18px;\n' +
-        '      padding-left: 10px;\n' +
-        '    }\n' +
-        '\n' +
-        '    .grid-line {\n' +
-        '      position: absolute;\n' +
-        '      background: var(--brand-black);\n' +
-        '      opacity: 0.1;\n' +
-        '    }\n' +
-        '  ',
-      html: '\n' +
-        '    <div class="main-title">CIMAN<br>TIKOS</div>\n' +
-        '    \n' +
-        '    <div class="sidebar-info">\n' +
-        '      <div>URBAN<br>COLLECTION</div>\n' +
-        '      <div style="transform: rotate(-90deg) translateX(-100%); transform-origin: left bottom; white-space: nowrap;">ESTABLISHED       
-  2024</div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="image-container">\n' +
-        '      <img
-  src="https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/gemini/text-to-image/1767146496850-7fdb6125-6eca-4ed3-9049-9a2f8eb9eb40-PnL4tQ8h
-  RynHBoqDZuXh2OaU1FXp8z.jpeg" alt="Collection Image">\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="locations">\n' +
-        '      <span>TOKYO</span>\n' +
-        '      <span>LONDON</span>\n' +
-        '      <span>NYC</span>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="ss24">\n' +
-        '      <span>SS24</span>\n' +
-        '      <span style="font-size: 24px; padding-bottom: 20px;">© STUDIO+233</span>\n' +
-        '    </div>\n' +
-        '  '
-    },
-    issues: [
-      {
-        expected: 'string',
-        code: 'invalid_type',
-        path: [Array],
-        message: 'Invalid input: expected string, received undefined'
-      }
-    ]
-  }
-  2025-12-31 02:12:35.109 [info] {
-    level: 'info',
-    event: 'agent.vision.step_finish',
-    ts: '2025-12-31T02:12:35.108Z',
-    toolCalls: [ { name: 'htmlGenerator', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
-  2025-12-31 02:12:41.048 [error] {
-    level: 'error',
-    event: 'tool.html-generator.validation_failed',
-    ts: '2025-12-31T02:12:41.047Z',
-    durationMs: 1,
-    message: 'Invalid tool input: Invalid input: expected string, received undefined',
-    receivedParameters: {
-      css: '\n' +
-        "    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Space+Mono&display=swap');\n" +
-        '\n' +
-        '    :root {\n' +
-        '      --brand-red: #FF0000;\n' +
-        '      --brand-black: #000000;\n' +
-        '    }\n' +
-        '\n' +
-        '    * {\n' +
-        '      box-sizing: border-box;\n' +
-        '      margin: 0;\n' +
-        '      padding: 0;\n' +
-        '    }\n' +
-        '\n' +
-        '    body {\n' +
-        '      background-color: var(--brand-red);\n' +
-        '      color: var(--brand-black);\n' +
-        "      font-family: 'Inter', sans-serif;\n" +
-        '      width: 1080px;\n' +
-        '      height: 1920px;\n' +
-        '      overflow: hidden;\n' +
-        '      display: grid;\n' +
-        '      grid-template-columns: repeat(12, 1fr);\n' +
-        '      grid-template-rows: repeat(16, 1fr);\n' +
-        '      padding: 60px;\n' +
-        '      position: relative;\n' +
-        '    }\n' +
-        '\n' +
-        '    .main-title {\n' +
-        '      grid-column: 1 / 13;\n' +
-        '      grid-row: 1 / 6;\n' +
-        '      font-size: 210px;\n' +
-        '      line-height: 0.8;\n' +
-        '      letter-spacing: -12px;\n' +
-        '      text-transform: uppercase;\n' +
-        '      word-break: break-all;\n' +
-        '      z-index: 10;\n' +
-        '      margin-top: 20px;\n' +
-        '    }\n' +
-        '\n' +
-        '    .image-container {\n' +
-        '      grid-column: 4 / 13;\n' +
-        '      grid-row: 6 / 15;\n' +
-        '      position: relative;\n' +
-        '      overflow: hidden;\n' +
-        '      border: 8px solid var(--brand-black);\n' +
-        '    }\n' +
-        '\n' +
-        '    .image-container img {\n' +
-        '      width: 100%;\n' +
-        '      height: 100%;\n' +
-        '      object-fit: cover;\n' +
-        '      filter: grayscale(100%) contrast(1.5);\n' +
-        '      mix-blend-mode: multiply;\n' +
-        '    }\n' +
-        '\n' +
-        '    .sidebar-info {\n' +
-        '      grid-column: 1 / 4;\n' +
-        '      grid-row: 6 / 15;\n' +
-        '      display: flex;\n' +
-        '      flex-direction: column;\n' +
-        '      justify-content: space-between;\n' +
-        '      padding-top: 20px;\n' +
-        "      font-family: 'Space Mono', monospace;\n" +
-        '      font-weight: bold;\n' +
-        '      font-size: 32px;\n' +
-        '      border-top: 8px solid var(--brand-black);\n' +
-        '    }\n' +
-        '\n' +
-        '    .ss24-footer {\n' +
-        '      grid-column: 1 / 13;\n' +
-        '      grid-row: 15 / 17;\n' +
-        '      display: flex;\n' +
-        '      align-items: flex-end;\n' +
-        '      justify-content: space-between;\n' +
-        '      border-top: 8px solid var(--brand-black);\n' +
-        '      font-size: 140px;\n' +
-        '      line-height: 1;\n' +
-        '    }\n' +
-        '\n' +
-        '    .locations {\n' +
-        '      writing-mode: vertical-rl;\n' +
-        '      text-transform: uppercase;\n' +
-        '      grid-column: 12 / 13;\n' +
-        '      grid-row: 6 / 14;\n' +
-        '      display: flex;\n' +
-        '      justify-content: space-between;\n' +
-        '      font-size: 24px;\n' +
-        '      padding-left: 20px;\n' +
-        "      font-family: 'Space Mono', monospace;\n" +
-        '    }\n' +
-        '  ',
-      title: 'CIMANTIKOS SS24 Poster',
-      html: '\n' +
-        '    <div class="main-title">CIMAN<br>TIKOS</div>\n' +
-        '    \n' +
-        '    <div class="sidebar-info">\n' +
-        '      <div>URBAN<br>COLLECTION</div>\n' +
-        '      <div style="transform: rotate(-90deg) translateX(-100%); transform-origin: left bottom; white-space: nowrap; margin-bottom:     
-  20px;">ESTABLISHED 2024</div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="image-container">\n' +
-        '      <img
-  src="https://2lkalc8atjuztgjx.public.blob.vercel-storage.com/gemini/text-to-image/1767146496850-7fdb6125-6eca-4ed3-9049-9a2f8eb9eb40-PnL4tQ8h
-  RynHBoqDZuXh2OaU1FXp8z.jpeg" alt="Collection Image">\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="locations">\n' +
-        '      <span>TOKYO</span>\n' +
-        '      <span>LONDON</span>\n' +
-        '      <span>NYC</span>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div class="ss24-footer">\n' +
-        '      <span>SS24</span>\n' +
-        `      <span style="font-size: 32px; padding-bottom: 25px; font-family: 'Space Mono', monospace;">© STUDIO+233</span>\n` +
-        '    </div>\n' +
-        '  '
-    },
-    issues: [
-      {
-        expected: 'string',
-        code: 'invalid_type',
-        path: [Array],
-        message: 'Invalid input: expected string, received undefined'
-      }
-    ]
-  }
-  2025-12-31 02:12:41.048 [info] {
-    level: 'info',
-    event: 'agent.vision.step_finish',
-    ts: '2025-12-31T02:12:41.048Z',
-    toolCalls: [ { name: 'htmlGenerator', args: [Object] } ],
-    finishReason: 'tool-calls'
-  }
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
+
+    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:36:11)
+    at async (src/server/trpc/routers/workspace.ts:117:20)
+  34 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  35 |          try {
+> 36 |                  return await auth.api.getSession({ headers });
+     |                         ^
+  37 |          } catch (error) {
+  38 |                  lastError = error;
+  39 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
+  code: 'ETIMEDOUT',
+  meta: [Object],
+  clientVersion: '7.1.0'
+}
+[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: [Object],
+  headers: {},
+  statusCode: 500
+}
+prisma:error 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
+
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
+
+2026-01-01T04:21:15.648Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
+
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
+
+    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:36:11)
+    at async (src/server/trpc/routers/workspace.ts:257:20)
+  34 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  35 |          try {
+> 36 |                  return await auth.api.getSession({ headers });
+     |                         ^
+  37 |          } catch (error) {
+  38 |                  lastError = error;
+  39 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
+  code: 'ETIMEDOUT',
+  meta: [Object],
+  clientVersion: '7.1.0'
+}
+[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: [Object],
+  headers: {},
+  statusCode: 500
+}
+❌ tRPC failed on workspace.getBrandAssets: UNAUTHORIZED
+prisma:error 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
+
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
+
+2026-01-01T04:21:16.192Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
+Invalid `db[model].findFirst()` invocation in
+/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
+
+  2485     map.set(key, getModelName(joinModel));
+  2486 }
+  2487 const selects = convertSelect(select, model, join);
+→ 2488 let result = await db[model].findFirst(
+
+    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:36:11)
+    at async (src/server/trpc/routers/workspace.ts:314:20)
+  34 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  35 |          try {
+> 36 |                  return await auth.api.getSession({ headers });
+     |                         ^
+  37 |          } catch (error) {
+  38 |                  lastError = error;
+  39 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
+  code: 'ETIMEDOUT',
+  meta: [Object],
+  clientVersion: '7.1.0'
+}
+[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
+  status: 'INTERNAL_SERVER_ERROR',
+  body: [Object],
+  headers: {},
+  statusCode: 500
+}
+❌ tRPC failed on workspace.getIntelligence: UNAUTHORIZED
+ GET /api/trpc/workspace.getById,workspace.getBrandAssets,workspace.getIntelligence?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%222%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%7D 207 in 3.2min (compile: 2.2min, render: 62s)

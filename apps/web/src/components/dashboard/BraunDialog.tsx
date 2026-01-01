@@ -216,7 +216,7 @@ export function BraunDialog({
 											{type === "CANVAS" ? (
 												<SwissIcons.Frame size={24} />
 											) : (
-												<SwissIcons.Sequence size={24} />
+												<SwissIcons.Circle size={24} />
 											)}
 										</div>
 									</div>
@@ -246,7 +246,7 @@ export function BraunDialog({
 														: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
 												}`}
 											>
-												<SwissIcons.Sequence className="w-3 h-3" />
+												<SwissIcons.Circle className="w-3 h-3" />
 												Studio
 											</button>
 										</div>
