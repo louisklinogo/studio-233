@@ -1,3 +1,4 @@
+import type { VisionAnalysisResult } from "@studio233/ai/schemas/vision-analysis";
 import { runVisionAnalysisWorkflow } from "@studio233/ai/workflows/vision-analysis";
 import { prisma } from "@studio233/db";
 import { brandTextIngestionService, initLlamaIndex } from "@studio233/rag";
@@ -18,7 +19,7 @@ export const brandVisionSync = inngest.createFunction(
 		const { url, workspaceId, filename, assetId, classification } = event.data;
 
 		// 1. Run Vision Analysis (No DB Connection Held)
-		const analysis = await step.run("extract-visual-dna", async () => {
+		const analysis = (await step.run("extract-visual-dna", async () => {
 			return await runVisionAnalysisWorkflow(
 				{
 					imageUrl: url,
@@ -37,7 +38,7 @@ export const brandVisionSync = inngest.createFunction(
 					},
 				},
 			);
-		});
+		})) as VisionAnalysisResult;
 
 		// 2. Index Visual Insights into RAG (Short DB Interaction)
 		await step.run("index-visual-knowledge", async () => {

@@ -18,6 +18,9 @@ export const assetRouter = router({
 				mimeType: z.string(),
 				workspaceId: z.string(),
 				isBrandAsset: z.boolean().default(false),
+				classification: z
+					.enum(["CORE_BRAND_MARK", "INDEX_AS_INSPIRATION"])
+					.optional(),
 				metadata: z.record(z.string(), z.any()).optional(),
 			}),
 		)
@@ -62,7 +65,9 @@ export const assetRouter = router({
 					type: assetType,
 					workspaceId: input.workspaceId,
 					isBrandAsset: input.isBrandAsset,
-					metadata: (input.metadata as Prisma.InputJsonValue) ?? {},
+					metadata: (input.metadata as Prisma.InputJsonValue) ?? {
+						classification: input.classification,
+					},
 				},
 			});
 
@@ -70,6 +75,7 @@ export const assetRouter = router({
 
 			// Background Ingestion (Async)
 			if (input.isBrandAsset) {
+				const classification = input.classification || "CORE_BRAND_MARK";
 				if (input.mimeType === "application/pdf") {
 					await inngest.send({
 						name: "brand.knowledge.ingested",
@@ -78,6 +84,7 @@ export const assetRouter = router({
 							assetId: asset.id,
 							url: input.url,
 							filename: input.name,
+							classification,
 						},
 					});
 				} else if (input.mimeType.startsWith("image/")) {
@@ -88,6 +95,7 @@ export const assetRouter = router({
 							assetId: asset.id,
 							url: input.url,
 							filename: input.name,
+							classification,
 						},
 					});
 				}

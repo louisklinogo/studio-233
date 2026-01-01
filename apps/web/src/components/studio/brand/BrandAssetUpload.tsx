@@ -4,7 +4,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { upload } from "@vercel/blob/client";
 import { motion } from "framer-motion";
 import React, { useRef, useState } from "react";
+import { Label } from "@/components/ui/label";
 import { SwissIcons } from "@/components/ui/SwissIcons";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 
@@ -22,6 +24,7 @@ export function BrandAssetUpload({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
+	const [isInspiration, setIsInspiration] = useState(false);
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 
@@ -45,6 +48,10 @@ export function BrandAssetUpload({
 		onStatusChange?.("INITIALIZING_UPLOADS...");
 
 		try {
+			const classification = isInspiration
+				? "INDEX_AS_INSPIRATION"
+				: "CORE_BRAND_MARK";
+
 			const fileList = Array.from(files);
 			for (let i = 0; i < fileList.length; i++) {
 				const file = fileList[i];
@@ -69,6 +76,7 @@ export function BrandAssetUpload({
 					name: file.name,
 					url: blob.url,
 					workspaceId,
+					classification,
 				});
 
 				// 2. Register in DB as Brand Asset
@@ -79,6 +87,7 @@ export function BrandAssetUpload({
 					mimeType: file.type || "application/octet-stream",
 					workspaceId,
 					isBrandAsset: true,
+					classification,
 				});
 				console.log("[BrandAssetUpload] DB Registration successful");
 			}
@@ -125,53 +134,71 @@ export function BrandAssetUpload({
 	};
 
 	return (
-		<div className="relative w-full h-full">
-			<input
-				type="file"
-				ref={fileInputRef}
-				className="hidden"
-				multiple
-				accept="image/*,application/pdf"
-				onChange={handleFileChange}
-			/>
+		<div className="relative w-full h-full flex flex-col gap-4">
+			<div className="flex items-center justify-between px-2">
+				<Label
+					htmlFor="inspiration-mode"
+					className="font-mono text-[8px] uppercase tracking-widest text-neutral-500 cursor-pointer"
+				>
+					{isInspiration ? "MODE: INSPIRATION" : "MODE: CORE_MARK"}
+				</Label>
+				<Switch
+					id="inspiration-mode"
+					checked={isInspiration}
+					onCheckedChange={setIsInspiration}
+					disabled={isUploading}
+					className="data-[state=checked]:bg-[#FF4D00] scale-75"
+				/>
+			</div>
 
-			<button
-				onClick={() => fileInputRef.current?.click()}
-				disabled={isUploading}
-				className={cn(
-					"w-full h-full flex flex-col items-center justify-center transition-all relative overflow-hidden rounded-sm group",
-					isUploading
-						? "bg-neutral-50 dark:bg-black/40 cursor-wait"
-						: "bg-white dark:bg-black border border-dashed border-neutral-200 dark:border-white/10 hover:border-[#FF4D00] hover:bg-neutral-50 dark:hover:bg-[#FF4D00]/5",
-				)}
-			>
-				{isUploading ? (
-					<>
-						{/* Upward filling progress background */}
-						<motion.div
-							initial={{ height: 0 }}
-							animate={{ height: `${uploadProgress}%` }}
-							className="absolute bottom-0 left-0 right-0 bg-[#FF4D00]/10 pointer-events-none"
-						/>
-						<SwissIcons.Spinner
-							size={20}
-							className="animate-spin text-[#FF4D00] relative z-10 mb-2"
-						/>
-						<span className="font-mono text-[8px] text-[#FF4D00] font-bold relative z-10 uppercase tracking-widest">
-							{uploadProgress}%
-						</span>
-					</>
-				) : (
-					<>
-						<span className="text-3xl font-light text-neutral-300 group-hover:text-[#FF4D00] transition-colors mb-1">
-							+
-						</span>
-						<span className="font-mono text-[7px] text-neutral-400 group-hover:text-[#FF4D00] uppercase tracking-[0.2em] transition-colors">
-							Add_Asset
-						</span>
-					</>
-				)}
-			</button>
+			<div className="flex-1 relative">
+				<input
+					type="file"
+					ref={fileInputRef}
+					className="hidden"
+					multiple
+					accept="image/*,application/pdf"
+					onChange={handleFileChange}
+				/>
+
+				<button
+					onClick={() => fileInputRef.current?.click()}
+					disabled={isUploading}
+					className={cn(
+						"w-full h-full flex flex-col items-center justify-center transition-all relative overflow-hidden rounded-sm group",
+						isUploading
+							? "bg-neutral-50 dark:bg-black/40 cursor-wait min-h-[120px]"
+							: "bg-white dark:bg-black border border-dashed border-neutral-200 dark:border-white/10 hover:border-[#FF4D00] hover:bg-neutral-50 dark:hover:bg-[#FF4D00]/5 min-h-[120px]",
+					)}
+				>
+					{isUploading ? (
+						<>
+							{/* Upward filling progress background */}
+							<motion.div
+								initial={{ height: 0 }}
+								animate={{ height: `${uploadProgress}%` }}
+								className="absolute bottom-0 left-0 right-0 bg-[#FF4D00]/10 pointer-events-none"
+							/>
+							<SwissIcons.Spinner
+								size={20}
+								className="animate-spin text-[#FF4D00] relative z-10 mb-2"
+							/>
+							<span className="font-mono text-[8px] text-[#FF4D00] font-bold relative z-10 uppercase tracking-widest">
+								{uploadProgress}%
+							</span>
+						</>
+					) : (
+						<>
+							<span className="text-3xl font-light text-neutral-300 group-hover:text-[#FF4D00] transition-colors mb-1">
+								+
+							</span>
+							<span className="font-mono text-[7px] text-neutral-400 group-hover:text-[#FF4D00] uppercase tracking-[0.2em] transition-colors">
+								{isInspiration ? "Upload_Inspiration" : "Add_Brand_Mark"}
+							</span>
+						</>
+					)}
+				</button>
+			</div>
 		</div>
 	);
 }
