@@ -6,7 +6,7 @@
 - [x] Task: Audit global type state - Run `turbo run type-check` and pipe to `build-issues.txt` for baseline. 775b0bd
 - [x] Task: Harden `@studio233/brand` package - Resolve errors and update interfaces. 835e8dc
 - [x] Task: Harden `@studio233/db` package - Fix Prisma client types and repository patterns. f4f70b3
-- [ ] Task: Harden `@studio233/api` package - Fix tRPC router and context types.
+- [x] Task: Harden `@studio233/api` package - Fix tRPC router and context types. a7ecc17
 - [ ] Task: Conductor - User Manual Verification 'Core Hardening' (Protocol in workflow.md)
 
 ## Phase 2: Application Layer Resolution
