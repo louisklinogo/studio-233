@@ -3,7 +3,12 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@studio233/brand": ["../../packages/brand/src/index.ts"],
+			"@studio233/api": ["../../packages/api/src/index.ts"],
+			"@studio233/db": ["../../packages/db/src/index.ts"],
+			"@studio233/auth": ["../../packages/auth/src/index.ts"],
+			"@studio233/inngest": ["../../packages/inngest/src/index.ts"]
 		},
 		"jsx": "preserve",
 		"lib": ["es2017", "dom", "dom.iterable"],

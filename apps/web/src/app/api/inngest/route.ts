@@ -7,7 +7,6 @@ import {
 	createProcessStudioWorkflow,
 	inngest,
 	processFashionItem,
-	processWorkflowRun,
 } from "@studio233/inngest";
 import { serve } from "inngest/next";
 import type { NextRequest } from "next/server";

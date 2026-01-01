@@ -23,9 +23,9 @@ export const brandVisionSync = inngest.createFunction(
 			return await runVisionAnalysisWorkflow(
 				{
 					imageUrl: url,
-					mode: "full",
 				},
 				{
+					mode: "full",
 					onResult: async (result, imageHash) => {
 						await inngest.send({
 							name: "vision.archive.requested",

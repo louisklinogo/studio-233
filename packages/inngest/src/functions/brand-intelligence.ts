@@ -1,6 +1,6 @@
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { GEMINI_PRO_MODEL } from "@studio233/ai/model-config";
-import { prisma } from "@studio233/db";
+import { createGoogleProvider } from "@studio233/ai/utils/model";
+import { Prisma, prisma } from "@studio233/db";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { inngest } from "../client";
@@ -49,7 +49,7 @@ export const brandIntelligenceSynthesize = inngest.createFunction(
 			await step.run("clear-brand-summary", async () => {
 				await prisma.workspace.update({
 					where: { id: workspaceId },
-					data: { brandSummary: null },
+					data: { brandSummary: Prisma.DbNull },
 				});
 			});
 			return { status: "cleared" };
@@ -57,7 +57,7 @@ export const brandIntelligenceSynthesize = inngest.createFunction(
 
 		// 2. Synthesize using LLM
 		const synthesis = await step.run("synthesize-dna", async () => {
-			const google = createGoogleGenerativeAI({
+			const google = createGoogleProvider({
 				apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 			});
 
