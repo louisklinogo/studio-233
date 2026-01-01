@@ -3,8 +3,8 @@
 ## Phase 1: Core Package Hardening (Bottom-Up)
 *Goal: Ensure the foundation packages are type-safe to prevent error cascading.*
 
-- [x] Task: Audit global type state - Run `turbo run type-check` and pipe to `build-issues.txt` for baseline.
-- [ ] Task: Harden `@studio233/brand` package - Resolve errors and update interfaces.
+- [x] Task: Audit global type state - Run `turbo run type-check` and pipe to `build-issues.txt` for baseline. 775b0bd
+- [x] Task: Harden `@studio233/brand` package - Resolve errors and update interfaces. 835e8dc
 - [ ] Task: Harden `@studio233/db` package - Fix Prisma client types and repository patterns.
 - [ ] Task: Harden `@studio233/api` package - Fix tRPC router and context types.
 - [ ] Task: Conductor - User Manual Verification 'Core Hardening' (Protocol in workflow.md)
