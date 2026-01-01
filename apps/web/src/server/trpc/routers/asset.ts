@@ -139,8 +139,16 @@ export const assetRouter = router({
 				},
 			});
 
-			return await prisma.asset.delete({
+			const result = await prisma.asset.delete({
 				where: { id: input.id },
 			});
+
+			// Trigger re-synthesis of the brand manifesto since knowledge base changed
+			await inngest.send({
+				name: "brand.intelligence.sync_requested",
+				data: { workspaceId: asset.workspaceId! },
+			});
+
+			return result;
 		}),
 });
