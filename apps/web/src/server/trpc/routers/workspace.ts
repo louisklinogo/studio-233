@@ -348,13 +348,14 @@ export const workspaceRouter = router({
 				});
 
 				// Extract semantic insights from text or metadata
-				if (node.text.includes("DESIGN_AESTHETIC:")) {
-					const match = node.text.match(/DESIGN_AESTHETIC: (.*)/);
+				// We now prioritize the specific markers we set in vision-sync
+				if (node.text.includes("Aesthetic DNA:")) {
+					const match = node.text.match(/Aesthetic DNA: (.*)/);
 					if (match && !deducedAesthetic) deducedAesthetic = match[1];
 				}
 
-				if (node.text.includes("DETECTED_ELEMENTS:")) {
-					const match = node.text.match(/DETECTED_ELEMENTS: (.*)/);
+				if (node.text.includes("Form & Geometry:")) {
+					const match = node.text.match(/Form & Geometry: (.*)/);
 					if (match) {
 						match[1].split(",").forEach((attr) => {
 							const trimmed = attr.trim().toUpperCase();
@@ -366,11 +367,18 @@ export const workspaceRouter = router({
 				}
 			}
 
+			// 3. Get synthesized summary from workspace
+			const workspace = await prisma.workspace.findUnique({
+				where: { id: input.workspaceId },
+				select: { brandSummary: true },
+			});
+
 			return {
 				totalNodes: knowledge.length,
 				sources: Array.from(sourceMap.values()),
 				deducedAttributes: Array.from(deducedAttributes),
 				deducedAesthetic: deducedAesthetic || "Awaiting further analysis...",
+				brandSummary: workspace?.brandSummary as any,
 				lastIndexed: knowledge.length > 0 ? knowledge[0].createdAt : null,
 				systemState: knowledge.length > 0 ? "STABLE" : "UNINITIALIZED",
 			};
@@ -395,7 +403,6 @@ export const workspaceRouter = router({
 			});
 
 			// 2. Get all indexed asset IDs from metadata
-			// Note: We use queryRaw because metadata is a JSONB field and assetId is nested
 			const indexedAssetIds = await prisma.brandKnowledge.findMany({
 				where: { workspace_id: input.workspaceId },
 				select: { metadata: true },
@@ -412,6 +419,9 @@ export const workspaceRouter = router({
 			let triggeredCount = 0;
 
 			for (const asset of missingAssets) {
+				const classification =
+					(asset.metadata as any)?.classification || "CORE_BRAND_MARK";
+
 				if (asset.mimeType === "application/pdf") {
 					await inngest.send({
 						name: "brand.knowledge.ingested",
@@ -420,6 +430,7 @@ export const workspaceRouter = router({
 							assetId: asset.id,
 							url: asset.url,
 							filename: asset.name,
+							classification,
 						},
 					});
 					triggeredCount++;
@@ -431,10 +442,19 @@ export const workspaceRouter = router({
 							assetId: asset.id,
 							url: asset.url,
 							filename: asset.name,
+							classification,
 						},
 					});
 					triggeredCount++;
 				}
+			}
+
+			// 4. ALWAYS trigger a fresh synthesis if we have assets
+			if (assets.length > 0) {
+				await inngest.send({
+					name: "brand.intelligence.sync_requested",
+					data: { workspaceId: input.workspaceId },
+				});
 			}
 
 			return {
