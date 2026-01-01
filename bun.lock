@@ -188,6 +188,7 @@
         "@ai-sdk/devtools": "^0.0.1",
         "@ai-sdk/google": "^3.0.1",
         "@fal-ai/client": "^1.7.0",
+        "@studio233/brand": "workspace:*",
         "@studio233/rag": "workspace:*",
         "@vercel/blob": "^1.1.1",
         "@vercel/kv": "^3.0.0",
@@ -305,6 +306,7 @@
     "packages/inngest": {
       "name": "@studio233/inngest",
       "dependencies": {
+        "@ai-sdk/google": "^3.0.1",
         "@studio233/ai": "workspace:*",
         "@studio233/db": "workspace:*",
         "@studio233/rag": "workspace:*",

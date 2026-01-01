@@ -26,6 +26,7 @@
 		"@studio233/db": "workspace:*",
 		"@studio233/ai": "workspace:*",
 		"@studio233/rag": "workspace:*",
+		"@ai-sdk/google": "^3.0.1",
 		"@vercel/blob": "^1.1.1",
 		"inngest": "^3.45.1",
 		"zod": "catalog:"
