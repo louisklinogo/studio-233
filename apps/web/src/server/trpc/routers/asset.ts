@@ -151,4 +151,66 @@ export const assetRouter = router({
 
 			return result;
 		}),
+
+	/**
+	 * Bulk delete assets
+	 */
+	bulkDelete: publicProcedure
+		.input(z.object({ ids: z.array(z.string()) }))
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+
+			if (!session) {
+				throw new TRPCError({ code: "UNAUTHORIZED" });
+			}
+
+			// 1. Verify ownership for all assets and get workspaceId
+			const assets = await prisma.asset.findMany({
+				where: { id: { in: input.ids } },
+				include: { workspace: true },
+			});
+
+			if (assets.length === 0) return { count: 0 };
+
+			const workspaceId = assets[0].workspaceId;
+			const unauthorized = assets.some(
+				(a) => a.workspace?.userId !== session.user.id,
+			);
+
+			if (unauthorized) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Unauthorized access to one or more assets",
+				});
+			}
+
+			// 2. Purge RAG memory for all these assets
+			await prisma.brandKnowledge.deleteMany({
+				where: {
+					workspace_id: workspaceId,
+					OR: input.ids.map((id) => ({
+						metadata: {
+							path: ["assetId"],
+							equals: id,
+						},
+					})),
+				},
+			});
+
+			// 3. Delete the assets
+			const result = await prisma.asset.deleteMany({
+				where: { id: { in: input.ids } },
+			});
+
+			// 4. Trigger single re-synthesis
+			if (workspaceId) {
+				await inngest.send({
+					name: "brand.intelligence.sync_requested",
+					data: { workspaceId },
+				});
+			}
+
+			return result;
+		}),
 });

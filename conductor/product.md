@@ -22,6 +22,6 @@ studio+233 is the AI-native creative operating system designed to bridge the gap
 - **Vortex Kinetic Stream:** A cinematic, scroll-triggered narrative entry point that bridges identity with industrial workflow through high-fidelity motion.
 - **Infinite Canvas:** A high-performance spatial interface for organizing, generating, and manipulating creative assets.
 - **Agent Orchestration:** Specialized agents like **Vision Forge** (image processing), **Motion Director** (video), and **Insight Researcher** (analysis) working in concert.
-- **Ambient Brand Intelligence:** Agents are natively brand-aware by default, pre-emptively injected with core identity signals and semantic guidelines.
+- **Ambient Brand Intelligence:** Agents are natively brand-aware by default, pre-emptively injected with a synthesized **Brand Manifesto** and semantic design rules derived from the **System Knowledge Hub**.
 - **Batch Refinery:** An industrial-grade pipeline for high-volume asset processing and automated transformation.
 - **Workflow Designer:** A visual node-based builder for composing custom AI-powered batch processing workflows.

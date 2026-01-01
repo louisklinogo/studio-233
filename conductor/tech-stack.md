@@ -19,7 +19,7 @@
 - **AI Orchestration:** Vercel AI SDK with Resilient Design-Render Pipeline (Architecture of Intent: `renderHtml` vs `htmlToCanvas`) and Content-Addressable Storage (CAS)
 
 ## AI Models & Providers
-- **Agent Intelligence:** Google Gemini (Gemini 2.5/3 Pro/Flash)
+- **Agent Intelligence:** Google Gemini (Gemini 3 Pro/Flash)
 - **Media Generation:** fal.ai (Flux models, Video models)
 
 ## Infrastructure & Storage

@@ -134,11 +134,11 @@ export function BrandAssetUpload({
 	};
 
 	return (
-		<div className="relative w-full h-full flex flex-col gap-4">
-			<div className="flex items-center justify-between px-2">
+		<div className="relative w-full h-full flex flex-col gap-2">
+			<div className="flex items-center justify-between px-1">
 				<Label
 					htmlFor="inspiration-mode"
-					className="font-mono text-[8px] uppercase tracking-widest text-neutral-500 cursor-pointer"
+					className="font-mono text-[7px] uppercase tracking-widest text-neutral-500 cursor-pointer"
 				>
 					{isInspiration ? "MODE: INSPIRATION" : "MODE: CORE_MARK"}
 				</Label>
@@ -147,11 +147,11 @@ export function BrandAssetUpload({
 					checked={isInspiration}
 					onCheckedChange={setIsInspiration}
 					disabled={isUploading}
-					className="data-[state=checked]:bg-[#FF4D00] scale-75"
+					className="data-[state=checked]:bg-[#FF4D00] scale-[0.6] origin-right"
 				/>
 			</div>
 
-			<div className="flex-1 relative">
+			<div className="flex-1 relative min-h-0">
 				<input
 					type="file"
 					ref={fileInputRef}
@@ -167,8 +167,8 @@ export function BrandAssetUpload({
 					className={cn(
 						"w-full h-full flex flex-col items-center justify-center transition-all relative overflow-hidden rounded-sm group",
 						isUploading
-							? "bg-neutral-50 dark:bg-black/40 cursor-wait min-h-[120px]"
-							: "bg-white dark:bg-black border border-dashed border-neutral-200 dark:border-white/10 hover:border-[#FF4D00] hover:bg-neutral-50 dark:hover:bg-[#FF4D00]/5 min-h-[120px]",
+							? "bg-neutral-50 dark:bg-black/40 cursor-wait"
+							: "bg-white dark:bg-black border border-dashed border-neutral-200 dark:border-white/10 hover:border-[#FF4D00] hover:bg-neutral-50 dark:hover:bg-[#FF4D00]/5",
 					)}
 				>
 					{isUploading ? (

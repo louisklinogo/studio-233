@@ -45,11 +45,11 @@ function BrandSection({
 			className="bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 p-8 rounded-sm space-y-6 flex-1 overflow-y-auto scrollbar-swiss shadow-sm"
 		>
 			<div className="flex flex-col gap-1 border-b border-neutral-100 dark:border-neutral-800 pb-4">
-				<h3 className="font-mono text-xs uppercase tracking-widest font-black text-neutral-900 dark:text-white">
+				<h3 className="font-mono text-sm uppercase tracking-widest font-bold text-neutral-900 dark:text-white">
 					{title}
 				</h3>
 				{description && (
-					<p className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400 max-w-prose uppercase tracking-tight">
+					<p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-prose">
 						{description}
 					</p>
 				)}
@@ -202,6 +202,7 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 		"ALL" | "IMAGE" | "DOCUMENT"
 	>("ALL");
 	const [isPolling, setIsPolling] = useState(false);
+	const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
 
 	// Local state for instant preview feedback
 	const [localFont, setLocalFont] = useState<string>("Cabinet Grotesk");
@@ -304,6 +305,21 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 		}),
 	);
 
+	const bulkDeleteAssets = useMutation(
+		trpc.asset.bulkDelete.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries(
+					trpc.workspace.getBrandAssets.queryFilter({ workspaceId }),
+				);
+				setSelectedAssetIds([]);
+				setStatusMessage("BATCH_PURGE_COMPLETE");
+			},
+			onError: () => {
+				setStatusMessage("BATCH_PURGE_FAULT");
+			},
+		}),
+	);
+
 	const syncArchive = useMutation(
 		trpc.workspace.syncArchive.mutationOptions({
 			onSuccess: (data) => {
@@ -358,11 +374,11 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 				<div className="space-y-2">
 					<div className="flex items-center gap-2">
 						<SwissIcons.Dna className="text-[#FF4D00]" size={16} />
-						<span className="font-mono text-[10px] font-black tracking-[0.4em] text-[#FF4D00] uppercase">
+						<span className="font-mono text-xs tracking-[0.3em] text-[#FF4D00]">
 							SYSTEM_BRAND_DNA
 						</span>
 					</div>
-					<h1 className="text-5xl font-black tracking-tighter text-neutral-900 dark:text-white uppercase leading-[0.8]">
+					<h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
 						Brand Architecture
 					</h1>
 				</div>
@@ -550,9 +566,9 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 								description="Logo variations and brand marks indexed for the RAG engine. Context_Assets: LINKED"
 							>
 								<div className="space-y-8">
-									{/* Archive Control Bar */}
-									<div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-4">
-										<div className="flex gap-1 bg-neutral-100 dark:bg-neutral-900 p-1 rounded-sm">
+									{/* 01. Archive Control Bar (Filters + Multi-Select) */}
+									<div className="flex flex-col md:flex-row md:items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-6 gap-4">
+										<div className="flex gap-1 bg-neutral-100 dark:bg-neutral-900 p-1 rounded-sm w-fit">
 											{(["ALL", "IMAGE", "DOCUMENT"] as const).map((filter) => (
 												<button
 													key={filter}
@@ -572,17 +588,55 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 												</button>
 											))}
 										</div>
-										<div className="font-mono text-[9px] text-neutral-400">
-											NODE_COUNT:{" "}
-											{brandAssets?.filter(
-												(a) =>
-													archiveFilter === "ALL" ||
-													(archiveFilter === "IMAGE"
-														? a.type === "IMAGE"
-														: a.type === "DOCUMENT"),
-											).length || 0}
+
+										<div className="flex items-center gap-6">
+											<div className="flex items-center gap-4">
+												<button
+													onClick={() => {
+														const filtered =
+															brandAssets?.filter(
+																(a) =>
+																	archiveFilter === "ALL" ||
+																	(archiveFilter === "IMAGE"
+																		? a.type === "IMAGE"
+																		: a.type === "DOCUMENT"),
+															) || [];
+														if (selectedAssetIds.length === filtered.length) {
+															setSelectedAssetIds([]);
+														} else {
+															setSelectedAssetIds(filtered.map((a) => a.id));
+														}
+													}}
+													className="font-mono text-[9px] text-neutral-400 hover:text-neutral-900 dark:hover:text-white uppercase tracking-widest border-r border-neutral-200 dark:border-neutral-800 pr-4 transition-colors"
+												>
+													{selectedAssetIds.length ===
+													(brandAssets?.filter(
+														(a) =>
+															archiveFilter === "ALL" ||
+															(archiveFilter === "IMAGE"
+																? a.type === "IMAGE"
+																: a.type === "DOCUMENT"),
+													).length || 0)
+														? "DESELECT_ALL"
+														: "SELECT_ALL"}
+												</button>
+												<div className="font-mono text-[9px] text-neutral-400 uppercase tracking-tighter">
+													TOTAL_NODES:{" "}
+													<span className="text-neutral-900 dark:text-white font-bold">
+														{brandAssets?.filter(
+															(a) =>
+																archiveFilter === "ALL" ||
+																(archiveFilter === "IMAGE"
+																	? a.type === "IMAGE"
+																	: a.type === "DOCUMENT"),
+														).length || 0}
+													</span>
+												</div>
+											</div>
 										</div>
 									</div>
+
+									{/* 02. Asset Grid */}
 
 									{!hasLogo && !isAssetsLoading && (
 										<div className="group p-12 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm flex flex-col items-center justify-center text-center space-y-6 bg-neutral-50/30 dark:bg-white/5 transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/10">
@@ -603,6 +657,7 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 											</div>
 										</div>
 									)}
+
 									<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-px bg-neutral-100 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-900 overflow-hidden rounded-sm">
 										{brandAssets
 											?.filter(
@@ -612,56 +667,108 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 														? asset.type === "IMAGE"
 														: asset.type === "DOCUMENT"),
 											)
-											.map((asset: any, idx: number) => (
-												<motion.div
-													key={asset.id}
-													initial={{ opacity: 0, scale: 0.95 }}
-													animate={{ opacity: 1, scale: 1 }}
-													transition={{ delay: idx * 0.05 }}
-													className="group relative aspect-square bg-white dark:bg-[#050505] flex flex-col p-4 transition-all hover:z-10 hover:shadow-2xl"
-												>
-													<div className="flex-1 flex items-center justify-center overflow-hidden mb-4 p-2">
-														{asset.type === "DOCUMENT" ? (
-															<div className="w-full h-full flex flex-col items-center justify-center space-y-2 bg-neutral-50 dark:bg-neutral-900/50 rounded-sm">
-																<SwissIcons.Archive
-																	size={32}
-																	className="text-neutral-300"
-																/>
-																<span className="font-mono text-[8px] text-neutral-400">
-																	GUIDE_PDF
-																</span>
-															</div>
-														) : (
-															<img
-																src={asset.url}
-																alt={asset.name}
-																className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 scale-90 group-hover:scale-100"
-															/>
+											.map((asset: any, idx: number) => {
+												const isSelected = selectedAssetIds.includes(asset.id);
+												return (
+													<motion.div
+														key={asset.id}
+														initial={{ opacity: 0, scale: 0.95 }}
+														animate={{ opacity: 1, scale: 1 }}
+														transition={{ delay: idx * 0.05 }}
+														onClick={() => {
+															if (selectedAssetIds.includes(asset.id)) {
+																setSelectedAssetIds((prev) =>
+																	prev.filter((id) => id !== asset.id),
+																);
+															} else {
+																setSelectedAssetIds((prev) => [
+																	...prev,
+																	asset.id,
+																]);
+															}
+														}}
+														className={cn(
+															"group relative aspect-square flex flex-col p-4 transition-all cursor-pointer",
+															isSelected
+																? "bg-neutral-50 dark:bg-[#111] z-10 shadow-inner"
+																: "bg-white dark:bg-[#050505] hover:z-10 hover:shadow-2xl",
 														)}
-													</div>
-													<div className="space-y-2 pt-2 border-t border-neutral-50 dark:border-neutral-900">
-														<div className="flex justify-between items-start">
-															<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-tighter">
-																REF:{asset.id.slice(0, 6)}
-															</span>
-															<button
-																onClick={() =>
-																	deleteAsset.mutate({ id: asset.id })
-																}
-																className="text-neutral-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+													>
+														{/* Selection Indicator (Braun Switch Style) */}
+														<div className="absolute top-3 left-3 z-20">
+															<div
+																className={cn(
+																	"w-3 h-3 border border-neutral-200 dark:border-neutral-800 rounded-[1px] transition-all flex items-center justify-center",
+																	isSelected
+																		? "bg-[#FF4D00] border-[#FF4D00]"
+																		: "bg-white dark:bg-black",
+																)}
 															>
-																<SwissIcons.Trash size={10} />
-															</button>
+																{isSelected && (
+																	<div className="w-1 h-1 bg-white rounded-full" />
+																)}
+															</div>
 														</div>
-														<span className="font-mono text-[9px] text-neutral-600 dark:text-neutral-400 uppercase truncate block font-bold tracking-tight">
-															{asset.name.split(".")[0]}
-														</span>
-													</div>
-													{/* Corner Accents */}
-													<div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-neutral-200 dark:border-neutral-800 opacity-50" />
-													<div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-neutral-200 dark:border-neutral-800 opacity-50 group-hover:border-[#FF4D00] group-hover:opacity-100" />
-												</motion.div>
-											))}
+
+														<div className="flex-1 flex items-center justify-center overflow-hidden mb-4 p-2">
+															{asset.type === "DOCUMENT" ? (
+																<div className="w-full h-full flex flex-col items-center justify-center space-y-2 bg-neutral-50 dark:bg-neutral-900/50 rounded-sm">
+																	<SwissIcons.Archive
+																		size={32}
+																		className={cn(
+																			"transition-colors",
+																			isSelected
+																				? "text-[#FF4D00]"
+																				: "text-neutral-300",
+																		)}
+																	/>
+																	<span className="font-mono text-[8px] text-neutral-400">
+																		GUIDE_PDF
+																	</span>
+																</div>
+															) : (
+																<img
+																	src={asset.url}
+																	alt={asset.name}
+																	className={cn(
+																		"max-w-full max-h-full object-contain transition-all duration-500 scale-90 group-hover:scale-100",
+																		isSelected ? "grayscale-0" : "grayscale",
+																	)}
+																/>
+															)}
+														</div>
+														<div className="space-y-2 pt-2 border-t border-neutral-50 dark:border-neutral-900">
+															<div className="flex justify-between items-start">
+																<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-tighter">
+																	REF:{asset.id.slice(0, 6)}
+																</span>
+																<button
+																	onClick={(e) => {
+																		e.stopPropagation();
+																		deleteAsset.mutate({ id: asset.id });
+																	}}
+																	className="text-neutral-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+																>
+																	<SwissIcons.Trash size={10} />
+																</button>
+															</div>
+															<span className="font-mono text-[9px] text-neutral-600 dark:text-neutral-400 uppercase truncate block font-bold tracking-tight">
+																{asset.name.split(".")[0]}
+															</span>
+														</div>
+														{/* Corner Accents */}
+														<div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-neutral-200 dark:border-neutral-800 opacity-50" />
+														<div
+															className={cn(
+																"absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-neutral-200 dark:border-neutral-800 opacity-50 transition-colors",
+																isSelected
+																	? "border-[#FF4D00] opacity-100"
+																	: "group-hover:border-[#FF4D00] group-hover:opacity-100",
+															)}
+														/>
+													</motion.div>
+												);
+											})}
 
 										<div className="aspect-square bg-neutral-50 dark:bg-[#0a0a0a] flex items-center justify-center">
 											<div className="w-full h-full p-4">
@@ -1003,6 +1110,65 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 									</div>
 								</div>
 							</BrandSection>
+						)}
+					</AnimatePresence>
+
+					{/* 03. Braun Bulk Control Module (Integrated Tray) */}
+					<AnimatePresence>
+						{selectedAssetIds.length > 0 && (
+							<motion.div
+								initial={{ y: 20, opacity: 0 }}
+								animate={{ y: 0, opacity: 1 }}
+								exit={{ y: 20, opacity: 0 }}
+								transition={{ type: "spring", damping: 30, stiffness: 400 }}
+								className="absolute bottom-6 left-6 right-6 z-50"
+							>
+								<div className="bg-neutral-900 dark:bg-black border border-[#FF4D00]/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-sm p-4 flex items-center justify-between gap-8 backdrop-blur-md">
+									<div className="flex items-center gap-6">
+										<div className="flex items-center gap-2">
+											<div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+											<span className="font-mono text-[9px] text-white uppercase tracking-[0.2em] font-black">
+												SELECTION_ACTIVE
+											</span>
+										</div>
+										<div className="h-8 w-px bg-neutral-800" />
+										<div className="flex flex-col">
+											<span className="font-mono text-[10px] text-white font-bold tracking-tighter">
+												{selectedAssetIds.length}_NODES_STAGED
+											</span>
+											<span className="font-mono text-[7px] text-neutral-500 uppercase tracking-widest">
+												COMMAND_EXPECTED
+											</span>
+										</div>
+									</div>
+
+									<div className="flex items-center gap-3">
+										<button
+											onClick={() => setSelectedAssetIds([])}
+											className="px-4 py-2 font-mono text-[9px] text-neutral-400 hover:text-white uppercase tracking-widest transition-colors"
+										>
+											CANCEL
+										</button>
+										<button
+											onClick={() =>
+												bulkDeleteAssets.mutate({ ids: selectedAssetIds })
+											}
+											disabled={bulkDeleteAssets.isPending}
+											className="px-6 py-2 bg-[#FF4D00] text-white hover:bg-black hover:text-[#FF4D00] border border-[#FF4D00] font-mono text-[10px] uppercase tracking-[0.2em] font-black rounded-sm transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50 shadow-[0_0_15px_rgba(255,77,0,0.2)]"
+										>
+											{bulkDeleteAssets.isPending ? (
+												<SwissIcons.Spinner
+													className="animate-spin"
+													size={12}
+												/>
+											) : (
+												<SwissIcons.Trash size={12} />
+											)}
+											EXECUTE_BATCH_PURGE
+										</button>
+									</div>
+								</div>
+							</motion.div>
 						)}
 					</AnimatePresence>
 				</div>

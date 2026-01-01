@@ -1,0 +1,8 @@
+{
+	"track_id": "type_hardening_resolution_20260101",
+	"type": "chore",
+	"status": "new",
+	"created_at": "2026-01-01T12:00:00Z",
+	"updated_at": "2026-01-01T12:00:00Z",
+	"description": "Run type check and resolve issues across the monorepo as a senior architect."
+}
