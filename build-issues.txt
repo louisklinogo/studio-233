@@ -1,131 +1,52 @@
- ○ Compiling /api/trpc/[trpc] ...
-[DEBUG] Rate limiter enabled: AW7kAAIncDI0ODVkOTg2MGUyNzg0ZDcxYWMwMTYyZTA2MjEzYzFmOHAyMjgzODg
-[DEBUG] KV_REST_API_URL present: true
-[DEBUG] KV_REST_API_TOKEN present: true
-[DEBUG] Creating rate limiter: 5 tokens per 60 s
-[DEBUG] Creating rate limiter: 15 tokens per 60 m
-[DEBUG] Creating rate limiter: 50 tokens per 24 h
-POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
-[DEBUG] Rate limiter enabled: AW7kAAIncDI0ODVkOTg2MGUyNzg0ZDcxYWMwMTYyZTA2MjEzYzFmOHAyMjgzODg
-[DEBUG] KV_REST_API_URL present: true
-[DEBUG] KV_REST_API_TOKEN present: true
-[DEBUG] Creating rate limiter: 5 tokens per 60 s
-[DEBUG] Creating rate limiter: 15 tokens per 60 m
-[DEBUG] Creating rate limiter: 50 tokens per 24 h
-POLAR_ACCESS_TOKEN is not configured; Polar features are disabled.
-[TRPC API] Incoming request: http://0.0.0.0:3001/api/trpc/workspace.getById,workspace.getBrandAssets,workspace.getIntelligence?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%222%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%7D
-[TRPC Context] Creating context for GET http://0.0.0.0:3001/api/trpc/workspace.getById,workspace.getBrandAssets,workspace.getIntelligence?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%222%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%7D
-prisma:error 
-Invalid `db[model].findFirst()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
+turbo 2.6.3
 
-  2485     map.set(key, getModelName(joinModel));
-  2486 }
-  2487 const selects = convertSelect(select, model, join);
-→ 2488 let result = await db[model].findFirst(
+• Packages in scope: @studio233/ai, @studio233/api, @studio233/auth, @studio233/brand, @studio233/canvas, @studio233/config, @studio233/db, @studio233/inngest, @studio233/rag, @studio233/ui, canvas, web
+• Running check-types in 12 packages
+• Remote caching disabled
+@studio233/rag:check-types: cache miss, executing 19d4beeeed46b0ca
+@studio233/rag:check-types: $ tsc --noEmit
+@studio233/rag:check-types: src/index.ts(15,7): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?
+@studio233/rag:check-types: error: script "check-types" exited with code 1
+@studio233/rag:check-types: command finished with error, but continuing...
+web:check-types: cache miss, executing f60555c1c5b410b8
+web:check-types: $ tsc --noEmit
+web:check-types: src/app/api/chat/brand-integration.test.ts(1,46): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/app/api/chat/brand-integration.test.ts(45,29): error TS7006: Parameter 'agent' implicitly has an 'any' type.
+web:check-types: src/app/api/chat/brand-integration.test.ts(45,36): error TS7006: Parameter 'options' implicitly has an 'any' type.
+web:check-types: src/app/api/chat/brand-integration.test.ts(57,32): error TS7006: Parameter 'msgs' implicitly has an 'any' type.
+web:check-types: src/app/api/chat/route.test.ts(1,46): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/app/api/chat/route.test.ts(54,32): error TS7006: Parameter 'msgs' implicitly has an 'any' type.
+web:check-types: src/app/api/chat/route.ts(9,37): error TS2307: Cannot find module '@studio233/brand' or its corresponding type declarations.
+web:check-types: src/app/api/inngest/route.ts(10,2): error TS2305: Module '"@studio233/inngest"' has no exported member 'processWorkflowRun'.
+web:check-types: src/components/landing/KineticTrack.test.tsx(1,30): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/components/landing/VortexContainer.test.tsx(1,30): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/components/landing/VortexHero.test.tsx(1,30): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/components/landing/VortexHeroV2.svg.test.tsx(1,30): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/components/landing/VortexHeroV2.svg.test.tsx(2,35): error TS2307: Cannot find module '@happy-dom/global-registrator' or its corresponding type declarations.
+web:check-types: src/components/landing/VortexHeroV2.svg.test.tsx(17,39): error TS7006: Parameter 'content' implicitly has an 'any' type.
+web:check-types: src/components/landing/VortexHeroV2.svg.test.tsx(17,48): error TS7006: Parameter 'element' implicitly has an 'any' type.
+web:check-types: src/components/landing/VortexHeroV2.test.tsx(1,30): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/hooks/useWorkflowTimeline.test.tsx(1,36): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/hooks/useWorkflowTimeline.test.tsx(2,33): error TS2307: Cannot find module '@testing-library/react' or its corresponding type declarations.
+web:check-types: src/server/trpc/routers/asset.test.ts(1,22): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/server/trpc/routers/asset.test.ts(18,18): error TS7006: Parameter 'data' implicitly has an 'any' type.
+web:check-types: src/server/trpc/routers/asset.test.ts(62,38): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+web:check-types: src/server/trpc/routers/workspace.ts(373,15): error TS2353: Object literal may only specify known properties, and 'brandSummary' does not exist in type 'WorkspaceSelect<DefaultArgs>'.
+web:check-types: src/server/trpc/routers/workspace.ts(381,30): error TS2339: Property 'brandSummary' does not exist on type '{ id: string; description: string | null; createdAt: Date; updatedAt: Date; name: string; userId: string; slug: string | null; brandProfile: JsonValue; }'.
+web:check-types: ../../packages/auth/src/index.ts(48,2): error TS2353: Object literal may only specify known properties, and 'debug' does not exist in type 'BetterAuthOptions'.
+web:check-types: ../../packages/auth/src/index.ts(118,2): error TS2502: 'auth' is referenced directly or indirectly in its own type annotation.
+web:check-types: ../../packages/auth/src/index.ts(121,14): error TS7022: 'auth' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+web:check-types: ../../packages/inngest/src/functions/brand-intelligence.ts(52,14): error TS2353: Object literal may only specify known properties, and 'brandSummary' does not exist in type '(Without<WorkspaceUpdateInput, WorkspaceUncheckedUpdateInput> & WorkspaceUncheckedUpdateInput) | (Without<...> & WorkspaceUpdateInput)'.
+web:check-types: ../../packages/inngest/src/functions/brand-intelligence.ts(89,13): error TS2353: Object literal may only specify known properties, and 'brandSummary' does not exist in type '(Without<WorkspaceUpdateInput, WorkspaceUncheckedUpdateInput> & WorkspaceUncheckedUpdateInput) | (Without<...> & WorkspaceUpdateInput)'.
+web:check-types: ../../packages/inngest/src/functions/brand-vision-sync.ts(26,6): error TS2353: Object literal may only specify known properties, and 'mode' does not exist in type '{ imageUrl: string; }'.
+web:check-types: ../../packages/rag/src/index.ts(15,7): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?
+web:check-types: command finished with error, but continuing...
+@studio233/rag#check-types: command (/home/paco/projects/studio+233/packages/rag) /home/paco/.bun/bin/bun run check-types exited (1)
+web#check-types: command (/home/paco/projects/studio+233/apps/web) /home/paco/.bun/bin/bun run check-types exited (2)
 
-2026-01-01T04:21:14.496Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
-Invalid `db[model].findFirst()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
+ Tasks:    0 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    2m50.386s 
+Failed:    @studio233/rag#check-types, web#check-types
 
-  2485     map.set(key, getModelName(joinModel));
-  2486 }
-  2487 const selects = convertSelect(select, model, join);
-→ 2488 let result = await db[model].findFirst(
-
-    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:36:11)
-    at async (src/server/trpc/routers/workspace.ts:117:20)
-  34 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-  35 |          try {
-> 36 |                  return await auth.api.getSession({ headers });
-     |                         ^
-  37 |          } catch (error) {
-  38 |                  lastError = error;
-  39 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
-  code: 'ETIMEDOUT',
-  meta: [Object],
-  clientVersion: '7.1.0'
-}
-[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
-  status: 'INTERNAL_SERVER_ERROR',
-  body: [Object],
-  headers: {},
-  statusCode: 500
-}
-prisma:error 
-Invalid `db[model].findFirst()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
-
-  2485     map.set(key, getModelName(joinModel));
-  2486 }
-  2487 const selects = convertSelect(select, model, join);
-→ 2488 let result = await db[model].findFirst(
-
-2026-01-01T04:21:15.648Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
-Invalid `db[model].findFirst()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
-
-  2485     map.set(key, getModelName(joinModel));
-  2486 }
-  2487 const selects = convertSelect(select, model, join);
-→ 2488 let result = await db[model].findFirst(
-
-    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:36:11)
-    at async (src/server/trpc/routers/workspace.ts:257:20)
-  34 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-  35 |          try {
-> 36 |                  return await auth.api.getSession({ headers });
-     |                         ^
-  37 |          } catch (error) {
-  38 |                  lastError = error;
-  39 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
-  code: 'ETIMEDOUT',
-  meta: [Object],
-  clientVersion: '7.1.0'
-}
-[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
-  status: 'INTERNAL_SERVER_ERROR',
-  body: [Object],
-  headers: {},
-  statusCode: 500
-}
-❌ tRPC failed on workspace.getBrandAssets: UNAUTHORIZED
-prisma:error 
-Invalid `db[model].findFirst()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
-
-  2485     map.set(key, getModelName(joinModel));
-  2486 }
-  2487 const selects = convertSelect(select, model, join);
-→ 2488 let result = await db[model].findFirst(
-
-2026-01-01T04:21:16.192Z ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error [PrismaClientKnownRequestError]: 
-Invalid `db[model].findFirst()` invocation in
-/home/paco/projects/studio+233/apps/web/.next/dev/server/chunks/ssr/19d9b_better-auth_dist_f16b21a9._.js:2488:50
-
-  2485     map.set(key, getModelName(joinModel));
-  2486 }
-  2487 const selects = convertSelect(select, model, join);
-→ 2488 let result = await db[model].findFirst(
-
-    at async getSessionWithRetry (../../packages/auth/src/lib/session.ts:36:11)
-    at async (src/server/trpc/routers/workspace.ts:314:20)
-  34 |  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-  35 |          try {
-> 36 |                  return await auth.api.getSession({ headers });
-     |                         ^
-  37 |          } catch (error) {
-  38 |                  lastError = error;
-  39 |                  if (isTransientNetworkError(error) && attempt < maxRetries) { {
-  code: 'ETIMEDOUT',
-  meta: [Object],
-  clientVersion: '7.1.0'
-}
-[auth] getSessionWithRetry failed [Error [APIError]: Failed to get session] {
-  status: 'INTERNAL_SERVER_ERROR',
-  body: [Object],
-  headers: {},
-  statusCode: 500
-}
-❌ tRPC failed on workspace.getIntelligence: UNAUTHORIZED
- GET /api/trpc/workspace.getById,workspace.getBrandAssets,workspace.getIntelligence?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22id%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%2C%222%22%3A%7B%22json%22%3A%7B%22workspaceId%22%3A%22cmjtlrzn40002okcrhnmfhkvr%22%7D%7D%7D 207 in 3.2min (compile: 2.2min, render: 62s)
+ ERROR  run failed: command  exited (2)
