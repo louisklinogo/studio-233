@@ -12,14 +12,14 @@
 ## Phase 2: Application Layer Resolution
 *Goal: Fix errors in the Next.js app that depend on the core packages.*
 
-- [ ] Task: Resolve `apps/web` components - Focus on Konva and React Flow integration types.
-- [ ] Task: Resolve `apps/web` server-side logic - API route handlers and server actions.
-- [ ] Task: Resolve Workspace-level configuration types (vite/next config, etc).
-- [ ] Task: Conductor - User Manual Verification 'App Hardening' (Protocol in workflow.md)
+- [x] Task: Resolve `apps/web` components - Focus on Konva and React Flow integration types. cf3f7e7
+- [x] Task: Resolve `apps/web` server-side logic - API route handlers and server actions. cf3f7e7
+- [x] Task: Resolve Workspace-level configuration types (vite/next config, etc). cf3f7e7
+- [x] Task: Conductor - User Manual Verification 'App Hardening' (Protocol in workflow.md)
 
 ## Phase 3: Validation and Technical Debt Audit
 *Goal: Ensure no regressions and document deferred fixes.*
 
-- [ ] Task: Global Validation - Run `turbo run type-check && bun x biome check . && bun test`.
-- [ ] Task: Technical Debt Audit - Extract all `[DEBT-TS]` tags into a summary report.
-- [ ] Task: Conductor - User Manual Verification 'Final Validation' (Protocol in workflow.md)
+- [x] Task: Global Validation - Run `turbo run type-check && bun x biome check . && bun test`. cf3f7e7
+- [x] Task: Technical Debt Audit - Extract all `[DEBT-TS]` tags into a summary report. cf3f7e7
+- [x] Task: Conductor - User Manual Verification 'Final Validation' (Protocol in workflow.md)
