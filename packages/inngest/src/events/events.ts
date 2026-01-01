@@ -6,17 +6,45 @@ export const brandVisionSyncEvent = "brand.asset.vision_sync" as const;
 export const processFashionItemEvent = "studio/process-fashion-item" as const;
 export const visionArchiveRequestedEvent = "vision.archive.requested" as const;
 export const visionCleanupRequestedEvent = "vision.cleanup.requested" as const;
+export const brandIntelligenceSyncEvent =
+	"brand.intelligence.sync_requested" as const;
+
+export const brandKnowledgeClassificationSchema = z.enum([
+	"CORE_BRAND_MARK",
+	"INDEX_AS_INSPIRATION",
+]);
+
+export type BrandKnowledgeClassification = z.infer<
+	typeof brandKnowledgeClassificationSchema
+>;
 
 export const brandKnowledgeIngestedSchema = z.object({
 	workspaceId: z.string(),
 	assetId: z.string(),
 	url: z.string().url(),
 	filename: z.string(),
+	classification: brandKnowledgeClassificationSchema,
 });
 
 export type BrandKnowledgeIngested = z.infer<
 	typeof brandKnowledgeIngestedSchema
 >;
+
+export const brandIntelligenceSyncSchema = z.object({
+	workspaceId: z.string(),
+});
+
+export type BrandIntelligenceSync = z.infer<typeof brandIntelligenceSyncSchema>;
+
+export const brandVisionSyncSchema = z.object({
+	workspaceId: z.string(),
+	assetId: z.string(),
+	url: z.string().url(),
+	filename: z.string(),
+	classification: brandKnowledgeClassificationSchema,
+});
+
+export type BrandVisionSync = z.infer<typeof brandVisionSyncSchema>;
 
 export const visionArchiveRequestedSchema = z.object({
 	imageUrl: z.string().url(),
