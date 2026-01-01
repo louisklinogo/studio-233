@@ -15,7 +15,7 @@ export const brandVisionSync = inngest.createFunction(
 	},
 	{ event: "brand.asset.vision_sync" },
 	async ({ event, step }) => {
-		const { url, workspaceId, filename, assetId } = event.data;
+		const { url, workspaceId, filename, assetId, classification } = event.data;
 
 		// 1. Run Vision Analysis (No DB Connection Held)
 		const analysis = await step.run("extract-visual-dna", async () => {
@@ -47,13 +47,20 @@ export const brandVisionSync = inngest.createFunction(
 
 			initLlamaIndex(googleApiKey);
 
-			// Construct a "Visual Rule" document
+			// Construct a "Visual DNA" document - moving from literal to semantic
 			const visualRule = `
-				BRAND_VISUAL_MARK: ${filename}
-				ICONOGRAPHY_STYLE: ${analysis.global_context.scene_description}
-				DOMINANT_COLORS: ${analysis.color_palette.dominant_hex_estimates.join(", ")}
-				DETECTED_ELEMENTS: ${analysis.objects.map((o) => o.label).join(", ")}
-				DESIGN_AESTHETIC: This brand mark follows a ${analysis.global_context.scene_description.toLowerCase()} aesthetic.
+				ASSET_IDENTITY: ${filename}
+				SEMANTIC_CLASS: ${classification}
+				
+				VISUAL_DEDUCTION:
+				- Context: ${analysis.global_context.scene_description}
+				- Aesthetic DNA: ${analysis.global_context.weather_atmosphere || "Industrial Minimalism"}
+				- Form & Geometry: ${analysis.objects.map((o) => o.label).join(", ")}
+				- Signal Palette: ${analysis.color_palette.dominant_hex_estimates.join(", ")}
+				
+				REASONING_FRAGMENT: 
+				The visual presence of ${filename} suggests a brand identity centered on ${analysis.global_context.weather_atmosphere?.toLowerCase() || "functional clarity"}. 
+				The composition utilizes ${analysis.composition.camera_angle} framing which projects a sense of ${analysis.composition.camera_angle === "eye-level" ? "stability and accessibility" : "authority"}.
 			`;
 
 			// Manually store this knowledge chunk (with Embeddings)
@@ -66,12 +73,16 @@ export const brandVisionSync = inngest.createFunction(
 				metadata: {
 					source: "Vision_Analysis",
 					type: "visual_dna",
+					classification,
 				},
 			});
 		});
 
 		// 3. Auto-Sync Palette (Short DB Interaction)
 		await step.run("sync-core-palette", async () => {
+			// Only auto-sync palette for core brand marks
+			if (classification !== "CORE_BRAND_MARK") return;
+
 			const workspace = await prisma.workspace.findUnique({
 				where: { id: workspaceId },
 				select: { id: true, brandProfile: true },
@@ -100,6 +111,14 @@ export const brandVisionSync = inngest.createFunction(
 					},
 				});
 			}
+		});
+
+		// 4. Trigger Global Synthesis Sync
+		await step.run("trigger-synthesis", async () => {
+			await inngest.send({
+				name: "brand.intelligence.sync_requested",
+				data: { workspaceId },
+			});
 		});
 
 		return { status: "synchronized", assetId };

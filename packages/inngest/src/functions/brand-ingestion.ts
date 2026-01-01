@@ -14,7 +14,7 @@ export const brandIngestion = inngest.createFunction(
 	},
 	{ event: brandKnowledgeIngestedEvent },
 	async ({ event, step }) => {
-		const { url, workspaceId, filename, assetId } = event.data;
+		const { url, workspaceId, filename, assetId, classification } = event.data;
 
 		await step.run("index-and-store", async () => {
 			const dbUrl = process.env.DATABASE_URL;
@@ -34,6 +34,14 @@ export const brandIngestion = inngest.createFunction(
 				assetId,
 				filename,
 				dbUrl,
+			});
+		});
+
+		// 3. Trigger Global Synthesis Sync
+		await step.run("trigger-synthesis", async () => {
+			await inngest.send({
+				name: "brand.intelligence.sync_requested",
+				data: { workspaceId },
 			});
 		});
 
