@@ -84,8 +84,25 @@ describe("Identity Resolver", () => {
 		const identity = await resolveIdentity(workspaceId);
 		expect(identity.primaryColor).toBe("#000000");
 	});
-});
 
+	test("handles malformed brandProfile by returning defaults", async () => {
+		const workspaceId = "malformed-ws";
+		// @ts-ignore
+		prisma.workspace.findUnique.mockImplementationOnce(() =>
+			Promise.resolve({
+				brandProfile: {
+					notAColor: "garbage",
+				},
+			}),
+		);
+		// @ts-ignore
+		kv.get = mock(() => Promise.resolve(null));
+
+		const identity = await resolveIdentity(workspaceId);
+		expect(identity.primaryColor).toBe("#111111"); // Default
+		expect(identity.fontFamily).toBe("Cabinet Grotesk"); // Default
+	});
+});
 describe("Knowledge Resolver", () => {
 	test("retrieves top 3 snippets from RAG", async () => {
 		const workspaceId = "test-ws";

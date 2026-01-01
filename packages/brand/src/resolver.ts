@@ -1,9 +1,16 @@
 import { prisma } from "@studio233/db";
 import { initLlamaIndex, retrievalService } from "@studio233/rag";
 import { kv } from "@vercel/kv";
+import { z } from "zod";
 import type { BrandContext, BrandIdentity } from "./types";
 
 const IDENTITY_CACHE_TTL = 300; // 5 minutes
+
+const brandIdentitySchema = z.object({
+	primaryColor: z.string().default("#111111"),
+	accentColor: z.string().default("#888888"),
+	fontFamily: z.string().default("Cabinet Grotesk"),
+});
 
 export async function resolveIdentity(
 	workspaceId: string,
@@ -14,7 +21,7 @@ export async function resolveIdentity(
 	try {
 		const cached = await kv.get<BrandIdentity>(cacheKey);
 		if (cached) {
-			return cached;
+			return brandIdentitySchema.parse(cached);
 		}
 	} catch (cacheError) {
 		console.warn("[BrandResolver] Cache access fault:", cacheError);
@@ -26,13 +33,8 @@ export async function resolveIdentity(
 		select: { brandProfile: true },
 	});
 
-	const profile = (workspace?.brandProfile as any) || {};
-
-	const identity: BrandIdentity = {
-		primaryColor: profile.primaryColor || "#111111",
-		accentColor: profile.accentColor || "#888888",
-		fontFamily: profile.fontFamily || "Cabinet Grotesk",
-	};
+	const profile = workspace?.brandProfile || {};
+	const identity = brandIdentitySchema.parse(profile);
 
 	// 3. Backfill Cache
 	try {
@@ -69,7 +71,7 @@ export async function resolveVisualDna(workspaceId: string): Promise<string[]> {
 			where: {
 				workspace_id: workspaceId,
 				// Simplified for consistency
-				metadata: { equals: { type: "visual_dna" } } as any,
+				metadata: { path: ["type"], equals: "visual_dna" },
 			},
 			take: 5,
 		});

@@ -10,8 +10,8 @@ export function initLlamaIndex(apiKey: string) {
 	}
 
 	// Prevent re-initialization if already set
-	// Note: In some versions of llamaindex, accessing the getter throws if not set
 	try {
+		// @ts-ignore - Settings.embedModel getter may be flagged as TS2774 (always defined)
 		if (Settings.embedModel) {
 			return;
 		}

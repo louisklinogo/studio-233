@@ -17,6 +17,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"isolatedModules": true,
 		"incremental": true,
+		"types": ["bun-types"],
 		"plugins": [
 			{
 				"name": "next"
