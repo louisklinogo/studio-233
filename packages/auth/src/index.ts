@@ -114,7 +114,7 @@ const authOptions: BetterAuthOptions = {
 };
 
 const globalForAuth = globalThis as unknown as {
-	auth: typeof auth | undefined;
+	auth: ReturnType<typeof betterAuth> | undefined;
 };
 
 export const auth = globalForAuth.auth ?? betterAuth(authOptions);
