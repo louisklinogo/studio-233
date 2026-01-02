@@ -45,7 +45,7 @@ This plan outlines the migration of the Vortex sequence to the root landing page
 - [x] Task: Asset Lifecycle Management [0d41700]
     - [x] Write Tests: Verify Three.js `.dispose()` calls on component unmount/transition
     - [x] Implement: Implement explicit memory cleanup for the Tunnel and Canvas layers
-- [ ] Task: Mobile Performance Optimization
-    - [ ] Write Tests: Verify frame rate stability on simulated mobile viewport
-    - [ ] Implement: Cap pixel ratios and optimize shader uniforms for mobile performance
+- [x] Task: Mobile Performance Optimization [d157d59]
+    - [x] Write Tests: Verify frame rate stability on simulated mobile viewport
+    - [x] Implement: Cap pixel ratios and optimize shader uniforms for mobile performance
 - [ ] Task: Conductor - User Manual Verification 'Performance & Memory Integrity' (Protocol in workflow.md)
