@@ -53,6 +53,6 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 
 
-## [ ] Track: Vortex Landing Migration & Login Overhaul
+## [x] Track: Vortex Landing Migration & Login Overhaul
 
 *Link: [./conductor/tracks/vortex_landing_migration_20260102/](./conductor/tracks/vortex_landing_migration_20260102/)*
