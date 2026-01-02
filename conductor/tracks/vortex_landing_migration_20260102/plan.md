@@ -42,9 +42,9 @@ This plan outlines the migration of the Vortex sequence to the root landing page
 - [ ] Task: Conductor - User Manual Verification 'Authentication Gateway Overhaul' (Protocol in workflow.md)
 
 ## Phase 5: Performance & Memory Integrity
-- [ ] Task: Asset Lifecycle Management
-    - [ ] Write Tests: Verify Three.js `.dispose()` calls on component unmount/transition
-    - [ ] Implement: Implement explicit memory cleanup for the Tunnel and Canvas layers
+- [x] Task: Asset Lifecycle Management [0d41700]
+    - [x] Write Tests: Verify Three.js `.dispose()` calls on component unmount/transition
+    - [x] Implement: Implement explicit memory cleanup for the Tunnel and Canvas layers
 - [ ] Task: Mobile Performance Optimization
     - [ ] Write Tests: Verify frame rate stability on simulated mobile viewport
     - [ ] Implement: Cap pixel ratios and optimize shader uniforms for mobile performance
