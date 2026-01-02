@@ -81,6 +81,22 @@ function TunnelItem({
 	const ref = useRef<any>(null);
 	const radius = 4;
 
+	// Explicit cleanup
+	useEffect(() => {
+		return () => {
+			if (ref.current) {
+				if (ref.current.geometry) ref.current.geometry.dispose();
+				if (ref.current.material) {
+					if (Array.isArray(ref.current.material)) {
+						ref.current.material.forEach((m: any) => m.dispose());
+					} else {
+						ref.current.material.dispose();
+					}
+				}
+			}
+		};
+	}, []);
+
 	useFrame((state) => {
 		if (!ref.current) return;
 
