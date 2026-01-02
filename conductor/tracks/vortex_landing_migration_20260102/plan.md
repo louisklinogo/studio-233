@@ -30,15 +30,15 @@ This plan outlines the migration of the Vortex sequence to the root landing page
 - [ ] Task: Conductor - User Manual Verification 'Spatial Handover' (Protocol in workflow.md)
 
 ## Phase 4: Authentication Gateway Overhaul
-- [ ] Task: Braun Handshake Switch
-    - [ ] Write Tests: Verify state change and animation trigger on skeuomorphic toggle
-    - [ ] Implement: Create the physical sliding switch component for auth mode selection
-- [ ] Task: Thermal Printer Protocol
-    - [ ] Write Tests: Verify `clip-path` animation during receipt generation
-    - [ ] Implement: Animate the receipt "feeding" out of the UI slit using GSAP and CSS clip-path
-- [ ] Task: HUD & Layout Continuity
-    - [ ] Write Tests: Verify `SystemHUD` presence on the login page
-    - [ ] Implement: Inject `SystemHUD` and `GlitchHeader` into `LoginPageView` for system-wide continuity
+- [x] Task: Braun Handshake Switch [ed55e30]
+    - [x] Write Tests: Verify state change and animation trigger on skeuomorphic toggle
+    - [x] Implement: Create the physical sliding switch component for auth mode selection
+- [x] Task: Thermal Printer Protocol [ed55e30]
+    - [x] Write Tests: Verify `clip-path` animation during receipt generation
+    - [x] Implement: Animate the receipt "feeding" out of the UI slit using GSAP and CSS clip-path
+- [x] Task: HUD & Layout Continuity [ed55e30]
+    - [x] Write Tests: Verify `SystemHUD` presence on the login page
+    - [x] Implement: Inject `SystemHUD` and `GlitchHeader` into `LoginPageView` for system-wide continuity
 - [ ] Task: Conductor - User Manual Verification 'Authentication Gateway Overhaul' (Protocol in workflow.md)
 
 ## Phase 5: Performance & Memory Integrity
