@@ -41,5 +41,18 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
+
+
 ## [x] Track: Implement Ambient Brand Awareness via Layered Context Resolution
+
 *Link: [./conductor/tracks/brand_ambient_context_20251231/](./conductor/tracks/brand_ambient_context_20251231/)*
+
+
+
+---
+
+
+
+## [ ] Track: Vortex Landing Migration & Login Overhaul
+
+*Link: [./conductor/tracks/vortex_landing_migration_20260102/](./conductor/tracks/vortex_landing_migration_20260102/)*
