@@ -21,12 +21,12 @@ This plan outlines the migration of the Vortex sequence to the root landing page
 - [ ] Task: Conductor - User Manual Verification 'System Handshake' (Protocol in workflow.md)
 
 ## Phase 3: Spatial Handover (The Tunnel Transport)
-- [ ] Task: Infinite Archive Integration
-    - [ ] Write Tests: Verify Three.js scene mounting within `VortexContainer`
-    - [ ] Implement: Insert `InfiniteArchive` as Act IV in the `VortexContainer` timeline
-- [ ] Task: Kinetic Scroll Locking
-    - [ ] Write Tests: Verify camera Z-depth sync with Locomotive scroll progress
-    - [ ] Implement: Bind Three.js camera and tunnel progress to the `ScrollTrigger` progress in `VortexContainer`
+- [x] Task: Infinite Archive Integration [f59b2ff]
+    - [x] Write Tests: Verify Three.js scene mounting within `VortexContainer`
+    - [x] Implement: Insert `InfiniteArchive` as Act IV in the `VortexContainer` timeline
+- [x] Task: Kinetic Scroll Locking [f59b2ff]
+    - [x] Write Tests: Verify camera Z-depth sync with Locomotive scroll progress
+    - [x] Implement: Bind Three.js camera and tunnel progress to the `ScrollTrigger` progress in `VortexContainer`
 - [ ] Task: Conductor - User Manual Verification 'Spatial Handover' (Protocol in workflow.md)
 
 ## Phase 4: Authentication Gateway Overhaul
