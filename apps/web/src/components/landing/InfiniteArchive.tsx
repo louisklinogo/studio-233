@@ -246,7 +246,10 @@ export const InfiniteArchive = ({
 			<div className="absolute inset-0 w-full h-full overflow-hidden">
 				{mounted ? (
 					<ArchiveErrorBoundary>
-						<Canvas gl={{ antialias: false }} dpr={[1, 1.5]}>
+						<Canvas
+							gl={{ antialias: false, powerPreference: "high-performance" }}
+							dpr={[1, 1.5]}
+						>
 							<fog attach="fog" args={["#000000", 3, 12]} />
 							<Suspense fallback={null}>
 								<TunnelGroup scrollProgress={scrollProgress} />
