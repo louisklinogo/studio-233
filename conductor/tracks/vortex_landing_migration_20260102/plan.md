@@ -12,12 +12,12 @@ This plan outlines the migration of the Vortex sequence to the root landing page
 - [ ] Task: Conductor - User Manual Verification 'Routing & Scaffolding' (Protocol in workflow.md)
 
 ## Phase 2: System Handshake (The New Boot)
-- [ ] Task: Schematic Assembly Animation
-    - [ ] Write Tests: Verify GSAP timeline execution for boot assembly
-    - [ ] Implement: Create "Calibration Sequence" in `BootSequence.tsx` that draws the Hero grid and core
-- [ ] Task: Telemetry & Scramble Integration
-    - [ ] Write Tests: Verify ScrambleText triggers during boot phases
-    - [ ] Implement: Add system-readiness telemetry logs using ScrambleText during the schematic build
+- [x] Task: Schematic Assembly Animation [4665d95]
+    - [x] Write Tests: Verify GSAP timeline execution for boot assembly
+    - [x] Implement: Create "Calibration Sequence" in `BootSequence.tsx` that draws the Hero grid and core
+- [x] Task: Telemetry & Scramble Integration [4665d95]
+    - [x] Write Tests: Verify ScrambleText triggers during boot phases
+    - [x] Implement: Add system-readiness telemetry logs using ScrambleText during the schematic build
 - [ ] Task: Conductor - User Manual Verification 'System Handshake' (Protocol in workflow.md)
 
 ## Phase 3: Spatial Handover (The Tunnel Transport)
