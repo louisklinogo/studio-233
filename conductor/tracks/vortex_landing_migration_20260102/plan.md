@@ -3,9 +3,9 @@
 This plan outlines the migration of the Vortex sequence to the root landing page, the integration of the Infinite Tunnel transport layer, and the "Physical Transaction" overhaul of the login gateway.
 
 ## Phase 1: Routing & Scaffolding
-- [ ] Task: Backup existing landing page and migrate Vortex to root
-    - [ ] Write Tests: Verify root route renders VortexPage components
-    - [ ] Implement: Move `apps/web/src/app/vortex/page.tsx` to `apps/web/src/app/page.tsx` (renaming old page to `archive/page.tsx`)
+- [x] Task: Backup existing landing page and migrate Vortex to root [10c583f]
+    - [x] Write Tests: Verify root route renders VortexPage components
+    - [x] Implement: Move `apps/web/src/app/vortex/page.tsx` to `apps/web/src/app/page.tsx` (renaming old page to `archive/page.tsx`)
 - [ ] Task: Locomotive Scroll Integration
     - [ ] Write Tests: Verify Locomotive Scroll instance initialization
     - [ ] Implement: Integrate Locomotive Scroll v5 as the primary scroll engine in `VortexContainer`
