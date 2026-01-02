@@ -6,9 +6,9 @@ This plan outlines the migration of the Vortex sequence to the root landing page
 - [x] Task: Backup existing landing page and migrate Vortex to root [10c583f]
     - [x] Write Tests: Verify root route renders VortexPage components
     - [x] Implement: Move `apps/web/src/app/vortex/page.tsx` to `apps/web/src/app/page.tsx` (renaming old page to `archive/page.tsx`)
-- [ ] Task: Locomotive Scroll Integration
-    - [ ] Write Tests: Verify Locomotive Scroll instance initialization
-    - [ ] Implement: Integrate Locomotive Scroll v5 as the primary scroll engine in `VortexContainer`
+- [x] Task: Locomotive Scroll Integration [8c59bff]
+    - [x] Write Tests: Verify Locomotive Scroll instance initialization
+    - [x] Implement: Integrate Locomotive Scroll v5 as the primary scroll engine in `VortexContainer`
 - [ ] Task: Conductor - User Manual Verification 'Routing & Scaffolding' (Protocol in workflow.md)
 
 ## Phase 2: System Handshake (The New Boot)
