@@ -18,7 +18,7 @@ import {
 	type VortexHeroHandle,
 	VortexHeroV2,
 } from "@/components/landing/VortexHeroV2";
-import { VortexLenis } from "@/components/landing/VortexLenis";
+import { VortexLocomotive } from "@/components/landing/VortexLocomotive";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 
 export default function VortexPage() {
@@ -35,7 +35,7 @@ export default function VortexPage() {
 	if (!mounted) return null;
 
 	return (
-		<VortexLenis>
+		<VortexLocomotive>
 			<CustomCursor />
 
 			{loading && (
@@ -69,6 +69,6 @@ export default function VortexPage() {
 					<KineticTrack ref={trackRef} />
 				</VortexContainer>
 			</motion.div>
-		</VortexLenis>
+		</VortexLocomotive>
 	);
 }
