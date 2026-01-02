@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { type AuthFetchContext, authClient } from "@/lib/auth-client";
 import { SwissIcons } from "../ui/SwissIcons";
+import { BraunHandshakeSwitch } from "./BraunHandshakeSwitch";
 import { FederatedLoginButton } from "./FederatedLoginButton";
 import { LoginFormReceipt } from "./variants/LoginFormReceipt";
 
@@ -71,39 +72,6 @@ export function LoginForm() {
 		}
 	};
 
-	// Braun Industrial Toggle Component
-	const ToggleSwitch = ({
-		active,
-		onClick,
-		label,
-	}: {
-		active: boolean;
-		onClick: () => void;
-		label: string;
-	}) => (
-		<button
-			onClick={onClick}
-			className="flex flex-col gap-2 group cursor-pointer relative"
-		>
-			{/* Track Markings */}
-			{active && (
-				<div className="absolute -left-1 -right-1 top-0 h-1 flex justify-between px-0.5 pointer-events-none opacity-40">
-					{[...Array(4)].map((_, i) => (
-						<div key={i} className="w-[1px] h-full bg-[#FF4D00]/40" />
-					))}
-				</div>
-			)}
-			<div
-				className={`h-1 w-8 transition-colors duration-300 relative ${active ? "bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.3)]" : "bg-[#1a1a1a] group-hover:bg-[#222]"}`}
-			/>
-			<span
-				className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${active ? "text-foreground" : "text-neutral-600 group-hover:text-neutral-400"}`}
-			>
-				{label}
-			</span>
-		</button>
-	);
-
 	return (
 		<div className="flex-1 flex flex-col h-full justify-between">
 			<div className="space-y-8">
@@ -140,55 +108,45 @@ export function LoginForm() {
 					</div>
 				)}
 
-				{/* Mode Selection (Industrial Toggles) */}
-				<div className="flex items-start gap-8 border-b border-border pb-6 mb-8">
-					<ToggleSwitch
-						active={mode === "federated"}
-						onClick={() => setMode("federated")}
-						label="Federated_Auth"
-					/>
-					<ToggleSwitch
-						active={mode === "email"}
-						onClick={() => setMode("email")}
-						label="Direct_Access"
-					/>
+				<BraunHandshakeSwitch mode={mode} onChange={setMode} />
+
+				<div className="pt-4">
+					<AnimatePresence mode="wait">
+						{mode === "federated" ? (
+							<motion.div
+								key="federated"
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -10 }}
+								className="py-4 space-y-6"
+							>
+								<div className="flex items-center gap-4 text-muted-foreground">
+									<div className="h-px flex-1 bg-border" />
+									<p className="font-mono text-[10px] uppercase tracking-widest">
+										Select Identity Provider
+									</p>
+									<div className="h-px flex-1 bg-border" />
+								</div>
+
+								<FederatedLoginButton
+									provider="google"
+									onClick={handleGoogleLogin}
+									isLoading={isLoading || isSwitchingAccount || isAuthenticated}
+								/>
+							</motion.div>
+						) : (
+							<motion.div
+								key="email"
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -10 }}
+								className="py-0"
+							>
+								<LoginFormReceipt />
+							</motion.div>
+						)}
+					</AnimatePresence>
 				</div>
-
-				<AnimatePresence mode="wait">
-					{mode === "federated" ? (
-						<motion.div
-							key="federated"
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: -10 }}
-							className="py-4 space-y-6"
-						>
-							<div className="flex items-center gap-4 text-muted-foreground">
-								<div className="h-px flex-1 bg-border" />
-								<p className="font-mono text-[10px] uppercase tracking-widest">
-									Select Identity Provider
-								</p>
-								<div className="h-px flex-1 bg-border" />
-							</div>
-
-							<FederatedLoginButton
-								provider="google"
-								onClick={handleGoogleLogin}
-								isLoading={isLoading || isSwitchingAccount || isAuthenticated}
-							/>
-						</motion.div>
-					) : (
-						<motion.div
-							key="email"
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: -10 }}
-							className="py-0"
-						>
-							<LoginFormReceipt />
-						</motion.div>
-					)}
-				</AnimatePresence>
 			</div>
 
 			{/* Footer Status */}

@@ -52,10 +52,28 @@ export function LoginFormReceipt() {
 	};
 
 	return (
-		<div className="space-y-8 py-4">
+		<div className="space-y-8 py-0">
 			<form onSubmit={hasTicket ? handleVerifyOtp : handleSendOtp}>
+				{/* Printer Slot Interface */}
+				<div className="relative mb-8">
+					<div className="h-1.5 w-full bg-black shadow-[inset_0_1px_3px_rgba(255,255,255,0.1)] rounded-full relative overflow-hidden">
+						{isLoading && (
+							<motion.div
+								animate={{ x: ["-100%", "100%"] }}
+								transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
+								className="absolute inset-0 w-1/3 bg-[#FF4D00] shadow-[0_0_10px_#FF4D00]"
+							/>
+						)}
+					</div>
+					<div className="absolute top-3 left-1/2 -translate-x-1/2 font-mono text-[7px] text-neutral-700 uppercase tracking-[0.5em]">
+						Thermal_Output_Slot
+					</div>
+				</div>
+
 				{/* INPUT AREA */}
-				<div className="flex flex-col gap-6">
+				<div
+					className={`flex flex-col gap-6 transition-opacity duration-500 ${hasTicket ? "opacity-20 pointer-events-none grayscale" : "opacity-100"}`}
+				>
 					<div className="space-y-2">
 						<label className="font-mono text-[9px] text-neutral-500 block uppercase tracking-wider">
 							EMAIL_ADDRESS
@@ -95,14 +113,21 @@ export function LoginFormReceipt() {
 				<AnimatePresence>
 					{hasTicket && (
 						<motion.div
-							initial={{ y: -20, opacity: 0, rotateX: -15 }}
-							animate={{ y: 0, opacity: 1, rotateX: 0 }}
-							exit={{ y: 20, opacity: 0 }}
-							transition={{ type: "spring", stiffness: 120, damping: 20 }}
-							className="mt-8 relative perspective-1000"
+							initial={{ opacity: 0, y: -40 }}
+							animate={{
+								opacity: 1,
+								y: 0,
+								clipPath: ["inset(0% 0% 100% 0%)", "inset(0% 0% 0% 0%)"],
+							}}
+							exit={{ opacity: 0, y: 20 }}
+							transition={{
+								y: { type: "spring", stiffness: 100, damping: 20 },
+								clipPath: { duration: 1.5, ease: "linear" },
+							}}
+							className="mt-4 relative perspective-1000 origin-top"
 						>
 							{/* TICKET BODY */}
-							<div className="bg-[#f5f5f5] text-black p-0 shadow-xl border-t-4 border-accent-critical font-mono relative max-w-sm mx-auto overflow-hidden">
+							<div className="bg-[#f5f5f5] text-black p-0 shadow-2xl border-t-2 border-[#FF4D00] font-mono relative max-w-sm mx-auto overflow-hidden">
 								{/* Perforated Edge Effect (Top) */}
 								<div className="absolute top-0 left-0 right-0 h-1 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#f5f5f5_4px,#f5f5f5_8px)]" />
 
