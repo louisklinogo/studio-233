@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
+import { InfiniteArchive } from "@/components/landing/InfiniteArchive";
 import {
 	InfiniteCanvas,
 	type InfiniteCanvasHandle,
@@ -12,7 +13,6 @@ import {
 } from "@/components/landing/KineticTrack";
 import { ProductionEngine } from "@/components/landing/ProductionEngine";
 import { SystemCalibrationLoader } from "@/components/landing/SystemCalibrationLoader";
-import { SystemHUD } from "@/components/landing/SystemHUD";
 import { VortexContainer } from "@/components/landing/VortexContainer";
 import {
 	type VortexHeroHandle,
@@ -27,6 +27,7 @@ export default function VortexPage() {
 	const heroRef = useRef<VortexHeroHandle>(null);
 	const trackRef = useRef<KineticTrackHandle>(null);
 	const canvasRef = useRef<InfiniteCanvasHandle>(null);
+	const archiveScrollProgress = useRef(0);
 
 	useEffect(() => {
 		setMounted(true);
@@ -48,20 +49,22 @@ export default function VortexPage() {
 				transition={{ duration: 1.5 }}
 				className="min-h-dvh bg-[#f4f4f0] text-neutral-50 font-sans selection:bg-[#D81E05] selection:text-white relative"
 			>
-				{/* The Unified Kinetic Stream Container */}
 				<VortexContainer
 					heroRef={heroRef}
 					trackRef={trackRef}
 					canvasRef={canvasRef}
+					archiveScrollProgress={archiveScrollProgress}
 				>
 					<VortexHeroV2 ref={heroRef} />
 
-					{/* The Automated Batch Refinery Simulation (Background for Monolith) */}
 					<div className="engine-layer absolute inset-0 opacity-0 pointer-events-none">
 						<ProductionEngine />
 					</div>
 
-					{/* The Spatial Result Layer (Infinite Canvas) */}
+					<div className="archive-layer absolute inset-0 opacity-0 pointer-events-none">
+						<InfiniteArchive manualScrollProgress={archiveScrollProgress} />
+					</div>
+
 					<div className="canvas-layer absolute inset-0 opacity-0 pointer-events-none">
 						<InfiniteCanvas ref={canvasRef} />
 					</div>

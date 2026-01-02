@@ -187,17 +187,23 @@ function StableEffects() {
 	);
 }
 
-export const InfiniteArchive = () => {
+export const InfiniteArchive = ({
+	manualScrollProgress,
+}: {
+	scrollProgress?: MutableRefObject<number>;
+	manualScrollProgress?: MutableRefObject<number>;
+}) => {
 	const [mounted, setMounted] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
-	const scrollProgress = useRef(0);
+	const internalScrollProgress = useRef(0);
+	const scrollProgress = manualScrollProgress || internalScrollProgress;
 
 	useEffect(() => {
 		setMounted(true);
 	}, []);
 
 	useLayoutEffect(() => {
-		if (!mounted) return;
+		if (!mounted || manualScrollProgress) return;
 		if (!containerRef.current) return;
 
 		gsap.registerPlugin(ScrollTrigger);
@@ -220,8 +226,8 @@ export const InfiniteArchive = () => {
 	}, [mounted]);
 
 	return (
-		<div ref={containerRef} className="relative h-[150vh] w-full bg-black">
-			<div className="sticky top-0 h-screen w-full overflow-hidden">
+		<div ref={containerRef} className="relative h-full w-full bg-transparent">
+			<div className="absolute inset-0 w-full h-full overflow-hidden">
 				{mounted ? (
 					<ArchiveErrorBoundary>
 						<Canvas gl={{ antialias: false }} dpr={[1, 1.5]}>

@@ -12,6 +12,7 @@ interface VortexContainerProps {
 	heroRef?: React.RefObject<VortexHeroHandle | null>;
 	trackRef?: React.RefObject<KineticTrackHandle | null>;
 	canvasRef?: React.RefObject<InfiniteCanvasHandle | null>;
+	archiveScrollProgress?: React.MutableRefObject<number>;
 }
 
 /**
@@ -22,6 +23,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 	heroRef,
 	trackRef,
 	canvasRef,
+	archiveScrollProgress,
 }) => {
 	const [mounted, setMounted] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
@@ -314,18 +316,26 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 							);
 						}
 
-						// --- Act IV: Spatial Handover (Infinite Canvas) ---
+						// --- Act IV: Spatial Handover (Infinite Archive) ---
 						const canvasLayer =
 							viewportRef.current?.querySelector(".canvas-layer");
+						const archiveLayer =
+							viewportRef.current?.querySelector(".archive-layer");
 						const viewfinder = canvasRef?.current?.viewfinder;
 						const inner = canvasRef?.current?.inner;
 
-						if (canvasLayer && viewfinder && inner && engineLayer) {
-							// 1. Handover: Fade Engine out, Fade Canvas in
+						if (
+							canvasLayer &&
+							archiveLayer &&
+							viewfinder &&
+							inner &&
+							engineLayer
+						) {
+							// 1. Transition to Tunnel: Fade Engine out, Fade Archive in
 							tl.to(engineLayer, { opacity: 0, duration: 1.0 }, 15.0);
 
 							tl.to(
-								canvasLayer,
+								archiveLayer,
 								{
 									opacity: 1,
 									pointerEvents: "auto",
@@ -334,7 +344,41 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 								15.5,
 							);
 
-							// 2. Viewfinder Expansion: The portal opens
+							// 2. Tunnel Flight: Sync Z-depth with scroll
+							tl.to(
+								{},
+								{
+									duration: 3.0,
+									onUpdate: function () {
+										if (archiveScrollProgress) {
+											// Map 16.5-19.5 timeline progress to 0-1
+											const p =
+												(this.progress() - 16.5 / tl.duration()) /
+												(3.0 / tl.duration());
+											archiveScrollProgress.current = Math.max(
+												0,
+												Math.min(1, p),
+											);
+										}
+									},
+								},
+								16.5,
+							);
+
+							// 3. Transition to Canvas: Fade Archive out, Fade Canvas in
+							tl.to(archiveLayer, { opacity: 0, duration: 1.0 }, 19.5);
+
+							tl.to(
+								canvasLayer,
+								{
+									opacity: 1,
+									pointerEvents: "auto",
+									duration: 1.0,
+								},
+								20.0,
+							);
+
+							// 4. Viewfinder Expansion: The portal opens
 							tl.fromTo(
 								viewfinder,
 								{ width: "600px", height: "600px", borderRadius: "4px" },
@@ -345,15 +389,15 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 									duration: 2.0,
 									ease: "power2.inOut",
 								},
-								16.0,
+								20.5,
 							);
 
-							// 3. Inner Scale Sync
+							// 5. Inner Scale Sync
 							tl.fromTo(
 								inner,
 								{ scale: 0.7 },
 								{ scale: 1, duration: 2.0, ease: "power2.inOut" },
-								16.0,
+								20.5,
 							);
 						}
 					}
