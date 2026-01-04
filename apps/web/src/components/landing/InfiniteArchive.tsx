@@ -166,27 +166,24 @@ function TunnelGroup({
 	);
 }
 
-// Stable Effects Wrapper - Prevents context loss crashes on navigation
-function StableEffects() {
-	const { gl, scene, camera } = useThree();
-	const [ready, setReady] = useState(false);
+// Manager to safely handle EffectComposer initialization
+function EffectManager() {
+	const { gl } = useThree();
+	const [isReady, setIsReady] = useState(false);
 
 	useEffect(() => {
-		// Small delay to ensure GL context is fully stabilized
-		const timeout = setTimeout(() => setReady(true), 100);
-		return () => {
-			clearTimeout(timeout);
-			setReady(false);
-		};
-	}, []);
+		// Verify renderer and context are actually available
+		if (gl && gl.getContext()) {
+			setIsReady(true);
+		}
+	}, [gl]);
 
-	// Only render EffectComposer when context is guaranteed
-	if (!ready || !gl) return null;
+	if (!isReady || !gl) return null;
 
 	return (
 		<EffectComposer
 			enableNormalPass={false}
-			multisampling={0} // Disable MSAA for performance
+			multisampling={0}
 			autoClear={false}
 		>
 			<Bloom
@@ -198,7 +195,10 @@ function StableEffects() {
 			<Noise opacity={0.15} />
 			<Vignette eskil={false} offset={0.1} darkness={1.1} />
 			<Scanline density={1.5} opacity={0.15} />
-			<ChromaticAberration offset={[0.001, 0.001]} radialModulation={false} />
+			<ChromaticAberration
+				offset={new THREE.Vector2(0.001, 0.001)}
+				radialModulation={false}
+			/>
 		</EffectComposer>
 	);
 }
@@ -206,7 +206,6 @@ function StableEffects() {
 export const InfiniteArchive = ({
 	manualScrollProgress,
 }: {
-	scrollProgress?: MutableRefObject<number>;
 	manualScrollProgress?: MutableRefObject<number>;
 }) => {
 	const [mounted, setMounted] = useState(false);
@@ -219,7 +218,7 @@ export const InfiniteArchive = ({
 	}, []);
 
 	useLayoutEffect(() => {
-		if (!mounted || manualScrollProgress) return;
+		if (!mounted || !!manualScrollProgress) return;
 		if (!containerRef.current) return;
 
 		gsap.registerPlugin(ScrollTrigger);
@@ -239,21 +238,25 @@ export const InfiniteArchive = ({
 		return () => {
 			trigger.kill();
 		};
-	}, [mounted]);
+	}, [mounted, !!manualScrollProgress]);
 
 	return (
-		<div ref={containerRef} className="relative h-full w-full bg-transparent">
+		<div ref={containerRef} className="relative h-full w-full bg-black">
 			<div className="absolute inset-0 w-full h-full overflow-hidden">
 				{mounted ? (
 					<ArchiveErrorBoundary>
 						<Canvas
-							gl={{ antialias: false, powerPreference: "high-performance" }}
+							gl={{
+								antialias: false,
+								powerPreference: "high-performance",
+								alpha: false,
+							}}
 							dpr={[1, 1.5]}
 						>
 							<fog attach="fog" args={["#000000", 3, 12]} />
 							<Suspense fallback={null}>
 								<TunnelGroup scrollProgress={scrollProgress} />
-								<StableEffects />
+								<EffectManager />
 							</Suspense>
 						</Canvas>
 					</ArchiveErrorBoundary>

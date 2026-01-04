@@ -64,6 +64,7 @@ export const StudioChatPanel: React.FC<StudioChatPanelProps> = ({
 				<ChatList
 					messages={uiMessages}
 					className="h-full"
+					isLoading={status === "streaming" || status === "submitted"}
 					emptyState={
 						<StudioChatWelcome
 							hasFiles={filesCount > 0}

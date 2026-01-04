@@ -137,14 +137,21 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 						VORTEX_STREAM_v3.0
 					</span>
 				</div>
-				<div className="text-right">
-					<span className="text-[9px] font-hal text-neutral-400 uppercase tracking-widest block">
-						Status: Active_Handshake
-					</span>
-					<span className="text-[9px] font-hal text-[#FF4400] uppercase tracking-widest font-bold">
-						ACCELERATED_HANDSHAKE
-					</span>
-				</div>
+
+				{/* Launch Key (Top Right) - Braun "Receiver Button" Style */}
+				<a
+					href="/login"
+					className="group flex items-center gap-3 cursor-pointer z-50 pointer-events-auto"
+				>
+					<div className="relative bg-[#e5e5e5] hover:bg-[#d6d6d6] text-[#1a1a1a] h-9 px-4 rounded-[2px] flex items-center gap-3 transition-all duration-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.1)] active:translate-y-[1px] active:shadow-none">
+						{/* Mechanical Status LED */}
+						<div className="w-1.5 h-1.5 rounded-full bg-neutral-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] group-hover:bg-[#FF4D00] group-hover:shadow-[0_0_6px_rgba(255,77,0,0.6)] transition-all duration-300" />
+
+						<span className="text-[10px] font-bold tracking-[0.15em] uppercase select-none">
+							System Entry
+						</span>
+					</div>
+				</a>
 			</div>
 
 			{/* --- Main Headline (Act I) --- */}
@@ -228,22 +235,8 @@ export const VortexHeroV2 = forwardRef<VortexHeroHandle, {}>((_props, ref) => {
 				{/* Col 2: Empty (Removed Abstract Text) */}
 				<div className="lg:col-span-4"></div>
 
-				{/* Col 3: Active Chapters (Kept) */}
-				<div className="lg:col-span-4 flex justify-end">
-					<div className="text-right space-y-1">
-						<span className="text-[8px] font-hal text-neutral-400 uppercase tracking-[0.4em] block mb-2">
-							Sequence
-						</span>
-						{["01_DECRYPT", "02_ASSEMBLY", "03_MANIFESTO"].map((chapter) => (
-							<span
-								key={chapter}
-								className="text-[10px] font-hal block text-[#1a1a1a] tracking-wider hover:text-[#FF4400] transition-colors cursor-crosshair"
-							>
-								{chapter}
-							</span>
-						))}
-					</div>
-				</div>
+				{/* Col 3: Empty */}
+				<div className="lg:col-span-4 flex justify-end"></div>
 			</div>
 		</div>
 	);

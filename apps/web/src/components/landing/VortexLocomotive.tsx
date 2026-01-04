@@ -25,18 +25,30 @@ export function useLocomotiveScroll() {
 			});
 
 			// Sync with GSAP ScrollTrigger
-			locomotiveScroll.on("scroll", ScrollTrigger.update);
+			if (locomotiveScroll.lenis) {
+				locomotiveScroll.lenis.on("scroll", ScrollTrigger.update);
+			}
 
 			// Custom Ticker for GSAP
-			gsap.ticker.add((time) => {
-				locomotiveScroll.raf(time * 1000);
-			});
+			const tick = (time: number) => {
+				if (locomotiveScroll.lenis) {
+					locomotiveScroll.lenis.raf(time * 1000);
+				}
+			};
+			gsap.ticker.add(tick);
 
 			gsap.ticker.lagSmoothing(0);
+
+			(locomotiveScroll as any)._tick = tick;
 		});
 
 		return () => {
-			if (locomotiveScroll) locomotiveScroll.destroy();
+			if (locomotiveScroll) {
+				if ((locomotiveScroll as any)._tick) {
+					gsap.ticker.remove((locomotiveScroll as any)._tick);
+				}
+				locomotiveScroll.destroy();
+			}
 		};
 	}, []);
 }

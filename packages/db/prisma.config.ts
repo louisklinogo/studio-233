@@ -1,6 +1,6 @@
 import path from "node:path";
 import { config } from "dotenv";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 const rootDir = path.resolve(process.cwd(), "../..");
 config({ path: path.join(rootDir, ".env.local"), override: true });
@@ -10,7 +10,7 @@ export default defineConfig({
 	schema: "./prisma/schema",
 	datasource: {
 		provider: "postgresql",
-		url: env("DATABASE_URL"),
-		directUrl: env("DIRECT_DATABASE_URL"),
+		url: process.env.DATABASE_URL || "postgresql://dummy@localhost:5432/dummy",
+		directUrl: process.env.DIRECT_DATABASE_URL,
 	},
 });

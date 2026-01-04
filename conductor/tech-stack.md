@@ -5,7 +5,7 @@
 - **Library:** React 19
 - **Canvas Rendering:** React Konva, React Flow (@xyflow/react)
 - **Styling:** Tailwind CSS
-- **Animation:** Framer Motion, GSAP
+- **Animation:** Framer Motion, GSAP, Locomotive Scroll v5
 - **State Management:** Jotai
 - **API Client:** tRPC
 

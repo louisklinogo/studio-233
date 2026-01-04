@@ -9,6 +9,7 @@ import {
 	PromptInputFooter,
 	PromptInputHeader,
 	PromptInputProvider,
+	PromptInputSpeechButton,
 	PromptInputTextarea,
 	PromptInputTools,
 	usePromptInputAttachments,
@@ -122,14 +123,6 @@ const AttachButton = () => {
 };
 
 const MentionButton = () => {
-	// We need access to the text input to insert "@"
-	// However, ChatInput wraps PromptInput, so we might not be able to easy access context *outside* PromptInput unless we refactor.
-	// Actually, these buttons are INSIDE PromptInputFooter, which is INSIDE PromptInput.
-	// So we CAN use the hooks!
-
-	// We need a hook to set text. let's assume usePromptInputController or similar is available/exported from prompt-input
-	// Looking at previous valid code, we have usePromptInputController.
-
 	const { textInput } = usePromptInputController();
 	const selectedAssets = React.useContext(SelectedAssetsContext);
 
@@ -161,6 +154,31 @@ const MentionButton = () => {
 			</TooltipTrigger>
 			<TooltipContent>Tag selected asset</TooltipContent>
 		</Tooltip>
+	);
+};
+
+const SpeechButton = ({
+	textareaRef,
+}: {
+	textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+}) => {
+	const { textInput } = usePromptInputController();
+
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<PromptInputSpeechButton
+						textareaRef={textareaRef}
+						onTranscriptionChange={(text) => {
+							textInput.setInput(text);
+						}}
+						className="h-8 w-8 text-neutral-500 hover:text-[#FF4D00] dark:hover:text-[#FF4D00] hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
+					/>
+				</TooltipTrigger>
+				<TooltipContent>Speech to text</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
 	);
 };
 
@@ -197,6 +215,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 	const [mode, setMode] = React.useState<"default" | "search" | "brainstorm">(
 		"default",
 	);
+	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
 	const toggleMode = (newMode: "search" | "brainstorm") => {
 		setMode((prev) => (prev === newMode ? "default" : newMode));
@@ -224,6 +243,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 						</PromptInputHeader>
 						<PromptInputBody className="relative z-10">
 							<PromptInputTextarea
+								ref={textareaRef}
 								className="min-h-[44px] max-h-[200px] bg-transparent border-0 focus-visible:ring-0 px-3 pb-3 pt-1.5 resize-none shadow-none text-base placeholder:text-neutral-400 font-mono"
 								placeholder={
 									mode === "search"
@@ -240,6 +260,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 								<TooltipProvider>
 									<AttachButton />
 									<MentionButton />
+									<SpeechButton textareaRef={textareaRef} />
 								</TooltipProvider>
 							</div>
 

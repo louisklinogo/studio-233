@@ -5,6 +5,7 @@ import { consultBrandGuidelinesTool } from "../tools/brand";
 import { canvasTextToImageTool } from "../tools/canvas";
 import type { ToolDefinition } from "../tools/factory";
 import { delegateToAgentTool } from "../tools/orchestration";
+import { proposePlanTool } from "../tools/planning";
 import { renderHtmlTool } from "../tools/render-html";
 import {
 	imageAnalyzerTool,
@@ -36,6 +37,7 @@ import { logger } from "../utils/logger";
 
 const TOOL_DEFINITIONS = {
 	delegateToAgent: delegateToAgentTool,
+	proposePlan: proposePlanTool,
 	canvasTextToImage: canvasTextToImageTool,
 	askForAspectRatio: askForAspectRatioTool,
 	visionAnalysis: visionAnalysisTool,

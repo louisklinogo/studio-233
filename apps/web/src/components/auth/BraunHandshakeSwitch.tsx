@@ -13,58 +13,81 @@ export function BraunHandshakeSwitch({
 	onChange,
 }: BraunHandshakeSwitchProps) {
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex justify-between items-end mb-2">
-				<span className="font-mono text-[9px] text-neutral-500 uppercase tracking-widest">
-					Authentication_Protocol
-				</span>
-				<span className="font-mono text-[9px] text-[#FF4D00] uppercase tracking-widest font-bold">
-					{mode === "federated" ? "EXTERNAL_RELAY" : "DIRECT_ACCESS"}
-				</span>
+		<div className="flex flex-col gap-6">
+			<div className="flex justify-between items-end">
+				<div className="flex flex-col gap-1">
+					<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-widest">
+						Selector_Bank
+					</span>
+					<span className="font-bold text-[10px] text-[#1a1a1a] tracking-tight uppercase">
+						Auth_Source_Channel
+					</span>
+				</div>
+				<div className="flex items-center gap-2">
+					<span className="font-mono text-[8px] text-[#FF4D00] uppercase font-bold">
+						{mode === "federated" ? "CH_01: RELAY" : "CH_02: DIRECT"}
+					</span>
+				</div>
 			</div>
 
-			<div className="relative w-full h-12 bg-[#050505] border border-[#1a1a1a] shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] flex items-center p-1 group">
-				{/* Background Track Details */}
-				<div className="absolute inset-0 flex justify-between px-12 pointer-events-none opacity-10">
-					{[...Array(8)].map((_, i) => (
-						<div key={i} className="w-[1px] h-full bg-white" />
-					))}
-				</div>
-
-				{/* Labels */}
-				<div className="absolute inset-0 flex justify-between items-center px-6 pointer-events-none">
-					<span
-						className={`font-mono text-[10px] uppercase tracking-tighter transition-colors duration-500 ${mode === "federated" ? "text-white" : "text-neutral-700"}`}
-					>
-						FEDERATED
-					</span>
-					<span
-						className={`font-mono text-[10px] uppercase tracking-tighter transition-colors duration-500 ${mode === "email" ? "text-white" : "text-neutral-700"}`}
-					>
-						DIRECT
-					</span>
-				</div>
-
-				{/* Sliding Knob */}
-				<motion.button
-					onClick={() => onChange(mode === "federated" ? "email" : "federated")}
-					animate={{ x: mode === "federated" ? "0%" : "calc(100% - 40px)" }}
-					transition={{ type: "spring", stiffness: 300, damping: 30 }}
-					className="relative z-10 w-10 h-10 bg-[#1a1a1a] border-t border-l border-white/5 border-b border-r border-black shadow-lg flex items-center justify-center cursor-pointer group-hover:border-[#FF4D00]/20 transition-colors"
+			<div className="flex gap-4 p-4 bg-[#efefe9] border border-[#e5e5e0] rounded-[2px] shadow-inner">
+				{/* Federated Auth Button */}
+				<button
+					onClick={() => onChange("federated")}
+					className="flex-1 group relative"
 				>
-					{/* Knob Grip Lines */}
-					<div className="flex flex-col gap-1">
-						{[...Array(3)].map((_, i) => (
-							<div
-								key={i}
-								className="w-4 h-[1px] bg-neutral-700 group-hover:bg-[#FF4D00]/50 transition-colors"
-							/>
-						))}
+					<div
+						className={`
+						h-12 w-full transition-all duration-300 flex items-center justify-center
+						${
+							mode === "federated"
+								? "bg-[#dadad0] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] translate-y-[1px]"
+								: "bg-white border-b-4 border-neutral-300 shadow-md hover:border-neutral-400 active:translate-y-1 active:border-b-0"
+						}
+					`}
+					>
+						<span
+							className={`font-mono text-[9px] uppercase tracking-[0.2em] font-bold ${mode === "federated" ? "text-[#FF4D00]" : "text-neutral-500"}`}
+						>
+							External
+						</span>
 					</div>
+					{mode === "federated" && (
+						<motion.div
+							layoutId="led"
+							className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FF4D00] shadow-[0_0_5px_#FF4D00]"
+						/>
+					)}
+				</button>
 
-					{/* Active Indicator LED */}
-					<div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-[#FF4D00] shadow-[0_0_5px_#FF4D00]" />
-				</motion.button>
+				{/* Direct Access Button */}
+				<button
+					onClick={() => onChange("email")}
+					className="flex-1 group relative"
+				>
+					<div
+						className={`
+						h-12 w-full transition-all duration-300 flex items-center justify-center
+						${
+							mode === "email"
+								? "bg-[#dadad0] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] translate-y-[1px]"
+								: "bg-white border-b-4 border-neutral-300 shadow-md hover:border-neutral-400 active:translate-y-1 active:border-b-0"
+						}
+					`}
+					>
+						<span
+							className={`font-mono text-[9px] uppercase tracking-[0.2em] font-bold ${mode === "email" ? "text-[#FF4D00]" : "text-neutral-500"}`}
+						>
+							Direct
+						</span>
+					</div>
+					{mode === "email" && (
+						<motion.div
+							layoutId="led"
+							className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FF4D00] shadow-[0_0_5px_#FF4D00]"
+						/>
+					)}
+				</button>
 			</div>
 		</div>
 	);

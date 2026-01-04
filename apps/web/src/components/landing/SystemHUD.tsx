@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 
 export const SystemHUD: React.FC = () => {
@@ -58,15 +59,13 @@ export const SystemHUD: React.FC = () => {
 				%
 			</div>
 
-			{/* Right Side: Environment Stats */}
+			{/* Right Side: Secure Entry Key */}
 			<div className="flex items-center gap-8 flex-1 justify-end">
-				<div className="flex gap-4">
-					<span className="opacity-50">LAT:</span> 0.04MS
-					<span className="opacity-50">MEM:</span> 1.2GB
-				</div>
-				<div className="flex items-center gap-2">
-					<span className="w-1 h-1 bg-green-500 rounded-full" />
-					<span className="text-green-500">OPTIMAL</span>
+				<div className="flex items-center gap-4">
+					<div className="flex items-center gap-2">
+						<span className="w-1 h-1 bg-green-500 rounded-full" />
+						<span className="text-green-500 hidden sm:inline">OPTIMAL</span>
+					</div>
 				</div>
 			</div>
 		</div>

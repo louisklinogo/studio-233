@@ -243,24 +243,6 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 						// 3. THE LOCKUP: Organise target words into a tight centered stack
 						const centerStack = [targetThe, targetCreative, targetProcess];
 
-						// ACTIVATE IMAGE STATE for Creative & Process
-						const creativeImg =
-							targetCreative.querySelector("img")?.parentElement;
-						const processImg =
-							targetProcess.querySelector("img")?.parentElement;
-						if (creativeImg && processImg) {
-							tl.to(
-								[creativeImg, processImg],
-								{
-									opacity: 1,
-									scale: 1.05,
-									duration: 1.5,
-									ease: "expo.inOut",
-								},
-								11.5,
-							);
-						}
-
 						centerStack.forEach((word, i) => {
 							tl.to(
 								word,
@@ -331,17 +313,34 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 							inner &&
 							engineLayer
 						) {
-							// 1. Transition to Tunnel: Fade Engine out, Fade Archive in
-							tl.to(engineLayer, { opacity: 0, duration: 1.0 }, 15.0);
+							// Initialize Layers Off-Screen for Horizontal Scroll Effect
+							gsap.set([archiveLayer, canvasLayer], {
+								x: "100%",
+								opacity: 1, // visible but off-screen
+							});
 
+							// 1. Transition to Tunnel: Slide Engine Left, Slide Archive In
+							// CLEANUP: Fade out the "Stack" (The Creative Process) so it doesn't overlap Act IV
+							tl.to(
+								centerStack,
+								{ opacity: 0, pointerEvents: "none", duration: 1.0 },
+								15.0,
+							);
+
+							tl.to(
+								engineLayer,
+								{ x: "-100%", duration: 1.5, ease: "power2.inOut" },
+								15.0,
+							);
 							tl.to(
 								archiveLayer,
 								{
-									opacity: 1,
+									x: "0%",
 									pointerEvents: "auto",
-									duration: 1.0,
+									duration: 1.5,
+									ease: "power2.inOut",
 								},
-								15.5,
+								15.0,
 							);
 
 							// 2. Tunnel Flight: Sync Z-depth with scroll
@@ -365,17 +364,22 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 								16.5,
 							);
 
-							// 3. Transition to Canvas: Fade Archive out, Fade Canvas in
-							tl.to(archiveLayer, { opacity: 0, duration: 1.0 }, 19.5);
+							// 3. Transition to Canvas: Slide Archive Left, Slide Canvas In
+							tl.to(
+								archiveLayer,
+								{ x: "-100%", duration: 1.5, ease: "power2.inOut" },
+								19.5,
+							);
 
 							tl.to(
 								canvasLayer,
 								{
-									opacity: 1,
+									x: "0%",
 									pointerEvents: "auto",
-									duration: 1.0,
+									duration: 1.5,
+									ease: "power2.inOut",
 								},
-								20.0,
+								19.5,
 							);
 
 							// 4. Viewfinder Expansion: The portal opens
@@ -389,7 +393,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 									duration: 2.0,
 									ease: "power2.inOut",
 								},
-								20.5,
+								21.0, // Delayed slightly to separate from slide
 							);
 
 							// 5. Inner Scale Sync
@@ -397,8 +401,40 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 								inner,
 								{ scale: 0.7 },
 								{ scale: 1, duration: 2.0, ease: "power2.inOut" },
-								20.5,
+								21.0,
 							);
+
+							// --- Act V: The Departure (Footer Handover) ---
+							const footerLayer =
+								viewportRef.current?.querySelector(".footer-layer");
+							if (footerLayer) {
+								// Initialize footer off-screen bottom
+								gsap.set(footerLayer, { y: "100vh", opacity: 1 });
+
+								// 1. Transition to Footer: Slide Footer UP, Slide Canvas UP (or just overlap)
+								tl.to(
+									footerLayer,
+									{
+										y: "0vh",
+										pointerEvents: "auto",
+										duration: 2.0,
+										ease: "power3.inOut",
+									},
+									24.0, // Start after canvas interaction window
+								);
+
+								// 2. Subtle Canvas Exit
+								tl.to(
+									canvasLayer,
+									{
+										y: "-20vh",
+										opacity: 0.5,
+										duration: 2.0,
+										ease: "power3.inOut",
+									},
+									24.0,
+								);
+							}
 						}
 					}
 				}
@@ -411,7 +447,7 @@ export const VortexContainer: React.FC<VortexContainerProps> = ({
 	return (
 		<div
 			ref={wrapperRef}
-			className="relative w-full h-[3000vh] bg-[#f4f4f0] z-40"
+			className="relative w-full h-[3500vh] bg-[#f4f4f0] z-40"
 			data-testid="vortex-wrapper"
 		>
 			{/* --- Global SVG Filters --- */}

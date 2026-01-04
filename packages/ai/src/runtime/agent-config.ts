@@ -35,6 +35,7 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		model: "orchestrator",
 		tools: [
 			"delegateToAgent",
+			"proposePlan",
 			"canvasTextToImage",
 			"askForAspectRatio",
 			"visionAnalysis",

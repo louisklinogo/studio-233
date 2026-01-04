@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
+import { BootSequence } from "@/components/landing/BootSequence";
 import { InfiniteArchive } from "@/components/landing/InfiniteArchive";
 import {
 	InfiniteCanvas,
@@ -11,8 +12,9 @@ import {
 	KineticTrack,
 	type KineticTrackHandle,
 } from "@/components/landing/KineticTrack";
+import { LaunchKeyFooter } from "@/components/landing/LaunchKeyFooter";
 import { ProductionEngine } from "@/components/landing/ProductionEngine";
-import { SystemCalibrationLoader } from "@/components/landing/SystemCalibrationLoader";
+import { SystemHUD } from "@/components/landing/SystemHUD";
 import { VortexContainer } from "@/components/landing/VortexContainer";
 import {
 	type VortexHeroHandle,
@@ -38,17 +40,13 @@ export default function VortexPage() {
 	return (
 		<VortexLocomotive>
 			<CustomCursor />
+			<SystemHUD />
 
-			{loading && (
-				<SystemCalibrationLoader onComplete={() => setLoading(false)} />
-			)}
+			<AnimatePresence mode="wait">
+				{loading && <BootSequence onComplete={() => setLoading(false)} />}
+			</AnimatePresence>
 
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: loading ? 0 : 1 }}
-				transition={{ duration: 1.5 }}
-				className="min-h-dvh bg-[#f4f4f0] text-neutral-50 font-sans selection:bg-[#D81E05] selection:text-white relative"
-			>
+			<motion.div className="min-h-dvh bg-background text-foreground font-sans selection:bg-[#D81E05] selection:text-white relative">
 				<VortexContainer
 					heroRef={heroRef}
 					trackRef={trackRef}
@@ -67,6 +65,10 @@ export default function VortexPage() {
 
 					<div className="canvas-layer absolute inset-0 opacity-0 pointer-events-none">
 						<InfiniteCanvas ref={canvasRef} />
+					</div>
+
+					<div className="footer-layer absolute inset-0 opacity-0 pointer-events-none">
+						<LaunchKeyFooter />
 					</div>
 
 					<KineticTrack ref={trackRef} />

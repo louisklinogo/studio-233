@@ -15,6 +15,11 @@ import {
 	MessageResponse,
 } from "@/components/ai-elements/message";
 import {
+	Reasoning,
+	ReasoningContent,
+	ReasoningTrigger,
+} from "@/components/ai-elements/reasoning";
+import {
 	Source,
 	Sources,
 	SourcesContent,
@@ -31,13 +36,23 @@ import { Logo } from "@/components/icons";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { AspectRatioPicker } from "./AspectRatioPicker";
 import type { AspectRatio } from "./AspectRatioSelector";
+import { ExecutionPlan } from "./ExecutionPlan";
+
+export type ToolInteractionResult =
+	| AspectRatio
+	| { confirmed: boolean; feedback?: string }
+	| Record<string, any>;
 
 interface ChatListProps {
 	messages: UIMessage[];
 	className?: string;
 	emptyState?: React.ReactNode;
 	showStreamingStatus?: boolean;
-	onToolInteraction?: (toolCallId: string, result: AspectRatio) => void;
+	isLoading?: boolean;
+	onToolInteraction?: (
+		toolCallId: string,
+		result: ToolInteractionResult,
+	) => void;
 	onReload?: () => void;
 }
 
@@ -89,6 +104,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 	className,
 	emptyState,
 	showStreamingStatus,
+	isLoading,
 	onToolInteraction,
 	onReload,
 }) => {
@@ -132,6 +148,9 @@ export const ChatList: React.FC<ChatListProps> = ({
 								.map((p) => (p as any).text)
 								.join("\n");
 
+							const showActions =
+								message.role === "assistant" && (!isLastMessage || !isLoading);
+
 							return (
 								<div key={message.id} className="w-full">
 									{message.role === "assistant" && sourceParts.length > 0 && (
@@ -164,6 +183,88 @@ export const ChatList: React.FC<ChatListProps> = ({
 														>
 															{text}
 														</MessageResponse>
+													);
+												}
+
+												if (part.type === "reasoning") {
+													return (
+														<Reasoning
+															key={`${message.id}-reasoning-${pIndex}`}
+															isStreaming={
+																isLoading &&
+																isLastMessage &&
+																pIndex === resolvedParts.length - 1
+															}
+														>
+															<ReasoningTrigger title="System Logic" />
+															<ReasoningContent>{part.text}</ReasoningContent>
+														</Reasoning>
+													);
+												}
+
+												// --- NEW: Plan Mapping ---
+												if (part.type === "tool-proposePlan") {
+													const planData =
+														(part as any).output?.plan ||
+														(part as any).input ||
+														part;
+
+													// Sophisticated Logic: Check if any following parts are active tools
+													// that match the plan steps.
+													const stepsWithStatus = (planData.steps || []).map(
+														(step: any) => {
+															const isActiveTool = resolvedParts.some(
+																(p) =>
+																	isToolPart(p) &&
+																	p.type.includes(
+																		step.toolName || step.label.toLowerCase(),
+																	) &&
+																	p.state === "input-streaming",
+															);
+															const isCompletedTool = resolvedParts.some(
+																(p) =>
+																	isToolPart(p) &&
+																	p.type.includes(
+																		step.toolName || step.label.toLowerCase(),
+																	) &&
+																	p.state === "output-available",
+															);
+
+															return {
+																...step,
+																status: isCompletedTool
+																	? "complete"
+																	: isActiveTool
+																		? "running"
+																		: "pending",
+															};
+														},
+													);
+
+													return (
+														<ExecutionPlan
+															key={`${message.id}-plan-${pIndex}`}
+															task={planData.task || "Operational Roadmap"}
+															description={planData.description}
+															steps={stepsWithStatus}
+															isStreaming={isLoading && isLastMessage}
+															requiresApproval={planData.requiresApproval}
+															onConfirm={() => {
+																if (
+																	onToolInteraction &&
+																	(part as any).toolCallId
+																) {
+																	onToolInteraction((part as any).toolCallId, {
+																		confirmed: true,
+																	});
+																}
+															}}
+															onRevise={() => {
+																const input =
+																	document.querySelector("textarea");
+																input?.focus();
+															}}
+														/>
 													);
 												}
 
@@ -237,7 +338,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 											)}
 										</MessageContent>
 
-										{message.role === "assistant" && (
+										{showActions && (
 											<MessageActions>
 												{isLastMessage && onReload && (
 													<MessageAction onClick={onReload} label="Retry">

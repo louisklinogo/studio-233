@@ -440,6 +440,7 @@ export function ChatPanel({
 							<ChatList
 								messages={messages as UIMessage[]}
 								showStreamingStatus={showStreamingStatus}
+								isLoading={isLoading}
 								onToolInteraction={handleToolInteraction}
 								onReload={regenerate}
 							/>
