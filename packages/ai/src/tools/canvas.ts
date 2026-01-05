@@ -5,7 +5,7 @@ import type { textToImageWorkflow } from "../workflows/text-to-image";
 import { createTool } from "./factory";
 
 export const canvasTextToImageTool = createTool({
-	id: "canvas-text-to-image",
+	id: "canvasTextToImage",
 	description:
 		"Generate a new image from a text prompt and dispatch it to the canvas (output.command.type = 'add-image', includes url/width/height/meta). Inputs: prompt (required), optional aspectRatio/size/seed/modelId/loraUrl/referenceImageUrl.",
 	inputSchema: z.object({

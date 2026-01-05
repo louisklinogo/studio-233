@@ -125,7 +125,7 @@ export const visionAnalysisTool = createTool({
 });
 
 export const visionAnalysisRefTool = createTool({
-	id: "vision-analysis-ref",
+	id: "visionAnalysisRef",
 	description:
 		"Look up persisted vision analysis and source snapshot URLs for a given image URL. If imageUrl is omitted, uses the most recent image attachment.",
 	inputSchema: z.object({
@@ -161,7 +161,7 @@ export const visionAnalysisRefTool = createTool({
 });
 
 export const backgroundRemovalTool = createTool({
-	id: "background-removal",
+	id: "backgroundRemoval",
 	description:
 		"Remove or replace the background of an image while preserving the subject",
 	inputSchema: z.object({
@@ -201,7 +201,7 @@ export const backgroundRemovalTool = createTool({
 });
 
 export const objectIsolationTool = createTool({
-	id: "object-isolation",
+	id: "objectIsolation",
 	description: "Segment and isolate a specific object described by a prompt",
 	inputSchema: z.object({
 		imageUrl: z.string().url(),
@@ -280,7 +280,7 @@ const imageReframeInputSchema = z
 	}));
 
 export const imageReframeTool = createTool({
-	id: "image-reframe",
+	id: "imageReframe",
 	description:
 		"Resize/crop an image to new dimensions while preserving key regions",
 	inputSchema: imageReframeInputSchema,
@@ -310,7 +310,7 @@ export const imageReframeTool = createTool({
 });
 
 export const imageUpscaleTool = createTool({
-	id: "image-upscale",
+	id: "imageUpscale",
 	description: "Upscale images up to 4x using Lanczos filtering",
 	inputSchema: z.object({
 		imageUrl: z.string().url(),
@@ -344,7 +344,7 @@ export const imageUpscaleTool = createTool({
 });
 
 export const paletteExtractorTool = createTool({
-	id: "palette-extractor",
+	id: "paletteExtractor",
 	description: "Extract a brand-ready color palette from an image",
 	inputSchema: z.object({
 		imageUrl: z.string().url(),
@@ -359,7 +359,7 @@ export const paletteExtractorTool = createTool({
 });
 
 export const storyboardTool = createTool({
-	id: "storyboard-generator",
+	id: "storyboard",
 	description: "Generate HTML or markdown storyboards for creative pitches",
 	inputSchema: z.object({
 		brief: z.string().min(10),
@@ -375,7 +375,7 @@ export const storyboardTool = createTool({
 });
 
 export const htmlGeneratorTool = createTool({
-	id: "html-generator",
+	id: "htmlGenerator",
 	description:
 		"Produce semantic HTML/CSS scaffolds for layouts (hero pages, emails, decks)",
 	inputSchema: htmlGeneratorInputSchema,
@@ -386,7 +386,7 @@ export const htmlGeneratorTool = createTool({
 });
 
 export const layoutDesignerTool = createTool({
-	id: "layout-designer",
+	id: "layoutDesigner",
 	description:
 		"Create detailed layout plans with sections, KPIs, and testing checklist",
 	inputSchema: layoutDesignerInputSchema,

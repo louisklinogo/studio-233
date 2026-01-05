@@ -8,7 +8,7 @@ import type {
 import { createTool } from "./factory";
 
 export const webSearchTool = createTool({
-	id: "web-search",
+	id: "webSearch",
 	description: "Perform multi-source creative research queries",
 	inputSchema: z.object({
 		query: z.string().min(3),
@@ -21,7 +21,7 @@ export const webSearchTool = createTool({
 });
 
 export const siteExtractorTool = createTool({
-	id: "site-extractor",
+	id: "siteExtractor",
 	description: "Summarize the textual content of a given webpage",
 	inputSchema: z.object({
 		url: z.string().url(),
@@ -34,7 +34,7 @@ export const siteExtractorTool = createTool({
 });
 
 export const imageAnalyzerTool = createTool({
-	id: "image-analyzer",
+	id: "imageAnalyzer",
 	description:
 		"Extract luminance, contrast, and dominant colors from inspiration imagery",
 	inputSchema: z.object({
@@ -47,7 +47,7 @@ export const imageAnalyzerTool = createTool({
 });
 
 export const moodboardTool = createTool({
-	id: "moodboard-plan",
+	id: "moodboard",
 	description:
 		"Summarize research references into a structured creative direction",
 	inputSchema: z.object({

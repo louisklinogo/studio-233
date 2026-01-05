@@ -68,6 +68,10 @@ const TOOL_DEFINITIONS = {
 export { TOOL_DEFINITIONS };
 export type ToolId = keyof typeof TOOL_DEFINITIONS;
 
+function normalizeToolName(name: string): string {
+	return name.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase());
+}
+
 function wrapTool(
 	def: ToolDefinition<z.ZodTypeAny, z.ZodTypeAny>,
 	injectedContext?: any,
@@ -154,21 +158,40 @@ export const TOOLKIT = Object.fromEntries(toolkitEntries) as Record<
 	ReturnType<typeof createAiTool>
 >;
 
-// Dynamic toolset builder with context injection
+// Dynamic toolset builder with context injection and legacy name support
 export function buildToolset(ids: ToolId[], runtimeContext?: any) {
-	return ids.reduce<Record<string, ReturnType<typeof createAiTool>>>(
-		(acc, id) => {
-			const def = TOOL_DEFINITIONS[id];
-			if (def) {
-				acc[id] = wrapTool(
-					def as ToolDefinition<z.ZodTypeAny, z.ZodTypeAny>,
-					runtimeContext,
-				);
+	const toolset: Record<string, ReturnType<typeof createAiTool>> = {};
+
+	for (const id of ids) {
+		const normalizedId = normalizeToolName(id) as ToolId;
+		const def = TOOL_DEFINITIONS[normalizedId] || TOOL_DEFINITIONS[id];
+
+		if (def) {
+			const tool = wrapTool(
+				def as ToolDefinition<z.ZodTypeAny, z.ZodTypeAny>,
+				runtimeContext,
+			);
+			// Register canonical name
+			toolset[normalizedId] = tool;
+			// Register requested name if different
+			if (id !== normalizedId) {
+				toolset[id] = tool;
 			}
-			return acc;
-		},
-		{},
-	);
+			// Register legacy variants (kebab and snake)
+			const kebab = normalizedId.replace(
+				/[A-Z]/g,
+				(g) => `-${g.toLowerCase()}`,
+			);
+			const snake = normalizedId.replace(
+				/[A-Z]/g,
+				(g) => `_${g.toLowerCase()}`,
+			);
+			toolset[kebab] = tool;
+			toolset[snake] = tool;
+		}
+	}
+
+	return toolset;
 }
 
 export function getToolDefinition(id: ToolId) {

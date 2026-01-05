@@ -4,7 +4,7 @@ import { htmlRenderWorkflow } from "../workflows/html-render";
 import { createTool } from "./factory";
 
 export const renderHtmlTool = createTool({
-	id: "render-html",
+	id: "renderHtml",
 	description:
 		"Render raw HTML and CSS code to an image on the canvas. Use this when you have specific code to render. Do NOT use for generating designs from scratch.",
 	inputSchema: z.object({

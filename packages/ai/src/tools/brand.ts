@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createTool } from "./factory";
 
 export const consultBrandGuidelinesTool = createTool({
-	id: "consult-brand-guidelines",
+	id: "consultBrandGuidelines",
 	description:
 		"Consult the brand guidelines, tone of voice, or visual identity rules stored for this workspace. Use this to ensure generations are on-brand.",
 	inputSchema: z.object({

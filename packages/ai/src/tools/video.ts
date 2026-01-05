@@ -3,7 +3,7 @@ import { canvasToolOutputSchema } from "../schemas/tool-output";
 import { createTool } from "./factory";
 
 export const textToVideoTool = createTool({
-	id: "text-to-video",
+	id: "textToVideo",
 	description: "Generate cinematic clips using FAL-hosted video models",
 	inputSchema: z.object({
 		prompt: z.string().min(10),
@@ -49,7 +49,7 @@ export const textToVideoTool = createTool({
 });
 
 export const videoStitchTool = createTool({
-	id: "video-stitch",
+	id: "videoStitch",
 	description: "Concatenate clips with ffmpeg-ready command output",
 	inputSchema: z.object({
 		clips: z.array(
@@ -82,7 +82,7 @@ export const videoStitchTool = createTool({
 });
 
 export const videoGifTool = createTool({
-	id: "video-gif",
+	id: "videoGif",
 	description: "Convert video segments into shareable GIFs",
 	inputSchema: z.object({
 		videoUrl: z.string().url(),
@@ -111,7 +111,7 @@ export const videoGifTool = createTool({
 });
 
 export const captionOverlayTool = createTool({
-	id: "caption-overlay",
+	id: "captionOverlay",
 	description:
 		"Generate SRT captions and optional ffmpeg command to burn them in",
 	inputSchema: z.object({

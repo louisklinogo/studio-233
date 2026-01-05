@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTool } from "./factory";
 
 export const batchJobPlannerTool = createTool({
-	id: "batch-job-planner",
+	id: "batchJobPlanner",
 	description: "Create executable batches for repetitive vision operations",
 	inputSchema: z.object({
 		jobs: z.array(

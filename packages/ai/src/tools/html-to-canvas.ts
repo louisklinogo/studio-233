@@ -21,7 +21,7 @@ const htmlToCanvasInputSchema = z.preprocess((val: any) => {
 }, baseSchema);
 
 export const htmlToCanvasTool = createTool({
-	id: "html-to-canvas",
+	id: "htmlToCanvas",
 	description:
 		"DESIGN tool. Generate HTML/CSS from a high-level text brief and render it to an image. Use this for 'Make a poster' or 'Design a landing page'. Do NOT pass raw HTML/CSS code here; use 'render-html' for that.",
 	inputSchema: htmlToCanvasInputSchema,
