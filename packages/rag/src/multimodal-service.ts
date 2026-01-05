@@ -1,8 +1,8 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { LlamaParseReader } from "@llamaindex/cloud";
 import { MODEL_CONFIG } from "@studio233/ai";
 import { generateText } from "ai";
 import * as fs from "fs/promises";
+import { LlamaParseReader } from "llama-cloud-services";
 import { Document } from "llamaindex";
 import * as os from "os";
 import * as path from "path";
@@ -28,6 +28,10 @@ export interface MultimodalIngestionResult {
 }
 
 async function downloadFile(url: string, filename: string): Promise<string> {
+	if (!url || !filename) {
+		throw new Error("Missing URL or filename for download.");
+	}
+
 	const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "brand-ingest-v-"));
 	const filePath = path.join(tempDir, filename);
 
@@ -63,7 +67,7 @@ export async function pdfToImages(
 async function processWithLlamaParse(
 	options: MultimodalIngestionOptions,
 ): Promise<MultimodalIngestionResult | null> {
-	if (!options.llamaParseApiKey) return null;
+	if (!options.llamaParseApiKey || !options.url) return null;
 
 	const reader = new LlamaParseReader({
 		apiKey: options.llamaParseApiKey,
@@ -207,22 +211,68 @@ async function processWithGeminiVision(
 	}
 }
 
+export function calculateQualityScore(dna: BrandDNA): number {
+	let score = 0;
+	let totalFields = 0;
+
+	// Helper to check array/string content
+	const hasContent = (val: any) => {
+		if (Array.isArray(val)) return val.length > 0;
+		if (typeof val === "string") return val.length > 5; // Min 5 chars to be "meaningful"
+		return false;
+	};
+
+	// Core Identity (Weight: 0.4)
+	if (hasContent(dna.coreIdentity.colors)) score += 0.1;
+	if (hasContent(dna.coreIdentity.fonts)) score += 0.1;
+	if (hasContent(dna.coreIdentity.logos)) score += 0.1;
+	if (hasContent(dna.coreIdentity.slogans)) score += 0.1;
+
+	// Visual Style (Weight: 0.3)
+	if (hasContent(dna.visualStyle.layoutPrinciples)) score += 0.075;
+	if (hasContent(dna.visualStyle.imageryStyle)) score += 0.075;
+	if (hasContent(dna.visualStyle.photographyGuidelines)) score += 0.075;
+	if (hasContent(dna.visualStyle.vibe)) score += 0.075;
+
+	// Semantic DNA (Weight: 0.3)
+	if (hasContent(dna.semanticDNA.toneOfVoice)) score += 0.15;
+	if (hasContent(dna.semanticDNA.copywritingGuidelines)) score += 0.15;
+
+	return Math.min(score, 1);
+}
+
 export async function multimodalIngestionService(
 	options: MultimodalIngestionOptions,
 ): Promise<MultimodalIngestionResult> {
 	// Step 1: Attempt LlamaParse (High Fidelity)
 	const llamaResult = await processWithLlamaParse(options);
-	if (llamaResult && llamaResult.score > 0.8) {
-		return llamaResult;
+	if (llamaResult) {
+		const qualityScore = calculateQualityScore(llamaResult.brandDNA);
+		// Update score with calculated quality
+		llamaResult.score = qualityScore;
+
+		if (qualityScore > 0.5) {
+			// Threshold for "good enough" from Path A
+			return llamaResult;
+		}
+		console.log(
+			`[rag] LlamaParse quality low (${qualityScore}), falling back to Gemini Vision.`,
+		);
 	}
 
 	// Step 2: Visual Fallback (Gemini Vision)
 	const geminiResult = await processWithGeminiVision(options);
 	if (geminiResult) {
-		return geminiResult;
+		const qualityScore = calculateQualityScore(geminiResult.brandDNA);
+		geminiResult.score = qualityScore;
+
+		if (qualityScore > 0.2) {
+			// Lower threshold for fallback, better than nothing
+			return geminiResult;
+		}
 	}
 
 	throw new Error(
-		"Multimodal ingestion failed: Both paths yielded no results.",
+		"Multimodal ingestion failed: Unable to extract sufficient Brand DNA.",
 	);
 }

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { multimodalIngestionService } from "../multimodal-service";
 
 // Mock the LlamaParseReader
-mock.module("@llamaindex/cloud", () => {
+mock.module("llama-cloud-services", () => {
 	return {
 		LlamaParseReader: class {
 			loadJson = async (url: string) => {
