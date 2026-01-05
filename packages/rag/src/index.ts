@@ -26,6 +26,7 @@ export function initLlamaIndex(apiKey: string) {
 }
 
 export * from "./ingestion";
+export * from "./multimodal-service";
 export * from "./retrieval";
 
 export function ragHealthCheck() {
