@@ -28,6 +28,7 @@ const nextConfig = {
 		"@studio233/api",
 		"@studio233/db",
 		"@studio233/config",
+		"@studio233/inngest",
 	],
 	turbopack: {
 		root: monorepoRoot,

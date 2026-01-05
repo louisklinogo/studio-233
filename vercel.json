@@ -2,5 +2,10 @@
 	"buildCommand": "bun run build --filter=web...",
 	"installCommand": "bun install",
 	"outputDirectory": "apps/web/.next",
-	"framework": "nextjs"
+	"framework": "nextjs",
+	"functions": {
+		"apps/web/src/app/api/inngest/route.ts": {
+			"maxDuration": 60
+		}
+	}
 }
