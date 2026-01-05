@@ -2,11 +2,10 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { prisma } from "@studio233/db";
 import { generateText } from "ai";
 import * as fs from "fs/promises";
-import { LlamaParseReader } from "llama-cloud-services";
 import { Document } from "llamaindex";
 import * as os from "os";
 import * as path from "path";
-import { pdf } from "pdf-to-img";
+
 import { MODEL_CONFIG } from "./model-config";
 import { BrandDNA, BrandDNASchema } from "./schemas/brand-dna";
 import { logger } from "./utils/logger";
@@ -67,6 +66,7 @@ export async function pdfToImages(
 ): Promise<Buffer[]> {
 	const images: Buffer[] = [];
 	try {
+		const { pdf } = await import("pdf-to-img");
 		const document = await pdf(filePath, { scale: 2 });
 		let counter = 0;
 		for await (const image of document) {
@@ -88,6 +88,7 @@ async function processWithLlamaParse(
 ): Promise<MultimodalIngestionResult | null> {
 	if (!options.llamaParseApiKey || !options.url) return null;
 
+	const { LlamaParseReader } = await import("llama-cloud-services");
 	const reader = new LlamaParseReader({
 		apiKey: options.llamaParseApiKey,
 		resultType: "json",
