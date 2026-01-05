@@ -56,3 +56,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 ## [x] Track: Vortex Landing Migration & Login Overhaul
 
 *Link: [./conductor/tracks/vortex_landing_migration_20260102/](./conductor/tracks/vortex_landing_migration_20260102/)*
+
+---
+
+## [~] Track: Premier Vision-First Ingestion Pipeline
+*Link: [./conductor/tracks/vision_first_ingestion_20260105/](./conductor/tracks/vision_first_ingestion_20260105/)*
