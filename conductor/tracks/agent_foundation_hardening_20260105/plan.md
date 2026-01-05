@@ -11,13 +11,13 @@ Standardize tool IDs to camelCase and implement a middleware layer to handle leg
 - [x] Task: Update `AGENT_DEFINITIONS` in `packages/ai/src/runtime/agent-config.ts` to match new IDs cfbb096
 - [x] Task: Conductor - User Manual Verification 'Naming Standardization & Middleware' (Protocol in workflow.md) [x]
 
-## Phase 2: Schema Resilience (Self-Healing Schemas) [ ]
+## Phase 2: Schema Resilience (Self-Healing Schemas) [x]
 Harden the `proposePlan` and `webSearch` tools with Zod preprocessing to handle model hallucinations.
 
-- [ ] Task: Write tests for `proposePlan` resilience (mapping `description` and `details`)
-- [ ] Task: Update `proposePlan` tool in `packages/ai/src/tools/planning.ts` with `z.preprocess` and `description` field
-- [ ] Task: Write tests for `webSearch` resilience (handling `queries` array)
-- [ ] Task: Update `webSearch` tool in `packages/ai/src/tools/research.ts` with `z.preprocess` for query normalization
+- [x] Task: Write tests for `proposePlan` resilience (mapping `description` and `details`) d70ddde
+- [x] Task: Update `proposePlan` tool in `packages/ai/src/tools/planning.ts` with `z.preprocess` and `description` field d70ddde
+- [x] Task: Write tests for `webSearch` resilience (handling `queries` array) d70ddde
+- [x] Task: Update `webSearch` tool in `packages/ai/src/tools/research.ts` with `z.preprocess` for query normalization d70ddde
 - [ ] Task: Conductor - User Manual Verification 'Schema Resilience' (Protocol in workflow.md)
 
 ## Phase 3: Prompt Synchronization & Schema Injection [ ]
