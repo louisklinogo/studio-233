@@ -27,13 +27,13 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	return (
 		<div
 			className={cn(
-				"flex items-center justify-between p-4 bg-[#f4f4f0] dark:bg-[#111111] border-b border-neutral-200 dark:border-neutral-800",
+				"flex items-center justify-between p-4 bg-muted/30 border-b border-border",
 				className,
 			)}
 		>
 			<div className="flex items-center gap-2">
-				<div className="w-2 h-2 rounded-full bg-[#3B4B59]" />
-				<span className="font-mono text-xs font-medium tracking-widest uppercase text-neutral-500">
+				<div className="w-2 h-2 rounded-full bg-[#FF4D00]" />
+				<span className="font-mono text-xs font-medium tracking-widest uppercase text-muted-foreground">
 					AI Communicator
 				</span>
 			</div>
@@ -46,7 +46,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 								variant="ghost"
 								size="icon-sm"
 								onClick={onNewChat}
-								className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
+								className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent rounded-sm"
 							>
 								<SwissIcons.Plus className="h-4 w-4" />
 								<span className="sr-only">New Chat</span>
@@ -61,7 +61,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 								variant="ghost"
 								size="icon-sm"
 								onClick={onToggleHistory}
-								className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
+								className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent rounded-sm"
 							>
 								<SwissIcons.History className="h-4 w-4" />
 								<span className="sr-only">History</span>
@@ -76,7 +76,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 								variant="ghost"
 								size="icon-sm"
 								onClick={onCollapse}
-								className="h-8 w-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-sm"
+								className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent rounded-sm"
 							>
 								<SwissIcons.Close className="h-4 w-4" />
 								<span className="sr-only">Close</span>

@@ -405,12 +405,7 @@ export function ChatPanel({
 	}, []);
 
 	return (
-		<div
-			className={cn(
-				"flex flex-col h-full bg-[#f4f4f0] dark:bg-[#111111]",
-				className,
-			)}
-		>
+		<div className={cn("flex flex-col h-full bg-background", className)}>
 			<ChatHeader
 				onNewChat={handleNewChat}
 				onToggleHistory={handleToggleHistory}
@@ -420,7 +415,7 @@ export function ChatPanel({
 
 			<div className="flex-1 overflow-hidden relative">
 				{errorMessage && (
-					<div className="px-4 py-2 text-sm text-red-700 bg-red-50 border-b border-red-200">
+					<div className="px-4 py-2 text-sm text-destructive-foreground bg-destructive border-b border-border">
 						{errorMessage}
 					</div>
 				)}
@@ -450,7 +445,7 @@ export function ChatPanel({
 			</div>
 
 			{!showHistory && (
-				<div className="p-3 pb-4 bg-[#f4f4f0] dark:bg-[#111111] border-t border-neutral-200 dark:border-neutral-800">
+				<div className="p-3 pb-4 bg-background border-t border-border">
 					<ChatInput
 						onSubmit={handleSubmit}
 						isLoading={isLoading}
