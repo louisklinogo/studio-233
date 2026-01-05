@@ -38,7 +38,8 @@ import { VideoControls } from "@/components/canvas/VideoControls";
 import { VideoOverlays } from "@/components/canvas/VideoOverlays";
 import { ZoomControls } from "@/components/canvas/ZoomControls";
 import { GenerationsIndicator } from "@/components/generations-indicator";
-import { Logo, SpinnerIcon } from "@/components/icons";
+import { SpinnerIcon } from "@/components/icons";
+import { StudioLogo } from "@/components/icons/StudioLogo";
 import {
 	CanvasPalette,
 	type ToolType as CreativeToolType,
@@ -2138,7 +2139,7 @@ export function LegacyOverlayPage() {
 									target="_blank"
 									className="block transition-opacity"
 								>
-									<Logo className="h-8 w-16 text-foreground" />
+									<StudioLogo className="text-xl text-foreground" />
 								</Link>
 							</div>
 						</div>

@@ -234,7 +234,7 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 
 	// Global System Status Logic
 	const trpc = useTRPC();
-	const { data: workspaces } = useQuery(trpc.workspace.getAll.queryOptions());
+	const { data: workspaces } = useQuery(trpc.workspace.list.queryOptions());
 
 	// Resolve active workspace ID (URL param or default to first)
 	const workspaceIdParam = searchParams.get("workspaceId");

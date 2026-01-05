@@ -2,6 +2,8 @@ import React from "react";
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
 	size?: number;
+	className?: string;
+	style?: React.CSSProperties;
 }
 
 export const SwissIcons = {

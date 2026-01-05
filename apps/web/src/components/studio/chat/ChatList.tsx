@@ -32,7 +32,7 @@ import {
 	ToolInput,
 	ToolOutput,
 } from "@/components/ai-elements/tool";
-import { Logo } from "@/components/icons";
+import { StudioLogo } from "@/components/icons/StudioLogo";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { AspectRatioPicker } from "./AspectRatioPicker";
 import type { AspectRatio } from "./AspectRatioSelector";
@@ -132,7 +132,12 @@ export const ChatList: React.FC<ChatListProps> = ({
 				{messages.length === 0
 					? emptyState || (
 							<ConversationEmptyState
-								icon={<Logo className="h-12 w-12 text-muted-foreground/50" />}
+								icon={
+									<StudioLogo
+										variant="mark"
+										className="text-4xl text-muted-foreground/50"
+									/>
+								}
 								title="Welcome to Studio+233"
 								description="I can help you generate images, edit videos, and more. Just ask!"
 							/>
