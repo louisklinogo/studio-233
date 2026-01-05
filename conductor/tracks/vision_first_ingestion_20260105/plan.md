@@ -17,7 +17,7 @@
 - [x] Task: Write integration test for Gemini Vision path (mocking the API response). [22cfcc9]
 
 ## Phase 4: Integration & Synthesis
-- [ ] Task: Implement the "Swiss Cheese" logic in `multimodalIngestionService` (Try Path A -> Catch/Score Check -> Path B).
-- [ ] Task: Implement result aggregation and quality scoring logic.
+- [x] Task: Implement the "Swiss Cheese" logic in `multimodalIngestionService` (Try Path A -> Catch/Score Check -> Path B). [9781843]
+- [x] Task: Implement result aggregation and quality scoring logic. [9781843]
 - [ ] Task: Integrate `multimodalIngestionService` into `packages/inngest/src/functions/brand-ingestion.ts`.
 - [ ] Task: Conductor - User Manual Verification 'Integration & Synthesis' (Protocol in workflow.md)
