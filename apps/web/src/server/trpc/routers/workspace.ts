@@ -377,7 +377,7 @@ export const workspaceRouter = router({
 				totalNodes: knowledge.length,
 				sources: Array.from(sourceMap.values()),
 				deducedAttributes: Array.from(deducedAttributes),
-				deducedAesthetic: deducedAesthetic || "Awaiting further analysis...",
+				deducedAesthetic: deducedAesthetic || "DNA_SEQUENCE_EMPTY",
 				brandSummary: workspace?.brandSummary as any,
 				lastIndexed: knowledge.length > 0 ? knowledge[0].createdAt : null,
 				systemState: knowledge.length > 0 ? "STABLE" : "UNINITIALIZED",

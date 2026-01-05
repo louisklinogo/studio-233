@@ -220,8 +220,8 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 		if (workspace?.brandProfile) {
 			const profile = workspace.brandProfile as any;
 			setLocalFont(profile.fontFamily || "Cabinet Grotesk");
-			setLocalPrimary(profile.primaryColor || "#FF4D00");
-			setLocalAccent(profile.accentColor || "#00FF00");
+			setLocalPrimary(profile.primaryColor || "#111111");
+			setLocalAccent(profile.accentColor || "#888888");
 		}
 	}, [workspace]);
 
@@ -639,7 +639,13 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 									{/* 02. Asset Grid */}
 
 									{!hasLogo && !isAssetsLoading && (
-										<div className="group p-12 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm flex flex-col items-center justify-center text-center space-y-6 bg-neutral-50/30 dark:bg-white/5 transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/10">
+										<div className="group p-12 border border-neutral-200 dark:border-neutral-800 rounded-sm flex flex-col items-center justify-center text-center space-y-6 bg-neutral-50/30 dark:bg-white/5 transition-colors hover:bg-neutral-50/50 dark:hover:bg-white/10 relative overflow-hidden">
+											{/* Technical Crosshairs */}
+											<div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-neutral-300 dark:border-neutral-700" />
+											<div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-neutral-300 dark:border-neutral-700" />
+											<div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-neutral-300 dark:border-neutral-700" />
+											<div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-neutral-300 dark:border-neutral-700" />
+
 											{/* The Staging Asset */}
 											<div className="relative">
 												<BraunAssetStaging />
@@ -813,7 +819,7 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 														System_Deduction_Identity
 													</span>
 												</div>
-												<h2 className="text-4xl font-black tracking-tighter leading-[0.9] uppercase italic">
+												<h2 className="text-4xl font-black tracking-tighter leading-[0.9] uppercase text-neutral-900 dark:text-white">
 													{intelligence.brandSummary.manifesto}
 												</h2>
 												<div className="flex flex-wrap gap-4 pt-4 border-t border-white/10">
@@ -934,17 +940,22 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 												<button
 													onClick={() => syncArchive.mutate({ workspaceId })}
 													disabled={syncArchive.isPending || isPolling}
-													className="mb-1 px-3 py-1 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black font-mono text-[8px] uppercase tracking-[0.2em] font-bold rounded-sm shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
+													className="group relative mb-1 h-6 px-4 bg-neutral-100 dark:bg-neutral-900 hover:bg-[#FF4D00] dark:hover:bg-[#FF4D00] border border-neutral-200 dark:border-neutral-800 hover:border-[#FF4D00] text-neutral-900 dark:text-white hover:text-white font-mono text-[9px] uppercase tracking-[0.2em] font-bold rounded-sm transition-all flex items-center gap-3 disabled:opacity-50 disabled:hover:bg-neutral-100 disabled:hover:text-neutral-900 disabled:cursor-not-allowed overflow-hidden"
 												>
-													{syncArchive.isPending || isPolling ? (
-														<SwissIcons.Spinner
-															className="animate-spin"
-															size={8}
-														/>
-													) : (
-														<SwissIcons.Refresh size={8} />
-													)}
-													Synchronize
+													<div className="absolute inset-0 bg-[#FF4D00] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+													<div className="relative z-10 flex items-center gap-2">
+														{syncArchive.isPending || isPolling ? (
+															<SwissIcons.Spinner
+																className="animate-spin"
+																size={10}
+															/>
+														) : (
+															<div className="w-2 h-2 rounded-full border border-current opacity-50 group-hover:opacity-100" />
+														)}
+														<span>
+															{isPolling ? "SYNCING..." : "INITIALIZE_SYNC"}
+														</span>
+													</div>
 												</button>
 											</div>
 											<div className="h-1 w-full bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
@@ -967,7 +978,8 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 													DEDUCED_AESTHETIC_DNA:
 												</span>
 												<p className="font-sans text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-tight">
-													{intelligence?.deducedAesthetic || "ANALYZING..."}
+													{intelligence?.deducedAesthetic ||
+														"DNA_SEQUENCE_EMPTY"}
 												</p>
 											</div>
 										</div>
@@ -1065,13 +1077,13 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 												Active_Cortex_Stream
 											</span>
 											<div className="flex items-center gap-4 justify-center">
-												<span className="font-mono text-[7px] text-neutral-400 uppercase tracking-widest">
+												<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-widest">
 													SYNC_RATE:{" "}
 													{intelligence?.totalNodes
 														? `${Math.min(99.9, 80 + intelligence.totalNodes * 2.5).toFixed(1)}%`
 														: "0.0%"}
 												</span>
-												<span className="font-mono text-[7px] text-neutral-400 uppercase tracking-widest">
+												<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-widest">
 													LATENCY:{" "}
 													{isPolling
 														? `${Math.floor(Math.random() * 50) + 100}ms`
@@ -1081,32 +1093,39 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 										</div>
 									</div>
 
-									{/* Live Deducted Stream (The actual "Reasoning" proof) */}
-									<div className="w-full max-w-2xl bg-black/5 dark:bg-white/5 border border-neutral-200/50 dark:border-white/5 p-3 rounded-sm overflow-hidden">
-										<div className="flex gap-8 animate-marquee whitespace-nowrap">
-											<span className="font-mono text-[8px] text-[#FF4D00] uppercase tracking-[0.2em] font-bold">
-												{intelligence?.deducedAesthetic
-													? `// ${intelligence.deducedAesthetic.toUpperCase()} //`
-													: ""}
+									{/* Live Cortex Log (Replacement for Marquee) */}
+									<div className="w-full bg-black/5 dark:bg-white/5 border-t border-b border-neutral-200/50 dark:border-white/5 py-3 px-4 flex items-center justify-between gap-4 font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+										<div className="flex items-center gap-2">
+											<div className="w-1.5 h-1.5 bg-[#FF4D00] rounded-sm animate-pulse" />
+											<span className="text-neutral-900 dark:text-white font-bold">
+												CORTEX_STREAM
 											</span>
-											{(intelligence?.deducedAttributes || [])
-												.concat(intelligence?.deducedAttributes || [])
-												.map((attr: string, i: number) => (
-													<span
-														key={i}
-														className="font-mono text-[8px] text-neutral-500 uppercase tracking-[0.2em]"
-													>
-														{attr} // DETECTED_DNA_FRAGMENT //
-													</span>
-												))}
-											{(!intelligence?.deducedAttributes ||
-												intelligence.deducedAttributes.length === 0) && (
-												<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-[0.2em] opacity-50">
-													SYSTEM_IDLE // AWAITING_INPUT_STREAM // STANDBY_MODE
-													//
-												</span>
-											)}
 										</div>
+										<div className="hidden md:flex items-center gap-8">
+											<span>
+												VECTOR_ID:{" "}
+												<span className="text-neutral-900 dark:text-white">
+													{intelligence?.totalNodes
+														? `0X${(intelligence.totalNodes * 1234).toString(16).toUpperCase()}`
+														: "NULL"}
+												</span>
+											</span>
+											<span>
+												ABSTRACTION_LAYER:{" "}
+												<span className="text-neutral-900 dark:text-white">
+													{intelligence?.deducedAesthetic
+														? "L2_DEFINED"
+														: "L0_INIT"}
+												</span>
+											</span>
+											<span>
+												BUFFER:{" "}
+												<span className="text-neutral-900 dark:text-white">
+													{isPolling ? "FLUSHING..." : "STABLE"}
+												</span>
+											</span>
+										</div>
+										<div className="text-[#FF4D00]">// END_OF_LINE</div>
 									</div>
 								</div>
 							</BrandSection>
