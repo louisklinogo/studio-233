@@ -19,6 +19,7 @@ export async function updateWorkspaceBrandDNA(
 		data: {
 			brandProfile: dna as any,
 			brandSummary: dna.visualStyle.vibe as any,
+			updatedAt: new Date(), // Fix: Explicitly set updatedAt
 		},
 	});
 }

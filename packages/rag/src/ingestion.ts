@@ -32,6 +32,7 @@ export async function brandTextIngestionService({
 			workspaceId,
 			assetId,
 			filename,
+			updatedAt: new Date().toISOString(), // Fix: Explicitly set updatedAt
 		},
 	});
 
