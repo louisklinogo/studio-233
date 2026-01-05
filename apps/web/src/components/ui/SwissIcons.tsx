@@ -818,6 +818,41 @@ export const SwissIcons = {
 		</svg>
 	),
 
+	// UI -> The Clock (Time)
+	Clock: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+			<path d="M12 6V12H16" stroke="currentColor" strokeWidth="2" />
+		</svg>
+	),
+
+	// UI -> The Search (Query)
+	Search: ({ size = 24, ...props }: IconProps) => (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			{...props}
+		>
+			<circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+			<path
+				d="M21 21L16.65 16.65"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="square"
+			/>
+		</svg>
+	),
+
 	// UI -> The Chevron Up (Collapse)
 	ChevronUp: ({ size = 24, ...props }: IconProps) => (
 		<svg
