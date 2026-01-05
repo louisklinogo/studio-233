@@ -1,582 +1,66 @@
-11:02:56.229 Running build in Washington, D.C., USA (East) – iad1
-11:02:56.230 Build machine configuration: 2 cores, 8 GB
-11:02:56.373 Cloning github.com/louisklinogo/studio-233 (Branch: main, Commit: 2cb58f1)
-11:02:59.326 Cloning completed: 2.953s
-11:02:59.675 Restored build cache from previous deployment (HTT4YWkPzZG8J8CeGbLCmTvjC5x4)
-11:03:02.583 Warning: Detected "engines": { "node": ">=20" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: http://vercel.link/node-version
-11:03:02.584 Running "vercel build"
-11:03:03.059 Vercel CLI 50.1.3
-11:03:03.489 Warning: Detected "engines": { "node": ">=20" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: http://vercel.link/node-version
-11:03:03.497 Running "install" command: `bun install`...
-11:03:03.532 bun install v1.3.4 (5eb2145b)
-11:03:03.573 Resolving dependencies
-11:03:05.064 Resolved, downloaded and extracted [88]
-11:03:08.652 Saved lockfile
-11:03:08.652 
-11:03:08.653 $ PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/ms-playwright bunx playwright install chromium
-11:03:09.539 BEWARE: your OS is not officially supported by Playwright; downloading fallback build for ubuntu24.04-x64.
-11:03:09.540 BEWARE: your OS is not officially supported by Playwright; downloading fallback build for ubuntu24.04-x64.
-11:03:09.541 BEWARE: your OS is not officially supported by Playwright; downloading fallback build for ubuntu24.04-x64.
-11:03:09.555 $ husky
-11:03:09.598 
-11:03:09.605 + bun-types@1.3.5
-11:03:09.605 
-11:03:09.605 34 packages installed [6.08s]
-11:03:09.613 Detected Next.js version: 16.0.10
-11:03:09.614 Running "bun run build --filter=web..."
-11:03:09.619 $ turbo build "--filter=web..."
-11:03:09.710 
-11:03:09.710 Attention:
-11:03:09.710 Turborepo now collects completely anonymous telemetry regarding usage.
-11:03:09.710 This information is used to shape the Turborepo roadmap and prioritize features.
-11:03:09.710 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-11:03:09.711 https://turborepo.com/docs/telemetry
-11:03:09.711 
-11:03:09.916 • Packages in scope: @studio233/ai, @studio233/api, @studio233/auth, @studio233/brand, @studio233/canvas, @studio233/config, @studio233/db, @studio233/inngest, @studio233/rag, @studio233/ui, canvas, web
-11:03:09.916 • Running build in 12 packages
-11:03:09.916 • Remote caching enabled
-11:03:10.258 web:build: cache miss, executing c86516455ab53e9d
-11:03:10.262 web:build: $ next build
-11:03:10.926 web:build:  [INFO] Monorepo Root: /vercel/path0
-11:03:10.999 web:build:    ▲ Next.js 16.0.10 (Turbopack, Cache Components)
-11:03:11.000 web:build: 
-11:03:11.034 web:build:    Creating an optimized production build ...
-11:03:11.342 web:build:  [INFO] Monorepo Root: /vercel/path0
-11:04:47.554 web:build: Turbopack build encountered 1 warnings:
-11:04:47.555 web:build: ./node_modules/.bun/@opentelemetry+instrumentation@0.208.0+460773ef8ff1e07c/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
-11:04:47.555 web:build: Package import-in-the-middle can't be external
-11:04:47.555 web:build: The request import-in-the-middle matches serverExternalPackages (or the default list).
-11:04:47.556 web:build: The package resolves to a different version when requested from the project directory (2.0.1) compared to the package requested from the importing module (2.0.0).
-11:04:47.556 web:build: Make sure to install the same version of the package in both locations.
-11:04:47.556 web:build: 
-11:04:47.556 web:build: 
-11:04:50.336 web:build: 
-11:04:50.337 web:build: > Build error occurred
-11:04:50.342 web:build: Error: Turbopack build failed with 19 errors:
-11:04:50.343 web:build: ./packages/db/src/index.ts:4:1
-11:04:50.343 web:build: Module not found: Can't resolve '../prisma/generated/client'
-11:04:50.343 web:build: [0m [90m 2 |[39m [36mimport[39m { [33mPrismaPg[39m } [36mfrom[39m [32m"@prisma/adapter-pg"[39m[33m;[39m
-11:04:50.343 web:build:  [90m 3 |[39m [36mimport[39m { [33mPool[39m } [36mfrom[39m [32m"pg"[39m[33m;[39m
-11:04:50.343 web:build: [31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mPrismaClient[39m } [36mfrom[39m [32m"../prisma/generated/client"[39m[33m;[39m
-11:04:50.344 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.344 web:build:  [90m 5 |[39m
-11:04:50.344 web:build:  [90m 6 |[39m [36mconst[39m connectionString [33m=[39m process[33m.[39menv[33m.[39m[33mDATABASE_URL[39m[33m;[39m
-11:04:50.347 web:build:  [90m 7 |[39m[0m
-11:04:50.347 web:build: 
-11:04:50.347 web:build: 
-11:04:50.347 web:build: 
-11:04:50.347 web:build: Import traces:
-11:04:50.347 web:build:   #1 [App Route]:
-11:04:50.348 web:build:     ./packages/db/src/index.ts
-11:04:50.348 web:build:     ./apps/web/src/app/api/chat/route.ts
-11:04:50.348 web:build: 
-11:04:50.348 web:build:   #2 [Server Component]:
-11:04:50.348 web:build:     ./packages/db/src/index.ts
-11:04:50.348 web:build:     ./apps/web/src/app/settings/page.tsx
-11:04:50.348 web:build: 
-11:04:50.348 web:build:   #3 [Server Component]:
-11:04:50.348 web:build:     ./packages/db/src/index.ts
-11:04:50.348 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.349 web:build:     ./packages/db/src/index.ts
-11:04:50.349 web:build:     ./apps/web/src/app/onboarding/page.tsx
-11:04:50.349 web:build: 
-11:04:50.349 web:build: https://nextjs.org/docs/messages/module-not-found
-11:04:50.349 web:build: 
-11:04:50.349 web:build: 
-11:04:50.349 web:build: ./packages/db/src/index.ts:99:1
-11:04:50.349 web:build: Module not found: Can't resolve '../prisma/generated/client'
-11:04:50.349 web:build: [0m [90m  97 |[39m
-11:04:50.349 web:build:  [90m  98 |[39m [36mexport[39m [36mdefault[39m prisma[33m;[39m
-11:04:50.349 web:build: [31m[1m>[22m[39m[90m  99 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m"../prisma/generated/client"[39m[33m;[39m
-11:04:50.354 web:build:  [90m     |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.354 web:build:  [90m 100 |[39m[0m
-11:04:50.354 web:build: 
-11:04:50.354 web:build: 
-11:04:50.354 web:build: 
-11:04:50.354 web:build: Import traces:
-11:04:50.354 web:build:   #1 [App Route]:
-11:04:50.354 web:build:     ./packages/db/src/index.ts
-11:04:50.354 web:build:     ./apps/web/src/app/api/chat/route.ts
-11:04:50.354 web:build: 
-11:04:50.355 web:build:   #2 [Server Component]:
-11:04:50.355 web:build:     ./packages/db/src/index.ts
-11:04:50.355 web:build:     ./apps/web/src/app/settings/page.tsx
-11:04:50.355 web:build: 
-11:04:50.355 web:build:   #3 [Server Component]:
-11:04:50.355 web:build:     ./packages/db/src/index.ts
-11:04:50.355 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.355 web:build:     ./packages/db/src/index.ts
-11:04:50.355 web:build:     ./apps/web/src/app/onboarding/page.tsx
-11:04:50.355 web:build: 
-11:04:50.355 web:build: https://nextjs.org/docs/messages/module-not-found
-11:04:50.355 web:build: 
-11:04:50.355 web:build: 
-11:04:50.355 web:build: ./apps/web/src/server/trpc/routers/asset.ts:2:1
-11:04:50.355 web:build: Export AssetType doesn't exist in target module
-11:04:50.355 web:build: [0m [90m 1 |[39m [36mimport[39m { getSessionWithRetry } [36mfrom[39m [32m"@studio233/auth/lib/session"[39m[33m;[39m
-11:04:50.355 web:build: [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { [33mAssetType[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.355 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.356 web:build:  [90m 3 |[39m [36mimport[39m { inngest } [36mfrom[39m [32m"@studio233/inngest"[39m[33m;[39m
-11:04:50.356 web:build:  [90m 4 |[39m [36mimport[39m { [33mTRPCError[39m } [36mfrom[39m [32m"@trpc/server"[39m[33m;[39m
-11:04:50.356 web:build:  [90m 5 |[39m [36mimport[39m { z } [36mfrom[39m [32m"zod"[39m[33m;[39m[0m
-11:04:50.356 web:build: 
-11:04:50.356 web:build: The export AssetType was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.356 web:build: Did you mean to import default?
-11:04:50.356 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.356 web:build: 
-11:04:50.356 web:build: Import trace:
-11:04:50.356 web:build:   App Route:
-11:04:50.356 web:build:     ./apps/web/src/server/trpc/routers/asset.ts
-11:04:50.356 web:build:     ./apps/web/src/server/trpc/routers/_app.ts
-11:04:50.357 web:build:     ./apps/web/src/app/api/trpc/[trpc]/route.ts
-11:04:50.357 web:build: 
-11:04:50.357 web:build: 
-11:04:50.357 web:build: ./packages/db/src/batch-store.ts:1:1
-11:04:50.357 web:build: Export BatchStatus doesn't exist in target module
-11:04:50.357 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mBatchStatus[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"./index"[39m[33m;[39m
-11:04:50.357 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.357 web:build:  [90m 2 |[39m
-11:04:50.357 web:build:  [90m 3 |[39m [36mexport[39m type [33mBatchJobStatus[39m [33m=[39m
-11:04:50.357 web:build:  [90m 4 |[39m 	[33m|[39m [32m"queued"[39m[0m
-11:04:50.357 web:build: 
-11:04:50.357 web:build: The export BatchStatus was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.357 web:build: Did you mean to import batchStore?
-11:04:50.357 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.357 web:build: 
-11:04:50.358 web:build: Import traces:
-11:04:50.358 web:build:   App Route:
-11:04:50.358 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.358 web:build:     ./apps/web/src/app/api/batch/status/route.ts
-11:04:50.359 web:build: 
-11:04:50.359 web:build:   Server Component:
-11:04:50.359 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.359 web:build:     ./packages/db/src/index.ts
-11:04:50.359 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.359 web:build: 
-11:04:50.360 web:build: 
-11:04:50.360 web:build: ./packages/db/src/batch-store.ts:1:1
-11:04:50.360 web:build: Export BatchStatus doesn't exist in target module
-11:04:50.360 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mBatchStatus[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"./index"[39m[33m;[39m
-11:04:50.360 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.360 web:build:  [90m 2 |[39m
-11:04:50.360 web:build:  [90m 3 |[39m [36mexport[39m type [33mBatchJobStatus[39m [33m=[39m
-11:04:50.360 web:build:  [90m 4 |[39m 	[33m|[39m [32m"queued"[39m[0m
-11:04:50.361 web:build: 
-11:04:50.361 web:build: The export BatchStatus was not found in module [project]/packages/db/src/index.ts [app-rsc] (ecmascript).
-11:04:50.361 web:build: Did you mean to import batchStore?
-11:04:50.361 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.361 web:build: 
-11:04:50.361 web:build: Import traces:
-11:04:50.361 web:build:   App Route:
-11:04:50.361 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.361 web:build:     ./apps/web/src/app/api/batch/status/route.ts
-11:04:50.361 web:build: 
-11:04:50.361 web:build:   Server Component:
-11:04:50.361 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.361 web:build:     ./packages/db/src/index.ts
-11:04:50.361 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.361 web:build: 
-11:04:50.361 web:build: 
-11:04:50.362 web:build: ./packages/auth/src/services/credit-ledger-service.ts:1:1
-11:04:50.362 web:build: Export CreditEntryType doesn't exist in target module
-11:04:50.362 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mCreditEntryType[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.362 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.362 web:build:  [90m 2 |[39m [36mimport[39m { [33mDuplicateLedgerEntryError[39m[33m,[39m [33mInsufficientCreditsError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m
-11:04:50.362 web:build:  [90m 3 |[39m
-11:04:50.362 web:build:  [90m 4 |[39m type [33mLedgerEntryInput[39m [33m=[39m {[0m
-11:04:50.362 web:build: 
-11:04:50.362 web:build: The export CreditEntryType was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.362 web:build: Did you mean to import batchStore?
-11:04:50.362 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.362 web:build: 
-11:04:50.362 web:build: Import traces:
-11:04:50.362 web:build:   App Route:
-11:04:50.362 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.363 web:build:     ./packages/auth/src/index.ts
-11:04:50.363 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.363 web:build: 
-11:04:50.363 web:build:   Server Component:
-11:04:50.368 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.368 web:build:     ./packages/auth/src/index.ts
-11:04:50.369 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.369 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.369 web:build: 
-11:04:50.369 web:build: 
-11:04:50.369 web:build: ./packages/auth/src/services/credit-ledger-service.ts:1:1
-11:04:50.369 web:build: Export CreditEntryType doesn't exist in target module
-11:04:50.369 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mCreditEntryType[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.369 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.369 web:build:  [90m 2 |[39m [36mimport[39m { [33mDuplicateLedgerEntryError[39m[33m,[39m [33mInsufficientCreditsError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m
-11:04:50.369 web:build:  [90m 3 |[39m
-11:04:50.369 web:build:  [90m 4 |[39m type [33mLedgerEntryInput[39m [33m=[39m {[0m
-11:04:50.369 web:build: 
-11:04:50.369 web:build: The export CreditEntryType was not found in module [project]/packages/db/src/index.ts [app-rsc] (ecmascript).
-11:04:50.369 web:build: Did you mean to import batchStore?
-11:04:50.369 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.369 web:build: 
-11:04:50.369 web:build: Import traces:
-11:04:50.370 web:build:   App Route:
-11:04:50.370 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.370 web:build:     ./packages/auth/src/index.ts
-11:04:50.370 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.370 web:build: 
-11:04:50.370 web:build:   Server Component:
-11:04:50.370 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.370 web:build:     ./packages/auth/src/index.ts
-11:04:50.370 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.370 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.370 web:build: 
-11:04:50.370 web:build: 
-11:04:50.370 web:build: ./packages/auth/src/services/subscription-service.ts:3:1
-11:04:50.370 web:build: Export CreditEntryType doesn't exist in target module
-11:04:50.370 web:build: [0m [90m  1 |[39m [36mimport[39m type { [33mSubscription[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscription"[39m[33m;[39m
-11:04:50.370 web:build:  [90m  2 |[39m [36mimport[39m type { [33mSubscriptionStatus[39m [36mas[39m [33mPolarSubscriptionStatus[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscriptionstatus"[39m[33m;[39m
-11:04:50.371 web:build: [31m[1m>[22m[39m[90m  3 |[39m [36mimport[39m {
-11:04:50.371 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.371 web:build: [31m[1m>[22m[39m[90m  4 |[39m 	[33mCreditEntryType[39m[33m,[39m
-11:04:50.371 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.371 web:build: [31m[1m>[22m[39m[90m  5 |[39m 	[33mSubscriptionStatus[39m [36mas[39m [33mDbSubscriptionStatus[39m[33m,[39m
-11:04:50.371 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.371 web:build: [31m[1m>[22m[39m[90m  6 |[39m 	[33mPrisma[39m[33m,[39m
-11:04:50.371 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.371 web:build: [31m[1m>[22m[39m[90m  7 |[39m 	prisma[33m,[39m
-11:04:50.371 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.371 web:build: [31m[1m>[22m[39m[90m  8 |[39m } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.371 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.371 web:build:  [90m  9 |[39m [36mimport[39m { billingConfig } [36mfrom[39m [32m"../config/billing"[39m[33m;[39m
-11:04:50.371 web:build:  [90m 10 |[39m [36mimport[39m { [33mCreditLedgerService[39m } [36mfrom[39m [32m"./credit-ledger-service"[39m[33m;[39m
-11:04:50.372 web:build:  [90m 11 |[39m [36mimport[39m { [33mMissingUserReferenceError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m[0m
-11:04:50.372 web:build: 
-11:04:50.372 web:build: The export CreditEntryType was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.372 web:build: Did you mean to import batchStore?
-11:04:50.372 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.372 web:build: 
-11:04:50.372 web:build: Import traces:
-11:04:50.372 web:build:   App Route:
-11:04:50.372 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.372 web:build:     ./packages/auth/src/index.ts
-11:04:50.372 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.372 web:build: 
-11:04:50.372 web:build:   Server Component:
-11:04:50.372 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.373 web:build:     ./packages/auth/src/index.ts
-11:04:50.373 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.373 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.373 web:build: 
-11:04:50.373 web:build: 
-11:04:50.373 web:build: ./packages/auth/src/services/subscription-service.ts:3:1
-11:04:50.373 web:build: Export CreditEntryType doesn't exist in target module
-11:04:50.373 web:build: [0m [90m  1 |[39m [36mimport[39m type { [33mSubscription[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscription"[39m[33m;[39m
-11:04:50.373 web:build:  [90m  2 |[39m [36mimport[39m type { [33mSubscriptionStatus[39m [36mas[39m [33mPolarSubscriptionStatus[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscriptionstatus"[39m[33m;[39m
-11:04:50.373 web:build: [31m[1m>[22m[39m[90m  3 |[39m [36mimport[39m {
-11:04:50.373 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.373 web:build: [31m[1m>[22m[39m[90m  4 |[39m 	[33mCreditEntryType[39m[33m,[39m
-11:04:50.374 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.374 web:build: [31m[1m>[22m[39m[90m  5 |[39m 	[33mSubscriptionStatus[39m [36mas[39m [33mDbSubscriptionStatus[39m[33m,[39m
-11:04:50.374 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.374 web:build: [31m[1m>[22m[39m[90m  6 |[39m 	[33mPrisma[39m[33m,[39m
-11:04:50.374 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.374 web:build: [31m[1m>[22m[39m[90m  7 |[39m 	prisma[33m,[39m
-11:04:50.374 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.374 web:build: [31m[1m>[22m[39m[90m  8 |[39m } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.374 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.374 web:build:  [90m  9 |[39m [36mimport[39m { billingConfig } [36mfrom[39m [32m"../config/billing"[39m[33m;[39m
-11:04:50.374 web:build:  [90m 10 |[39m [36mimport[39m { [33mCreditLedgerService[39m } [36mfrom[39m [32m"./credit-ledger-service"[39m[33m;[39m
-11:04:50.374 web:build:  [90m 11 |[39m [36mimport[39m { [33mMissingUserReferenceError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m[0m
-11:04:50.374 web:build: 
-11:04:50.374 web:build: The export CreditEntryType was not found in module [project]/packages/db/src/index.ts [app-rsc] (ecmascript).
-11:04:50.374 web:build: Did you mean to import batchStore?
-11:04:50.375 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.375 web:build: 
-11:04:50.375 web:build: Import traces:
-11:04:50.375 web:build:   App Route:
-11:04:50.375 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.375 web:build:     ./packages/auth/src/index.ts
-11:04:50.375 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.375 web:build: 
-11:04:50.375 web:build:   Server Component:
-11:04:50.375 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.375 web:build:     ./packages/auth/src/index.ts
-11:04:50.375 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.375 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.375 web:build: 
-11:04:50.375 web:build: 
-11:04:50.375 web:build: ./apps/web/src/app/api/chat/route.ts:10:1
-11:04:50.376 web:build: Export Prisma doesn't exist in target module
-11:04:50.376 web:build: [0m [90m  8 |[39m [36mimport[39m { getSessionWithRetry } [36mfrom[39m [32m"@studio233/auth/lib/session"[39m[33m;[39m
-11:04:50.376 web:build:  [90m  9 |[39m [36mimport[39m { resolveBrandContext } [36mfrom[39m [32m"@studio233/brand"[39m[33m;[39m
-11:04:50.376 web:build: [31m[1m>[22m[39m[90m 10 |[39m [36mimport[39m { prisma [36mas[39m db[33m,[39m [33mPrisma[39m } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.376 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.376 web:build:  [90m 11 |[39m [36mimport[39m { inngest } [36mfrom[39m [32m"@studio233/inngest"[39m[33m;[39m
-11:04:50.376 web:build:  [90m 12 |[39m [36mimport[39m { list } [36mfrom[39m [32m"@vercel/blob"[39m[33m;[39m
-11:04:50.376 web:build:  [90m 13 |[39m [36mimport[39m { waitUntil } [36mfrom[39m [32m"@vercel/functions"[39m[33m;[39m[0m
-11:04:50.376 web:build: 
-11:04:50.376 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.376 web:build: Did you mean to import prisma?
-11:04:50.376 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.376 web:build: 
-11:04:50.376 web:build: 
-11:04:50.376 web:build: ./apps/web/src/server/trpc/routers/workflow.ts:2:1
-11:04:50.376 web:build: Export Prisma doesn't exist in target module
-11:04:50.376 web:build: [0m [90m 1 |[39m [36mimport[39m { getSessionWithRetry } [36mfrom[39m [32m"@studio233/auth/lib/session"[39m[33m;[39m
-11:04:50.376 web:build: [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.377 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.377 web:build:  [90m 3 |[39m [36mimport[39m { inngest[33m,[39m workflowRequestedEvent } [36mfrom[39m [32m"@studio233/inngest"[39m[33m;[39m
-11:04:50.378 web:build:  [90m 4 |[39m [36mimport[39m { [33mTRPCError[39m } [36mfrom[39m [32m"@trpc/server"[39m[33m;[39m
-11:04:50.378 web:build:  [90m 5 |[39m [36mimport[39m { observable } [36mfrom[39m [32m"@trpc/server/observable"[39m[33m;[39m[0m
-11:04:50.378 web:build: 
-11:04:50.378 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.378 web:build: Did you mean to import prisma?
-11:04:50.378 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.378 web:build: 
-11:04:50.378 web:build: Import trace:
-11:04:50.378 web:build:   App Route:
-11:04:50.378 web:build:     ./apps/web/src/server/trpc/routers/workflow.ts
-11:04:50.378 web:build:     ./apps/web/src/server/trpc/routers/_app.ts
-11:04:50.378 web:build:     ./apps/web/src/app/api/trpc/[trpc]/route.ts
-11:04:50.378 web:build: 
-11:04:50.378 web:build: 
-11:04:50.378 web:build: ./packages/auth/src/services/credit-ledger-service.ts:1:1
-11:04:50.379 web:build: Export Prisma doesn't exist in target module
-11:04:50.379 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mCreditEntryType[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.379 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.379 web:build:  [90m 2 |[39m [36mimport[39m { [33mDuplicateLedgerEntryError[39m[33m,[39m [33mInsufficientCreditsError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m
-11:04:50.379 web:build:  [90m 3 |[39m
-11:04:50.379 web:build:  [90m 4 |[39m type [33mLedgerEntryInput[39m [33m=[39m {[0m
-11:04:50.379 web:build: 
-11:04:50.379 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.379 web:build: Did you mean to import prisma?
-11:04:50.379 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.379 web:build: 
-11:04:50.379 web:build: Import traces:
-11:04:50.379 web:build:   App Route:
-11:04:50.379 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.379 web:build:     ./packages/auth/src/index.ts
-11:04:50.379 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.379 web:build: 
-11:04:50.379 web:build:   Server Component:
-11:04:50.380 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.380 web:build:     ./packages/auth/src/index.ts
-11:04:50.380 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.380 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.380 web:build: 
-11:04:50.380 web:build: 
-11:04:50.380 web:build: ./packages/auth/src/services/credit-ledger-service.ts:1:1
-11:04:50.380 web:build: Export Prisma doesn't exist in target module
-11:04:50.380 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mCreditEntryType[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.380 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.380 web:build:  [90m 2 |[39m [36mimport[39m { [33mDuplicateLedgerEntryError[39m[33m,[39m [33mInsufficientCreditsError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m
-11:04:50.380 web:build:  [90m 3 |[39m
-11:04:50.380 web:build:  [90m 4 |[39m type [33mLedgerEntryInput[39m [33m=[39m {[0m
-11:04:50.384 web:build: 
-11:04:50.384 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-rsc] (ecmascript).
-11:04:50.385 web:build: Did you mean to import prisma?
-11:04:50.385 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.385 web:build: 
-11:04:50.385 web:build: Import traces:
-11:04:50.385 web:build:   App Route:
-11:04:50.385 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.385 web:build:     ./packages/auth/src/index.ts
-11:04:50.385 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.385 web:build: 
-11:04:50.385 web:build:   Server Component:
-11:04:50.385 web:build:     ./packages/auth/src/services/credit-ledger-service.ts
-11:04:50.385 web:build:     ./packages/auth/src/index.ts
-11:04:50.385 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.385 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.386 web:build: 
-11:04:50.386 web:build: 
-11:04:50.386 web:build: ./packages/db/src/batch-store.ts:1:1
-11:04:50.386 web:build: Export Prisma doesn't exist in target module
-11:04:50.386 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mBatchStatus[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"./index"[39m[33m;[39m
-11:04:50.386 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.386 web:build:  [90m 2 |[39m
-11:04:50.386 web:build:  [90m 3 |[39m [36mexport[39m type [33mBatchJobStatus[39m [33m=[39m
-11:04:50.386 web:build:  [90m 4 |[39m 	[33m|[39m [32m"queued"[39m[0m
-11:04:50.386 web:build: 
-11:04:50.386 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.386 web:build: Did you mean to import prisma?
-11:04:50.386 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.386 web:build: 
-11:04:50.386 web:build: Import traces:
-11:04:50.386 web:build:   App Route:
-11:04:50.387 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.387 web:build:     ./apps/web/src/app/api/batch/status/route.ts
-11:04:50.387 web:build: 
-11:04:50.387 web:build:   Server Component:
-11:04:50.387 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.387 web:build:     ./packages/db/src/index.ts
-11:04:50.387 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.387 web:build: 
-11:04:50.387 web:build: 
-11:04:50.387 web:build: ./packages/db/src/batch-store.ts:1:1
-11:04:50.387 web:build: Export Prisma doesn't exist in target module
-11:04:50.387 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mBatchStatus[39m[33m,[39m [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"./index"[39m[33m;[39m
-11:04:50.387 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.387 web:build:  [90m 2 |[39m
-11:04:50.387 web:build:  [90m 3 |[39m [36mexport[39m type [33mBatchJobStatus[39m [33m=[39m
-11:04:50.387 web:build:  [90m 4 |[39m 	[33m|[39m [32m"queued"[39m[0m
-11:04:50.388 web:build: 
-11:04:50.388 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-rsc] (ecmascript).
-11:04:50.388 web:build: Did you mean to import prisma?
-11:04:50.388 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.388 web:build: 
-11:04:50.388 web:build: Import traces:
-11:04:50.388 web:build:   App Route:
-11:04:50.388 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.388 web:build:     ./apps/web/src/app/api/batch/status/route.ts
-11:04:50.388 web:build: 
-11:04:50.388 web:build:   Server Component:
-11:04:50.388 web:build:     ./packages/db/src/batch-store.ts
-11:04:50.388 web:build:     ./packages/db/src/index.ts
-11:04:50.388 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.388 web:build: 
-11:04:50.388 web:build: 
-11:04:50.388 web:build: ./packages/inngest/src/functions/brand-intelligence.ts:3:1
-11:04:50.389 web:build: Export Prisma doesn't exist in target module
-11:04:50.389 web:build: [0m [90m 1 |[39m [36mimport[39m { [33mGEMINI_PRO_MODEL[39m } [36mfrom[39m [32m"@studio233/ai/model-config"[39m[33m;[39m
-11:04:50.389 web:build:  [90m 2 |[39m [36mimport[39m { createGoogleProvider } [36mfrom[39m [32m"@studio233/ai/utils/model"[39m[33m;[39m
-11:04:50.389 web:build: [31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.389 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.389 web:build:  [90m 4 |[39m [36mimport[39m { generateObject } [36mfrom[39m [32m"ai"[39m[33m;[39m
-11:04:50.389 web:build:  [90m 5 |[39m [36mimport[39m { z } [36mfrom[39m [32m"zod"[39m[33m;[39m
-11:04:50.389 web:build:  [90m 6 |[39m [36mimport[39m { inngest } [36mfrom[39m [32m"../client"[39m[33m;[39m[0m
-11:04:50.389 web:build: 
-11:04:50.389 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.389 web:build: Did you mean to import prisma?
-11:04:50.389 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.389 web:build: 
-11:04:50.389 web:build: Import trace:
-11:04:50.389 web:build:   App Route:
-11:04:50.390 web:build:     ./packages/inngest/src/functions/brand-intelligence.ts
-11:04:50.390 web:build:     ./packages/inngest/src/functions/index.ts
-11:04:50.390 web:build:     ./packages/inngest/src/index.ts
-11:04:50.390 web:build:     ./apps/web/src/app/api/inngest/route.ts
-11:04:50.391 web:build: 
-11:04:50.391 web:build: 
-11:04:50.391 web:build: ./packages/inngest/src/functions/studio/process-workflow.ts:1:1
-11:04:50.391 web:build: Export Prisma doesn't exist in target module
-11:04:50.391 web:build: [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mPrisma[39m[33m,[39m prisma } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.391 web:build:  [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.391 web:build:  [90m 2 |[39m [36mimport[39m { inngest } [36mfrom[39m [32m"../../client"[39m[33m;[39m
-11:04:50.391 web:build:  [90m 3 |[39m [36mimport[39m { workflowRequestedEvent[33m,[39m workflowRequestedSchema } [36mfrom[39m [32m"../../events"[39m[33m;[39m
-11:04:50.391 web:build:  [90m 4 |[39m[0m
-11:04:50.391 web:build: 
-11:04:50.391 web:build: The export Prisma was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.391 web:build: Did you mean to import prisma?
-11:04:50.391 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.391 web:build: 
-11:04:50.391 web:build: Import trace:
-11:04:50.391 web:build:   App Route:
-11:04:50.391 web:build:     ./packages/inngest/src/functions/studio/process-workflow.ts
-11:04:50.392 web:build:     ./apps/web/src/app/api/inngest/route.ts
-11:04:50.392 web:build: 
-11:04:50.392 web:build: 
-11:04:50.392 web:build: ./packages/auth/src/services/subscription-service.ts:3:1
-11:04:50.392 web:build: Export SubscriptionStatus doesn't exist in target module
-11:04:50.392 web:build: [0m [90m  1 |[39m [36mimport[39m type { [33mSubscription[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscription"[39m[33m;[39m
-11:04:50.392 web:build:  [90m  2 |[39m [36mimport[39m type { [33mSubscriptionStatus[39m [36mas[39m [33mPolarSubscriptionStatus[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscriptionstatus"[39m[33m;[39m
-11:04:50.392 web:build: [31m[1m>[22m[39m[90m  3 |[39m [36mimport[39m {
-11:04:50.392 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.392 web:build: [31m[1m>[22m[39m[90m  4 |[39m 	[33mCreditEntryType[39m[33m,[39m
-11:04:50.392 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.392 web:build: [31m[1m>[22m[39m[90m  5 |[39m 	[33mSubscriptionStatus[39m [36mas[39m [33mDbSubscriptionStatus[39m[33m,[39m
-11:04:50.392 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.392 web:build: [31m[1m>[22m[39m[90m  6 |[39m 	[33mPrisma[39m[33m,[39m
-11:04:50.392 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.392 web:build: [31m[1m>[22m[39m[90m  7 |[39m 	prisma[33m,[39m
-11:04:50.392 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.393 web:build: [31m[1m>[22m[39m[90m  8 |[39m } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.393 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.393 web:build:  [90m  9 |[39m [36mimport[39m { billingConfig } [36mfrom[39m [32m"../config/billing"[39m[33m;[39m
-11:04:50.393 web:build:  [90m 10 |[39m [36mimport[39m { [33mCreditLedgerService[39m } [36mfrom[39m [32m"./credit-ledger-service"[39m[33m;[39m
-11:04:50.393 web:build:  [90m 11 |[39m [36mimport[39m { [33mMissingUserReferenceError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m[0m
-11:04:50.393 web:build: 
-11:04:50.393 web:build: The export SubscriptionStatus was not found in module [project]/packages/db/src/index.ts [app-route] (ecmascript).
-11:04:50.393 web:build: Did you mean to import batchStore?
-11:04:50.393 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.393 web:build: 
-11:04:50.393 web:build: Import traces:
-11:04:50.393 web:build:   App Route:
-11:04:50.393 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.393 web:build:     ./packages/auth/src/index.ts
-11:04:50.393 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.393 web:build: 
-11:04:50.393 web:build:   Server Component:
-11:04:50.393 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.393 web:build:     ./packages/auth/src/index.ts
-11:04:50.393 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.394 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.394 web:build: 
-11:04:50.394 web:build: 
-11:04:50.394 web:build: ./packages/auth/src/services/subscription-service.ts:3:1
-11:04:50.394 web:build: Export SubscriptionStatus doesn't exist in target module
-11:04:50.394 web:build: [0m [90m  1 |[39m [36mimport[39m type { [33mSubscription[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscription"[39m[33m;[39m
-11:04:50.394 web:build:  [90m  2 |[39m [36mimport[39m type { [33mSubscriptionStatus[39m [36mas[39m [33mPolarSubscriptionStatus[39m } [36mfrom[39m [32m"@polar-sh/sdk/models/components/subscriptionstatus"[39m[33m;[39m
-11:04:50.394 web:build: [31m[1m>[22m[39m[90m  3 |[39m [36mimport[39m {
-11:04:50.394 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.394 web:build: [31m[1m>[22m[39m[90m  4 |[39m 	[33mCreditEntryType[39m[33m,[39m
-11:04:50.394 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.394 web:build: [31m[1m>[22m[39m[90m  5 |[39m 	[33mSubscriptionStatus[39m [36mas[39m [33mDbSubscriptionStatus[39m[33m,[39m
-11:04:50.394 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.394 web:build: [31m[1m>[22m[39m[90m  6 |[39m 	[33mPrisma[39m[33m,[39m
-11:04:50.394 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.394 web:build: [31m[1m>[22m[39m[90m  7 |[39m 	prisma[33m,[39m
-11:04:50.394 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.394 web:build: [31m[1m>[22m[39m[90m  8 |[39m } [36mfrom[39m [32m"@studio233/db"[39m[33m;[39m
-11:04:50.395 web:build:  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
-11:04:50.395 web:build:  [90m  9 |[39m [36mimport[39m { billingConfig } [36mfrom[39m [32m"../config/billing"[39m[33m;[39m
-11:04:50.395 web:build:  [90m 10 |[39m [36mimport[39m { [33mCreditLedgerService[39m } [36mfrom[39m [32m"./credit-ledger-service"[39m[33m;[39m
-11:04:50.395 web:build:  [90m 11 |[39m [36mimport[39m { [33mMissingUserReferenceError[39m } [36mfrom[39m [32m"./errors"[39m[33m;[39m[0m
-11:04:50.395 web:build: 
-11:04:50.395 web:build: The export SubscriptionStatus was not found in module [project]/packages/db/src/index.ts [app-rsc] (ecmascript).
-11:04:50.395 web:build: Did you mean to import batchStore?
-11:04:50.395 web:build: All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-11:04:50.395 web:build: 
-11:04:50.395 web:build: Import traces:
-11:04:50.395 web:build:   App Route:
-11:04:50.395 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.395 web:build:     ./packages/auth/src/index.ts
-11:04:50.395 web:build:     ./apps/web/src/app/api/auth/[...better]/route.ts
-11:04:50.395 web:build: 
-11:04:50.395 web:build:   Server Component:
-11:04:50.395 web:build:     ./packages/auth/src/services/subscription-service.ts
-11:04:50.395 web:build:     ./packages/auth/src/index.ts
-11:04:50.396 web:build:     ./packages/auth/src/lib/session.ts
-11:04:50.396 web:build:     ./apps/web/src/app/dashboard/page.tsx
-11:04:50.396 web:build: 
-11:04:50.396 web:build: 
-11:04:50.396 web:build:     at <unknown> (./packages/db/src/index.ts:4:1)
-11:04:50.396 web:build:     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
-11:04:50.396 web:build:     at <unknown> (./packages/db/src/index.ts:99:1)
-11:04:50.397 web:build:     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
-11:04:50.398 web:build:     at <unknown> (./apps/web/src/server/trpc/routers/asset.ts:2:1)
-11:04:50.398 web:build:     at <unknown> (./packages/db/src/batch-store.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/db/src/batch-store.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/credit-ledger-service.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/credit-ledger-service.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/subscription-service.ts:3:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/subscription-service.ts:3:1)
-11:04:50.398 web:build:     at <unknown> (./apps/web/src/app/api/chat/route.ts:10:1)
-11:04:50.398 web:build:     at <unknown> (./apps/web/src/server/trpc/routers/workflow.ts:2:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/credit-ledger-service.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/credit-ledger-service.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/db/src/batch-store.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/db/src/batch-store.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/inngest/src/functions/brand-intelligence.ts:3:1)
-11:04:50.398 web:build:     at <unknown> (./packages/inngest/src/functions/studio/process-workflow.ts:1:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/subscription-service.ts:3:1)
-11:04:50.398 web:build:     at <unknown> (./packages/auth/src/services/subscription-service.ts:3:1)
-11:04:50.508 web:build: error: script "build" exited with code 1
-11:04:50.510 web:build: ERROR: command finished with error: command (/vercel/path0/apps/web) /bun1/bun run build exited (1)
-11:04:50.510 web#build: command (/vercel/path0/apps/web) /bun1/bun run build exited (1)
-11:04:50.513 
-11:04:50.513   Tasks:    0 successful, 1 total
-11:04:50.513  Cached:    0 cached, 1 total
-11:04:50.513    Time:    1m40.785s 
-11:04:50.513 Summary:    /vercel/path0/.turbo/runs/37n2ocHHRJ6Vcp2KiiJAThMTXex.json
-11:04:50.513  Failed:    web#build
-11:04:50.514 
-11:04:50.526  ERROR  run failed: command  exited (1)
-11:04:50.531 error: script "build" exited with code 1
-11:04:50.544 Error: Command "bun run build --filter=web..." exited with 1
+# Use XML tags to structure your prompts
+
+---
+
+<Note>
+While these tips apply broadly to all Claude models, you can find prompting tips specific to extended thinking models [here](/docs/en/build-with-claude/prompt-engineering/extended-thinking-tips).
+</Note>
+
+When your prompts involve multiple components like context, instructions, and examples, XML tags can be a game-changer. They help Claude parse your prompts more accurately, leading to higher-quality outputs.
+
+<Tip>**XML tip**: Use tags like `<instructions>`, `<example>`, and `<formatting>` to clearly separate different parts of your prompt. This prevents Claude from mixing up instructions with examples or context.</Tip>
+
+## Why use XML tags?
+
+- **Clarity:** Clearly separate different parts of your prompt and ensure your prompt is well structured.
+- **Accuracy:** Reduce errors caused by Claude misinterpreting parts of your prompt.
+- **Flexibility:** Easily find, add, remove, or modify parts of your prompt without rewriting everything.
+- **Parseability:** Having Claude use XML tags in its output makes it easier to extract specific parts of its response by post-processing.
+
+<Note>There are no canonical "best" XML tags that Claude has been trained with in particular, although we recommend that your tag names make sense with the information they surround.</Note>
+
+***
+
+## Tagging best practices
+
+1. **Be consistent**: Use the same tag names throughout your prompts, and refer to those tag names when talking about the content (e.g, `Using the contract in <contract> tags...`).
+2. **Nest tags**: You should nest tags `<outer><inner></inner></outer>` for hierarchical content.
+
+<Tip>**Power user tip**: Combine XML tags with other techniques like multishot prompting (`<examples>`) or chain of thought (`<thinking>`, `<answer>`). This creates super-structured, high-performance prompts.</Tip>
+
+### Examples
+
+  <section title="Example: Generating financial reports">
+
+    Without XML tags, Claude misunderstands the task and generates a report that doesn't match the required structure or tone. After substitution, there is also a chance that Claude misunderstands where one section (like the the Q1 report example) stops and another begins.
+
+    | Role | No XML Tags | With XML Tags |
+    | ---- | ----------- | ------------- |
+    | User | You're a financial analyst at AcmeCorp. Generate a Q2 financial report for our investors. Include sections on Revenue Growth, Profit Margins, and Cash Flow, like with this example from last year: \{\{Q1_REPORT\}\}. Use data points from this spreadsheet: \{\{SPREADSHEET_DATA\}\}. The report should be extremely concise, to the point, professional, and in list format. It should and highlight both strengths and areas for improvement. | You're a financial analyst at AcmeCorp. Generate a Q2 financial report for our investors.<br/><br/>AcmeCorp is a B2B SaaS company. Our investors value transparency and actionable insights.<br/><br/>Use this data for your report:\<data>\{\{SPREADSHEET_DATA\}\}\</data><br/><br/>\<instructions><br/>1. Include sections: Revenue Growth, Profit Margins, Cash Flow.<br/>2. Highlight strengths and areas for improvement.<br/>\</instructions><br/><br/>Make your tone concise and professional. Follow this structure:<br/>\<formatting_example>\{\{Q1_REPORT\}\}\</formatting_example> |
+    | Assistant | Q2 Financial Report for AcmeCorp Investors<br/><br/>Dear Valued Investors,<br/><br/>I am pleased to present our Q2 financial report, showcasing AcmeCorp's continued growth and resilience in the B2B SaaS market.<br/><br/>1. Revenue Growth:<br/>Our Q2 revenue reached \$15.2M, a 22% YoY increase. This growth is primarily driven by a 30% expansion in our enterprise client base. However, our SMB segment saw a slight decline of 5%, which we aim to address through targeted marketing initiatives in Q3.<br/><br/>2. Profit Margins:<br/>Gross margin improved to 72% (up 3% from Q1) due to infrastructure optimizations. EBITDA margin, however, dipped to 18% (down 2%) as we invested heavily in R&D for our upcoming AI-driven features.<br/><br/>3. Cash Flow:<br/>Operating cash flow remains strong at \$4.1M. Our cash reserves stand at \$28M, providing a 15-month runway at current burn rate. We did see a 20% increase in customer acquisition costs, which we're addressing through more efficient sales strategies.<br/><br/>In summary, AcmeCorp's core financials remain robust. We're balancing growth investments with prudent cash management. Our focus for Q3 will be revitalizing SMB growth and optimizing sales efficiency.<br/><br/>Thank you for your continued trust.<br/><br/>Sincerely,<br/>CFO, AcmeCorp | Q2 Financial Report for AcmeCorp Investors\</output><br/><br/>Revenue Growth:<br/>- Q2 revenue: \$15.2M (22% YoY ↑)<br/>- Enterprise clients: 30% ↑<br/>- SMB segment: 5% ↓<br/>  Action: Targeted Q3 marketing<br/><br/>Profit Margins:<br/>- Gross margin: 72% (3% ↑ from Q1)<br/>  Reason: Infrastructure optimizations<br/>- EBITDA margin: 18% (2% ↓)<br/>  Reason: R&D investment in AI features<br/><br/>Cash Flow:<br/>- Operating cash flow: \$4.1M (strong)<br/>- Cash reserves: \$28M (15-month runway)<br/>- Customer acquisition cost: 20% ↑<br/>  Action: Optimize sales strategies<br/><br/>Outlook:<br/>- Core financials: Robust<br/>- Q3 focus: Revitalize SMB, optimize sales<br/><br/>Management remains committed to balancing growth investments with financial discipline. |
+  
+</section>
+  <section title="Example: Legal contract analysis">
+
+    Without XML tags, Claude's analysis is disorganized and misses key points. With tags, it provides a structured, thorough analysis that a legal team can act on.
+
+    | Role | No XML Tags | With XML Tags |
+    | ---- | ----------- | ------------- |
+    | User | Analyze this software licensing agreement for potential risks and liabilities: \{\{CONTRACT\}\}. Focus on indemnification, limitation of liability, and IP ownership clauses. Also, note any unusual or concerning terms. Here's our standard contract for reference: \{\{STANDARD_CONTRACT\}\}. Give a summary of findings and recommendations for our legal team. | Analyze this software licensing agreement for legal risks and liabilities.<br/><br/>We're a multinational enterprise considering this agreement for our core data infrastructure.<br/><br/>\<agreement><br/>\{\{CONTRACT\}\}\</agreement><br/><br/>This is our standard contract for reference:<br/>\<standard_contract>\{\{STANDARD_CONTRACT\}\}\</standard_contract><br/><br/>\<instructions><br/>1. Analyze these clauses:<br/>   - Indemnification<br/>   - Limitation of liability<br/>   - IP ownership<br/><br/>2. Note unusual or concerning terms.<br/><br/>3. Compare to our standard contract.<br/><br/>4. Summarize findings in \<findings> tags.<br/><br/>5. List actionable recommendations in \<recommendations> tags.\</instructions> |
+    | Assistant | The provided software licensing agreement presents several concerning aspects. The indemnification clause is overly broad, potentially exposing us to significant liabilities. The limitation of liability section caps damages at a mere \$500, which is inadequate for our enterprise-level usage. Regarding IP, the agreement grants the vendor joint ownership of any modifications or integrations we create.<br/><br/>In summary, this agreement is not in our best interest. It exposes us to undue risk, limits our recourse in case of failures, and compromises our intellectual property rights. I recommend renegotiating these terms or seeking alternative vendors. | \<findings><br/>1. Indemnification (Clause 8):<br/>   - Issue: Overly broad. We indemnify vendor against "any and all claims" arising from our use.<br/>   - Risk: Could hold us liable even for vendor's negligence or product defects.<br/>   - Deviation: Our standard limits indemnity to claims arising from our violation of agreement.<br/><br/>2. Limitation of Liability (Clause 9):<br/>   - Issue: Caps all damages at \$500, including direct damages.<br/>   - Risk: Grossly inadequate for enterprise use. A critical failure could cost millions.<br/>   - Deviation: Our standard allows for direct damages up to 12 months of fees paid.<br/><br/>3. IP Ownership (Clause 12):<br/>   - Issue: Grants vendor joint ownership of our modifications/integrations.<br/>   - Risk: Vendor could use or sell our proprietary algorithms or data insights.<br/>   - Deviation: Our standard retains full ownership of our work.<br/><br/>4. Unusual Terms:<br/>   - Clause 5.3: Vendor can use our usage data for "any purpose."<br/>   - Clause 7.2: Vendor can terminate for "convenience" with only 7 days' notice.<br/>   - Clause 11: No warranties of any kind, even for basic merchantability.<br/>\</findings><br/><br/>\<recommendations><br/>1. Reject this agreement. Risks far outweigh benefits for an enterprise.<br/>2. Counter-propose:<br/>   - Indemnification: Limit to claims arising from our violation of agreement.<br/>   - Liability: Cap at 12 months' fees for direct damages; negotiate for indirect.<br/>   - IP: Full ownership of our modifications/integrations.<br/>   - Data Use: Restrict to service improvement only.<br/>   - Termination: Minimum 90 days' notice; only for cause.<br/>   - Warranties: Demand basic merchantability and fitness for purpose.<br/>3. If vendor refuses, explore alternative providers or in-house solutions.<br/>4. Engage legal counsel for contract negotiation given high stakes.<br/>\</recommendations> |
+  
+</section>
+
+***
+
+<CardGroup cols={3}>
+  <Card title="Prompt library" icon="link" href="/docs/en/resources/prompt-library/library">
+    Get inspired by a curated selection of prompts for various tasks and use cases.
+  </Card>
+  <Card title="GitHub prompting tutorial" icon="link" href="https://github.com/anthropics/prompt-eng-interactive-tutorial">
+    An example-filled tutorial that covers the prompt engineering concepts found in our docs.
+  </Card>
+  <Card title="Google Sheets prompting tutorial" icon="link" href="https://docs.google.com/spreadsheets/d/19jzLgRruG9kjUQNKtCg1ZjdD6l6weA6qRXG5zLIAhC8">
+    A lighter weight version of our prompt engineering tutorial via an interactive spreadsheet.
+  </Card>
+</CardGroup>

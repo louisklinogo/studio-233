@@ -26,9 +26,9 @@ studio+233 is the AI-native creative operating system designed to bridge the gap
 
 - **Infinite Canvas:** A high-performance spatial interface for organizing, generating, and manipulating creative assets.
 
-- **Agent Orchestration:** Specialized agents like **Vision Forge** (image processing), **Motion Director** (video), and **Insight Researcher** (analysis) working in concert.
+- **Agent Orchestration:** Specialized agents like **Vision Forge**, **Motion Director**, and **Insight Researcher** working in concert with **Self-Healing Planning** and **Temporal Grounding** (2026 standard) for precise, up-to-the-minute execution.
 
-- **Ambient Brand Intelligence:** Agents are natively brand-aware by default, pre-emptively injected with a synthesized **Brand Manifesto** and semantic design rules derived from the **System Knowledge Hub**.
+- **Ambient Brand Intelligence:** Agents are natively brand-aware by default, utilizing a **Vision-First Ingestion Pipeline** to extract high-fidelity **Brand DNA** (visual style, semantic tone, core identity) from multimodal assets (PDFs, Images).
 
 - **Batch Refinery:** An industrial-grade pipeline for high-volume asset processing and automated transformation.
 

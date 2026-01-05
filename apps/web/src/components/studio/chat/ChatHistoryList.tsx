@@ -19,36 +19,96 @@ export const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
 	className,
 }) => {
 	const trpc = useTRPC();
+	const [searchQuery, setSearchQuery] = React.useState("");
+	const [activeTab, setActiveTab] = React.useState<
+		"threads" | "media" | "apps"
+	>("threads");
+
 	const { data, isLoading } = useQuery({
 		...trpc.agent.getThreads.queryOptions({ limit: 50 }),
 		refetchOnWindowFocus: false,
 	});
 
-	const threads = data?.items ?? [];
+	const threads = React.useMemo(() => {
+		const items = data?.items ?? [];
+		if (!searchQuery) return items;
+		const query = searchQuery.toLowerCase();
+		return items.filter(
+			(t) =>
+				t.title?.toLowerCase().includes(query) ||
+				t.snippet?.toLowerCase().includes(query),
+		);
+	}, [data?.items, searchQuery]);
 
 	return (
 		<div
 			className={cn(
-				"flex flex-col h-full bg-[#f4f4f0] dark:bg-[#111111]",
+				"flex flex-col h-full bg-[#111111] text-neutral-300",
 				className,
 			)}
 		>
-			<div className="h-8 flex items-center px-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-[#151515]">
-				<span className="text-[9px] uppercase tracking-widest text-neutral-500 font-mono">
-					Log_Tape // History
-				</span>
+			{/* Header Tabs */}
+			<div className="flex border-b border-white/5 px-2 bg-[#0a0a0a]">
+				{(["threads", "media", "apps"] as const).map((tab) => (
+					<button
+						key={tab}
+						onClick={() => setActiveTab(tab)}
+						className={cn(
+							"px-4 py-3 text-[11px] font-medium uppercase tracking-wider transition-all relative",
+							activeTab === tab
+								? "text-white"
+								: "text-neutral-500 hover:text-neutral-300",
+						)}
+					>
+						{tab}
+						{activeTab === tab && (
+							<div className="absolute bottom-0 left-4 right-4 h-[2px] bg-[#FF4D00]" />
+						)}
+					</button>
+				))}
+			</div>
+
+			{/* Search Bar */}
+			<div className="p-4 border-b border-white/5 bg-[#0a0a0a]">
+				<div className="relative group">
+					<SwissIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-600 transition-colors group-focus-within:text-[#FF4D00]" />
+					<input
+						type="text"
+						placeholder="Search your Threads..."
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className="w-full bg-white/5 border border-white/10 rounded-md py-2.5 pl-10 pr-4 text-xs placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-[#FF4D00]/30 focus:border-[#FF4D00]/50 transition-all font-mono"
+					/>
+				</div>
+			</div>
+
+			{/* Filters Sub-header */}
+			<div className="flex gap-2 px-4 py-3 bg-[#0d0d0d] border-b border-white/5 overflow-x-auto scrollbar-none">
+				{["Select", "Source", "Type", "Temporary Threads: Show"].map(
+					(filter) => (
+						<button
+							key={filter}
+							className="whitespace-nowrap px-3 py-1 rounded-sm border border-white/10 bg-white/5 text-[10px] text-neutral-500 hover:text-neutral-300 hover:border-white/20 transition-all"
+						>
+							{filter} <span className="ml-1 text-[8px] opacity-50">▼</span>
+						</button>
+					),
+				)}
+				<div className="ml-auto flex items-center gap-2 text-[10px] text-neutral-500 whitespace-nowrap">
+					Sort: Newest <span className="opacity-50">▼</span>
+				</div>
 			</div>
 
 			<div className="flex-1 overflow-y-auto p-0 scrollbar-swiss">
 				{isLoading ? (
 					<div className="flex items-center justify-center p-8">
-						<div className="w-4 h-4 rounded-full border-2 border-neutral-300 border-t-neutral-500 animate-spin" />
+						<div className="w-4 h-4 rounded-full border-2 border-neutral-800 border-t-[#FF4D00] animate-spin" />
 					</div>
 				) : threads.length === 0 ? (
-					<div className="flex flex-col items-center justify-center p-8 text-neutral-400 opacity-50">
-						<SwissIcons.History className="w-8 h-8 mb-2" />
-						<div className="text-center text-[10px] text-neutral-400 pt-4 font-mono uppercase tracking-wider">
-							No Records
+					<div className="flex flex-col items-center justify-center p-12 text-neutral-600">
+						<SwissIcons.History className="w-8 h-8 mb-4 opacity-20" />
+						<div className="text-center text-[10px] uppercase tracking-[0.2em] opacity-40 font-mono">
+							Archive Empty
 						</div>
 					</div>
 				) : (
@@ -58,21 +118,48 @@ export const ChatHistoryList: React.FC<ChatHistoryListProps> = ({
 								key={thread.id}
 								onClick={() => onSelectThread(thread.id)}
 								className={cn(
-									"flex flex-col gap-1 p-4 border-b border-neutral-200 dark:border-neutral-800 text-left transition-colors font-mono",
+									"group flex flex-col gap-1.5 p-5 border-b border-white/5 text-left transition-all duration-200 relative",
 									activeThreadId === thread.id
-										? "bg-white dark:bg-[#1a1a1a] border-l-2 border-l-[#FF4D00]"
-										: "hover:bg-neutral-100 dark:hover:bg-[#151515] border-l-2 border-l-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200",
+										? "bg-[#161616]"
+										: "hover:bg-white/[0.02]",
 								)}
 							>
-								<div className="text-xs font-medium truncate w-full">
-									{thread.title || "Untitled Conversation"}
+								{activeThreadId === thread.id && (
+									<div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#FF4D00]" />
+								)}
+
+								<div className="flex items-start justify-between">
+									<div
+										className={cn(
+											"text-[13px] font-bold tracking-tight line-clamp-1 flex-1",
+											activeThreadId === thread.id
+												? "text-white"
+												: "text-neutral-300 group-hover:text-white",
+										)}
+									>
+										{thread.title || "Untitled Conversation"}
+									</div>
+									<div className="text-neutral-700 group-hover:text-neutral-500 transition-colors ml-2">
+										<SwissIcons.Link size={12} className="opacity-40" />
+									</div>
 								</div>
-								<div className="flex items-center justify-between text-[10px] text-neutral-400">
-									<span>{thread.id.slice(-8)}</span>
+
+								{thread.snippet && (
+									<div className="text-[11px] text-neutral-500 line-clamp-2 leading-relaxed font-mono opacity-80 group-hover:opacity-100 transition-opacity">
+										{thread.snippet}
+									</div>
+								)}
+
+								<div className="flex items-center gap-1.5 mt-1 text-[10px] text-neutral-600 font-mono">
+									<SwissIcons.Clock size={11} className="opacity-40" />
 									<span>
 										{formatDistanceToNow(new Date(thread.updatedAt), {
 											addSuffix: true,
 										})}
+									</span>
+									<span className="mx-1.5 opacity-20">|</span>
+									<span className="opacity-40">
+										{thread.id.slice(-6).toUpperCase()}
 									</span>
 								</div>
 							</button>

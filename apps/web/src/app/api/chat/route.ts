@@ -212,6 +212,18 @@ export async function POST(req: Request) {
 		const latestImageUrls = await ingestImagesInHistory(coreMessages);
 		const latestImageUrl = latestImageUrls[latestImageUrls.length - 1];
 
+		// --- Helper: Extract Text from Rich Content ---
+		const getMessageText = (content: any): string => {
+			if (typeof content === "string") return content;
+			if (Array.isArray(content)) {
+				return content
+					.filter((part) => part.type === "text")
+					.map((part) => part.text)
+					.join(" ");
+			}
+			return "";
+		};
+
 		// Await session and thread now
 		const session = await sessionPromise;
 		const thread = threadPromise ? await threadPromise : null;
@@ -232,8 +244,7 @@ export async function POST(req: Request) {
 		const lastMessage = coreMessages[coreMessages.length - 1];
 		const userMessageContent =
 			lastMessage?.role === "user" ? lastMessage.content : "";
-		const queryStr =
-			typeof userMessageContent === "string" ? userMessageContent : "";
+		const queryStr = getMessageText(userMessageContent);
 
 		let brandContext;
 		if (workspaceId) {
@@ -246,13 +257,15 @@ export async function POST(req: Request) {
 
 		// 1. Handle Thread Creation/Validation
 		if (!currentThreadId) {
-			const initialTitle =
-				messages[0]?.content?.slice(0, 50) || "New Conversation";
+			const firstMessageText = getMessageText(messages[0]?.content);
+			const initialTitle = firstMessageText.slice(0, 50) || "New Conversation";
+			const snippet = firstMessageText.slice(0, 150);
 
 			const newThread = await db.$transaction(async (tx) => {
 				const t = await tx.agentThread.create({
 					data: {
 						title: initialTitle,
+						snippet,
 						userId: session?.user?.id,
 						projectId: canvas?.projectId,
 					},
@@ -272,9 +285,9 @@ export async function POST(req: Request) {
 
 			currentThreadId = newThread.id;
 
-			if (messages[0]?.content && typeof messages[0].content === "string") {
+			if (firstMessageText) {
 				waitUntil(
-					generateThreadTitle(messages[0].content)
+					generateThreadTitle(firstMessageText)
 						.then(async (betterTitle) => {
 							await db.agentThread.update({
 								where: { id: (newThread as any).id },
@@ -302,12 +315,23 @@ export async function POST(req: Request) {
 			}
 
 			if (userMessageToPersist) {
-				await db.agentMessage.create({
-					data: {
-						threadId: currentThreadId,
-						role: "USER",
-						content: userMessageToPersist as any,
-					},
+				const text = getMessageText(userMessageToPersist);
+				await db.$transaction(async (tx) => {
+					await tx.agentMessage.create({
+						data: {
+							threadId: currentThreadId,
+							role: "USER",
+							content: userMessageToPersist as any,
+						},
+					});
+
+					// Update snippet on subsequent messages
+					if (text) {
+						await tx.agentThread.update({
+							where: { id: currentThreadId },
+							data: { snippet: text.slice(0, 150) },
+						});
+					}
 				});
 			}
 		}

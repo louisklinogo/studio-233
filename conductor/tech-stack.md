@@ -15,8 +15,8 @@
 - **Authentication:** Better Auth
 - **Identity Management:** Dedicated `@studio233/brand` package for context resolution
 - **Background Jobs:** Inngest
-- **Knowledge Processing (RAG):** LlamaIndex via `@studio233/rag`
-- **AI Orchestration:** Vercel AI SDK with Resilient Design-Render Pipeline (Architecture of Intent: `renderHtml` vs `htmlToCanvas`) and Content-Addressable Storage (CAS)
+- **Knowledge Processing (RAG):** LlamaIndex via `@studio233/rag` (featuring Multimodal LlamaParse & Gemini Vision fallback)
+- **AI Orchestration:** Vercel AI SDK with **Self-Healing Runtime**, Resilient Design-Render Pipeline (Architecture of Intent: `renderHtml` vs `htmlToCanvas`) and Content-Addressable Storage (CAS)
 
 ## AI Models & Providers
 - **Agent Intelligence:** Google Gemini (Gemini 3 Pro/Flash)

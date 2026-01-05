@@ -59,5 +59,9 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Premier Vision-First Ingestion Pipeline
-*Link: [./conductor/tracks/vision_first_ingestion_20260105/](./conductor/tracks/vision_first_ingestion_20260105/)*
+
+
+---
+
+## [x] Track: Agent Orchestration & Ingestion Pipeline Stabilization
+*Link: [./conductor/tracks/stabilization_20260105/](./conductor/tracks/stabilization_20260105/)*

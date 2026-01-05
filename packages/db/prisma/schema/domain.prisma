@@ -295,6 +295,7 @@ model AgentThread {
   userId    String?
   projectId String?
   title     String?
+  snippet   String?
   metadata  Json?           @db.Json
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
