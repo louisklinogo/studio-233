@@ -9,7 +9,7 @@ model BrandKnowledge {
   metadata     Json?                       @db.Json
   workspace_id String?
   createdAt    DateTime                    @default(now())
-  updatedAt    DateTime                    @updatedAt
+  updatedAt    DateTime                    @default(now()) @updatedAt
   workspace    Workspace?                  @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
   @@index([workspace_id])

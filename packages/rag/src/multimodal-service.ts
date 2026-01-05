@@ -50,9 +50,38 @@ async function downloadFile(url: string, filename: string): Promise<string> {
 	const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "brand-ingest-v-"));
 	const filePath = path.join(tempDir, filename);
 
-	const response = await fetch(url);
-	if (!response.ok)
-		throw new Error(`Failed to fetch file: ${response.statusText}`);
+	let response: Response | null = null;
+	let lastError: any = null;
+	const maxRetries = 3;
+
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		try {
+			if (attempt > 0) {
+				await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+			}
+
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+			response = await fetch(url, { signal: controller.signal });
+			clearTimeout(timeoutId);
+
+			if (response.ok) break;
+			if (response.status >= 500) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+			}
+			break;
+		} catch (error) {
+			lastError = error;
+			if (attempt === maxRetries) throw error;
+		}
+	}
+
+	if (!response || !response.ok) {
+		throw new Error(
+			`Failed to fetch file after ${maxRetries} retries: ${response?.statusText || lastError?.message}`,
+		);
+	}
 
 	const buffer = Buffer.from(await response.arrayBuffer());
 	await fs.writeFile(filePath, buffer);

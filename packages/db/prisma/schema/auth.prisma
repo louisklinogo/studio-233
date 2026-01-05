@@ -5,7 +5,7 @@ model User {
   emailVerified          Boolean              @default(false)
   image                  String?
   createdAt              DateTime             @default(now())
-  updatedAt              DateTime             @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   hasCompletedOnboarding Boolean              @default(false)
   accounts               Account[]
   threads                AgentThread[]
@@ -32,7 +32,7 @@ model Session {
   expiresAt DateTime
   token     String   @unique
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   ipAddress String?
   userAgent String?
   userId    String
@@ -55,7 +55,7 @@ model Account {
   scope                 String?
   password              String?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -68,7 +68,7 @@ model Verification {
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
 
   @@index([identifier])
   @@map("verification")
@@ -82,7 +82,7 @@ model UserSetting {
   theme           String?  @default("system")
   notificationOpt Json?    @db.Json
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   defaultMode     String?  @default("canvas")
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -100,7 +100,7 @@ model ApiKey {
   expiresAt  DateTime?
   revokedAt  DateTime?
   createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
@@ -120,7 +120,7 @@ model Subscription {
   canceledAt       DateTime?
   meta             Json?              @db.Json
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, externalId])

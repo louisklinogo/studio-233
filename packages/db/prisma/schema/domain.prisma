@@ -5,7 +5,7 @@ model Workspace {
   slug           String?
   userId         String
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   projects       Project[]
   assets         Asset[]
   brandKnowledge BrandKnowledge[]
@@ -27,7 +27,7 @@ model Project {
   thumbnail           String?
   userId              String
   createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   type                ProjectType          @default(CANVAS)
   workspaceId         String?
   threads             AgentThread[]
@@ -56,7 +56,7 @@ model Canvas {
   data           Json             @db.Json
   projectId      String
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   elements       CanvasElement[]
   snapshots      CanvasSnapshot[]
@@ -89,7 +89,7 @@ model CanvasElement {
   data       Json            @db.Json
   zIndex     Int             @default(0)
   createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   canvas     Canvas          @relation(fields: [canvasId], references: [id], onDelete: Cascade)
   snapshot   CanvasSnapshot? @relation(fields: [snapshotId], references: [id])
 
@@ -110,7 +110,7 @@ model Asset {
   workspaceId  String?
   isBrandAsset Boolean         @default(false)
   createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   project      Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   workspace    Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   versions     AssetVersion[]
@@ -159,7 +159,7 @@ model GenerationRun {
   completedAt   DateTime?
   error         Json?            @db.Json
   createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   versions      AssetVersion[]
   canvas        Canvas?          @relation(fields: [canvasId], references: [id])
   inputAsset    Asset?           @relation("GenerationInputAsset", fields: [inputAssetId], references: [id])
@@ -188,7 +188,7 @@ model BatchJob {
   completedAt   DateTime?
   canceledAt    DateTime?
   createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   project       Project?        @relation(fields: [projectId], references: [id])
   user          User?           @relation(fields: [userId], references: [id])
   events        BatchJobEvent[]
@@ -209,7 +209,7 @@ model BatchJobItem {
   metadata  Json?       @db.Json
   error     Json?       @db.Json
   createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   job       BatchJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([jobId, status])
@@ -237,7 +237,7 @@ model WorkflowDefinition {
   nodes       Json          @db.Json
   edges       Json          @db.Json
   createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   runs        WorkflowRun[]
@@ -259,7 +259,7 @@ model WorkflowRun {
   startedAt            DateTime?
   finishedAt           DateTime?
   createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   workflowDefinitionId String?
   project              Project?            @relation(fields: [projectId], references: [id])
   user                 User?               @relation(fields: [userId], references: [id])
@@ -298,7 +298,7 @@ model AgentThread {
   snippet   String?
   metadata  Json?           @db.Json
   createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  updatedAt      DateTime         @default(now()) @updatedAt
   messages  AgentMessage[]
   project   Project?        @relation(fields: [projectId], references: [id])
   user      User?           @relation(fields: [userId], references: [id])

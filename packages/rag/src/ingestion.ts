@@ -1,5 +1,4 @@
 import { PGVectorStore } from "@llamaindex/postgres";
-import { PDFReader } from "@llamaindex/readers/pdf";
 import * as fs from "fs/promises";
 import {
 	Document,
@@ -117,6 +116,7 @@ export async function brandIngestionService({
 
 	try {
 		// 2. Parse PDF
+		const { PDFReader } = await import("@llamaindex/readers/pdf");
 		const reader = new PDFReader();
 		const docs = await reader.loadData(filePath);
 
