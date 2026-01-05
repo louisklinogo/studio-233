@@ -576,50 +576,88 @@ export async function streamAgentResponse(
 			}
 		: undefined;
 
-	return streamText({
-		model: model.model,
-		temperature: model.temperature,
-		system: systemPrompt,
-		messages,
-		tools: model.tools,
-		prepareStep,
-		stopWhen: stepCountIs(maxSteps),
-		...(options.abortSignal ? { abortSignal: options.abortSignal } : {}),
-		onStepFinish: async ({ toolCalls, toolResults, finishReason }) => {
-			if (toolCalls && toolCalls.length > 0) {
-				logger.info(`agent.${agentKey}.stream_step_finish`, {
-					toolCalls: toolCalls.map((tc) => ({
-						name: tc.toolName,
-						args:
-							(tc as { args?: unknown; input?: unknown }).args ??
-							(tc as { args?: unknown; input?: unknown }).input,
-					})),
-					finishReason,
+	const maxValidationRetries = options.maxValidationRetries ?? 2;
+	let validationRetryCount = 0;
+	let currentMessages = [...messages];
+
+	while (validationRetryCount <= maxValidationRetries) {
+		try {
+			return streamText({
+				model: model.model,
+				temperature: model.temperature,
+				system: systemPrompt,
+				messages: currentMessages,
+				tools: model.tools,
+				prepareStep,
+				stopWhen: stepCountIs(maxSteps),
+				...(options.abortSignal ? { abortSignal: options.abortSignal } : {}),
+				onStepFinish: async ({ toolCalls, toolResults, finishReason }) => {
+					if (toolCalls && toolCalls.length > 0) {
+						logger.info(`agent.${agentKey}.stream_step_finish`, {
+							toolCalls: toolCalls.map((tc) => ({
+								name: tc.toolName,
+								args:
+									(tc as { args?: unknown; input?: unknown }).args ??
+									(tc as { args?: unknown; input?: unknown }).input,
+							})),
+							finishReason,
+						});
+					}
+
+					// Invoke callback for each tool call if provided
+					if (options.onToolCall && toolCalls.length > 0) {
+						for (const toolCall of toolCalls) {
+							const matchingResult = toolResults.find(
+								(r) => r.toolCallId === toolCall.toolCallId,
+							);
+							await options.onToolCall({
+								toolCallId: toolCall.toolCallId,
+								name: toolCall.toolName,
+								// Use type assertion for args property (may be 'args' or 'input' depending on AI SDK version)
+								arguments:
+									(toolCall as { args?: unknown }).args ??
+									(toolCall as { input?: unknown }).input,
+								result: matchingResult
+									? (matchingResult as { result?: unknown }).result
+									: undefined,
+							});
+						}
+					}
+				},
+				onFinish: options.onFinish,
+				experimental_context: options.metadata?.context,
+				experimental_telemetry: { isEnabled: true },
+			});
+		} catch (error) {
+			const errorMsg = error instanceof Error ? error.message : String(error);
+
+			if (
+				errorMsg.includes("Invalid tool input") &&
+				validationRetryCount < maxValidationRetries
+			) {
+				validationRetryCount++;
+				logger.warn(`agent.${agentKey}.stream_validation_retry`, {
+					attempt: validationRetryCount,
+					error: errorMsg,
 				});
+
+				currentMessages.push({
+					role: "assistant",
+					content: "[Attempting tool call...]",
+				} as any);
+				currentMessages.push({
+					role: "user",
+					content: `Your last tool call failed validation with the following error: "${errorMsg}". Please correct the parameters and try again.`,
+				} as any);
+
+				continue;
 			}
 
-			// Invoke callback for each tool call if provided
-			if (options.onToolCall && toolCalls.length > 0) {
-				for (const toolCall of toolCalls) {
-					const matchingResult = toolResults.find(
-						(r) => r.toolCallId === toolCall.toolCallId,
-					);
-					await options.onToolCall({
-						toolCallId: toolCall.toolCallId,
-						name: toolCall.toolName,
-						// Use type assertion for args property (may be 'args' or 'input' depending on AI SDK version)
-						arguments:
-							(toolCall as { args?: unknown }).args ??
-							(toolCall as { input?: unknown }).input,
-						result: matchingResult
-							? (matchingResult as { result?: unknown }).result
-							: undefined,
-					});
-				}
-			}
-		},
-		onFinish: options.onFinish,
-		experimental_context: options.metadata?.context,
-		experimental_telemetry: { isEnabled: true },
-	});
+			throw error;
+		}
+	}
+
+	throw new Error(
+		"Agent failed to provide valid tool input after multiple retries.",
+	);
 }
