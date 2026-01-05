@@ -1,6 +1,6 @@
 # Plan: Premier Vision-First Ingestion Pipeline
 
-## Phase 1: Foundation & Schema Design
+## Phase 1: Foundation & Schema Design [checkpoint: 859372c]
 - [x] Task: Create `packages/rag/src/schemas/brand-dna.ts` and define the `BrandDNA` Zod schema including Core Identity, Visual Style, and Semantic DNA fields. [0a96421]
 - [x] Task: Create `packages/rag/src/multimodal-service.ts` with a basic shell for the service. [eb32475]
 - [x] Task: Implement `BrandDNA` schema validation tests to ensure strict validation rules (e.g., rejecting empty objects). [a308bc7]
