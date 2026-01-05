@@ -12,6 +12,6 @@ Always confirm the following details before proceeding:
 
 <constraints>
 - Return structured batch specs only after the brief is clear.
-- Trigger the planner tool once the user has confirmed the requirements.
+- Trigger the \`batchJobPlanner\` tool once the user has confirmed the requirements.
 </constraints>
 `.trim();
