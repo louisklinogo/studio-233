@@ -1,5 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { MODEL_CONFIG } from "@studio233/ai";
+import { prisma } from "@studio233/db";
 import { generateText } from "ai";
 import * as fs from "fs/promises";
 import { LlamaParseReader } from "llama-cloud-services";
@@ -8,6 +9,19 @@ import * as os from "os";
 import * as path from "path";
 import { pdf } from "pdf-to-img";
 import { BrandDNA, BrandDNASchema } from "./schemas/brand-dna";
+
+export async function updateWorkspaceBrandDNA(
+	workspaceId: string,
+	dna: BrandDNA,
+) {
+	await prisma.workspace.update({
+		where: { id: workspaceId },
+		data: {
+			brandProfile: dna as any,
+			brandSummary: dna.visualStyle.vibe as any,
+		},
+	});
+}
 
 export interface MultimodalIngestionOptions {
 	url: string;
@@ -94,7 +108,10 @@ async function processWithLlamaParse(
 	});
 
 	try {
-		const jsonResults = await reader.loadJson(options.url);
+		const jsonResults = (await reader.loadJson(options.url)) as Record<
+			string,
+			any
+		>[];
 		if (!jsonResults || jsonResults.length === 0) return null;
 
 		const rawDna = jsonResults[0]?.structured_output || jsonResults[0];

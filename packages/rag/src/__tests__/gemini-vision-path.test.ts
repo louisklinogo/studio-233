@@ -43,12 +43,11 @@ mock.module("ai", () => {
 });
 
 // Mock fetch for downloadFile
-const originalFetch = global.fetch;
-global.fetch = async () =>
+global.fetch = (async () =>
 	({
 		ok: true,
 		arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
-	}) as any;
+	}) as any) as any;
 
 describe("multimodalIngestionService - Path B (Gemini Vision)", () => {
 	it("should succeed when Gemini Vision returns valid data", async () => {
