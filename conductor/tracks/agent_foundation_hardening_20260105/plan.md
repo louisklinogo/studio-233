@@ -2,14 +2,14 @@
 
 This plan follows the Test-Driven Development (TDD) workflow to harden the agent foundation, synchronize tool naming, and implement resilient self-healing logic.
 
-## Phase 1: Naming Standardization & Middleware [x]
+## Phase 1: Naming Standardization & Middleware [x] [checkpoint: defe479]
 Standardize tool IDs to camelCase and implement a middleware layer to handle legacy calls.
 
 - [x] Task: Write tests for tool name canonicalization in `wrapTool` cfbb096
 - [x] Task: Implement `camelCase` standardization for all Tool IDs in `packages/ai/src/tools/` cfbb096
 - [x] Task: Implement name canonicalization middleware in `packages/ai/src/runtime/tools.ts` cfbb096
 - [x] Task: Update `AGENT_DEFINITIONS` in `packages/ai/src/runtime/agent-config.ts` to match new IDs cfbb096
-- [ ] Task: Conductor - User Manual Verification 'Naming Standardization & Middleware' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Naming Standardization & Middleware' (Protocol in workflow.md) [x]
 
 ## Phase 2: Schema Resilience (Self-Healing Schemas) [ ]
 Harden the `proposePlan` and `webSearch` tools with Zod preprocessing to handle model hallucinations.
