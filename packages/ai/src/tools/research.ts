@@ -10,10 +10,21 @@ import { createTool } from "./factory";
 export const webSearchTool = createTool({
 	id: "webSearch",
 	description: "Perform multi-source creative research queries",
-	inputSchema: z.object({
-		query: z.string().min(3),
-		maxResults: z.number().min(1).max(10).default(5),
-	}),
+	inputSchema: z.preprocess(
+		(val: any) => {
+			if (val && typeof val === "object" && Array.isArray(val.queries)) {
+				return {
+					...val,
+					query: val.queries.join("\n"),
+				};
+			}
+			return val;
+		},
+		z.object({
+			query: z.string().min(3),
+			maxResults: z.number().min(1).max(10).default(5),
+		}),
+	),
 	execute: async ({ context }) => {
 		const { webSearchWorkflow } = await import("../workflows/research");
 		return webSearchWorkflow.run(context);
