@@ -1,10 +1,10 @@
 # Plan: Agent Orchestration & Ingestion Pipeline Stabilization
 
-## Phase 1: Ingestion Integrity & Database Fixes
+## Phase 1: Ingestion Integrity & Database Fixes [checkpoint: c82e7c3]
 - [x] Task: Create `packages/rag/src/__tests__/ingestion-integrity.test.ts` to verify `updatedAt` is populated during indexing. [023cf98]
 - [x] Task: Update `packages/rag/src/ingestion.ts` (and multimodal-service.ts) to explicitly set `updatedAt` on all document/node insertions. [023cf98]
 - [x] Task: Run database migrations check to ensure `DateTime @updatedAt` is correctly handled at the PostgreSQL level. [023cf98]
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Ingestion Integrity' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Ingestion Integrity' (Protocol in workflow.md)
 
 ## Phase 2: Agent Planning Resilience
 - [ ] Task: Create `packages/ai/src/tools/__tests__/planning-resilience.test.ts` with test cases for nested/malformed `proposePlan` inputs.
