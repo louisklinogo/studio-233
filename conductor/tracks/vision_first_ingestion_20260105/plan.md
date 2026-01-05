@@ -11,10 +11,10 @@
 - [x] Task: Write integration test for LlamaParse path (mocking the API response). [4eb1ede]
 
 ## Phase 3: Path B - Visual Fallback (Gemini Vision)
-- [ ] Task: Verify `pdf-to-img` configuration in `packages/rag`.
-- [ ] Task: Implement `pdfToImages` utility for rasterization.
-- [ ] Task: Implement `processWithGeminiVision` function using `MODEL_CONFIG.vision` and the Structured JSON Prompt.
-- [ ] Task: Write integration test for Gemini Vision path (mocking the API response).
+- [x] Task: Verify `pdf-to-img` configuration in `packages/rag`. [95760d0]
+- [x] Task: Implement `pdfToImages` utility for rasterization. [22cfcc9]
+- [x] Task: Implement `processWithGeminiVision` function using `MODEL_CONFIG.vision` and the Structured JSON Prompt. [22cfcc9]
+- [x] Task: Write integration test for Gemini Vision path (mocking the API response). [22cfcc9]
 
 ## Phase 4: Integration & Synthesis
 - [ ] Task: Implement the "Swiss Cheese" logic in `multimodalIngestionService` (Try Path A -> Catch/Score Check -> Path B).
