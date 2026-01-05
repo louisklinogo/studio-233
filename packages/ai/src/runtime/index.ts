@@ -389,6 +389,9 @@ export async function generateAgentResponse(
 		!!latestImageUrl &&
 		shouldForceVisionAnalysis(messages);
 	const maxSteps = resolveStepLimit(agentKey, options.maxSteps);
+	const maxValidationRetries = options.maxValidationRetries ?? 2;
+	let validationRetryCount = 0;
+
 	const prepareStep = forceVisionAnalysis
 		? ({ stepNumber }: { stepNumber: number }) => {
 				if (stepNumber === 0) {
@@ -402,40 +405,81 @@ export async function generateAgentResponse(
 			}
 		: undefined;
 
-	const result = await generateText({
-		model: model.model,
-		temperature: model.temperature,
-		system: systemPrompt,
-		messages,
-		tools: model.tools,
-		prepareStep,
-		stopWhen: stepCountIs(maxSteps),
-		experimental_context: options.metadata?.context,
-		experimental_telemetry: { isEnabled: true },
-		...(options.abortSignal ? { abortSignal: options.abortSignal } : {}),
-		onStepFinish: (step) => {
-			if (step.toolCalls && step.toolCalls.length > 0) {
-				logger.info(`agent.${agentKey}.step_finish`, {
-					toolCalls: step.toolCalls.map((tc) => ({
-						name: tc.toolName,
-						args:
-							(tc as { args?: unknown; input?: unknown }).args ??
-							(tc as { args?: unknown; input?: unknown }).input,
-					})),
-					finishReason: step.finishReason,
-				});
-			}
-		},
-	});
+	let currentMessages = [...messages];
 
-	return {
-		text: result.text,
-		finishReason: result.finishReason,
-		toolCalls: result.toolCalls,
-		toolResults: result.toolResults,
-		agent: agent.name,
-		messages: result.response?.messages,
-	};
+	while (validationRetryCount <= maxValidationRetries) {
+		try {
+			const result = await generateText({
+				model: model.model,
+				temperature: model.temperature,
+				system: systemPrompt,
+				messages: currentMessages,
+				tools: model.tools,
+				prepareStep,
+				stopWhen: stepCountIs(maxSteps),
+				experimental_context: options.metadata?.context,
+				experimental_telemetry: { isEnabled: true },
+				...(options.abortSignal ? { abortSignal: options.abortSignal } : {}),
+				onStepFinish: (step) => {
+					if (step.toolCalls && step.toolCalls.length > 0) {
+						logger.info(`agent.${agentKey}.step_finish`, {
+							toolCalls: step.toolCalls.map((tc) => ({
+								name: tc.toolName,
+								args:
+									(tc as { args?: unknown; input?: unknown }).args ??
+									(tc as { args?: unknown; input?: unknown }).input,
+							})),
+							finishReason: step.finishReason,
+						});
+					}
+				},
+			});
+
+			return {
+				text: result.text,
+				finishReason: result.finishReason,
+				toolCalls: result.toolCalls,
+				toolResults: result.toolResults,
+				agent: agent.name,
+				messages: result.response?.messages,
+			};
+		} catch (error) {
+			const errorMsg = error instanceof Error ? error.message : String(error);
+
+			if (
+				errorMsg.includes("Invalid tool input") &&
+				validationRetryCount < maxValidationRetries
+			) {
+				validationRetryCount++;
+				logger.warn(`agent.${agentKey}.validation_retry`, {
+					attempt: validationRetryCount,
+					error: errorMsg,
+				});
+
+				// Extract tool results from the partially completed run if possible
+				// The AI SDK generateText doesn't return the messages if it throws.
+				// For self-healing, we need to inject the error as a SYSTEM or TOOL result message.
+				// Since we don't have the last tool call ID easily from the caught error,
+				// we add a general instruction to the messages.
+				currentMessages.push({
+					role: "assistant",
+					content: "[Attempting tool call...]",
+				} as any);
+				currentMessages.push({
+					role: "user",
+					content: `Your last tool call failed validation with the following error: "${errorMsg}". Please correct the parameters and try again.`,
+				} as any);
+
+				continue;
+			}
+
+			throw error;
+		}
+	}
+
+	throw new Error(
+		"Agent failed to provide valid tool input after multiple retries.",
+	);
 }
 
 export async function streamAgentResponse(

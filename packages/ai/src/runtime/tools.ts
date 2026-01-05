@@ -85,6 +85,13 @@ function wrapTool(
 			toolCallOptions?: ToolExecutionOptions,
 		) => {
 			const startedAt = Date.now();
+
+			// Observability: Log raw input before any processing or validation
+			logger.info(`tool.${def.id}.invoked`, {
+				parameters,
+				toolCallId: toolCallOptions?.toolCallId,
+			});
+
 			// Ensure parameters is at least an empty object for safeParse
 			const params = parameters ?? {};
 			const parsed = def.inputSchema.safeParse(params);

@@ -9,6 +9,7 @@ import * as os from "os";
 import * as path from "path";
 import { pdf } from "pdf-to-img";
 import { BrandDNA, BrandDNASchema } from "./schemas/brand-dna";
+import { logger } from "./utils/logger";
 
 export async function updateWorkspaceBrandDNA(
 	workspaceId: string,
@@ -74,7 +75,10 @@ export async function pdfToImages(
 			counter++;
 		}
 	} catch (error) {
-		console.error("[rag] pdf-to-img error:", error);
+		logger.error("rag.pdf_to_img_error", {
+			error: error instanceof Error ? error.message : String(error),
+			filePath,
+		});
 	}
 	return images;
 }
@@ -119,10 +123,10 @@ async function processWithLlamaParse(
 		const parsed = BrandDNASchema.safeParse(rawDna);
 
 		if (!parsed.success) {
-			console.warn(
-				"[rag] LlamaParse returned invalid BrandDNA schema",
-				parsed.error,
-			);
+			logger.warn("rag.llamaparse_invalid_schema", {
+				error: parsed.error,
+				rawDna,
+			});
 			return null;
 		}
 
@@ -198,10 +202,10 @@ async function processWithGeminiVision(
 		const parsed = BrandDNASchema.safeParse(rawDna);
 
 		if (!parsed.success) {
-			console.warn(
-				"[rag] Gemini Vision returned invalid BrandDNA schema",
-				parsed.error,
-			);
+			logger.warn("rag.gemini_vision_invalid_schema", {
+				error: parsed.error,
+				rawDna,
+			});
 			return null;
 		}
 
@@ -214,7 +218,10 @@ async function processWithGeminiVision(
 			},
 		};
 	} catch (error) {
-		console.error("[rag] Gemini Vision fallback error:", error);
+		logger.error("rag.gemini_vision_fallback_error", {
+			error: error instanceof Error ? error.message : String(error),
+			url: options.url,
+		});
 		return null;
 	} finally {
 		if (filePath) {
@@ -223,7 +230,10 @@ async function processWithGeminiVision(
 				await fs.unlink(filePath);
 				await fs.rm(dir, { recursive: true, force: true });
 			} catch (e) {
-				console.error("[rag] Failed to cleanup temp files:", e);
+				logger.error("rag.cleanup_temp_files_failed", {
+					error: e instanceof Error ? e.message : String(e),
+					filePath,
+				});
 			}
 		}
 	}
@@ -273,9 +283,10 @@ export async function multimodalIngestionService(
 			// Threshold for "good enough" from Path A
 			return llamaResult;
 		}
-		console.log(
-			`[rag] LlamaParse quality low (${qualityScore}), falling back to Gemini Vision.`,
-		);
+		logger.info("rag.llamaparse_quality_low", {
+			score: qualityScore,
+			url: options.url,
+		});
 	}
 
 	// Step 2: Visual Fallback (Gemini Vision)
