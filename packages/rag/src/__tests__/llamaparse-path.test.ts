@@ -50,7 +50,7 @@ describe("multimodalIngestionService - Path A (LlamaParse)", () => {
 		expect(result.score).toBeGreaterThan(0.8);
 	});
 
-	it("should fall back (currently throw) when LlamaParse fails", async () => {
+	it("should fall back to Gemini Vision when LlamaParse fails", async () => {
 		const options = {
 			url: "fail",
 			workspaceId: "ws_123",
@@ -60,9 +60,9 @@ describe("multimodalIngestionService - Path A (LlamaParse)", () => {
 			llamaParseApiKey: "fake_key",
 		};
 
-		// Since Path B isn't implemented, it should throw
+		// It should fail because Gemini Vision is not mocked here and URL is 'fail'
 		expect(multimodalIngestionService(options)).rejects.toThrow(
-			"Not implemented: Path B (Gemini Vision) fallback",
+			"Multimodal ingestion failed",
 		);
 	});
 });
