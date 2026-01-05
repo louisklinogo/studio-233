@@ -17,6 +17,9 @@ import {
 	validateStudioPluginConfig,
 } from "@/server/studio-workflow/plugin-registry";
 
+// Route segment config for Vercel
+export const maxDuration = 60;
+
 // Inject app-specific registry logic into the shared workflow function
 const processStudioWorkflow = createProcessStudioWorkflow({
 	coerceMediaFile,
