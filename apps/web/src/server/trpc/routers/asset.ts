@@ -213,4 +213,42 @@ export const assetRouter = router({
 
 			return result;
 		}),
+
+	/**
+	 * Get all assets associated with chat threads in a workspace
+	 */
+	getChatMedia: publicProcedure
+		.input(z.object({ workspaceId: z.string() }))
+		.query(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+
+			if (!session) {
+				throw new TRPCError({ code: "UNAUTHORIZED" });
+			}
+
+			// Verify workspace ownership
+			const workspace = await prisma.workspace.findUnique({
+				where: { id: input.workspaceId },
+			});
+
+			if (!workspace || workspace.userId !== session.user.id) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Workspace access denied",
+				});
+			}
+
+			// Query assets that have a threadId in their metadata
+			return await prisma.asset.findMany({
+				where: {
+					workspaceId: input.workspaceId,
+					metadata: {
+						path: ["threadId"],
+						is_not_null: true,
+					},
+				},
+				orderBy: { createdAt: "desc" },
+			});
+		}),
 });

@@ -22,6 +22,7 @@ interface ChatPanelProps {
 	onClose: () => void;
 	onChat: (prompt: string) => void;
 	selectedImageIds: string[];
+	workspaceId?: string;
 	onCanvasCommand?: (
 		command: CanvasCommand,
 		options?: { replaceId?: string },
@@ -59,6 +60,7 @@ export function ChatPanel({
 	onClose,
 	onChat,
 	selectedImageIds,
+	workspaceId,
 	onCanvasCommand,
 	onStartGeneration,
 	seedAttachments,
@@ -423,6 +425,7 @@ export function ChatPanel({
 					<ChatHistoryList
 						onSelectThread={handleSelectThread}
 						activeThreadId={activeThreadId}
+						workspaceId={workspaceId}
 					/>
 				) : (
 					<div

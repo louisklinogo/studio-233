@@ -19,9 +19,17 @@ export const canvasTextToImageTool = createTool({
 		apiKey: z.string().optional(),
 	}),
 	outputSchema: canvasToolOutputSchema,
-	execute: async ({ context }) => {
+	execute: async ({ context, runtimeContext }) => {
 		const { textToImageWorkflow } = await import("../workflows/text-to-image");
-		const workflowResult = await textToImageWorkflow.run(context as any);
+		const threadId = (runtimeContext as any)?.threadId;
+
+		const workflowResult = await textToImageWorkflow.run({
+			...context,
+			metadata: {
+				...(context.metadata ?? {}),
+				threadId,
+			},
+		} as any);
 
 		const baseCommand = workflowResult.command;
 

@@ -1707,6 +1707,22 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					setImages((prev) => [...prev, newImage]);
 					setSelectedIds([newImage.id]);
 					saveToHistory();
+
+					// Background registration
+					const metadata = command.meta || {};
+					const mimeType = (command as any).mimeType || "image/png";
+					const extension = mimeType.split("/")[1] || "png";
+					void trpc.asset.register.mutate({
+						name: `ai-${Date.now()}.${extension}`,
+						url: command.url,
+						size: 0, // Unknown for remote URLs
+						mimeType,
+						workspaceId: project?.workspaceId || "",
+						metadata: {
+							...metadata,
+							threadId: (metadata as any).threadId,
+						},
+					});
 				} else if (command.type === "update-image") {
 					const existingImage = images.find((img) => img.id === command.id);
 					if (!existingImage) {
@@ -1766,6 +1782,22 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					setVideos((prev) => [...prev, newVideo]);
 					setSelectedIds([newVideo.id]);
 					saveToHistory();
+
+					// Background registration
+					const metadata = command.meta || {};
+					const mimeType = (command as any).mimeType || "video/mp4";
+					const extension = mimeType.split("/")[1] || "mp4";
+					void trpc.asset.register.mutate({
+						name: `ai-video-${Date.now()}.${extension}`,
+						url: command.url,
+						size: 0,
+						mimeType,
+						workspaceId: project?.workspaceId || "",
+						metadata: {
+							...metadata,
+							threadId: (metadata as any).threadId,
+						},
+					});
 				}
 			} catch (error) {
 				console.error("Failed to handle canvas command:", error);
@@ -2442,6 +2474,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 								onClose={() => setIsChatOpen(false)}
 								onChat={handleChat}
 								selectedImageIds={selectedIds}
+								workspaceId={project?.workspaceId}
 								onCanvasCommand={handleCanvasCommand}
 								onStartGeneration={handleStartGeneration}
 								seedAttachments={chatSeedAttachments}

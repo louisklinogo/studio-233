@@ -4,6 +4,7 @@ export type CanvasCommand =
 			url: string;
 			width: number;
 			height: number;
+			mimeType?: string;
 			originalImageId?: string;
 			meta?: {
 				prompt?: string;
@@ -31,6 +32,7 @@ export type CanvasCommand =
 			width: number;
 			height: number;
 			duration: number;
+			mimeType?: string;
 			meta?: {
 				prompt?: string;
 				modelId?: string;

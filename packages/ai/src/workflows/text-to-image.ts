@@ -99,6 +99,7 @@ export const textToImageInputSchema = z.object({
 	aspectRatio: aspectRatioEnum.optional(),
 	imageSize: z.union([imageSizeEnum, aspectRatioEnum]).optional(),
 	apiKey: z.string().optional(),
+	metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const textToImageOutputSchema = canvasToolOutputSchema;
@@ -118,6 +119,7 @@ export async function runTextToImageWorkflow(
 		imageSize,
 		aspectRatio,
 		apiKey,
+		metadata,
 	} = input;
 
 	const normalizedImageSize = isAspectRatioOption(imageSize)
@@ -212,9 +214,11 @@ export async function runTextToImageWorkflow(
 				url: blobUrl,
 				width,
 				height,
+				mimeType: file.mediaType,
 				meta: {
 					provider: "gemini",
 					prompt,
+					...(metadata ?? {}),
 				},
 			},
 		};
@@ -268,9 +272,11 @@ export async function runTextToImageWorkflow(
 			url: resultData.images[0].url,
 			width: resultData.images[0].width,
 			height: resultData.images[0].height,
+			mimeType: "image/png", // Fal Flux defaults to png
 			meta: {
 				provider: "fal",
 				prompt,
+				...(metadata ?? {}),
 			},
 		},
 	};

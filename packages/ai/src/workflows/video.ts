@@ -21,6 +21,7 @@ export const textToVideoInputSchema = z.object({
 	mode: z.enum(["quality", "fast"]).default("quality"),
 	duration: z.number().min(2).max(12).default(6),
 	aspectRatio: z.string().default("16:9"),
+	metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const textToVideoOutputSchema = canvasToolOutputSchema;
@@ -31,7 +32,7 @@ export type TextToVideoResult = z.infer<typeof textToVideoOutputSchema>;
 export async function runTextToVideoWorkflow(
 	input: TextToVideoInput,
 ): Promise<TextToVideoResult> {
-	const { prompt, mode, duration, aspectRatio } = input;
+	const { prompt, mode, duration, aspectRatio, metadata } = input;
 	if (!env.falKey) {
 		return {
 			message: `Render ${duration}s video at ${aspectRatio} using ${mode} mode. Prompt: ${prompt} (Planned - No Key)`,
@@ -66,9 +67,11 @@ export async function runTextToVideoWorkflow(
 			width: Math.round(width),
 			height: Math.round(height),
 			duration,
+			mimeType: "video/mp4",
 			meta: {
 				prompt,
 				provider: model,
+				...(metadata ?? {}),
 			},
 		},
 	};

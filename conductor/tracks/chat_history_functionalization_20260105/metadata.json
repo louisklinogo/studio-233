@@ -1,0 +1,8 @@
+{
+	"track_id": "chat_history_functionalization_20260105",
+	"type": "feature",
+	"status": "new",
+	"created_at": "2026-01-05T21:15:00Z",
+	"updated_at": "2026-01-05T21:15:00Z",
+	"description": "Functionalize the Threads and Media tabs in the Chat Panel with robust backend integration and theme-aware UI."
+}

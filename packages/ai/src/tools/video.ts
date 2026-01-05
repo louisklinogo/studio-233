@@ -12,9 +12,17 @@ export const textToVideoTool = createTool({
 		aspectRatio: z.string().default("16:9"),
 	}),
 	outputSchema: canvasToolOutputSchema,
-	execute: async ({ context }) => {
+	execute: async ({ context, runtimeContext }) => {
 		const { textToVideoWorkflow } = await import("../workflows/video");
-		const result = await textToVideoWorkflow.run(context);
+		const threadId = (runtimeContext as any)?.threadId;
+
+		const result = await textToVideoWorkflow.run({
+			...context,
+			metadata: {
+				...(context as any).metadata,
+				threadId,
+			},
+		} as any);
 
 		const command =
 			result.command && result.command.type === "add-video"
@@ -23,6 +31,7 @@ export const textToVideoTool = createTool({
 						meta: {
 							...(result.command.meta ?? {}),
 							mode: context.mode,
+							threadId,
 						},
 					}
 				: result.command;

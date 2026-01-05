@@ -170,10 +170,11 @@ export const backgroundRemovalTool = createTool({
 		apiKey: z.string().optional(),
 	}),
 	outputSchema: canvasToolOutputSchema,
-	execute: async ({ context }) => {
+	execute: async ({ context, runtimeContext }) => {
 		const { backgroundRemovalWorkflow } = await import(
 			"../workflows/background-removal"
 		);
+		const threadId = (runtimeContext as any)?.threadId;
 		const result = await backgroundRemovalWorkflow.run(context);
 
 		// Return standardized command format
@@ -187,6 +188,7 @@ export const backgroundRemovalTool = createTool({
 					provider: result.provider,
 					verified: result.verified,
 					qualityScore: result.qualityScore,
+					threadId,
 				},
 			},
 			data: {
@@ -208,10 +210,11 @@ export const objectIsolationTool = createTool({
 		apiKey: z.string().optional(),
 	}),
 	outputSchema: canvasToolOutputSchema,
-	execute: async ({ context }) => {
+	execute: async ({ context, runtimeContext }) => {
 		const { objectIsolationWorkflow } = await import(
 			"../workflows/object-isolation"
 		);
+		const threadId = (runtimeContext as any)?.threadId;
 		const result = await objectIsolationWorkflow.run(context);
 
 		// Return standardized command format
@@ -224,6 +227,7 @@ export const objectIsolationTool = createTool({
 					operation: "object-isolation",
 					prompt: context.prompt,
 					maskUrl: result.maskUrl,
+					threadId,
 				},
 			},
 			data: {
@@ -281,10 +285,11 @@ export const imageReframeTool = createTool({
 		"Resize/crop an image to new dimensions while preserving key regions",
 	inputSchema: imageReframeInputSchema,
 	outputSchema: canvasToolOutputSchema,
-	execute: async ({ context }) => {
+	execute: async ({ context, runtimeContext }) => {
 		const { imageReframeWorkflow } = await import(
 			"../workflows/vision-enhancements"
 		);
+		const threadId = (runtimeContext as any)?.threadId;
 		const result = await imageReframeWorkflow.run(context);
 
 		return {
@@ -296,6 +301,7 @@ export const imageReframeTool = createTool({
 					operation: "image-reframe",
 					strategy: context.strategy,
 					dimensions: `${context.targetWidth}x${context.targetHeight}`,
+					threadId,
 				},
 			},
 			message: `Image reframed to ${context.targetWidth}x${context.targetHeight}`,
@@ -313,10 +319,11 @@ export const imageUpscaleTool = createTool({
 		originalImageId: z.string().optional(), // For canvas updates
 	}),
 	outputSchema: canvasToolOutputSchema,
-	execute: async ({ context }) => {
+	execute: async ({ context, runtimeContext }) => {
 		const { imageUpscaleWorkflow } = await import(
 			"../workflows/vision-enhancements"
 		);
+		const threadId = (runtimeContext as any)?.threadId;
 		const result = await imageUpscaleWorkflow.run(context);
 
 		return {
@@ -328,6 +335,7 @@ export const imageUpscaleTool = createTool({
 					operation: "image-upscale",
 					scale: context.scale,
 					dimensions: `${result.width}x${result.height}`,
+					threadId,
 				},
 			},
 			message: `Image upscaled ${context.scale}x`,
