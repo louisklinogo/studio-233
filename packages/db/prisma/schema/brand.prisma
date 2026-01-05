@@ -3,6 +3,7 @@ model BrandKnowledge {
   node_id      String?                     @unique
   external_id  String?
   collection   String?
+  document     String                      @default("")
   text         String
   embedding    Unsupported("vector(768)")?
   metadata     Json?                       @db.Json

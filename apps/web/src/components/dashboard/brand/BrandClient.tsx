@@ -237,10 +237,24 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 				workspaceId,
 			},
 			{
-				refetchInterval: isPolling ? 3000 : false,
+				refetchInterval: isPolling ? 2000 : false, // Faster polling (2s) for snappier feedback
 			},
 		),
 	);
+
+	// Smart Polling Termination: Stop syncing if data stabilizes or updates
+	useEffect(() => {
+		if (isPolling && intelligence) {
+			// If we have nodes and system state is valid, stop the "fake" loading state
+			if (
+				intelligence.totalNodes > 0 &&
+				intelligence.systemState !== "UNINITIALIZED"
+			) {
+				setIsPolling(false);
+				setStatusMessage("SYNC_COMPLETE_Confirmed");
+			}
+		}
+	}, [intelligence, isPolling]);
 
 	const updateWorkspace = useMutation(
 		trpc.workspace.update.mutationOptions({

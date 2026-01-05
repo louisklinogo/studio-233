@@ -1,11 +1,14 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import React, { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { useTRPC } from "@/trpc/client";
 import { SwissIcons } from "../ui/SwissIcons";
 
 interface FieldPaletteProps {
@@ -229,6 +232,34 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 		}
 	};
 
+	// Global System Status Logic
+	const trpc = useTRPC();
+	const { data: workspaces } = useQuery(trpc.workspace.getAll.queryOptions());
+
+	// Resolve active workspace ID (URL param or default to first)
+	const workspaceIdParam = searchParams.get("workspaceId");
+	const activeWorkspaceId =
+		workspaceIdParam ||
+		(workspaces && workspaces.length > 0 ? workspaces[0].id : null);
+
+	// Poll for intelligence status if we have a workspace
+	const { data: intelligence } = useQuery(
+		trpc.workspace.getIntelligence.queryOptions(
+			{
+				workspaceId: activeWorkspaceId || "",
+			},
+			{
+				enabled: !!activeWorkspaceId,
+				refetchInterval: 5000, // Light global polling (5s)
+			},
+		),
+	);
+
+	const systemState = intelligence?.systemState || "OFFLINE";
+	const isProcessing =
+		systemState === "INDEXING" || systemState === "PROCESSING";
+	const isStable = systemState === "STABLE";
+
 	return (
 		<>
 			<AnimatePresence>
@@ -282,6 +313,11 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 							? pathname === "/dashboard" && !currentType
 							: currentType === item.type;
 
+						// Brand-specific Active Check (URL contains /brand)
+						const isBrandActive =
+							item.href === "/brand" && pathname.includes("/brand");
+						const finalActive = isActive || isBrandActive;
+
 						const Icon = item.icon;
 
 						return (
@@ -290,12 +326,12 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 								href={item.href}
 								className={`
                 h-14 flex items-center relative group transition-colors bg-[#f4f4f0] dark:bg-[#111111]
-                ${isActive ? "bg-white dark:bg-[#1a1a1a]" : "hover:bg-white dark:hover:bg-[#1a1a1a]"}
+                ${finalActive ? "bg-white dark:bg-[#1a1a1a]" : "hover:bg-white dark:hover:bg-[#1a1a1a]"}
               `}
 							>
 								{/* Active Indicator (Recessed LED) */}
 								<div className="absolute left-0 w-1 h-full flex items-center justify-center">
-									{isActive && (
+									{finalActive && (
 										<motion.div
 											layoutId="activeNav"
 											className="w-1 h-8 bg-[#FF4D00] rounded-r-sm shadow-[0_0_8px_rgba(255,77,0,0.5)]"
@@ -304,11 +340,29 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 								</div>
 
 								{/* Icon */}
-								<div className="absolute left-0 w-14 flex items-center justify-center">
-									<Icon
-										size={20}
-										className={`transition-colors ${isActive ? "text-neutral-900 dark:text-white" : "text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300"}`}
-									/>
+								<div className="absolute left-0 w-14 flex items-center justify-center relative">
+									<div className="relative">
+										<Icon
+											size={20}
+											className={`transition-colors ${finalActive ? "text-neutral-900 dark:text-white" : "text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300"}`}
+										/>
+
+										{/* Brand System Status LED */}
+										{item.type === "BRAND" && (
+											<div className="absolute -top-1 -right-1">
+												<div
+													className={cn(
+														"w-1.5 h-1.5 rounded-full ring-2 ring-[#f4f4f0] dark:ring-[#111]",
+														isStable
+															? "bg-emerald-500"
+															: isProcessing
+																? "bg-amber-500 animate-pulse"
+																: "bg-neutral-300 dark:bg-neutral-700",
+													)}
+												/>
+											</div>
+										)}
+									</div>
 								</div>
 
 								{/* Label */}
@@ -318,9 +372,29 @@ export function FieldPalette({ user }: FieldPaletteProps) {
 											initial={{ opacity: 0, x: -10 }}
 											animate={{ opacity: 1, x: 0 }}
 											exit={{ opacity: 0, x: -10 }}
-											className={`font-mono text-xs tracking-wider ml-14 whitespace-nowrap ${isActive ? "text-neutral-900 dark:text-white font-bold" : "text-neutral-500"}`}
+											className={`font-mono text-xs tracking-wider ml-14 whitespace-nowrap ${finalActive ? "text-neutral-900 dark:text-white font-bold" : "text-neutral-500"} flex items-center justify-between pr-6`}
 										>
 											{item.label}
+
+											{/* Extended Status Label for Brand */}
+											{item.type === "BRAND" && (
+												<span
+													className={cn(
+														"text-[8px] uppercase tracking-normal ml-2 px-1.5 py-0.5 rounded-[1px]",
+														isStable
+															? "text-emerald-600 bg-emerald-500/10"
+															: isProcessing
+																? "text-amber-600 bg-amber-500/10"
+																: "text-neutral-400 bg-neutral-500/10",
+													)}
+												>
+													{isProcessing
+														? "SYNCING"
+														: isStable
+															? "ONLINE"
+															: "OFFLINE"}
+												</span>
+											)}
 										</motion.span>
 									)}
 								</AnimatePresence>
