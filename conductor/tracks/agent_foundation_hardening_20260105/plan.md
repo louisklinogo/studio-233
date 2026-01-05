@@ -20,13 +20,13 @@ Harden the `proposePlan` and `webSearch` tools with Zod preprocessing to handle 
 - [x] Task: Update `webSearch` tool in `packages/ai/src/tools/research.ts` with `z.preprocess` for query normalization d70ddde
 - [x] Task: Conductor - User Manual Verification 'Schema Resilience' (Protocol in workflow.md) [x]
 
-## Phase 3: Prompt Synchronization & Schema Injection [ ]
+## Phase 3: Prompt Synchronization & Schema Injection [x] [checkpoint: d402692]
 Synchronize system prompts with the code and inject explicit schemas to guide the models.
 
-- [ ] Task: Update `ORCHESTRATOR_PROMPT` in `packages/ai/src/prompts/orchestrator.ts` with new IDs and JSON Schema blocks
-- [ ] Task: Update `INSIGHT_RESEARCHER_PROMPT` and other prompts in `packages/ai/src/prompts/`
-- [ ] Task: Verify prompt synchronization by running a test generation pass
-- [ ] Task: Conductor - User Manual Verification 'Prompt Synchronization' (Protocol in workflow.md)
+- [x] Task: Update `ORCHESTRATOR_PROMPT` in `packages/ai/src/prompts/orchestrator.ts` with new IDs and JSON Schema blocks 80cafbc
+- [x] Task: Update `INSIGHT_RESEARCHER_PROMPT` and other prompts in `packages/ai/src/prompts/` 80cafbc
+- [x] Task: Verify prompt synchronization by running a test generation pass d402692
+- [x] Task: Conductor - User Manual Verification 'Prompt Synchronization' (Protocol in workflow.md) [x]
 
 ## Phase 4: Runtime Stabilization (Streaming Self-Healing) [ ]
 Port the self-healing retry logic to the streaming response runtime.
