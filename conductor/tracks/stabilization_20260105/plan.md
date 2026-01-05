@@ -6,13 +6,13 @@
 - [x] Task: Run database migrations check to ensure `DateTime @updatedAt` is correctly handled at the PostgreSQL level. [023cf98]
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Ingestion Integrity' (Protocol in workflow.md)
 
-## Phase 2: Agent Planning Resilience [checkpoint: fa9bea6]
+## Phase 2: Agent Planning Resilience [checkpoint: 391da6f]
 - [x] Task: Create `packages/ai/src/tools/__tests__/planning-resilience.test.ts` with test cases for nested/malformed `proposePlan` inputs. [fa9bea6]
 - [x] Task: Update `packages/ai/src/tools/planning.ts` to implement a pre-processor that "lifts" nested parameters (e.g., `plan.steps` -> `steps`). [fa9bea6]
 - [x] Task: Refactor `packages/ai/src/prompts/orchestrator.ts` to use "negative constraints" (e.g., "NEVER do X") for better instruction following. [fa9bea6]
 - [x] Task: Rewrite agent prompts in `packages/ai/src/prompts/*.ts` using strict XML tagging structure (<instructions>, <examples>, <constraints>) to improve adherence. [fa9bea6]
 - [x] Task: Implement dynamic date injection in Orchestrator system prompt to ground agent in current time. [fa9bea6]
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Planning Resilience' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Planning Resilience' (Protocol in workflow.md)
 
 ## Phase 3: Self-Healing & Observability
 - [ ] Task: Implement a middleware or error-handler in the AI runtime to catch Zod validation errors and format them as system feedback for the agent.
