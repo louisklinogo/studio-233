@@ -1,6 +1,7 @@
 model BrandKnowledge {
   id           String                      @id @default(cuid())
   node_id      String?                     @unique
+  external_id  String?
   text         String
   embedding    Unsupported("vector(768)")?
   metadata     Json?                       @db.Json
