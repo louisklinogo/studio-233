@@ -7,6 +7,7 @@
 		}
 	},
 	"scripts": {
+		"build": "tsc",
 		"check-types": "tsc --noEmit"
 	},
 	"devDependencies": {
@@ -18,7 +19,6 @@
 		"@llamaindex/google": "^0.4.0",
 		"@llamaindex/postgres": "*",
 		"@llamaindex/readers": "^3.1.21",
-		"@studio233/ai": "workspace:*",
 		"@studio233/db": "workspace:*",
 		"ai": "^6.0.7",
 		"llama-cloud-services": "^0.5.1",

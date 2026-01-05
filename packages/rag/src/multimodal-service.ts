@@ -1,5 +1,4 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { MODEL_CONFIG } from "@studio233/ai";
 import { prisma } from "@studio233/db";
 import { generateText } from "ai";
 import * as fs from "fs/promises";
@@ -8,6 +7,7 @@ import { Document } from "llamaindex";
 import * as os from "os";
 import * as path from "path";
 import { pdf } from "pdf-to-img";
+import { MODEL_CONFIG } from "./model-config";
 import { BrandDNA, BrandDNASchema } from "./schemas/brand-dna";
 import { logger } from "./utils/logger";
 
