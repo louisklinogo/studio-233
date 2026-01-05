@@ -76,7 +76,9 @@ export async function resolveVisualDna(workspaceId: string): Promise<string[]> {
 			take: 5,
 		});
 
-		return nodes.map((n) => n.text);
+		return nodes
+			.map((n) => n.text)
+			.filter((text): text is string => text !== null);
 	} catch (error) {
 		console.error("[BrandResolver] Visual DNA retrieval failed:", error);
 		return [];

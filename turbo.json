@@ -29,8 +29,7 @@
 				".next/**",
 				"!.next/cache/**",
 				"dist/**",
-				"prisma/generated/**",
-				"packages/db/prisma/generated/**"
+				"prisma/generated/**"
 			]
 		},
 		"dev": {
