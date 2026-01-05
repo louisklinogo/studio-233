@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import React, { useEffect, useRef, useState } from "react";
 
 export const SystemHUD: React.FC = () => {
@@ -24,6 +25,52 @@ export const SystemHUD: React.FC = () => {
 			}
 		});
 	}, [scrollYProgress]);
+
+	// Theme Toggle Logic
+	const { theme, setTheme } = useTheme();
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const toggleTheme = (e: React.MouseEvent) => {
+		const nextTheme = theme === "dark" ? "light" : "dark";
+
+		// @ts-ignore
+		if (!document.startViewTransition) {
+			setTheme(nextTheme);
+			return;
+		}
+
+		const rect = (e.target as HTMLElement).getBoundingClientRect();
+		const x = rect.left + rect.width / 2;
+		const y = rect.top + rect.height / 2;
+		const endRadius = Math.hypot(
+			Math.max(x, innerWidth - x),
+			Math.max(y, innerHeight - y),
+		);
+
+		// @ts-ignore
+		const transition = document.startViewTransition(async () => {
+			setTheme(nextTheme);
+		});
+
+		transition.ready.then(() => {
+			const clipPath = [
+				`circle(0px at ${x}px ${y}px)`,
+				`circle(${endRadius}px at ${x}px ${y}px)`,
+			];
+			document.documentElement.animate(
+				{ clipPath },
+				{
+					duration: 800,
+					easing: "ease-in-out",
+					pseudoElement: "::view-transition-new(root)",
+				},
+			);
+		});
+	};
 
 	return (
 		<div className="fixed bottom-0 left-0 right-0 z-[100] h-12 border-t border-neutral-200 dark:border-neutral-800 bg-[#f4f4f0]/80 dark:bg-[#050505]/80 backdrop-blur-md px-6 md:px-12 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.2em] text-neutral-500">
@@ -59,8 +106,21 @@ export const SystemHUD: React.FC = () => {
 				%
 			</div>
 
-			{/* Right Side: Secure Entry Key */}
+			{/* Right Side: Secure Entry Key & Theme Toggle */}
 			<div className="flex items-center gap-8 flex-1 justify-end">
+				{/* Theme Toggle Button */}
+				<button
+					onClick={toggleTheme}
+					className="flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white transition-colors"
+				>
+					{mounted && theme === "dark" ? "LIGHT_MOD" : "DARK_MOD"}
+					<div className="w-3 h-3 border border-current rounded-full flex items-center justify-center">
+						<div
+							className={`w-1.5 h-1.5 rounded-full ${mounted && theme === "dark" ? "bg-white" : "bg-black"}`}
+						/>
+					</div>
+				</button>
+
 				<div className="flex items-center gap-4">
 					<div className="flex items-center gap-2">
 						<span className="w-1 h-1 bg-green-500 rounded-full" />

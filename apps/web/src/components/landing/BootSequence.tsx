@@ -104,7 +104,7 @@ export const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 
 	return (
 		<motion.div
-			className="fixed inset-0 z-[100] bg-[#1a1a1a] flex flex-col items-center justify-center overflow-hidden"
+			className="fixed inset-0 z-[100] bg-[#f4f4f0] dark:bg-[#1a1a1a] flex flex-col items-center justify-center overflow-hidden"
 			exit={{
 				y: "-100%",
 				transition: {
@@ -115,16 +115,16 @@ export const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 		>
 			{/* Persistent Industrial Background */}
 			<div
-				className="absolute inset-0 opacity-[0.03] pointer-events-none"
+				className="absolute inset-0 opacity-[0.05] dark:opacity-[0.03] pointer-events-none"
 				style={{
-					backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+					backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`,
 					backgroundSize: "60px 60px",
 				}}
 			/>
 
 			<div className="relative flex flex-col items-center">
 				{/* Combination Housing */}
-				<div className="relative flex items-center bg-[#0a0a0a] p-6 border-4 border-[#222] rounded-sm shadow-[0_50px_100px_-20px_rgba(0,0,0,1)]">
+				<div className="relative flex items-center bg-white dark:bg-[#0a0a0a] p-6 border-4 border-neutral-200 dark:border-[#222] rounded-sm shadow-2xl dark:shadow-[0_50px_100px_-20px_rgba(0,0,0,1)]">
 					<TumblerDigit
 						target={2}
 						active={phase >= 1}
@@ -142,7 +142,7 @@ export const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 					/>
 
 					{/* Mechanical Guide Line */}
-					<div className="absolute left-0 right-0 h-px bg-white/10 z-20 pointer-events-none" />
+					<div className="absolute left-0 right-0 h-px bg-black/10 dark:bg-white/10 z-20 pointer-events-none" />
 					<motion.div
 						className="absolute left-0 right-0 h-[2px] bg-[#FF4400] z-20 shadow-[0_0_15px_#FF4400]"
 						initial={{ opacity: 0 }}
@@ -156,7 +156,7 @@ export const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 						<div
 							className={`w-2 h-2 rounded-full transition-colors duration-300 ${phase === 4 ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" : "bg-[#FF4400] animate-pulse"}`}
 						/>
-						<span className="font-mono text-[10px] uppercase tracking-[0.5em] text-[#f4f4f0]/40">
+						<span className="font-mono text-[10px] uppercase tracking-[0.5em] text-neutral-400 dark:text-[#f4f4f0]/40">
 							{phase === 4 ? "Combination_Verified" : "Syncing_Tumblers..."}
 						</span>
 					</div>
@@ -178,9 +178,11 @@ export const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 			</div>
 
 			{/* Corner Technical Marks */}
-			<div className="absolute top-12 right-12 flex flex-col items-end gap-1 opacity-20">
-				<div className="w-12 h-[1px] bg-white" />
-				<span className="font-mono text-[8px]">REF_STUDIO_233</span>
+			<div className="absolute top-12 right-12 flex flex-col items-end gap-1 opacity-20 dark:opacity-20 opacity-50">
+				<div className="w-12 h-[1px] bg-black dark:bg-white" />
+				<span className="font-mono text-[8px] text-black dark:text-white">
+					REF_STUDIO_233
+				</span>
 			</div>
 		</motion.div>
 	);

@@ -23,28 +23,25 @@ const GridLine = ({
 	className,
 	delay = 0,
 	vertical = false,
-	color,
 }: {
 	className?: string;
 	delay?: number;
 	vertical?: boolean;
-	color?: string;
 }) => (
 	<motion.div
 		initial={vertical ? { height: 0 } : { width: 0 }}
 		animate={vertical ? { height: "100%" } : { width: "100%" }}
 		transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay }}
-		className={cn("absolute", className)}
-		style={{ backgroundColor: color ?? "rgba(64,64,64,0.6)" }}
+		className={cn("absolute bg-neutral-800", className)}
 	/>
 );
 
 const CornerBracket = ({
 	position,
-	color,
+	className,
 }: {
 	position: "tl" | "tr" | "bl" | "br";
-	color: string;
+	className?: string;
 }) => {
 	const isTop = position.startsWith("t");
 	const isLeft = position.endsWith("l");
@@ -58,8 +55,9 @@ const CornerBracket = ({
 				"absolute w-8 h-8",
 				isTop ? "top-8 border-t" : "bottom-8 border-b",
 				isLeft ? "left-8 border-l" : "right-8 border-r",
+				"border-neutral-800",
+				className,
 			)}
-			style={{ borderColor: color }}
 		/>
 	);
 };
@@ -107,76 +105,10 @@ export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {
 	const [step, setStep] = useState(0);
 	const [progress, setProgress] = useState(0);
 	const [id, setId] = useState("-------");
-	const { resolvedTheme } = useTheme();
-	const [mounted, setMounted] = useState(false);
-
-	useEffect(() => {
-		setMounted(true);
-		// Generate stable ID on mount
-		setId(Math.random().toString(36).substring(7).toUpperCase());
-
-		// Cycle through fake boot steps
-		const interval = setInterval(() => {
-			setStep((prev) => (prev + 1) % BOOT_SEQUENCE.length);
-		}, 800);
-
-		// Fake progress bar
-		const progressInterval = setInterval(() => {
-			setProgress((prev) => {
-				if (prev >= 100) return 100;
-				// Random increments for "real" feel
-				return prev + Math.random() * 15;
-			});
-		}, 200);
-
-		return () => {
-			clearInterval(interval);
-			clearInterval(progressInterval);
-		};
-	}, []);
-
-	const isDark = (mounted ? resolvedTheme : null) !== "light";
-	const palette = isDark
-		? {
-				bg: "#000000",
-				grid: "rgba(64,64,64,0.6)",
-				bracket: "rgba(107,114,128,0.8)",
-				primary: "#f5f5f5",
-				secondary: "#9ca3af",
-				tertiary: "#6b7280",
-				progressTrack: "rgba(64,64,64,0.7)",
-				scanline:
-					"linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))",
-				scanlineOpacity: 0.03,
-				crosshair: "rgba(87,87,87,0.9)",
-			}
-		: {
-				bg: "#f7f7f5",
-				grid: "rgba(0,0,0,0.08)",
-				bracket: "rgba(0,0,0,0.25)",
-				primary: "#0a0a0a",
-				secondary: "#4b5563",
-				tertiary: "#6b7280",
-				progressTrack: "rgba(0,0,0,0.12)",
-				scanline:
-					"linear-gradient(rgba(255,255,255,0)_50%,rgba(0,0,0,0.08)_50%),linear-gradient(90deg,rgba(255,69,0,0.05),rgba(0,0,0,0.02),rgba(0,0,0,0.05))",
-				scanlineOpacity: 0.05,
-				crosshair: "rgba(0,0,0,0.25)",
-			};
-
 	return (
-		<div
-			className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden cursor-wait"
-			style={{ backgroundColor: palette.bg }}
-		>
+		<div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden cursor-wait bg-[#f7f7f5] dark:bg-[#000000]">
 			{/* Scanline Texture */}
-			<div
-				className="absolute inset-0 pointer-events-none z-[10] bg-[length:100%_2px,3px_100%]"
-				style={{
-					backgroundImage: palette.scanline,
-					opacity: palette.scanlineOpacity,
-				}}
-			/>
+			<div className="absolute inset-0 pointer-events-none z-[10] bg-[length:100%_2px,3px_100%] bg-scanline-light dark:bg-scanline-dark opacity-[0.05] dark:opacity-[0.03]" />
 
 			<div className="relative w-full h-full max-w-[1920px] max-h-[1080px] p-8 md:p-12 flex flex-col justify-between">
 				{/* --- GRID LAYER --- */}
@@ -184,46 +116,39 @@ export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {
 					{/* Center Crosshair */}
 					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] opacity-20">
 						<GridLine
-							className="top-1/2 left-0 h-[1px] w-full"
+							className="top-1/2 left-0 h-[1px] w-full bg-black/10 dark:bg-white/10"
 							delay={0.2}
-							color={palette.grid}
 						/>
 						<GridLine
-							className="left-1/2 top-0 w-[1px] h-full"
+							className="left-1/2 top-0 w-[1px] h-full bg-black/10 dark:bg-white/10"
 							delay={0.2}
 							vertical
-							color={palette.grid}
 						/>
 						<motion.div
 							animate={{ rotate: 180 }}
 							transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-							className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border rounded-full border-dashed"
-							style={{ borderColor: palette.crosshair }}
+							className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border rounded-full border-dashed border-black/20 dark:border-white/20"
 						/>
 					</div>
 
 					{/* Thirds Grid */}
 					<GridLine
-						className="top-1/3 left-0 h-[1px] w-full"
+						className="top-1/3 left-0 h-[1px] w-full bg-black/5 dark:bg-white/5"
 						delay={0.4}
-						color={palette.grid}
 					/>
 					<GridLine
-						className="top-2/3 left-0 h-[1px] w-full"
+						className="top-2/3 left-0 h-[1px] w-full bg-black/5 dark:bg-white/5"
 						delay={0.5}
-						color={palette.grid}
 					/>
 					<GridLine
-						className="left-1/3 top-0 w-[1px] h-full"
+						className="left-1/3 top-0 w-[1px] h-full bg-black/5 dark:bg-white/5"
 						delay={0.6}
 						vertical
-						color={palette.grid}
 					/>
 					<GridLine
-						className="left-2/3 top-0 w-[1px] h-full"
+						className="left-2/3 top-0 w-[1px] h-full bg-black/5 dark:bg-white/5"
 						delay={0.7}
 						vertical
-						color={palette.grid}
 					/>
 				</div>
 
@@ -240,23 +165,16 @@ export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {
 								/>
 								<ScrambleText
 									text="STUDIO+233"
-									className="text-[10px] tracking-[0.3em]"
-									style={{ color: palette.tertiary }}
+									className="text-[10px] tracking-[0.3em] text-neutral-500 dark:text-neutral-400"
 								/>
 							</div>
 							<div className="h-[1px] w-24 bg-[#FF4D00]" />
 						</div>
 						<div className="text-right flex flex-col items-end gap-1">
-							<span
-								className="text-[10px] font-mono tracking-widest"
-								style={{ color: palette.secondary }}
-							>
+							<span className="text-[10px] font-mono tracking-widest text-neutral-400 dark:text-neutral-500">
 								REC.709 // 4K
 							</span>
-							<span
-								className="text-[10px] font-mono tracking-widest"
-								style={{ color: palette.secondary }}
-							>
+							<span className="text-[10px] font-mono tracking-widest text-neutral-400 dark:text-neutral-500">
 								FPS: 60.00
 							</span>
 						</div>
@@ -266,8 +184,7 @@ export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {
 					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6">
 						<div className="flex items-center gap-4">
 							<motion.div
-								className="text-4xl md:text-6xl font-mono font-bold tracking-tighter"
-								style={{ color: palette.primary }}
+								className="text-4xl md:text-6xl font-mono font-bold tracking-tighter text-neutral-900 dark:text-white"
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 							>
@@ -279,20 +196,14 @@ export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {
 								<span className="text-[10px] text-[#FF4D00] font-mono tracking-widest">
 									%
 								</span>
-								<span
-									className="text-[10px] font-mono tracking-widest"
-									style={{ color: palette.secondary }}
-								>
+								<span className="text-[10px] font-mono tracking-widest text-neutral-400 dark:text-neutral-500">
 									LOAD
 								</span>
 							</div>
 						</div>
 
 						{/* Progress Hairline */}
-						<div
-							className="w-64 h-[1px] relative overflow-hidden"
-							style={{ backgroundColor: palette.progressTrack }}
-						>
+						<div className="w-64 h-[1px] relative overflow-hidden bg-black/10 dark:bg-white/10">
 							<motion.div
 								className="absolute top-0 left-0 h-full bg-[#FF4D00]"
 								style={{ width: `${progress}%` }}
@@ -307,8 +218,7 @@ export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {
 									initial={{ y: 10, opacity: 0 }}
 									animate={{ y: 0, opacity: 1 }}
 									exit={{ y: -10, opacity: 0 }}
-									className="text-[10px] font-mono tracking-[0.2em] uppercase"
-									style={{ color: palette.tertiary }}
+									className="text-[10px] font-mono tracking-[0.2em] uppercase text-neutral-500 dark:text-neutral-400"
 								>
 									{`> ${BOOT_SEQUENCE[step]}`}
 									<motion.span
@@ -328,21 +238,29 @@ export const Viewfinder3D = ({ label = "INITIALIZING" }: Viewfinder3DProps) => {
 						<div className="flex flex-col gap-1">
 							<ScrambleText
 								text={label}
-								className="text-[10px] font-mono tracking-[0.2em]"
-								style={{ color: palette.secondary }}
+								className="text-[10px] font-mono tracking-[0.2em] text-neutral-400 dark:text-neutral-500"
 							/>
-							<div
-								className="text-[9px] font-mono tracking-widest"
-								style={{ color: palette.tertiary }}
-							>
+							<div className="text-[9px] font-mono tracking-widest text-neutral-400 dark:text-neutral-500">
 								{`ID: ${id}`}
 							</div>
 						</div>
 
-						<CornerBracket position="bl" color={palette.bracket} />
-						<CornerBracket position="br" color={palette.bracket} />
-						<CornerBracket position="tl" color={palette.bracket} />
-						<CornerBracket position="tr" color={palette.bracket} />
+						<CornerBracket
+							position="bl"
+							className="border-black/20 dark:border-white/20"
+						/>
+						<CornerBracket
+							position="br"
+							className="border-black/20 dark:border-white/20"
+						/>
+						<CornerBracket
+							position="tl"
+							className="border-black/20 dark:border-white/20"
+						/>
+						<CornerBracket
+							position="tr"
+							className="border-black/20 dark:border-white/20"
+						/>
 					</div>
 				</div>
 			</div>
