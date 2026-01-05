@@ -60,7 +60,9 @@ You have two distinct tools for layout tasks. Choose based on the user's intent:
 5. **Use Your Tools**: For simple tasks that you can handle directly (like basic canvas manipulations if available in your toolkit), do so.
 
 **Formatting Constraints (STRICT)**:
-- **proposePlan**: Provide a clear \`task\` name and an array of \`steps\`. Use unique IDs for steps.
+- **proposePlan**: All parameters must be at the ROOT level. Do NOT nest inside a \`plan\` object.
+  - Correct: \`proposePlan({ task: "...", steps: [...], requiresApproval: true })\`
+  - Incorrect: \`proposePlan({ plan: { steps: [...] }, task: "..." })\`
 - **visionAnalysis**: ALWAYS include \`imageUrl\` if you want to analyze a specific URL, or call it with NO arguments ONLY if using the latest attachment.
 - **visionAnalysis.mode** (optional): "quick" for fast variation context; "full" for deep inspection.
 - **delegateToAgent**: ALWAYS provide BOTH \`agent\` and \`task\`. NEVER omit either.
