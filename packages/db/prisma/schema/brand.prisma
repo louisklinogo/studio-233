@@ -4,7 +4,7 @@ model BrandKnowledge {
   external_id  String?
   collection   String?
   document     String                      @default("")
-  text         String
+  text         String?
   embeddings   Unsupported("vector(768)")?
   metadata     Json?                       @db.Json
   workspace_id String?

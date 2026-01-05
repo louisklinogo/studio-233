@@ -370,7 +370,7 @@ export const workspaceRouter = router({
 			// 3. Get synthesized summary from workspace
 			const workspace = await prisma.workspace.findUnique({
 				where: { id: input.workspaceId },
-				select: { brandSummary: true },
+				select: { brandSummary: true, indexingStatus: true },
 			});
 
 			return {
@@ -380,7 +380,12 @@ export const workspaceRouter = router({
 				deducedAesthetic: deducedAesthetic || "DNA_SEQUENCE_EMPTY",
 				brandSummary: workspace?.brandSummary as any,
 				lastIndexed: knowledge.length > 0 ? knowledge[0].createdAt : null,
-				systemState: knowledge.length > 0 ? "STABLE" : "UNINITIALIZED",
+				systemState:
+					workspace?.indexingStatus === "INDEXING"
+						? "INDEXING" // Force visual "Processing" state if DB says so
+						: knowledge.length > 0
+							? "STABLE"
+							: "UNINITIALIZED",
 			};
 		}),
 
@@ -449,7 +454,15 @@ export const workspaceRouter = router({
 				}
 			}
 
-			// 4. ALWAYS trigger a fresh synthesis if we have assets
+			// 4. Update workspace status to INDEXING
+			if (triggeredCount > 0) {
+				await prisma.workspace.update({
+					where: { id: input.workspaceId },
+					data: { indexingStatus: "INDEXING" },
+				});
+			}
+
+			// 5. ALWAYS trigger a fresh synthesis if we have assets
 			if (assets.length > 0) {
 				await inngest.send({
 					name: "brand.intelligence.sync_requested",
