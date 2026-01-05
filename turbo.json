@@ -18,7 +18,8 @@
 		"BETTER_AUTH_URL",
 		"RESEND_API_KEY",
 		"RESEND_FROM_EMAIL",
-		"PLAYWRIGHT_BROWSERS_PATH"
+		"PLAYWRIGHT_BROWSERS_PATH",
+		"LLAMA_CLOUD_API_KEY"
 	],
 	"tasks": {
 		"build": {
@@ -28,6 +29,7 @@
 				".next/**",
 				"!.next/cache/**",
 				"dist/**",
+				"prisma/generated/**",
 				"packages/db/prisma/generated/**"
 			]
 		},

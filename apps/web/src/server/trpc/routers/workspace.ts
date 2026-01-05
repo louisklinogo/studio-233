@@ -349,13 +349,14 @@ export const workspaceRouter = router({
 
 				// Extract semantic insights from text or metadata
 				// We now prioritize the specific markers we set in vision-sync
-				if (node.text.includes("Aesthetic DNA:")) {
-					const match = node.text.match(/Aesthetic DNA: (.*)/);
+				const text = node.text;
+				if (text?.includes("Aesthetic DNA:")) {
+					const match = text.match(/Aesthetic DNA: (.*)/);
 					if (match && !deducedAesthetic) deducedAesthetic = match[1];
 				}
 
-				if (node.text.includes("Form & Geometry:")) {
-					const match = node.text.match(/Form & Geometry: (.*)/);
+				if (text?.includes("Form & Geometry:")) {
+					const match = text.match(/Form & Geometry: (.*)/);
 					if (match) {
 						match[1].split(",").forEach((attr) => {
 							const trimmed = attr.trim().toUpperCase();
