@@ -1140,31 +1140,31 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 								animate={{ y: 0, opacity: 1 }}
 								exit={{ y: 20, opacity: 0 }}
 								transition={{ type: "spring", damping: 30, stiffness: 400 }}
-								className="absolute bottom-6 left-6 right-6 z-50"
+								className="absolute bottom-6 left-6 right-6 z-50 pointer-events-none"
 							>
-								<div className="bg-neutral-900 dark:bg-black border border-[#FF4D00]/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-sm p-4 flex items-center justify-between gap-8 backdrop-blur-md">
-									<div className="flex items-center gap-6">
-										<div className="flex items-center gap-2">
-											<div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-											<span className="font-mono text-[9px] text-white uppercase tracking-[0.2em] font-black">
+								<div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-[0_10px_40px_rgba(0,0,0,0.1)] rounded-sm p-1.5 flex items-center justify-between relative overflow-hidden group pointer-events-auto">
+									<div className="flex items-center gap-6 pl-4">
+										<div className="flex items-center gap-2.5">
+											<div className="w-1.5 h-1.5 bg-neutral-900 dark:bg-white rounded-[1px]" />
+											<span className="font-mono text-[9px] text-neutral-900 dark:text-white uppercase tracking-[0.2em] font-bold">
 												SELECTION_ACTIVE
 											</span>
 										</div>
-										<div className="h-8 w-px bg-neutral-800" />
+										<div className="h-6 w-px bg-neutral-200 dark:bg-neutral-800" />
 										<div className="flex flex-col">
-											<span className="font-mono text-[10px] text-white font-bold tracking-tighter">
+											<span className="font-mono text-[10px] text-neutral-900 dark:text-white font-black tracking-tight">
 												{selectedAssetIds.length}_NODES_STAGED
 											</span>
-											<span className="font-mono text-[7px] text-neutral-500 uppercase tracking-widest">
+											<span className="font-mono text-[8px] text-neutral-400 uppercase tracking-widest">
 												COMMAND_EXPECTED
 											</span>
 										</div>
 									</div>
 
-									<div className="flex items-center gap-3">
+									<div className="flex items-center gap-1.5 p-1 pr-1.5">
 										<button
 											onClick={() => setSelectedAssetIds([])}
-											className="px-4 py-2 font-mono text-[9px] text-neutral-400 hover:text-white uppercase tracking-widest transition-colors"
+											className="h-9 px-5 font-mono text-[9px] text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/5 uppercase tracking-widest transition-all flex items-center justify-center rounded-[1px] active:scale-95"
 										>
 											CANCEL
 										</button>
@@ -1173,17 +1173,22 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 												bulkDeleteAssets.mutate({ ids: selectedAssetIds })
 											}
 											disabled={bulkDeleteAssets.isPending}
-											className="px-6 py-2 bg-[#FF4D00] text-white hover:bg-black hover:text-[#FF4D00] border border-[#FF4D00] font-mono text-[10px] uppercase tracking-[0.2em] font-black rounded-sm transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50 shadow-[0_0_15px_rgba(255,77,0,0.2)]"
+											className="relative h-9 px-6 bg-[#FF4D00] hover:bg-[#FF3D00] text-white font-mono text-[10px] uppercase tracking-[0.15em] font-black rounded-sm transition-all flex items-center gap-3 active:translate-y-[2px] active:shadow-inner disabled:opacity-50 disabled:cursor-not-allowed group"
 										>
-											{bulkDeleteAssets.isPending ? (
-												<SwissIcons.Spinner
-													className="animate-spin"
-													size={12}
-												/>
-											) : (
-												<SwissIcons.Trash size={12} />
-											)}
-											EXECUTE_BATCH_PURGE
+											<div className="relative z-10 flex items-center gap-2">
+												{bulkDeleteAssets.isPending ? (
+													<SwissIcons.Spinner
+														className="animate-spin"
+														size={12}
+													/>
+												) : (
+													<SwissIcons.Trash
+														size={12}
+														className="group-hover:scale-110 transition-transform"
+													/>
+												)}
+												<span>EXECUTE_BATCH_PURGE</span>
+											</div>
 										</button>
 									</div>
 								</div>
