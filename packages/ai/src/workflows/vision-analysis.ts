@@ -353,7 +353,19 @@ export async function runVisionAnalysisWorkflow(
 			options.abortSignal,
 		);
 
-		const parsedResult = visionAnalysisOutputSchema.parse(result.object);
+		let parsedResult: VisionAnalysisResult;
+		try {
+			parsedResult = visionAnalysisOutputSchema.parse(result.object);
+		} catch (error) {
+			if (error instanceof Error && "issues" in error) {
+				logger.error("vision_analysis.validation_failed", {
+					imageHash,
+					issues: (error as any).issues,
+					rawObject: result.object,
+				});
+			}
+			throw error;
+		}
 
 		logger.info("vision_analysis.model_complete", {
 			imageHash,

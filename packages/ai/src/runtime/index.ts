@@ -3,6 +3,7 @@ import type { BrandContext } from "@studio233/brand/types";
 import { generateText, stepCountIs, streamText } from "ai";
 import { getEnv } from "../config";
 import { getModelConfig } from "../model-config";
+import { robustFetch } from "../utils/http";
 import { logger } from "../utils/logger";
 import { withDevTools } from "../utils/model";
 import {
@@ -111,8 +112,6 @@ function getModel(agentKey: AgentKey) {
 				: undefined,
 	};
 }
-
-import { robustFetch } from "../utils/http";
 
 type Message = NonNullable<
 	Parameters<typeof generateText>[0]["messages"]
@@ -269,6 +268,15 @@ export function buildSystemPrompt(
 	const agent = AGENT_DEFINITIONS[agentKey];
 	const modelConfig = getModelConfig(agent.model);
 	let systemPrompt = agent.prompt;
+
+	// Dynamic Date Injection
+	const currentDate = new Date().toLocaleDateString("en-US", {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+	systemPrompt = systemPrompt.replace(/{{CURRENT_DATE}}/g, currentDate);
 
 	if (allUserImages.length > 0) {
 		const refs = allUserImages.map((url, i) => `[${i + 1}]: ${url}`).join("\n");

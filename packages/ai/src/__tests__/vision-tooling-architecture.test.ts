@@ -92,7 +92,7 @@ describe("Vision Tooling Architecture Integration", () => {
 		expect(result.toolCalls[0].toolName).toBe("renderHtml");
 		expect(result.toolCalls[0].args).toHaveProperty("html");
 		expect(result.toolCalls[0].args).toHaveProperty("css");
-		expect(lastSystemPrompt).toContain("HTML & Rendering Architecture");
+		expect(lastSystemPrompt).toContain("<rendering_architecture>");
 		expect(lastSystemPrompt).toContain("renderHtml");
 	});
 
