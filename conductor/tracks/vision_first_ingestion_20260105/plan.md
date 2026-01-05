@@ -6,9 +6,9 @@
 - [x] Task: Implement `BrandDNA` schema validation tests to ensure strict validation rules (e.g., rejecting empty objects). [a308bc7]
 
 ## Phase 2: Path A - LlamaParse Integration
-- [ ] Task: Implement `processWithLlamaParse` function in `multimodal-service.ts` using `llamaindex`.
-- [ ] Task: Configure LlamaParse mode to `multimodal` and handle markdown/image response parsing.
-- [ ] Task: Write integration test for LlamaParse path (mocking the API response).
+- [x] Task: Implement `processWithLlamaParse` function in `multimodal-service.ts` using `llamaindex`. [4eb1ede]
+- [x] Task: Configure LlamaParse mode to `multimodal` and handle markdown/image response parsing. [4eb1ede]
+- [x] Task: Write integration test for LlamaParse path (mocking the API response). [4eb1ede]
 
 ## Phase 3: Path B - Visual Fallback (Gemini Vision)
 - [ ] Task: Verify `pdf-to-img` configuration in `packages/rag`.
