@@ -2,7 +2,7 @@
 
 ## Phase 1: Foundation & Schema Design
 - [x] Task: Create `packages/rag/src/schemas/brand-dna.ts` and define the `BrandDNA` Zod schema including Core Identity, Visual Style, and Semantic DNA fields. [0a96421]
-- [ ] Task: Create `packages/rag/src/multimodal-service.ts` with a basic shell for the service.
+- [x] Task: Create `packages/rag/src/multimodal-service.ts` with a basic shell for the service. [eb32475]
 - [ ] Task: Implement `BrandDNA` schema validation tests to ensure strict validation rules (e.g., rejecting empty objects).
 
 ## Phase 2: Path A - LlamaParse Integration
