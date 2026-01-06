@@ -89,7 +89,7 @@ const toolInvocationsToParts = (
 						: "input-streaming";
 
 		const rawName = invocation.toolName ?? invocation.name ?? "call";
-		const normalizedName = rawName.replace(/[-_]([a-z])/g, (g) =>
+		const normalizedName = rawName.replace(/[-_]([a-z])/g, (g: string) =>
 			g[1].toUpperCase(),
 		);
 
