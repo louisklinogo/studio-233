@@ -28,8 +28,8 @@ Synchronize system prompts with the code and inject explicit schemas to guide th
 - [x] Task: Verify prompt synchronization by running a test generation pass d402692
 - [x] Task: Conductor - User Manual Verification 'Prompt Synchronization' (Protocol in workflow.md) [x]
 
-## Phase 4: Runtime Stabilization (Streaming Self-Healing) [ ]
-Port the self-healing retry logic to the streaming response runtime.
+## Phase 4: Runtime Stabilization (Streaming Self-Healing) [x] [checkpoint: 1498f80]
+Port the self-healing logic to the streaming response runtime.
 
 - [x] Task: Write tests for `streamAgentResponse` validation recovery
 - [x] Task: Implement "Retry with Error Context" logic in `streamAgentResponse` in `packages/ai/src/runtime/index.ts`
