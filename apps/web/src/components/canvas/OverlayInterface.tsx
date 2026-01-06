@@ -402,6 +402,10 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 	const { mutateAsync: editWithGemini, isPending: isGeminiEditing } =
 		useMutation(trpc.gemini.editImage.mutationOptions());
 
+	const { mutate: registerAsset } = useMutation(
+		trpc.asset.register.mutationOptions(),
+	);
+
 	// Save current state to storage
 	const saveToStorage = useCallback(async () => {
 		try {
@@ -1712,7 +1716,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					const metadata = command.meta || {};
 					const mimeType = (command as any).mimeType || "image/png";
 					const extension = mimeType.split("/")[1] || "png";
-					void trpc.asset.register.mutate({
+					registerAsset({
 						name: `ai-${Date.now()}.${extension}`,
 						url: command.url,
 						size: 0, // Unknown for remote URLs
@@ -1787,7 +1791,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					const metadata = command.meta || {};
 					const mimeType = (command as any).mimeType || "video/mp4";
 					const extension = mimeType.split("/")[1] || "mp4";
-					void trpc.asset.register.mutate({
+					registerAsset({
 						name: `ai-video-${Date.now()}.${extension}`,
 						url: command.url,
 						size: 0,
@@ -2474,7 +2478,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 								onClose={() => setIsChatOpen(false)}
 								onChat={handleChat}
 								selectedImageIds={selectedIds}
-								workspaceId={project?.workspaceId}
+								workspaceId={project?.workspaceId || undefined}
 								onCanvasCommand={handleCanvasCommand}
 								onStartGeneration={handleStartGeneration}
 								seedAttachments={chatSeedAttachments}

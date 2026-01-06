@@ -26,7 +26,6 @@ export const canvasTextToImageTool = createTool({
 		const workflowResult = await textToImageWorkflow.run({
 			...context,
 			metadata: {
-				...(context.metadata ?? {}),
 				threadId,
 			},
 		} as any);

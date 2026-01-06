@@ -245,7 +245,7 @@ export const assetRouter = router({
 					workspaceId: input.workspaceId,
 					metadata: {
 						path: ["threadId"],
-						is_not_null: true,
+						not: Prisma.DbNull,
 					},
 				},
 				orderBy: { createdAt: "desc" },

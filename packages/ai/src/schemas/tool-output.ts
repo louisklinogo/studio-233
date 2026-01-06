@@ -10,6 +10,7 @@ export const canvasCommandSchema = z.discriminatedUnion("type", [
 		url: z.string().url(),
 		width: z.number(),
 		height: z.number(),
+		mimeType: z.string().optional(),
 		originalImageId: z.string().optional(),
 		meta: z
 			.object({
@@ -18,6 +19,7 @@ export const canvasCommandSchema = z.discriminatedUnion("type", [
 				loraUrl: z.string().optional(),
 				provider: z.string().optional(),
 			})
+			.passthrough()
 			.optional(),
 	}),
 	z.object({
@@ -32,6 +34,7 @@ export const canvasCommandSchema = z.discriminatedUnion("type", [
 		width: z.number(),
 		height: z.number(),
 		duration: z.number(),
+		mimeType: z.string().optional(),
 		meta: z.record(z.string(), z.any()).optional(),
 	}),
 ]);
