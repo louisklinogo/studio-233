@@ -31,7 +31,7 @@ Synchronize system prompts with the code and inject explicit schemas to guide th
 ## Phase 4: Runtime Stabilization (Streaming Self-Healing) [ ]
 Port the self-healing retry logic to the streaming response runtime.
 
-- [ ] Task: Write tests for `streamAgentResponse` validation recovery
-- [ ] Task: Implement "Retry with Error Context" logic in `streamAgentResponse` in `packages/ai/src/runtime/index.ts`
-- [ ] Task: Verify end-to-end streaming recovery with a forced validation error
-- [ ] Task: Conductor - User Manual Verification 'Runtime Stabilization' (Protocol in workflow.md)
+- [x] Task: Write tests for `streamAgentResponse` validation recovery
+- [x] Task: Implement "Retry with Error Context" logic in `streamAgentResponse` in `packages/ai/src/runtime/index.ts`
+- [x] Task: Verify end-to-end streaming recovery with a forced validation error
+- [x] Task: Conductor - User Manual Verification 'Runtime Stabilization' (Protocol in workflow.md)
