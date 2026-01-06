@@ -30,6 +30,7 @@ interface ChatPanelProps {
 	onStartGeneration?: (id: string, prompt: string) => void;
 	seedAttachments?: { filename: string; url: string; mimeType?: string }[];
 	onSeedConsumed?: () => void;
+	googleApiKey?: string;
 	className?: string;
 }
 
@@ -65,6 +66,7 @@ export function ChatPanel({
 	onStartGeneration,
 	seedAttachments,
 	onSeedConsumed,
+	googleApiKey,
 	className,
 }: ChatPanelProps) {
 	const [showHistory, setShowHistory] = useState(false);
@@ -88,9 +90,12 @@ export function ChatPanel({
 	const chatTransport = useMemo(() => {
 		return new DefaultChatTransport<UIMessage>({
 			api: "/api/chat",
-			body: activeThreadId ? { threadId: activeThreadId } : undefined,
+			body: {
+				...(activeThreadId ? { threadId: activeThreadId } : {}),
+				googleApiKey,
+			},
 		});
-	}, [activeThreadId]);
+	}, [activeThreadId, googleApiKey]);
 
 	const chatOptions = {
 		id: activeThreadId ?? "new-chat",

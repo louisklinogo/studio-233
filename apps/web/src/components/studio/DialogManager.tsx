@@ -61,8 +61,12 @@ interface DialogManagerProps {
 	>;
 	customApiKey: string;
 	setCustomApiKey: React.Dispatch<React.SetStateAction<string>>;
+	googleApiKey: string;
+	setGoogleApiKey: React.Dispatch<React.SetStateAction<string>>;
 	tempApiKey: string;
 	setTempApiKey: React.Dispatch<React.SetStateAction<string>>;
+	tempGoogleApiKey: string;
+	setTempGoogleApiKey: React.Dispatch<React.SetStateAction<string>>;
 	theme: string | undefined;
 	setTheme: (theme: string) => void;
 	themeColor?: "obsidian" | "sage" | "stone";
@@ -133,8 +137,12 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 	setGenerationSettings,
 	customApiKey,
 	setCustomApiKey,
+	googleApiKey,
+	setGoogleApiKey,
 	tempApiKey,
 	setTempApiKey,
+	tempGoogleApiKey,
+	setTempGoogleApiKey,
 	theme,
 	setTheme,
 	themeColor = "obsidian",
@@ -270,6 +278,94 @@ export const DialogManager: React.FC<DialogManagerProps> = ({
 					</DialogHeader>
 
 					<div className="space-y-6">
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor="google-api-key">Google Gemini API Key</Label>
+								<p className="text-sm text-muted-foreground">
+									Add your own Gemini API key to bypass chat rate limits and use
+									your own quota.
+								</p>
+								<Input
+									id="google-api-key"
+									type="password"
+									placeholder="Enter your Google API key"
+									value={tempGoogleApiKey}
+									onChange={(e) => setTempGoogleApiKey(e.target.value)}
+									className="font-mono"
+									style={{ fontSize: "16px" }}
+								/>
+								<p className="text-xs text-muted-foreground">
+									Get your API key from{" "}
+									<Link
+										href="https://aistudio.google.com/app/apikey"
+										target="_blank"
+										className="underline hover:text-foreground"
+									>
+										aistudio.google.com/app/apikey
+									</Link>
+								</p>
+							</div>
+
+							{googleApiKey && (
+								<div className="rounded-xl bg-green-500/10 border border-green-500/20 p-3">
+									<div className="flex items-center gap-2 text-sm text-green-600">
+										<Check className="h-4 w-4" />
+										<span>Currently using custom Google API key</span>
+									</div>
+								</div>
+							)}
+
+							<div className="flex justify-between gap-2">
+								<Button
+									variant="secondary"
+									onClick={() => {
+										setGoogleApiKey("");
+										setTempGoogleApiKey("");
+										setIsApiKeyDialogOpen(false);
+										toast({
+											title: "Google API key removed",
+											description: "Using default rate-limited API",
+										});
+									}}
+									disabled={!googleApiKey}
+								>
+									Remove Key
+								</Button>
+
+								<div className="flex gap-2">
+									<Button
+										variant="secondary"
+										onClick={() => {
+											setTempGoogleApiKey(googleApiKey);
+											setIsApiKeyDialogOpen(false);
+										}}
+									>
+										Cancel
+									</Button>
+									<Button
+										variant="primary"
+										onClick={() => {
+											const trimmedKey = tempGoogleApiKey.trim();
+											if (trimmedKey) {
+												setGoogleApiKey(trimmedKey);
+												setIsApiKeyDialogOpen(false);
+												toast({
+													title: "Google API key saved",
+													description:
+														"Your custom Google API key is now active",
+												});
+											}
+										}}
+										disabled={!tempGoogleApiKey.trim()}
+									>
+										Save Key
+									</Button>
+								</div>
+							</div>
+						</div>
+
+						<div className="h-px bg-border/40" />
+
 						<div className="space-y-4">
 							<div className="space-y-2">
 								<Label htmlFor="api-key">FAL API Key</Label>

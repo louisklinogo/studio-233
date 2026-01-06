@@ -139,8 +139,12 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 		setIsApiKeyDialogOpen,
 		customApiKey,
 		setCustomApiKey,
+		googleApiKey,
+		setGoogleApiKey,
 		tempApiKey,
 		setTempApiKey,
+		tempGoogleApiKey,
+		setTempGoogleApiKey,
 		themeColor,
 		setThemeColor,
 	} = useUIState();
@@ -2483,6 +2487,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 								onStartGeneration={handleStartGeneration}
 								seedAttachments={chatSeedAttachments}
 								onSeedConsumed={() => setChatSeedAttachments([])}
+								googleApiKey={googleApiKey}
 								className="h-full w-full"
 							/>
 						</motion.div>
@@ -2508,8 +2513,12 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 					setGenerationSettings={setGenerationSettings}
 					customApiKey={customApiKey}
 					setCustomApiKey={setCustomApiKey}
+					googleApiKey={googleApiKey}
+					setGoogleApiKey={setGoogleApiKey}
 					tempApiKey={tempApiKey}
 					setTempApiKey={setTempApiKey}
+					tempGoogleApiKey={tempGoogleApiKey}
+					setTempGoogleApiKey={setTempGoogleApiKey}
 					theme={theme}
 					setTheme={setTheme}
 					themeColor={themeColor}

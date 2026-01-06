@@ -23,6 +23,8 @@ export type AgentRunOptions = {
 	maxSteps?: number;
 	/** Maximum number of times to allow the agent to self-heal from validation errors. Defaults to 2. */
 	maxValidationRetries?: number;
+	/** Optional custom Google API Key to use for this run (bypasses rate limits) */
+	googleApiKey?: string;
 	/** Callback invoked after each tool call completes */
 	onToolCall?: (toolCall: ToolCallInfo) => void | Promise<void>;
 	/** Callback invoked when the stream finishes */

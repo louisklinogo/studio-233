@@ -12,11 +12,35 @@ import { inngest } from "@studio233/inngest";
 import { list } from "@vercel/blob";
 import { waitUntil } from "@vercel/functions";
 import { convertToModelMessages } from "ai";
+import { createRateLimiter, shouldLimitRequest } from "@/lib/ratelimit";
+
+const chatLimiter = {
+	perMinute: createRateLimiter(5, "60 s"),
+	perHour: createRateLimiter(15, "60 m"),
+	perDay: createRateLimiter(50, "24 h"),
+};
 
 export async function POST(req: Request) {
 	try {
-		const { messages, canvas, maxSteps, threadId } = await req.json();
+		const { messages, canvas, maxSteps, threadId, googleApiKey } =
+			await req.json();
 		const headers = new Headers(req.headers);
+
+		// 0. Rate Limiting (Skip if custom API key provided)
+		if (!googleApiKey) {
+			const ip =
+				headers.get("x-forwarded-for") || headers.get("x-real-ip") || "unknown";
+
+			const limiterResult = await shouldLimitRequest(chatLimiter, ip, "chat");
+			if (limiterResult.shouldLimitRequest) {
+				return new Response(
+					JSON.stringify({
+						error: `Rate limit exceeded per ${limiterResult.period}. Add your Google API key in settings to bypass rate limits.`,
+					}),
+					{ status: 429, headers: { "Content-Type": "application/json" } },
+				);
+			}
+		}
 
 		// 1. Parallel Read: Start Session and Thread fetch immediately
 		const sessionPromise = getSessionWithRetry(headers);
@@ -341,6 +365,7 @@ export async function POST(req: Request) {
 			messages: coreMessages,
 			maxSteps,
 			brandContext,
+			googleApiKey,
 			abortSignal: req.signal,
 			onToolCall: async (toolCall) => {
 				const now = new Date();

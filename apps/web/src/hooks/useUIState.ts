@@ -11,17 +11,25 @@ export function useUIState() {
 	const [isStyleDialogOpen, setIsStyleDialogOpen] = useState(false);
 	const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
 	const [customApiKey, setCustomApiKey] = useState<string>("");
+	const [googleApiKey, setGoogleApiKey] = useState<string>("");
 	const [tempApiKey, setTempApiKey] = useState<string>("");
+	const [tempGoogleApiKey, setTempGoogleApiKey] = useState<string>("");
 	const [themeColor, setThemeColor] = useState<"obsidian" | "sage" | "stone">(
 		"obsidian",
 	);
 
-	// Load API key from localStorage on mount
+	// Load API keys from localStorage on mount
 	useEffect(() => {
-		const savedKey = localStorage.getItem("fal-api-key");
-		if (savedKey) {
-			setCustomApiKey(savedKey);
-			setTempApiKey(savedKey);
+		const savedFalKey = localStorage.getItem("fal-api-key");
+		if (savedFalKey) {
+			setCustomApiKey(savedFalKey);
+			setTempApiKey(savedFalKey);
+		}
+
+		const savedGoogleKey = localStorage.getItem("google-api-key");
+		if (savedGoogleKey) {
+			setGoogleApiKey(savedGoogleKey);
+			setTempGoogleApiKey(savedGoogleKey);
 		}
 	}, []);
 
@@ -103,6 +111,14 @@ export function useUIState() {
 		}
 	}, [customApiKey]);
 
+	useEffect(() => {
+		if (googleApiKey) {
+			localStorage.setItem("google-api-key", googleApiKey);
+		} else {
+			localStorage.removeItem("google-api-key");
+		}
+	}, [googleApiKey]);
+
 	return {
 		isChatOpen,
 		setIsChatOpen,
@@ -124,8 +140,12 @@ export function useUIState() {
 		setIsApiKeyDialogOpen,
 		customApiKey,
 		setCustomApiKey,
+		googleApiKey,
+		setGoogleApiKey,
 		tempApiKey,
 		setTempApiKey,
+		tempGoogleApiKey,
+		setTempGoogleApiKey,
 		themeColor,
 		setThemeColor,
 	};

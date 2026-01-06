@@ -18,6 +18,7 @@ type Payload = {
 	prompt?: string;
 	messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
 	maxSteps?: number;
+	googleApiKey?: string;
 	metadata?: {
 		threadId?: string;
 		resourceId?: string;
@@ -40,6 +41,7 @@ export async function POST(
 	const body = (await req.json()) as Payload;
 	const threadId = body.metadata?.threadId ?? "web-session";
 	const resourceId = body.metadata?.resourceId ?? agent;
+	const googleApiKey = body.googleApiKey;
 
 	if (!body.prompt && !body.messages?.length) {
 		return NextResponse.json(
@@ -52,6 +54,7 @@ export async function POST(
 		const stream = await streamAgentResponse(agentKey, {
 			messages: body.messages,
 			maxSteps: body.maxSteps,
+			googleApiKey,
 			abortSignal: req.signal,
 			metadata: {
 				context: {
@@ -74,6 +77,7 @@ export async function POST(
 	const result = await generateAgentResponse(agentKey, {
 		prompt: body.prompt!,
 		maxSteps: body.maxSteps,
+		googleApiKey,
 		abortSignal: req.signal,
 		metadata: {
 			context: {

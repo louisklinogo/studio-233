@@ -73,14 +73,6 @@ export type { AgentMessage, AgentRunOptions, ToolCallInfo } from "./types";
 
 const env = getEnv();
 
-if (!env.googleApiKey) {
-	throw new Error(
-		"GOOGLE_GENERATIVE_AI_API_KEY (or GEMINI_API_KEY) must be set to run agents",
-	);
-}
-
-const google = createGoogleGenerativeAI({ apiKey: env.googleApiKey });
-
 function buildMessages(options: AgentRunOptions): any[] {
 	if (options.messages?.length) {
 		return options.messages as any[];
@@ -91,7 +83,7 @@ function buildMessages(options: AgentRunOptions): any[] {
 	throw new Error("Either prompt or messages are required");
 }
 
-function getModel(agentKey: AgentKey) {
+function getModel(agentKey: AgentKey, customApiKey?: string) {
 	const agent = AGENT_DEFINITIONS[agentKey];
 	const modelConfig = getModelConfig(agent.model);
 
@@ -100,6 +92,14 @@ function getModel(agentKey: AgentKey) {
 		runAgent: generateAgentResponse,
 	};
 
+	const key = customApiKey || env.googleApiKey;
+	if (!key) {
+		throw new Error(
+			"GOOGLE_GENERATIVE_AI_API_KEY (or GEMINI_API_KEY) must be set to run agents",
+		);
+	}
+
+	const google = createGoogleGenerativeAI({ apiKey: key });
 	const model = withDevTools(google(modelConfig.model));
 
 	return {
@@ -317,7 +317,7 @@ export async function generateAgentResponse(
 		throw new Error(`Unknown agent key: ${agentKey}`);
 	}
 
-	const model = getModel(agentKey);
+	const model = getModel(agentKey, options.googleApiKey);
 	const rawMessages = buildMessages(options);
 	const messages = await hardenImageMessages(rawMessages);
 	const latestImageUrl =
@@ -491,7 +491,7 @@ export async function streamAgentResponse(
 		throw new Error(`Unknown agent key: ${agentKey}`);
 	}
 
-	const model = getModel(agentKey);
+	const model = getModel(agentKey, options.googleApiKey);
 	const rawMessages = buildMessages(options);
 	const messages = await hardenImageMessages(rawMessages);
 	const maxSteps = resolveStepLimit(agentKey, options.maxSteps);
