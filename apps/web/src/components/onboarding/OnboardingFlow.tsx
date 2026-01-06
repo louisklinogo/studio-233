@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { SwissIcons } from "../ui/SwissIcons";
 import { SwissInput } from "./SwissInput";
 import { SwissRoleCard } from "./SwissRoleCard";
@@ -42,7 +42,7 @@ export function OnboardingFlow({
 	const [step, setStep] = useState(1);
 	const [name, setName] = useState(initialName);
 	const [blueprint, setBlueprint] = useState<string | null>(null);
-	const [isComplete, setIsComplete] = useState(false);
+	const [isPending, startTransition] = useTransition();
 
 	const handleContinue = () => {
 		if (step === 1 && name.length > 1) setStep(2);
@@ -50,11 +50,13 @@ export function OnboardingFlow({
 	};
 
 	const handleSubmit = () => {
-		setIsComplete(true);
 		const formData = new FormData();
 		formData.append("name", name);
 		if (blueprint) formData.append("mode", blueprint);
-		action(formData);
+
+		startTransition(() => {
+			action(formData);
+		});
 	};
 
 	return (
@@ -90,7 +92,9 @@ export function OnboardingFlow({
 							className={`flex items-center justify-between transition-opacity duration-300 ${step === 3 ? "opacity-100" : "opacity-40"}`}
 						>
 							<span>03 / UPLINK</span>
-							{isComplete && <span className="text-[#FF4D00]">[OK]</span>}
+							{isPending && (
+								<span className="text-[#FF4D00] animate-pulse">[BUSY]</span>
+							)}
 						</div>
 					</div>
 				</div>
