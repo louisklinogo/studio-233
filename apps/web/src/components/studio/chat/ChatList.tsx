@@ -88,8 +88,13 @@ const toolInvocationsToParts = (
 						? "input-available"
 						: "input-streaming";
 
+		const rawName = invocation.toolName ?? invocation.name ?? "call";
+		const normalizedName = rawName.replace(/[-_]([a-z])/g, (g) =>
+			g[1].toUpperCase(),
+		);
+
 		return {
-			type: `tool-${invocation.toolName ?? invocation.name ?? "call"}`,
+			type: `tool-${normalizedName}`,
 			state: toolState,
 			input: invocation.args ?? invocation.input,
 			output: invocation.result ?? invocation.output,

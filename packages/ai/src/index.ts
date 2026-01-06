@@ -1,6 +1,7 @@
 export { getModelConfig, IMAGE_GEN_MODEL, MODEL_CONFIG } from "./model-config";
 export type { AgentKey, AgentMessage, AgentRunOptions } from "./runtime";
 export {
+	AGENT_DEFINITIONS,
 	getAgentName,
 	resolveAgentKeyByName,
 } from "./runtime";

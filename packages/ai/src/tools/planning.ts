@@ -33,6 +33,13 @@ export const proposePlanTool = createTool({
 							.preprocess(
 								(step: any) => {
 									if (step && typeof step === "object") {
+										// Resiliency: Normalize toolName if present (e.g. web_search -> webSearch)
+										if (step.toolName) {
+											step.toolName = step.toolName.replace(
+												/[-_]([a-z])/g,
+												(g: string) => g[1].toUpperCase(),
+											);
+										}
 										// Resiliency: If 'label' is missing but 'description' exists, map it.
 										if (!step.label && step.description) {
 											return { ...step, label: step.description };
