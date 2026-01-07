@@ -26,11 +26,13 @@ async function getSteelClient(runtimeContext?: any) {
 async function ensureSession(steel: Steel, runtimeContext?: any) {
 	// If we already have an active session ID in this turn, reuse it to avoid creating 10 browsers
 	if (runtimeContext?._activeSessionId) {
-		return runtimeContext._activeSessionId;
+		return {
+			sessionId: runtimeContext._activeSessionId,
+			viewerUrl: runtimeContext._activeViewerUrl,
+		};
 	}
 
 	// Create a new session
-	// If runtimeContext.sessionId exists, it's a persistent Context ID (e.g. ctx_workspaceId)
 	const session = await steel.sessions.create({
 		dimensions: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
 		solveCaptcha: true,
@@ -38,9 +40,10 @@ async function ensureSession(steel: Steel, runtimeContext?: any) {
 		profileId: runtimeContext?.sessionId || undefined,
 	});
 
-	// Store the session ID in the runtime context for subsequent tool calls in this turn
+	// Store the session ID and viewer URL in the runtime context for subsequent tool calls in this turn
 	if (runtimeContext) {
 		runtimeContext._activeSessionId = session.id;
+		runtimeContext._activeViewerUrl = session.sessionViewerUrl;
 	}
 
 	logger.info("computer.tool.session_created", {
@@ -49,7 +52,7 @@ async function ensureSession(steel: Steel, runtimeContext?: any) {
 		viewerUrl: session.sessionViewerUrl,
 	});
 
-	return session.id;
+	return { sessionId: session.id, viewerUrl: session.sessionViewerUrl };
 }
 
 export const computerNavigateTool = createTool({
@@ -60,7 +63,7 @@ export const computerNavigateTool = createTool({
 	}),
 	execute: async ({ context, runtimeContext }) => {
 		const steel = await getSteelClient(runtimeContext);
-		const sessionId = await ensureSession(steel, runtimeContext);
+		const { sessionId, viewerUrl } = await ensureSession(steel, runtimeContext);
 
 		// Simulate human navigation: Ctrl+L -> Type URL -> Enter
 		await steel.sessions.computer(sessionId, {
@@ -82,7 +85,12 @@ export const computerNavigateTool = createTool({
 			duration: 2,
 		});
 
-		return { success: true, url: context.url, sessionId };
+		return {
+			success: true,
+			url: context.url,
+			sessionId,
+			sessionViewerUrl: viewerUrl,
+		};
 	},
 });
 
@@ -95,7 +103,7 @@ export const computerClickTool = createTool({
 	}),
 	execute: async ({ context, runtimeContext }) => {
 		const steel = await getSteelClient(runtimeContext);
-		const sessionId = await ensureSession(steel, runtimeContext);
+		const { sessionId, viewerUrl } = await ensureSession(steel, runtimeContext);
 
 		await steel.sessions.computer(sessionId, {
 			action: "click_mouse",
@@ -106,7 +114,7 @@ export const computerClickTool = createTool({
 			],
 		});
 
-		return { success: true, sessionId };
+		return { success: true, sessionId, sessionViewerUrl: viewerUrl };
 	},
 });
 
@@ -134,7 +142,7 @@ export const computerTypeTool = createTool({
 	}),
 	execute: async ({ context, runtimeContext }) => {
 		const steel = await getSteelClient(runtimeContext);
-		const sessionId = await ensureSession(steel, runtimeContext);
+		const { sessionId, viewerUrl } = await ensureSession(steel, runtimeContext);
 
 		if (context.x !== undefined && context.y !== undefined) {
 			await steel.sessions.computer(sessionId, {
@@ -169,7 +177,7 @@ export const computerTypeTool = createTool({
 			});
 		}
 
-		return { success: true, sessionId };
+		return { success: true, sessionId, sessionViewerUrl: viewerUrl };
 	},
 });
 
@@ -182,7 +190,7 @@ export const computerScrollTool = createTool({
 	}),
 	execute: async ({ context, runtimeContext }) => {
 		const steel = await getSteelClient(runtimeContext);
-		const sessionId = await ensureSession(steel, runtimeContext);
+		const { sessionId, viewerUrl } = await ensureSession(steel, runtimeContext);
 
 		const deltaX =
 			context.direction === "left"
@@ -204,7 +212,7 @@ export const computerScrollTool = createTool({
 			delta_y: deltaY,
 		});
 
-		return { success: true, sessionId };
+		return { success: true, sessionId, sessionViewerUrl: viewerUrl };
 	},
 });
 
@@ -214,7 +222,7 @@ export const computerScreenshotTool = createTool({
 	inputSchema: z.object({}),
 	execute: async ({ runtimeContext }) => {
 		const steel = await getSteelClient(runtimeContext);
-		const sessionId = await ensureSession(steel, runtimeContext);
+		const { sessionId, viewerUrl } = await ensureSession(steel, runtimeContext);
 
 		const resp = await steel.sessions.computer(sessionId, {
 			action: "take_screenshot",
@@ -223,6 +231,7 @@ export const computerScreenshotTool = createTool({
 		return {
 			success: true,
 			sessionId,
+			sessionViewerUrl: viewerUrl,
 			screenshotUrl: `data:image/png;base64,${resp.base64_image}`,
 			info: "Screenshot captured successfully",
 		};
@@ -237,13 +246,13 @@ export const computerWaitTool = createTool({
 	}),
 	execute: async ({ context, runtimeContext }) => {
 		const steel = await getSteelClient(runtimeContext);
-		const sessionId = await ensureSession(steel, runtimeContext);
+		const { sessionId, viewerUrl } = await ensureSession(steel, runtimeContext);
 
 		await steel.sessions.computer(sessionId, {
 			action: "wait",
 			duration: context.seconds,
 		});
 
-		return { success: true, sessionId };
+		return { success: true, sessionId, sessionViewerUrl: viewerUrl };
 	},
 });

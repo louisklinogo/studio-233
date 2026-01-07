@@ -18,11 +18,18 @@ import {
 	ArtifactHeader,
 	ArtifactTitle,
 } from "@/components/ai-elements/artifact";
+import {
+	WebPreview,
+	WebPreviewBody,
+	WebPreviewNavigation,
+	WebPreviewUrl,
+} from "@/components/ai-elements/web-preview";
 import { ChatHeader } from "@/components/studio/chat/ChatHeader";
 import { ChatHistoryList } from "@/components/studio/chat/ChatHistoryList";
 import { ChatInput } from "@/components/studio/chat/ChatInput";
 import { ChatList } from "@/components/studio/chat/ChatList";
 import { ChatWelcome } from "@/components/studio/chat/ChatWelcome";
+import { SwissIcons } from "@/components/ui/SwissIcons";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 
@@ -221,6 +228,27 @@ export function ChatPanel({
 										),
 									});
 								}
+							}
+
+							// 1.6 Handle Browser Session Promotion (Live Preview)
+							if (output?.sessionViewerUrl) {
+								const viewerUrl = output.sessionViewerUrl;
+								setActiveArtifact({
+									id: toolPart.toolCallId || `browser-${Date.now()}`,
+									title: "Live Research Feed",
+									description: "Autonomous Browser Interaction",
+									content: (
+										<WebPreview defaultUrl={viewerUrl} className="border-0">
+											<WebPreviewNavigation>
+												<WebPreviewUrl value={output.url || ""} readOnly />
+											</WebPreviewNavigation>
+											<WebPreviewBody
+												src={`${viewerUrl}&interactive=true`}
+												className="bg-neutral-900"
+											/>
+										</WebPreview>
+									),
+								});
 							}
 						};
 						// 1. Direct tool result
@@ -465,7 +493,51 @@ export function ChatPanel({
 				className,
 			)}
 		>
-			{/* Main Chat Area */}
+			{/* Artifact Sidebar (Left of Chat) */}
+			{activeArtifact && (
+				<div className="w-[60%] border-r border-border bg-neutral-50 dark:bg-[#0a0a0a] animate-in slide-in-from-left duration-500">
+					<Artifact className="h-full border-none rounded-none shadow-none">
+						<ArtifactHeader>
+							<div className="flex flex-col">
+								<ArtifactTitle>{activeArtifact.title}</ArtifactTitle>
+								{activeArtifact.description && (
+									<ArtifactDescription>
+										{activeArtifact.description}
+									</ArtifactDescription>
+								)}
+							</div>
+							<ArtifactActions>
+								{activeArtifact.id.includes("browser") && (
+									<button
+										className="p-1 hover:bg-neutral-200 dark:hover:bg-white/10 rounded-sm transition-colors text-neutral-500"
+										onClick={() => {
+											const iframe = document.querySelector(
+												'iframe[title="Preview"]',
+											) as HTMLIFrameElement;
+											if (iframe?.src) {
+												window.open(
+													iframe.src,
+													"_blank",
+													"width=1400,height=900",
+												);
+											}
+										}}
+										title="Expand to Window"
+									>
+										<SwissIcons.Link size={14} />
+									</button>
+								)}
+								<ArtifactClose onClick={() => setActiveArtifact(null)} />
+							</ArtifactActions>
+						</ArtifactHeader>
+						<ArtifactContent className="p-0 flex-1 overflow-hidden">
+							{activeArtifact.content}
+						</ArtifactContent>
+					</Artifact>
+				</div>
+			)}
+
+			{/* Main Chat Area (Right Edge) */}
 			<div
 				className={cn(
 					"flex flex-col h-full flex-1 transition-all duration-500 ease-in-out",
@@ -536,30 +608,6 @@ export function ChatPanel({
 					</div>
 				)}
 			</div>
-
-			{/* Artifact Sidebar */}
-			{activeArtifact && (
-				<div className="w-[60%] border-l border-border bg-neutral-50 dark:bg-[#0a0a0a] animate-in slide-in-from-right duration-500">
-					<Artifact className="h-full border-none rounded-none shadow-none">
-						<ArtifactHeader>
-							<div className="flex flex-col">
-								<ArtifactTitle>{activeArtifact.title}</ArtifactTitle>
-								{activeArtifact.description && (
-									<ArtifactDescription>
-										{activeArtifact.description}
-									</ArtifactDescription>
-								)}
-							</div>
-							<ArtifactActions>
-								<ArtifactClose onClick={() => setActiveArtifact(null)} />
-							</ArtifactActions>
-						</ArtifactHeader>
-						<ArtifactContent className="p-0 flex-1 overflow-hidden">
-							{activeArtifact.content}
-						</ArtifactContent>
-					</Artifact>
-				</div>
-			)}
 		</div>
 	);
 }

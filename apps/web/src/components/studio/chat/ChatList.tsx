@@ -392,6 +392,33 @@ export const ChatList: React.FC<ChatListProps> = ({
 													const toolPart = part;
 
 													if (
+														normalizedType.startsWith("tool-computer") &&
+														toolPart.state === "output-available"
+													) {
+														const output = toolPart.output as any;
+														if (output?.sessionViewerUrl) {
+															return (
+																<div
+																	className="my-2 h-[200px] border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden bg-black relative group"
+																	key={`${message.id}-glimpse-${pIndex}`}
+																>
+																	<div className="absolute top-2 left-3 z-10 flex items-center gap-2">
+																		<div className="w-1.5 h-1.5 rounded-full bg-[#FF4D00] animate-pulse" />
+																		<span className="font-mono text-[8px] text-white uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
+																			LIVE_CORTEX_FEED
+																		</span>
+																	</div>
+																	<iframe
+																		className="size-full scale-100 origin-top-left pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity"
+																		src={`${output.sessionViewerUrl}&interactive=false`}
+																		title="Live Glimpse"
+																	/>
+																</div>
+															);
+														}
+													}
+
+													if (
 														(normalizedType === "tool-htmlGenerator" ||
 															normalizedType === "tool-renderHtml") &&
 														toolPart.state === "output-available"
