@@ -37,8 +37,15 @@ export const siteExtractorTool = createTool({
 	inputSchema: z.preprocess(
 		(val: any) => {
 			if (typeof val === "string") return { url: val };
-			if (val && typeof val === "object" && !val.url && val.link) {
-				return { ...val, url: val.link };
+			if (val && typeof val === "object") {
+				return {
+					...val,
+					url:
+						val.url ||
+						val.link ||
+						val.href ||
+						(typeof val.context === "string" ? val.context : undefined),
+				};
 			}
 			return val;
 		},
@@ -60,8 +67,11 @@ export const imageAnalyzerTool = createTool({
 	inputSchema: z.preprocess(
 		(val: any) => {
 			if (typeof val === "string") return { imageUrl: val };
-			if (val && typeof val === "object" && !val.imageUrl && val.url) {
-				return { ...val, imageUrl: val.url };
+			if (val && typeof val === "object") {
+				return {
+					...val,
+					imageUrl: val.imageUrl || val.url || val.src || val.image,
+				};
 			}
 			return val;
 		},
@@ -81,14 +91,30 @@ export const moodboardTool = createTool({
 		"Summarize research references into a structured creative direction",
 	inputSchema: z.preprocess(
 		(val: any) => {
-			if (
-				val &&
-				typeof val === "object" &&
-				typeof val.references === "string"
-			) {
-				return { ...val, references: [val.references] };
+			if (!val || typeof val !== "object") return val;
+
+			const result = { ...val };
+
+			// Resiliency: Map 'title' or 'description' to 'goal' if missing
+			if (!result.goal) {
+				result.goal =
+					result.title || result.description || "Synthesize creative direction";
 			}
-			return val;
+
+			// Resiliency: Handle objects in references array
+			if (Array.isArray(result.references)) {
+				result.references = result.references.map((ref: any) => {
+					if (typeof ref === "object" && ref !== null) {
+						// Flatten object to string: "Title: Description" or just "Description"
+						return `${ref.title ? `${ref.title}: ` : ""}${ref.description || ref.text || ref.content || JSON.stringify(ref)}`;
+					}
+					return String(ref);
+				});
+			} else if (typeof result.references === "string") {
+				result.references = [result.references];
+			}
+
+			return result;
 		},
 		z.object({
 			references: z.array(z.string()).min(1),

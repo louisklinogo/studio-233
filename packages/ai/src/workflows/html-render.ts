@@ -1,4 +1,5 @@
-import { type Browser, chromium, type Page } from "playwright";
+import chromiumMin from "@sparticuz/chromium-min";
+import { type Browser, chromium, type Page } from "playwright-core";
 import sharp from "sharp";
 import { z } from "zod";
 
@@ -7,7 +8,7 @@ import { logger } from "../utils/logger";
 
 const MAX_HTML_LENGTH = 50_000;
 const MAX_CSS_LENGTH = 50_000;
-const RENDER_TIMEOUT_MS = 10_000;
+const RENDER_TIMEOUT_MS = 15_000;
 const RENDER_LOG_PREFIX = "html-render";
 
 const htmlRenderInputSchema = z.object({
@@ -33,7 +34,20 @@ let browser: Browser | null = null;
 
 async function getBrowser() {
 	if (browser) return browser;
-	browser = await chromium.launch({ headless: true });
+
+	const isProduction =
+		process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+
+	if (isProduction) {
+		browser = await chromium.launch({
+			args: chromiumMin.args,
+			executablePath: await chromiumMin.executablePath(),
+			headless: true,
+		});
+	} else {
+		browser = await chromium.launch({ headless: true });
+	}
+
 	return browser;
 }
 

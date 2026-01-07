@@ -1728,7 +1728,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						workspaceId: project?.workspaceId || "",
 						metadata: {
 							...metadata,
-							threadId: (metadata as any).threadId,
+							threadId: (metadata as any).threadId || command.meta?.threadId,
 						},
 					});
 				} else if (command.type === "update-image") {
@@ -1803,7 +1803,7 @@ export function OverlayInterface({ projectId }: OverlayInterfaceProps) {
 						workspaceId: project?.workspaceId || "",
 						metadata: {
 							...metadata,
-							threadId: (metadata as any).threadId,
+							threadId: (metadata as any).threadId || command.meta?.threadId,
 						},
 					});
 				}

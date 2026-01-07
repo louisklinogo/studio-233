@@ -33,9 +33,31 @@ export const assetRouter = router({
 				throw new TRPCError({ code: "UNAUTHORIZED" });
 			}
 
+			let finalWorkspaceId = input.workspaceId;
+
+			// Resiliency: If workspaceId is empty (race condition in UI), but we have a threadId,
+			// resolve the workspace from the thread.
+			const threadId = (input.metadata as any)?.threadId;
+			if (!finalWorkspaceId && threadId) {
+				const thread = await prisma.agentThread.findUnique({
+					where: { id: threadId },
+					include: { project: true },
+				});
+				if (thread?.project?.workspaceId) {
+					finalWorkspaceId = thread.project.workspaceId;
+				}
+			}
+
+			if (!finalWorkspaceId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Workspace ID is required for asset registration",
+				});
+			}
+
 			// Verify workspace ownership
 			const workspace = await prisma.workspace.findUnique({
-				where: { id: input.workspaceId },
+				where: { id: finalWorkspaceId },
 			});
 
 			if (!workspace || workspace.userId !== session.user.id) {
@@ -63,7 +85,7 @@ export const assetRouter = router({
 					size: input.size,
 					mimeType: input.mimeType,
 					type: assetType,
-					workspaceId: input.workspaceId,
+					workspaceId: finalWorkspaceId,
 					isBrandAsset: input.isBrandAsset,
 					metadata: (input.metadata as Prisma.InputJsonValue) ?? {
 						classification: input.classification,

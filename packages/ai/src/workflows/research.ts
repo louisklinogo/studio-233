@@ -10,11 +10,24 @@ import { withDevTools } from "../utils/model";
 const env = getEnv();
 
 async function fetchJson(url: string) {
-	const response = await fetch(url);
-	if (!response.ok) {
-		throw new Error(`Request failed: ${response.status}`);
+	try {
+		const response = await fetch(url);
+		if (!response.ok) {
+			return {
+				error: `Request failed: ${response.status}`,
+				status: response.status,
+			};
+		}
+
+		const contentType = response.headers.get("content-type");
+		if (!contentType || !contentType.includes("application/json")) {
+			return { error: "Response was not JSON", contentType };
+		}
+
+		return await response.json();
+	} catch (err) {
+		return { error: err instanceof Error ? err.message : String(err) };
 	}
-	return response.json();
 }
 
 export const webSearchInputSchema = z.object({
@@ -31,6 +44,7 @@ export const webSearchOutputSchema = z.object({
 		}),
 	),
 	provider: z.string(),
+	error: z.string().optional(),
 });
 
 export type WebSearchInput = z.infer<typeof webSearchInputSchema>;
@@ -40,73 +54,98 @@ export async function runWebSearchWorkflow(
 	input: WebSearchInput,
 ): Promise<WebSearchResult> {
 	const { query, maxResults } = input;
-	if (env.exaApiKey) {
-		const response = await fetch(env.exaBaseUrl!, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": env.exaApiKey,
-			},
-			body: JSON.stringify({
-				query,
-				numResults: maxResults,
-				excludeDomains: ["exa.ai"],
-			}),
-		});
-		if (!response.ok) {
-			throw new Error(`Exa search error: ${response.status}`);
-		}
-		const data = await response.json();
-		const hits = data.results ?? data.data ?? [];
-		const results = hits.slice(0, maxResults).map((item: any) => ({
-			title:
-				item.title ??
-				item.document?.title ??
-				item.metadata?.title ??
-				"Untitled",
-			snippet:
-				item.text ?? item.snippet ?? item.summary ?? item.document?.text ?? "",
-			url: item.url ?? item.link ?? item.source?.url ?? "https://example.com",
-		}));
-		return { results, provider: "exa" };
-	}
-	if (env.searchApiKey) {
-		const response = await fetch(env.tavilyBaseUrl!, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${env.searchApiKey}`,
-			},
-			body: JSON.stringify({
-				query,
-				search_depth: "advanced",
-				max_results: maxResults,
-			}),
-		});
-		if (!response.ok) {
-			throw new Error(`Search provider error: ${response.status}`);
-		}
-		const data = await response.json();
-		const results = (data.results ?? [])
-			.slice(0, maxResults)
-			.map((item: any) => ({
-				title: item.title ?? "Untitled",
-				snippet: item.content ?? item.snippet ?? "",
-				url: item.url ?? item.href ?? "https://example.com",
-			}));
-		return { results, provider: "tavily" };
-	}
 
-	const ddg = await fetchJson(
-		`https://duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&pretty=1`,
-	);
-	const related = ddg.RelatedTopics ?? [];
-	const results = related.slice(0, maxResults).map((topic: any) => ({
-		title: topic.Text ?? "Untitled",
-		snippet: topic.FirstURL ?? "",
-		url: topic.FirstURL ?? "https://duckduckgo.com",
-	}));
-	return { results, provider: "duckduckgo" };
+	try {
+		if (env.exaApiKey) {
+			const response = await fetch(env.exaBaseUrl!, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-api-key": env.exaApiKey,
+				},
+				body: JSON.stringify({
+					query,
+					numResults: maxResults,
+					excludeDomains: ["exa.ai"],
+				}),
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				const hits = data.results ?? data.data ?? [];
+				const results = hits.slice(0, maxResults).map((item: any) => ({
+					title:
+						item.title ??
+						item.document?.title ??
+						item.metadata?.title ??
+						"Untitled",
+					snippet:
+						item.text ??
+						item.snippet ??
+						item.summary ??
+						item.document?.text ??
+						"",
+					url:
+						item.url ?? item.link ?? item.source?.url ?? "https://example.com",
+				}));
+				return { results, provider: "exa" };
+			}
+		}
+
+		if (env.searchApiKey) {
+			const response = await fetch(env.tavilyBaseUrl!, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${env.searchApiKey}`,
+				},
+				body: JSON.stringify({
+					query,
+					search_depth: "advanced",
+					max_results: maxResults,
+				}),
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				const results = (data.results ?? [])
+					.slice(0, maxResults)
+					.map((item: any) => ({
+						title: item.title ?? "Untitled",
+						snippet: item.content ?? item.snippet ?? "",
+						url: item.url ?? item.href ?? "https://example.com",
+					}));
+				return { results, provider: "tavily" };
+			}
+		}
+
+		const ddgResult = await fetchJson(
+			`https://duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&pretty=1`,
+		);
+
+		if (!ddgResult.error) {
+			const related = ddgResult.RelatedTopics ?? [];
+			const results = related.slice(0, maxResults).map((topic: any) => ({
+				title: topic.Text ?? "Untitled",
+				snippet: topic.FirstURL ?? "",
+				url: topic.FirstURL ?? "https://duckduckgo.com",
+			}));
+			return { results, provider: "duckduckgo" };
+		}
+
+		return {
+			results: [],
+			provider: "none",
+			error: "All search providers failed or returned empty results",
+		};
+	} catch (err) {
+		console.error("runWebSearchWorkflow failed:", err);
+		return {
+			results: [],
+			provider: "error",
+			error: err instanceof Error ? err.message : String(err),
+		};
+	}
 }
 
 export const webSearchWorkflow = {

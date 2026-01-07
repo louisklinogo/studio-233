@@ -13,9 +13,11 @@ const baseSchema = htmlGeneratorWorkflow.inputSchema.extend({
 });
 
 const htmlToCanvasInputSchema = z.preprocess((val: any) => {
-	// Alias 'prompt' to 'brief' which is what the workflow expects
-	if (val && typeof val === "object" && val.prompt && !val.brief) {
-		return { ...val, brief: val.prompt };
+	// Alias varied naming patterns to 'brief' which is what the workflow expects
+	if (val && typeof val === "object") {
+		if (!val.brief) {
+			val.brief = val.description || val.prompt || val.task || val.goal;
+		}
 	}
 	return val;
 }, baseSchema);

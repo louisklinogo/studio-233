@@ -19,7 +19,11 @@ const nextConfig = {
 	devIndicators: false,
 	cacheComponents: true,
 	outputFileTracingRoot: monorepoRoot,
-	serverExternalPackages: ["sharp", "playwright-core"],
+	serverExternalPackages: [
+		"sharp",
+		"playwright-core",
+		"@sparticuz/chromium-min",
+	],
 	transpilePackages: [
 		"@studio233/ui",
 		"@studio233/canvas",
