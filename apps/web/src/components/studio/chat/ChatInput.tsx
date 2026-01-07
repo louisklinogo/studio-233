@@ -216,16 +216,18 @@ const ChatInputInternal: React.FC<
 	return (
 		<>
 			{suggestions && suggestions.length > 0 && (
-				<Suggestions className="mb-2">
-					{suggestions.map((s) => (
-						<Suggestion
-							key={s}
-							suggestion={s}
-							onClick={handleSuggestionClick}
-							className="font-mono text-[9px] uppercase tracking-widest border-neutral-300 dark:border-neutral-800 rounded-sm h-7"
-						/>
-					))}
-				</Suggestions>
+				<div className="flex justify-center w-full">
+					<Suggestions className="mb-4 gap-3 py-1">
+						{suggestions.map((s) => (
+							<Suggestion
+								key={s}
+								suggestion={s}
+								onClick={handleSuggestionClick}
+								className="h-8"
+							/>
+						))}
+					</Suggestions>
+				</div>
 			)}
 			<SeedAttachmentsLoader
 				seeds={seedAttachments || []}

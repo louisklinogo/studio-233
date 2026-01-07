@@ -59,17 +59,26 @@ export const ExecutionPlan: React.FC<ExecutionPlanProps> = ({
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center gap-2">
 						<span
-							className={`font-mono text-[8px] px-1 py-0.5 rounded-[1px] border ${requiresApproval || approval ? "text-[#FF4D00] border-[#FF4D00]/30" : "text-neutral-400 border-neutral-200"}`}
+							className={cn(
+								"font-mono text-[8px] px-1.5 py-0.5 rounded-[1px] border tracking-wider",
+								requiresApproval || (approval && state === "approval-requested")
+									? "text-[#FF4D00] border-[#FF4D00]/30 bg-[#FF4D00]/5"
+									: "text-neutral-400 border-neutral-200 dark:border-neutral-800",
+							)}
 						>
 							{approval && state === "approval-requested"
 								? "AWAITING_APPROVAL"
 								: requiresApproval
-									? "WAIT_FOR_USER"
-									: "PROT_EXEC"}
+									? "ACTION_REQUIRED"
+									: "SYSTEM_PROCESS"}
 						</span>
-						<PlanTitle>{task}</PlanTitle>
+						<PlanTitle className="font-sans text-[11px] font-bold text-neutral-900 dark:text-white tracking-tight normal-case">
+							{task}
+						</PlanTitle>
 					</div>
-					{description && <PlanDescription>{description}</PlanDescription>}
+					{description && (
+						<PlanDescription className="mt-0.5">{description}</PlanDescription>
+					)}
 				</div>
 				<PlanTrigger />
 			</PlanHeader>
