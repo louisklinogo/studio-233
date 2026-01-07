@@ -276,7 +276,7 @@ export function calculateQualityScore(dna: BrandDNA): number {
 	// Helper to check array/string content
 	const hasContent = (val: any) => {
 		if (Array.isArray(val)) return val.length > 0;
-		if (typeof val === "string") return val.length > 5; // Min 5 chars to be "meaningful"
+		if (typeof val === "string") return val.length > 2; // Relaxed: Min 2 chars (e.g. '3D', 'IT')
 		return false;
 	};
 
@@ -302,15 +302,16 @@ export function calculateQualityScore(dna: BrandDNA): number {
 export async function multimodalIngestionService(
 	options: MultimodalIngestionOptions,
 ): Promise<MultimodalIngestionResult> {
+	let bestResult: MultimodalIngestionResult | null = null;
+
 	// Step 1: Attempt LlamaParse (High Fidelity)
 	const llamaResult = await processWithLlamaParse(options);
 	if (llamaResult) {
 		const qualityScore = calculateQualityScore(llamaResult.brandDNA);
-		// Update score with calculated quality
 		llamaResult.score = qualityScore;
+		bestResult = llamaResult;
 
-		if (qualityScore > 0.5) {
-			// Threshold for "good enough" from Path A
+		if (qualityScore >= 0.5) {
 			return llamaResult;
 		}
 		logger.info("rag.llamaparse_quality_low", {
@@ -325,10 +326,22 @@ export async function multimodalIngestionService(
 		const qualityScore = calculateQualityScore(geminiResult.brandDNA);
 		geminiResult.score = qualityScore;
 
-		if (qualityScore > 0.2) {
-			// Lower threshold for fallback, better than nothing
+		if (!bestResult || qualityScore > bestResult.score) {
+			bestResult = geminiResult;
+		}
+
+		if (qualityScore >= 0.2) {
 			return geminiResult;
 		}
+	}
+
+	// Step 3: Final fallback - return the best thing we found if it has ANY content
+	if (bestResult && bestResult.score > 0) {
+		logger.warn("rag.ingestion_returning_low_quality_result", {
+			score: bestResult.score,
+			path: bestResult.path,
+		});
+		return bestResult;
 	}
 
 	throw new Error(

@@ -2220,8 +2220,12 @@ export function LegacyOverlayPage() {
 					setGenerationSettings={setGenerationSettings}
 					customApiKey={customApiKey}
 					setCustomApiKey={setCustomApiKey}
+					googleApiKey={""}
+					setGoogleApiKey={() => {}}
 					tempApiKey={tempApiKey}
 					setTempApiKey={setTempApiKey}
+					tempGoogleApiKey={""}
+					setTempGoogleApiKey={() => {}}
 					theme={theme}
 					setTheme={setTheme}
 					themeColor={themeColor}

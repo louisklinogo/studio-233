@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 
 interface SettingsClientProps {
@@ -13,22 +13,27 @@ function SettingsSection({
 	title,
 	children,
 	description,
+	status,
 }: {
 	title: string;
 	description?: string;
 	children: React.ReactNode;
+	status?: React.ReactNode;
 }) {
 	return (
 		<section className="bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 p-8 rounded-sm space-y-6">
-			<div className="flex flex-col gap-1 border-b border-neutral-100 dark:border-neutral-800 pb-4">
-				<h3 className="font-mono text-sm uppercase tracking-widest font-bold text-neutral-900 dark:text-white">
-					{title}
-				</h3>
-				{description && (
-					<p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-prose">
-						{description}
-					</p>
-				)}
+			<div className="flex flex-row items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
+				<div className="flex flex-col gap-1">
+					<h3 className="font-mono text-sm uppercase tracking-widest font-bold text-neutral-900 dark:text-white">
+						{title}
+					</h3>
+					{description && (
+						<p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-prose">
+							{description}
+						</p>
+					)}
+				</div>
+				{status && <div>{status}</div>}
 			</div>
 			<div className="space-y-6">{children}</div>
 		</section>
@@ -72,6 +77,40 @@ function ControlInput({
 }
 
 export function SettingsClient({ user }: SettingsClientProps) {
+	// Provider Keys State (Sync with localStorage like useUIState)
+	const [googleKey, setGoogleKey] = useState(() =>
+		typeof window !== "undefined"
+			? localStorage.getItem("google-api-key") || ""
+			: "",
+	);
+	const [falKey, setFalKey] = useState(() =>
+		typeof window !== "undefined"
+			? localStorage.getItem("fal-api-key") || ""
+			: "",
+	);
+
+	const [saveStatus, setSaveStatus] = useState<"IDLE" | "SAVING" | "SYNCED">(
+		"IDLE",
+	);
+
+	useEffect(() => {
+		if (saveStatus === "SYNCED") {
+			const timer = setTimeout(() => setSaveStatus("IDLE"), 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [saveStatus]);
+
+	const saveKeys = () => {
+		setSaveStatus("SAVING");
+
+		// Simulate industrial latency
+		setTimeout(() => {
+			localStorage.setItem("google-api-key", googleKey);
+			localStorage.setItem("fal-api-key", falKey);
+			setSaveStatus("SYNCED");
+		}, 600);
+	};
+
 	return (
 		<div className="space-y-12 pb-24">
 			{/* Header */}
@@ -159,13 +198,70 @@ export function SettingsClient({ user }: SettingsClientProps) {
 						</button>
 					</SettingsSection>
 
-					<SettingsSection title="API Access">
+					<SettingsSection
+						title="Provider Uplinks"
+						description="Connect directly to AI providers to bypass rate limits."
+						status={
+							<AnimatePresence mode="wait">
+								{saveStatus !== "IDLE" && (
+									<motion.div
+										initial={{ opacity: 0, x: 10 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: -10 }}
+										className="flex items-center gap-2 font-mono text-[9px] tracking-tighter"
+									>
+										<div
+											className={`w-1.5 h-1.5 rounded-full ${saveStatus === "SAVING" ? "bg-amber-500 animate-pulse" : "bg-emerald-500 shadow-[0_0_8px_#10b981]"}`}
+										/>
+										<span
+											className={
+												saveStatus === "SAVING"
+													? "text-amber-600"
+													: "text-emerald-600"
+											}
+										>
+											{saveStatus === "SAVING" ? "BUFFERING..." : "SYNC_OK"}
+										</span>
+									</motion.div>
+								)}
+							</AnimatePresence>
+						}
+					>
 						<div className="space-y-4">
-							<div className="p-3 bg-neutral-100 dark:bg-[#111] font-mono text-[10px] break-all text-neutral-500 border border-neutral-200 dark:border-neutral-800 rounded-sm">
-								sk_live_********************x92
+							<div className="space-y-1">
+								<label className="font-mono text-[9px] uppercase text-neutral-400">
+									Google_Gemini_Key
+								</label>
+								<input
+									type="password"
+									value={googleKey}
+									onChange={(e) => setGoogleKey(e.target.value)}
+									placeholder="sk-..."
+									className="w-full bg-neutral-100 dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 rounded-sm px-3 py-2 font-mono text-[11px] text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#FF4D00] outline-none"
+								/>
 							</div>
-							<button className="text-xs text-[#FF4D00] hover:underline font-mono uppercase tracking-wide">
-								Generate New Key
+							<div className="space-y-1">
+								<label className="font-mono text-[9px] uppercase text-neutral-400">
+									Fal_AI_Key
+								</label>
+								<input
+									type="password"
+									value={falKey}
+									onChange={(e) => setFalKey(e.target.value)}
+									placeholder="fal_..."
+									className="w-full bg-neutral-100 dark:bg-[#111] border border-neutral-200 dark:border-neutral-800 rounded-sm px-3 py-2 font-mono text-[11px] text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#FF4D00] outline-none"
+								/>
+							</div>
+							<button
+								onClick={saveKeys}
+								disabled={saveStatus !== "IDLE"}
+								className={`w-full py-2 font-mono text-[10px] uppercase font-bold tracking-widest transition-all ${
+									saveStatus === "IDLE"
+										? "bg-[#1a1a1a] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-neutral-200"
+										: "bg-neutral-200 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed"
+								}`}
+							>
+								{saveStatus === "SAVING" ? "COMMITTING..." : "Update_Uplinks"}
 							</button>
 						</div>
 					</SettingsSection>
