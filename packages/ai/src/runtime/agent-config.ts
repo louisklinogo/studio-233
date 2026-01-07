@@ -15,9 +15,7 @@ export type AgentKey =
 	| "vision"
 	| "motion"
 	| "insight"
-	| "batch"
-	| "breadth-scout"
-	| "deep-dive";
+	| "batch";
 
 export type AgentDefinition = {
 	key: AgentKey;
@@ -95,20 +93,6 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		prompt: BATCH_OPS_PROMPT,
 		model: "batch",
 		tools: ["batchPlanner"],
-	},
-	"breadth-scout": {
-		key: "breadth-scout",
-		name: "Research Breadth Scout",
-		prompt: BREADTH_SCOUT_PROMPT,
-		model: "research",
-		tools: ["webSearch", "siteExtractor"],
-	},
-	"deep-dive": {
-		key: "deep-dive",
-		name: "Research Deep Dive Analyst",
-		prompt: DEEP_DIVE_ANALYST_PROMPT,
-		model: "general",
-		tools: ["siteExtractor", "imageAnalyzer"],
 	},
 };
 

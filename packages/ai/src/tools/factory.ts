@@ -18,6 +18,7 @@ export type ToolDefinition<
 	inputSchema: TInputSchema;
 	outputSchema?: TOutputSchema;
 	execute?: ToolExecuteFn<z.infer<TInputSchema>, z.infer<TOutputSchema>>;
+	requireApproval?: boolean;
 };
 
 export function createTool<

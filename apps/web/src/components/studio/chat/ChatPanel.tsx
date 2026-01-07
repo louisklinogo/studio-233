@@ -9,6 +9,15 @@ import {
 	lastAssistantMessageIsCompleteWithToolCalls,
 } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	Artifact,
+	ArtifactActions,
+	ArtifactClose,
+	ArtifactContent,
+	ArtifactDescription,
+	ArtifactHeader,
+	ArtifactTitle,
+} from "@/components/ai-elements/artifact";
 import { ChatHeader } from "@/components/studio/chat/ChatHeader";
 import { ChatHistoryList } from "@/components/studio/chat/ChatHistoryList";
 import { ChatInput } from "@/components/studio/chat/ChatInput";
@@ -73,6 +82,15 @@ export function ChatPanel({
 	const [showFiles, setShowFiles] = useState(false);
 	const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [activeArtifact, setActiveArtifact] = useState<{
+		title: string;
+		description?: string;
+		content: React.ReactNode;
+		id: string;
+	} | null>(null);
+	const [revisionSuggestion, setRevisionSuggestion] = useState<string | null>(
+		null,
+	);
 
 	const currentGenerationIdRef = useRef<string | null>(null);
 	const trpc = useTRPC();
@@ -174,8 +192,37 @@ export function ChatPanel({
 								});
 								currentGenerationIdRef.current = null; // Reset after usage
 							}
-						};
 
+							// 1.5 Handle Artifact Promotion for HTML/Complex Results
+							if (
+								toolPart.type === "tool-htmlGenerator" ||
+								toolPart.type === "tool-renderHtml"
+							) {
+								const html =
+									output?.html ||
+									output?.code ||
+									(typeof output === "string" ? output : null);
+								if (html) {
+									const blob = new Blob([html], {
+										type: "text/html",
+									});
+									const previewUrl = URL.createObjectURL(blob);
+
+									setActiveArtifact({
+										id: toolPart.toolCallId || `art-${Date.now()}`,
+										title: "Visual Artifact",
+										description: "Generated UI Component",
+										content: (
+											<iframe
+												src={previewUrl}
+												className="w-full h-full border-0 bg-white"
+												title="Artifact Preview"
+											/>
+										),
+									});
+								}
+							}
+						};
 						// 1. Direct tool result
 						processResult(output);
 
@@ -412,56 +459,105 @@ export function ChatPanel({
 	}, []);
 
 	return (
-		<div className={cn("flex flex-col h-full bg-background", className)}>
-			<ChatHeader
-				onNewChat={handleNewChat}
-				onToggleHistory={handleToggleHistory}
-				onToggleFiles={handleToggleFiles}
-				onCollapse={onClose}
-			/>
-
-			<div className="flex-1 overflow-hidden relative">
-				{errorMessage && (
-					<div className="px-4 py-2 text-sm text-destructive-foreground bg-destructive border-b border-border">
-						{errorMessage}
-					</div>
+		<div
+			className={cn(
+				"flex h-full bg-background overflow-hidden relative",
+				className,
+			)}
+		>
+			{/* Main Chat Area */}
+			<div
+				className={cn(
+					"flex flex-col h-full flex-1 transition-all duration-500 ease-in-out",
+					activeArtifact ? "max-w-[40%]" : "max-w-full",
 				)}
-				{showHistory ? (
-					<ChatHistoryList
-						onSelectThread={handleSelectThread}
-						activeThreadId={activeThreadId}
-						workspaceId={workspaceId}
-					/>
-				) : (
-					<div
-						ref={scrollRef}
-						className="h-full overflow-y-auto overflow-x-hidden px-4 py-4 scroll-smooth scrollbar-swiss"
-					>
-						{messages.length === 0 ? (
-							<ChatWelcome onSelectTemplate={handleSelectTemplate} />
-						) : (
-							<ChatList
-								messages={messages as UIMessage[]}
-								showStreamingStatus={showStreamingStatus}
-								isLoading={isLoading}
-								onToolInteraction={handleToolInteraction}
-								onReload={regenerate}
-							/>
-						)}
+			>
+				<ChatHeader
+					onNewChat={handleNewChat}
+					onToggleHistory={handleToggleHistory}
+					onToggleFiles={handleToggleFiles}
+					onCollapse={onClose}
+				/>
+
+				<div className="flex-1 overflow-hidden relative">
+					{errorMessage && (
+						<div className="px-4 py-2 text-sm text-destructive-foreground bg-destructive border-b border-border">
+							{errorMessage}
+						</div>
+					)}
+					{showHistory ? (
+						<ChatHistoryList
+							onSelectThread={handleSelectThread}
+							activeThreadId={activeThreadId}
+							workspaceId={workspaceId}
+						/>
+					) : (
+						<div
+							ref={scrollRef}
+							className="h-full overflow-y-auto overflow-x-hidden px-4 py-4 scroll-smooth scrollbar-swiss"
+						>
+							{messages.length === 0 ? (
+								<ChatWelcome onSelectTemplate={handleSelectTemplate} />
+							) : (
+								<ChatList
+									messages={messages as UIMessage[]}
+									showStreamingStatus={showStreamingStatus}
+									isLoading={isLoading}
+									onToolInteraction={handleToolInteraction}
+									onReload={regenerate}
+									onRevisePlan={(suggestion) => {
+										setRevisionSuggestion(suggestion);
+									}}
+								/>
+							)}
+						</div>
+					)}
+				</div>
+
+				{!showHistory && (
+					<div className="p-3 pb-4 bg-background border-t border-border">
+						<ChatInput
+							onSubmit={(message, attachments, config) => {
+								handleSubmit(message, attachments, config);
+								setRevisionSuggestion(null);
+							}}
+							initialValue={revisionSuggestion || ""}
+							suggestions={
+								messages.length > 0 && !isLoading
+									? ["Scale to 4K", "Refine Details", "Change Palette"]
+									: undefined
+							}
+							isLoading={isLoading}
+							onStop={stop}
+							selectedAssetIds={selectedImageIds}
+							seedAttachments={seedAttachments}
+							onSeedConsumed={onSeedConsumed}
+						/>
 					</div>
 				)}
 			</div>
 
-			{!showHistory && (
-				<div className="p-3 pb-4 bg-background border-t border-border">
-					<ChatInput
-						onSubmit={handleSubmit}
-						isLoading={isLoading}
-						onStop={stop}
-						selectedAssetIds={selectedImageIds}
-						seedAttachments={seedAttachments}
-						onSeedConsumed={onSeedConsumed}
-					/>
+			{/* Artifact Sidebar */}
+			{activeArtifact && (
+				<div className="w-[60%] border-l border-border bg-neutral-50 dark:bg-[#0a0a0a] animate-in slide-in-from-right duration-500">
+					<Artifact className="h-full border-none rounded-none shadow-none">
+						<ArtifactHeader>
+							<div className="flex flex-col">
+								<ArtifactTitle>{activeArtifact.title}</ArtifactTitle>
+								{activeArtifact.description && (
+									<ArtifactDescription>
+										{activeArtifact.description}
+									</ArtifactDescription>
+								)}
+							</div>
+							<ArtifactActions>
+								<ArtifactClose onClick={() => setActiveArtifact(null)} />
+							</ArtifactActions>
+						</ArtifactHeader>
+						<ArtifactContent className="p-0 flex-1 overflow-hidden">
+							{activeArtifact.content}
+						</ArtifactContent>
+					</Artifact>
 				</div>
 			)}
 		</div>

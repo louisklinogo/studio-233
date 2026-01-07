@@ -5,6 +5,7 @@ export const proposePlanTool = createTool({
 	id: "proposePlan",
 	description:
 		"Propose a structured execution plan for a complex, multi-step creative task. Call this tool FIRST before executing any other tools for complex requests. IMPORTANT: All parameters (task, steps, requiresApproval) must be at the root level—do NOT nest them inside a 'plan' object.",
+	requireApproval: true,
 	inputSchema: z
 		.preprocess(
 			(val: any) => {

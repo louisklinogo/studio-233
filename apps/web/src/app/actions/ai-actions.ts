@@ -13,8 +13,6 @@ const AGENT_LABELS: Record<AgentKey, string> = {
 	motion: "Motion Director",
 	insight: "Insight Researcher",
 	batch: "Batch Ops",
-	"breadth-scout": "Research Breadth Scout",
-	"deep-dive": "Research Deep Dive Analyst",
 };
 
 async function callAgent(

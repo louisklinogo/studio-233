@@ -15,6 +15,7 @@ import {
 	usePromptInputAttachments,
 	usePromptInputController,
 } from "@/components/ai-elements/prompt-input";
+import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 
 import { Button } from "@/components/ui/button";
 import { SwissIcons } from "@/components/ui/SwissIcons";
@@ -95,6 +96,8 @@ interface ChatInputProps {
 	isLoading?: boolean;
 	onStop?: () => void;
 	className?: string;
+	initialValue?: string;
+	suggestions?: string[];
 	selectedAssetIds?: string[];
 	seedAttachments?: { filename: string; url: string; mimeType?: string }[];
 	onSeedConsumed?: () => void;
@@ -208,6 +211,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 	isLoading,
 	onStop,
 	className,
+	initialValue,
+	suggestions,
 	selectedAssetIds = [],
 	seedAttachments = [],
 	onSeedConsumed,
@@ -216,14 +221,40 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 		"default",
 	);
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+	const { textInput } = usePromptInputController();
+
+	// Sync initialValue when it changes (e.g. from Revision trigger)
+	useEffect(() => {
+		if (initialValue) {
+			textInput.setInput(initialValue);
+			textareaRef.current?.focus();
+		}
+	}, [initialValue, textInput]);
 
 	const toggleMode = (newMode: "search" | "brainstorm") => {
 		setMode((prev) => (prev === newMode ? "default" : newMode));
 	};
 
+	const handleSuggestionClick = (suggestion: string) => {
+		textInput.setInput(suggestion);
+		textareaRef.current?.focus();
+	};
+
 	return (
 		<SelectedAssetsContext.Provider value={selectedAssetIds}>
 			<div className={cn("p-2 bg-[#f4f4f0] dark:bg-[#111111]", className)}>
+				{suggestions && suggestions.length > 0 && (
+					<Suggestions className="mb-2">
+						{suggestions.map((s) => (
+							<Suggestion
+								key={s}
+								suggestion={s}
+								onClick={handleSuggestionClick}
+								className="font-mono text-[9px] uppercase tracking-widest border-neutral-300 dark:border-neutral-800 rounded-sm h-7"
+							/>
+						))}
+					</Suggestions>
+				)}
 				<PromptInputProvider>
 					<SeedAttachmentsLoader
 						seeds={seedAttachments}

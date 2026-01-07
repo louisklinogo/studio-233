@@ -4,6 +4,7 @@ import sharp from "sharp";
 import { z } from "zod";
 
 import { getEnv } from "../config";
+import { GEMINI_FLASH_MODEL } from "../model-config";
 import { withDevTools } from "../utils/model";
 
 const env = getEnv();
@@ -227,14 +228,36 @@ export async function runMoodboardWorkflow(
 	if (!key) {
 		throw new Error("Google API key required for moodboard synthesis");
 	}
+
+	if (!input.references.length) {
+		throw new Error(
+			"Moodboard requires at least one visual or textual reference.",
+		);
+	}
+
 	const google = createGoogleGenerativeAI({ apiKey: key });
-	const model = withDevTools(google("gemini-2.5-pro"));
+	const model = withDevTools(google(GEMINI_FLASH_MODEL));
 	const formatInstruction =
 		input.format === "json"
-			? "Return JSON with keys heroPalette, typography, layout, callouts"
-			: "Return markdown sections for Palette, Layout, Motifs, Risks";
-	const referencesList = input.references.join(", ");
-	const prompt = `You are a creative director. Using these references ${referencesList} craft a moodboard plan for ${input.goal}. ${formatInstruction}.`;
+			? "Return EXCLUSIVELY a JSON object with keys: heroPalette (array of hex), typography (font-family recommendations), layout (structural advice), and creativeCore (thematic summary)."
+			: "Return a structured markdown brief with the following headers: ### Palette, ### Layout & Structure, ### Visual Motifs, and ### Executive Summary.";
+
+	const referencesList = input.references
+		.map((r, i) => `Ref ${i + 1}: ${r}`)
+		.join("\n");
+	const prompt =
+		`You are a world-class creative director at a high-end design studio. 
+	Your goal is to synthesize the following research references into a cohesive and professional creative direction that aligns perfectly with the user's specific objectives.
+	
+	GOAL: ${input.goal}
+	
+	REFERENCES:
+	${referencesList}
+	
+	${formatInstruction}
+	
+	Avoid generic advice. Provide specific, actionable design insights derived strictly from the provided goal and references.`.trim();
+
 	const response = await generateText({ model, prompt });
 	return { plan: response.text, format: input.format };
 }

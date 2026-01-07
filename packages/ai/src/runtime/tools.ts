@@ -81,6 +81,7 @@ function wrapTool(
 	const toolOptions: any = {
 		description: def.description,
 		parameters: def.inputSchema as unknown as z.ZodTypeAny,
+		requireApproval: def.requireApproval,
 	};
 
 	if (def.execute) {

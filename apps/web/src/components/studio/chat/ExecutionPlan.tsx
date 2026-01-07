@@ -1,6 +1,11 @@
-"use client";
-
+import type { ToolUIPart } from "ai";
 import React from "react";
+import {
+	Confirmation,
+	ConfirmationAction,
+	ConfirmationActions,
+	ConfirmationRequest,
+} from "@/components/ai-elements/confirmation";
 import {
 	Plan,
 	PlanContent,
@@ -28,7 +33,9 @@ export interface ExecutionPlanProps {
 	steps: ExecutionStep[];
 	isStreaming?: boolean;
 	requiresApproval?: boolean;
-	onConfirm?: () => void;
+	approval?: ToolUIPart["approval"];
+	state?: ToolUIPart["state"];
+	onConfirm?: (approved: boolean) => void;
 	onRevise?: () => void;
 }
 
@@ -41,27 +48,24 @@ export const ExecutionPlan: React.FC<ExecutionPlanProps> = ({
 	steps,
 	isStreaming = false,
 	requiresApproval = false,
+	approval,
+	state,
 	onConfirm,
 	onRevise,
 }) => {
-	const [decision, setDecision] = React.useState<
-		"confirmed" | "revised" | null
-	>(null);
-
-	const handleConfirm = () => {
-		setDecision("confirmed");
-		onConfirm?.();
-	};
-
 	return (
 		<Plan isStreaming={isStreaming} defaultOpen={true} className="my-4">
 			<PlanHeader>
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center gap-2">
 						<span
-							className={`font-mono text-[8px] px-1 py-0.5 rounded-[1px] border ${requiresApproval ? "text-[#FF4D00] border-[#FF4D00]/30" : "text-neutral-400 border-neutral-200"}`}
+							className={`font-mono text-[8px] px-1 py-0.5 rounded-[1px] border ${requiresApproval || approval ? "text-[#FF4D00] border-[#FF4D00]/30" : "text-neutral-400 border-neutral-200"}`}
 						>
-							{requiresApproval ? "WAIT_FOR_USER" : "PROT_EXEC"}
+							{approval && state === "approval-requested"
+								? "AWAITING_APPROVAL"
+								: requiresApproval
+									? "WAIT_FOR_USER"
+									: "PROT_EXEC"}
 						</span>
 						<PlanTitle>{task}</PlanTitle>
 					</div>
@@ -83,29 +87,48 @@ export const ExecutionPlan: React.FC<ExecutionPlanProps> = ({
 				</div>
 			</PlanContent>
 
-			{requiresApproval && !decision && (
-				<PlanFooter className="flex items-center gap-2 justify-end">
-					<button
-						onClick={onRevise}
-						className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-neutral-100 hover:bg-neutral-200 text-neutral-600 text-[9px] font-bold uppercase tracking-widest transition-colors"
-					>
-						Revise_Plan
-					</button>
-					<button
-						onClick={handleConfirm}
-						className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-[#1a1a1a] hover:bg-black text-white text-[9px] font-bold uppercase tracking-widest transition-all active:translate-y-[1px]"
-					>
-						<SwissIcons.Check size={10} className="text-[#FF4D00]" />
-						Confirm_Plan
-					</button>
-				</PlanFooter>
+			{approval && (
+				<Confirmation
+					approval={approval}
+					state={state || "input-streaming"}
+					className="border-none bg-transparent p-0"
+				>
+					<ConfirmationRequest>
+						<PlanFooter className="flex items-center gap-2 justify-end mt-4">
+							<ConfirmationAction
+								variant="outline"
+								onClick={onRevise}
+								className="px-3 py-1.5 rounded-[2px] bg-neutral-100 hover:bg-neutral-200 text-neutral-600 text-[9px] font-bold uppercase tracking-widest transition-colors border-none h-auto"
+							>
+								Revise_Plan
+							</ConfirmationAction>
+							<ConfirmationAction
+								variant="default"
+								onClick={() => onConfirm?.(true)}
+								className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-[#1a1a1a] hover:bg-black text-white text-[9px] font-bold uppercase tracking-widest transition-all active:translate-y-[1px] h-auto"
+							>
+								<SwissIcons.Check size={10} className="text-[#FF4D00]" />
+								Confirm_Plan
+							</ConfirmationAction>
+						</PlanFooter>
+					</ConfirmationRequest>
+				</Confirmation>
 			)}
 
-			{decision === "confirmed" && (
+			{approval?.approved === true && (
 				<div className="px-4 py-2 bg-green-50/50 border-t border-green-100 flex items-center gap-2">
 					<SwissIcons.Check size={10} className="text-green-600" />
 					<span className="text-[8px] font-mono text-green-700 uppercase tracking-widest">
 						Plan_Confirmed // Proceeding
+					</span>
+				</div>
+			)}
+
+			{approval?.approved === false && (
+				<div className="px-4 py-2 bg-red-50/50 border-t border-red-100 flex items-center gap-2">
+					<SwissIcons.Close size={10} className="text-red-600" />
+					<span className="text-[8px] font-mono text-red-700 uppercase tracking-widest">
+						Plan_Rejected // Standing By
 					</span>
 				</div>
 			)}

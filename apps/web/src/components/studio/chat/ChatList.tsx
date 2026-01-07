@@ -6,6 +6,21 @@ import {
 	ConversationEmptyState,
 } from "@/components/ai-elements/conversation";
 import {
+	InlineCitation,
+	InlineCitationCard,
+	InlineCitationCardBody,
+	InlineCitationCardTrigger,
+	InlineCitationCarousel,
+	InlineCitationCarouselContent,
+	InlineCitationCarouselHeader,
+	InlineCitationCarouselIndex,
+	InlineCitationCarouselItem,
+	InlineCitationCarouselNext,
+	InlineCitationCarouselPrev,
+	InlineCitationSource,
+} from "@/components/ai-elements/inline-citation";
+import { Loader } from "@/components/ai-elements/loader";
+import {
 	Message,
 	MessageAction,
 	MessageActions,
@@ -19,6 +34,7 @@ import {
 	ReasoningContent,
 	ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 import {
 	Source,
 	Sources,
@@ -32,6 +48,12 @@ import {
 	ToolInput,
 	ToolOutput,
 } from "@/components/ai-elements/tool";
+import {
+	WebPreview,
+	WebPreviewBody,
+	WebPreviewNavigation,
+	WebPreviewUrl,
+} from "@/components/ai-elements/web-preview";
 import { StudioLogo } from "@/components/icons/StudioLogo";
 import { SwissIcons } from "@/components/ui/SwissIcons";
 import { AspectRatioPicker } from "./AspectRatioPicker";
@@ -54,6 +76,7 @@ interface ChatListProps {
 		result: ToolInteractionResult,
 	) => void;
 	onReload?: () => void;
+	onRevisePlan?: (suggestion: string) => void;
 }
 
 const isFilePart = (part: UIMessage["parts"][number]): part is FileUIPart =>
@@ -75,18 +98,16 @@ const toolInvocationsToParts = (
 
 	return invocations.map((invocation: any) => {
 		const state = invocation.state;
-		const toolState:
-			| "input-streaming"
-			| "input-available"
-			| "output-available"
-			| "output-error" =
+		const toolState: ToolUIPart["state"] =
 			state === "result"
 				? "output-available"
 				: state === "error"
 					? "output-error"
-					: state === "call" || state === "started"
-						? "input-available"
-						: "input-streaming";
+					: invocation.approval
+						? "approval-requested"
+						: state === "call" || state === "started"
+							? "input-available"
+							: "input-streaming";
 
 		const rawName = invocation.toolName ?? invocation.name ?? "call";
 		const normalizedName = rawName.replace(/[-_]([a-z])/g, (g: string) =>
@@ -100,8 +121,82 @@ const toolInvocationsToParts = (
 			output: invocation.result ?? invocation.output,
 			errorText: invocation.error ?? invocation.errorText,
 			toolCallId: invocation.toolCallId,
+			approval: invocation.approval,
 		} as ToolUIPart<Record<string, any>> & { toolCallId: string };
 	});
+};
+
+const MessageResponseWithCitations: React.FC<{
+	text: string;
+	sources: any[];
+}> = ({ text, sources }) => {
+	// Pattern for [1], [2], etc.
+	const citationRegex = /\[(\d+)\]/g;
+	const parts = text.split(citationRegex);
+
+	if (parts.length === 1 || sources.length === 0) {
+		return <MessageResponse>{text}</MessageResponse>;
+	}
+
+	return (
+		<div className="space-y-2">
+			<MessageResponse>
+				{parts
+					.map((part, i) => {
+						// Even indices are text, odd are captured numbers
+						if (i % 2 === 0) return part;
+
+						const citationNumber = part;
+						const index = Number.parseInt(citationNumber) - 1;
+						const source = sources[index];
+
+						// If no source found, return the original [n] text
+						return source ? "" : `[${citationNumber}]`;
+					})
+					.join("")}
+			</MessageResponse>
+
+			{/* Render Citation Pills below or interleaved if supported by Streamdown */}
+			{/* For now, we render them as a secondary row to satisfy type safety */}
+			<div className="flex flex-wrap gap-1 mt-1">
+				{parts.map((part, i) => {
+					if (i % 2 === 0) return null;
+					const citationNumber = part;
+					const index = Number.parseInt(citationNumber) - 1;
+					const source = sources[index];
+					if (!source) return null;
+
+					return (
+						<InlineCitation key={`cit-${i}`}>
+							<InlineCitationCard>
+								<InlineCitationCardTrigger
+									sources={[source.url || source.href]}
+								/>
+								<InlineCitationCardBody>
+									<InlineCitationCarousel>
+										<InlineCitationCarouselHeader>
+											<InlineCitationCarouselPrev />
+											<InlineCitationCarouselNext />
+											<InlineCitationCarouselIndex />
+										</InlineCitationCarouselHeader>
+										<InlineCitationCarouselContent>
+											<InlineCitationCarouselItem>
+												<InlineCitationSource
+													title={source.title || source.url || source.href}
+													url={source.url || source.href}
+													description={source.snippet || source.description}
+												/>
+											</InlineCitationCarouselItem>
+										</InlineCitationCarouselContent>
+									</InlineCitationCarousel>
+								</InlineCitationCardBody>
+							</InlineCitationCard>
+						</InlineCitation>
+					);
+				})}
+			</div>
+		</div>
+	);
 };
 
 export const ChatList: React.FC<ChatListProps> = ({
@@ -112,6 +207,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 	isLoading,
 	onToolInteraction,
 	onReload,
+	onRevisePlan,
 }) => {
 	const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -164,7 +260,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 							return (
 								<div key={message.id} className="w-full">
 									{message.role === "assistant" && sourceParts.length > 0 && (
-										<Sources>
+										<Sources className="mb-2">
 											<SourcesTrigger count={sourceParts.length} />
 											<SourcesContent>
 												{sourceParts.map((part: any, sIndex) => (
@@ -172,7 +268,18 @@ export const ChatList: React.FC<ChatListProps> = ({
 														key={`${message.id}-source-${sIndex}`}
 														href={part.url || part.href}
 														title={part.title || part.url || part.href}
-													/>
+													>
+														<div className="flex flex-col gap-0.5">
+															<span className="font-bold text-[10px] line-clamp-1">
+																{part.title || "Source Reference"}
+															</span>
+															{part.snippet && (
+																<span className="text-[9px] text-neutral-500 line-clamp-2">
+																	{part.snippet}
+																</span>
+															)}
+														</div>
+													</Source>
 												))}
 											</SourcesContent>
 										</Sources>
@@ -188,11 +295,11 @@ export const ChatList: React.FC<ChatListProps> = ({
 													if (!text) return null;
 
 													return (
-														<MessageResponse
+														<MessageResponseWithCitations
 															key={`${message.id}-text-${pIndex}`}
-														>
-															{text}
-														</MessageResponse>
+															text={text}
+															sources={sourceParts}
+														/>
 													);
 												}
 
@@ -259,20 +366,28 @@ export const ChatList: React.FC<ChatListProps> = ({
 															steps={stepsWithStatus}
 															isStreaming={isLoading && isLastMessage}
 															requiresApproval={planData.requiresApproval}
-															onConfirm={() => {
+															approval={(part as any).approval}
+															state={part.state}
+															onConfirm={(approved) => {
 																if (
 																	onToolInteraction &&
 																	(part as any).toolCallId
 																) {
 																	onToolInteraction((part as any).toolCallId, {
-																		confirmed: true,
+																		confirmed: approved,
 																	});
 																}
 															}}
 															onRevise={() => {
-																const input =
-																	document.querySelector("textarea");
-																input?.focus();
+																if (onRevisePlan) {
+																	onRevisePlan(
+																		`I have some feedback on the plan for "${planData.task || "this task"}". Please consider these changes: `,
+																	);
+																} else {
+																	const input =
+																		document.querySelector("textarea");
+																	input?.focus();
+																}
 															}}
 														/>
 													);
@@ -282,6 +397,42 @@ export const ChatList: React.FC<ChatListProps> = ({
 													const toolPart = part as ToolUIPart<
 														Record<string, any>
 													> & { toolCallId?: string };
+
+													// --- NEW: WebPreview for HTML Tools ---
+													if (
+														(part.type === "tool-htmlGenerator" ||
+															part.type === "tool-renderHtml") &&
+														part.state === "output-available"
+													) {
+														const htmlContent =
+															part.output?.html ||
+															part.output?.code ||
+															(typeof part.output === "string"
+																? part.output
+																: "");
+
+														if (htmlContent) {
+															// Create a data URL for the iframe
+															const blob = new Blob([htmlContent], {
+																type: "text/html",
+															});
+															const url = URL.createObjectURL(blob);
+
+															return (
+																<div
+																	key={`${message.id}-preview-${pIndex}`}
+																	className="my-4 h-[400px] border rounded-lg overflow-hidden"
+																>
+																	<WebPreview defaultUrl={url}>
+																		<WebPreviewNavigation>
+																			<WebPreviewUrl />
+																		</WebPreviewNavigation>
+																		<WebPreviewBody src={url} />
+																	</WebPreview>
+																</div>
+															);
+														}
+													}
 
 													if (part.type === "tool-askForAspectRatio") {
 														if (part.state === "output-available") {
@@ -382,9 +533,12 @@ export const ChatList: React.FC<ChatListProps> = ({
 						className="max-w-full"
 					>
 						<MessageContent className="max-w-full break-words space-y-2">
-							<MessageResponse className="font-mono text-[11px] tracking-[0.3em] uppercase text-neutral-600 dark:text-neutral-400">
-								EXECUTING_WORKFLOW…
-							</MessageResponse>
+							<div className="flex items-center gap-3 px-4 py-3 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-sm">
+								<Loader size={14} className="text-[#FF4D00]" />
+								<Shimmer className="font-mono text-[10px] tracking-[0.2em] uppercase text-neutral-500 dark:text-neutral-400">
+									SYSTEM_EXECUTING_WORKFLOW
+								</Shimmer>
+							</div>
 						</MessageContent>
 					</Message>
 				)}
