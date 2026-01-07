@@ -34,44 +34,21 @@ const SeedAttachmentsLoader: React.FC<{
 	onConsumed?: () => void;
 }> = ({ seeds, onConsumed }) => {
 	const attachmentsApi = usePromptInputAttachments();
-	// Track the last processed seeds array reference to prevent duplicate processing
-	// from re-renders, while allowing new seeds arrays to be processed
 	const processedSeedsRef = React.useRef<typeof seeds | null>(null);
 
 	useEffect(() => {
-		// Skip if no seeds or if we've already processed this exact seeds array
 		if (!seeds.length || processedSeedsRef.current === seeds) {
 			return;
 		}
 
-		// Mark as processed immediately to prevent duplicate runs from Strict Mode
 		processedSeedsRef.current = seeds;
 
 		const toFiles = async () => {
-			const filesToAdd: {
-				url: string;
-				filename: string;
-				mediaType: string;
-			}[] = [];
-
-			for (const seed of seeds) {
-				// If it's a remote URL (http/https), pass it directly
-				if (seed.url.startsWith("http")) {
-					filesToAdd.push({
-						url: seed.url,
-						filename: seed.filename,
-						mediaType: seed.mimeType || "image/png",
-					});
-				} else {
-					// For data/blob URLs, we treat them as 'remote' so they keep their local URL
-					// PromptInput will handle the conversion to File if needed during submission
-					filesToAdd.push({
-						url: seed.url,
-						filename: seed.filename,
-						mediaType: seed.mimeType || "image/png",
-					});
-				}
-			}
+			const filesToAdd = seeds.map((seed) => ({
+				url: seed.url,
+				filename: seed.filename,
+				mediaType: seed.mimeType || "image/png",
+			}));
 
 			if (filesToAdd.length > 0) {
 				attachmentsApi.addRemote(filesToAdd);
@@ -81,8 +58,7 @@ const SeedAttachmentsLoader: React.FC<{
 		};
 
 		void toFiles();
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- attachmentsApi changes on every render, but we track seeds by reference
-	}, [seeds, onConsumed]);
+	}, [seeds, onConsumed, attachmentsApi]);
 
 	return null;
 };
@@ -105,7 +81,6 @@ interface ChatInputProps {
 
 const AttachButton = () => {
 	const attachments = usePromptInputAttachments();
-
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
@@ -136,7 +111,6 @@ const MentionButton = () => {
 			textInput.setInput(`${textInput.value}${needsSpace ? " " : ""}${token} `);
 			return;
 		}
-
 		textInput.setInput(`${textInput.value}@`);
 	};
 
@@ -166,7 +140,6 @@ const SpeechButton = ({
 	textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) => {
 	const { textInput } = usePromptInputController();
-
 	return (
 		<TooltipProvider>
 			<Tooltip>
@@ -185,9 +158,7 @@ const SpeechButton = ({
 	);
 };
 
-const StatusLine: React.FC<{ mode: "default" | "search" | "brainstorm" }> = ({
-	mode,
-}) => {
+const StatusLine: React.FC<{ mode: string }> = ({ mode }) => {
 	const attachments = usePromptInputAttachments();
 	const count = attachments.files.length;
 	const modeLabel =
@@ -206,33 +177,35 @@ const StatusLine: React.FC<{ mode: "default" | "search" | "brainstorm" }> = ({
 	);
 };
 
-export const ChatInput: React.FC<ChatInputProps> = ({
+const ChatInputInternal: React.FC<
+	ChatInputProps & {
+		mode: string;
+		setMode: (m: any) => void;
+		textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+	}
+> = ({
 	onSubmit,
 	isLoading,
 	onStop,
-	className,
 	initialValue,
 	suggestions,
-	selectedAssetIds = [],
-	seedAttachments = [],
+	seedAttachments,
 	onSeedConsumed,
+	mode,
+	setMode,
+	textareaRef,
 }) => {
-	const [mode, setMode] = React.useState<"default" | "search" | "brainstorm">(
-		"default",
-	);
-	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const { textInput } = usePromptInputController();
 
-	// Sync initialValue when it changes (e.g. from Revision trigger)
 	useEffect(() => {
 		if (initialValue) {
 			textInput.setInput(initialValue);
 			textareaRef.current?.focus();
 		}
-	}, [initialValue, textInput]);
+	}, [initialValue, textInput, textareaRef]);
 
 	const toggleMode = (newMode: "search" | "brainstorm") => {
-		setMode((prev) => (prev === newMode ? "default" : newMode));
+		setMode((prev: any) => (prev === newMode ? "default" : newMode));
 	};
 
 	const handleSuggestionClick = (suggestion: string) => {
@@ -241,127 +214,147 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 	};
 
 	return (
-		<SelectedAssetsContext.Provider value={selectedAssetIds}>
-			<div className={cn("p-2 bg-[#f4f4f0] dark:bg-[#111111]", className)}>
-				{suggestions && suggestions.length > 0 && (
-					<Suggestions className="mb-2">
-						{suggestions.map((s) => (
-							<Suggestion
-								key={s}
-								suggestion={s}
-								onClick={handleSuggestionClick}
-								className="font-mono text-[9px] uppercase tracking-widest border-neutral-300 dark:border-neutral-800 rounded-sm h-7"
-							/>
-						))}
-					</Suggestions>
-				)}
-				<PromptInputProvider>
-					<SeedAttachmentsLoader
-						seeds={seedAttachments}
-						onConsumed={onSeedConsumed}
+		<>
+			{suggestions && suggestions.length > 0 && (
+				<Suggestions className="mb-2">
+					{suggestions.map((s) => (
+						<Suggestion
+							key={s}
+							suggestion={s}
+							onClick={handleSuggestionClick}
+							className="font-mono text-[9px] uppercase tracking-widest border-neutral-300 dark:border-neutral-800 rounded-sm h-7"
+						/>
+					))}
+				</Suggestions>
+			)}
+			<SeedAttachmentsLoader
+				seeds={seedAttachments || []}
+				onConsumed={onSeedConsumed}
+			/>
+			<PromptInput
+				onSubmit={(message) => {
+					onSubmit(message.text, message.files, { mode: mode as any });
+					setMode("default");
+				}}
+				className="relative flex flex-col rounded-md border border-neutral-300/80 dark:border-neutral-800 bg-neutral-50 dark:bg-[#0e0e0e] shadow-inner transition-colors focus-within:border-[#FF4D00]/60"
+			>
+				<PromptInputHeader className="px-3 pt-3 pb-1">
+					<PromptInputAttachments>
+						{(attachment) => <PromptInputAttachment data={attachment} />}
+					</PromptInputAttachments>
+				</PromptInputHeader>
+				<PromptInputBody className="relative z-10">
+					<PromptInputTextarea
+						ref={textareaRef}
+						className="min-h-[44px] max-h-[200px] bg-transparent border-0 focus-visible:ring-0 px-3 pb-3 pt-1.5 resize-none shadow-none text-base placeholder:text-neutral-400 font-mono"
+						placeholder={
+							mode === "search"
+								? "Ask the web..."
+								: mode === "brainstorm"
+									? "What shall we explore..."
+									: "Input command..."
+						}
 					/>
-					<PromptInput
-						onSubmit={(message) => {
-							onSubmit(message.text, message.files, { mode });
-							setMode("default");
-						}}
-						className="relative flex flex-col rounded-md border border-neutral-300/80 dark:border-neutral-800 bg-neutral-50 dark:bg-[#0e0e0e] shadow-inner transition-colors focus-within:border-[#FF4D00]/60"
-					>
-						<PromptInputHeader className="px-3 pt-3 pb-1">
-							<PromptInputAttachments>
-								{(attachment) => <PromptInputAttachment data={attachment} />}
-							</PromptInputAttachments>
-						</PromptInputHeader>
-						<PromptInputBody className="relative z-10">
-							<PromptInputTextarea
-								ref={textareaRef}
-								className="min-h-[44px] max-h-[200px] bg-transparent border-0 focus-visible:ring-0 px-3 pb-3 pt-1.5 resize-none shadow-none text-base placeholder:text-neutral-400 font-mono"
-								placeholder={
-									mode === "search"
-										? "Ask the web..."
-										: mode === "brainstorm"
-											? "What shall we explore..."
-											: "Input command..."
-								}
-							/>
-						</PromptInputBody>
+				</PromptInputBody>
 
-						<PromptInputFooter className="px-2 pb-2">
-							<div className="flex items-center gap-1">
-								<TooltipProvider>
-									<AttachButton />
-									<MentionButton />
-									<SpeechButton textareaRef={textareaRef} />
-								</TooltipProvider>
-							</div>
+				<PromptInputFooter className="px-2 pb-2">
+					<div className="flex items-center gap-1">
+						<TooltipProvider>
+							<AttachButton />
+							<MentionButton />
+							<SpeechButton textareaRef={textareaRef} />
+						</TooltipProvider>
+					</div>
 
-							<PromptInputTools className="gap-1">
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<PromptInputButton
-												onClick={() => toggleMode("brainstorm")}
-												className={cn(
-													"rounded-sm transition-colors",
-													mode === "brainstorm"
-														? "text-[#FF4D00] bg-neutral-200 dark:bg-neutral-800"
-														: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800",
-												)}
-											>
-												<SwissIcons.Sparkles className="h-4 w-4" />
-											</PromptInputButton>
-										</TooltipTrigger>
-										<TooltipContent>Brainstorm Mode</TooltipContent>
-									</Tooltip>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<PromptInputButton
-												onClick={() => toggleMode("search")}
-												className={cn(
-													"rounded-sm transition-colors",
-													mode === "search"
-														? "text-[#FF4D00] bg-neutral-200 dark:bg-neutral-800"
-														: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800",
-												)}
-											>
-												<SwissIcons.Globe className="h-4 w-4" />
-											</PromptInputButton>
-										</TooltipTrigger>
-										<TooltipContent>Web Search Mode</TooltipContent>
-									</Tooltip>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											{isLoading && onStop ? (
-												<Button
-													type="button"
-													size="icon-sm"
-													className="h-9 w-9 rounded-md bg-[#3B4B59] text-white hover:bg-[#3B4B59]/90 shadow-sm"
-													onClick={onStop}
-												>
-													<SwissIcons.Square className="h-3 w-3 fill-current" />
-													<span className="sr-only">Stop Generating</span>
-												</Button>
-											) : (
-												<Button
-													type="submit"
-													size="icon-sm"
-													className="h-9 w-9 rounded-md bg-[#FF4D00] text-white hover:bg-[#e44400] shadow-sm"
-													disabled={isLoading}
-												>
-													<SwissIcons.ArrowUp className="h-4 w-4" />
-													<span className="sr-only">Send</span>
-												</Button>
-											)}
-										</TooltipTrigger>
-										<TooltipContent>
-											{isLoading ? "Stop Generating" : "Execute Command"}
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							</PromptInputTools>
-						</PromptInputFooter>
-					</PromptInput>
-					<StatusLine mode={mode} />
+					<PromptInputTools className="gap-1">
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<PromptInputButton
+										onClick={() => toggleMode("brainstorm")}
+										className={cn(
+											"rounded-sm transition-colors",
+											mode === "brainstorm"
+												? "text-[#FF4D00] bg-neutral-200 dark:bg-neutral-800"
+												: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800",
+										)}
+									>
+										<SwissIcons.Sparkles className="h-4 w-4" />
+									</PromptInputButton>
+								</TooltipTrigger>
+								<TooltipContent>Brainstorm Mode</TooltipContent>
+							</Tooltip>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<PromptInputButton
+										onClick={() => toggleMode("search")}
+										className={cn(
+											"rounded-sm transition-colors",
+											mode === "search"
+												? "text-[#FF4D00] bg-neutral-200 dark:bg-neutral-800"
+												: "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-800",
+										)}
+									>
+										<SwissIcons.Globe className="h-4 w-4" />
+									</PromptInputButton>
+								</TooltipTrigger>
+								<TooltipContent>Web Search Mode</TooltipContent>
+							</Tooltip>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									{isLoading && onStop ? (
+										<Button
+											type="button"
+											size="icon-sm"
+											className="h-9 w-9 rounded-md bg-[#3B4B59] text-white hover:bg-[#3B4B59]/90 shadow-sm"
+											onClick={onStop}
+										>
+											<SwissIcons.Square className="h-3 w-3 fill-current" />
+											<span className="sr-only">Stop Generating</span>
+										</Button>
+									) : (
+										<Button
+											type="submit"
+											size="icon-sm"
+											className="h-9 w-9 rounded-md bg-[#FF4D00] text-white hover:bg-[#e44400] shadow-sm"
+											disabled={isLoading}
+										>
+											<SwissIcons.ArrowUp className="h-4 w-4" />
+											<span className="sr-only">Send</span>
+										</Button>
+									)}
+								</TooltipTrigger>
+								<TooltipContent>
+									{isLoading ? "Stop Generating" : "Execute Command"}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</PromptInputTools>
+				</PromptInputFooter>
+			</PromptInput>
+			<StatusLine mode={mode} />
+		</>
+	);
+};
+
+export const ChatInput: React.FC<ChatInputProps> = (props) => {
+	const [mode, setMode] = React.useState<"default" | "search" | "brainstorm">(
+		"default",
+	);
+	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+	return (
+		<SelectedAssetsContext.Provider value={props.selectedAssetIds || []}>
+			<div
+				className={cn("p-2 bg-[#f4f4f0] dark:bg-[#111111]", props.className)}
+			>
+				<PromptInputProvider>
+					<ChatInputInternal
+						{...props}
+						mode={mode}
+						setMode={setMode}
+						textareaRef={textareaRef}
+					/>
 				</PromptInputProvider>
 			</div>
 		</SelectedAssetsContext.Provider>
