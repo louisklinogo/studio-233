@@ -1,5 +1,5 @@
 import { getSessionWithRetry } from "@studio233/auth/lib/session";
-import { prisma } from "@studio233/db";
+import { Prisma, prisma } from "@studio233/db";
 import { inngest } from "@studio233/inngest";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -316,22 +316,43 @@ export const workspaceRouter = router({
 				throw new TRPCError({ code: "UNAUTHORIZED" });
 			}
 
-			// 1. Get raw knowledge nodes
-			const knowledge = await prisma.brandKnowledge.findMany({
-				where: { workspace_id: input.workspaceId },
-				select: {
-					id: true,
-					metadata: true,
-					text: true,
-					createdAt: true,
-				},
-				orderBy: { createdAt: "desc" },
-			});
+			// 1. Get raw knowledge nodes and workspace metadata
+			const [knowledge, workspace] = await Promise.all([
+				prisma.brandKnowledge.findMany({
+					where: { workspace_id: input.workspaceId },
+					select: {
+						id: true,
+						metadata: true,
+						text: true,
+						createdAt: true,
+					},
+					orderBy: { createdAt: "desc" },
+				}),
+				prisma.workspace.findUnique({
+					where: { id: input.workspaceId },
+					select: {
+						brandProfile: true,
+						brandSummary: true,
+						indexingStatus: true,
+					},
+				}),
+			]);
 
 			// 2. Aggregate sources and extract insights
 			const sourceMap = new Map<string, { name: string; nodeCount: number }>();
 			const deducedAttributes = new Set<string>();
 			let deducedAesthetic = "";
+
+			// Pull from structured DNA if available
+			const dna = (workspace?.brandProfile as any) || {};
+			if (dna.visualStyle?.vibe) deducedAesthetic = dna.visualStyle.vibe;
+
+			// Seed attributes from structured DNA
+			if (dna.visualStyle?.layoutPrinciples) {
+				dna.visualStyle.layoutPrinciples.forEach((p: string) =>
+					deducedAttributes.add(p.toUpperCase()),
+				);
+			}
 
 			for (const node of knowledge) {
 				const meta = (node.metadata as any) || {};
@@ -347,12 +368,11 @@ export const workspaceRouter = router({
 					nodeCount: existing.nodeCount + 1,
 				});
 
-				// Extract semantic insights from text or metadata
-				// We now prioritize the specific markers we set in vision-sync
+				// Extract semantic insights from text or metadata if DNA is sparse
 				const text = node.text;
-				if (text?.includes("Aesthetic DNA:")) {
+				if (!deducedAesthetic && text?.includes("Aesthetic DNA:")) {
 					const match = text.match(/Aesthetic DNA: (.*)/);
-					if (match && !deducedAesthetic) deducedAesthetic = match[1];
+					if (match) deducedAesthetic = match[1];
 				}
 
 				if (text?.includes("Form & Geometry:")) {
@@ -360,7 +380,7 @@ export const workspaceRouter = router({
 					if (match) {
 						match[1].split(",").forEach((attr) => {
 							const trimmed = attr.trim().toUpperCase();
-							if (trimmed && deducedAttributes.size < 12) {
+							if (trimmed && deducedAttributes.size < 15) {
 								deducedAttributes.add(trimmed);
 							}
 						});
@@ -368,22 +388,17 @@ export const workspaceRouter = router({
 				}
 			}
 
-			// 3. Get synthesized summary from workspace
-			const workspace = await prisma.workspace.findUnique({
-				where: { id: input.workspaceId },
-				select: { brandSummary: true, indexingStatus: true },
-			});
-
 			return {
 				totalNodes: knowledge.length,
 				sources: Array.from(sourceMap.values()),
 				deducedAttributes: Array.from(deducedAttributes),
 				deducedAesthetic: deducedAesthetic || "DNA_SEQUENCE_EMPTY",
 				brandSummary: workspace?.brandSummary as any,
+				brandProfile: dna,
 				lastIndexed: knowledge.length > 0 ? knowledge[0].createdAt : null,
 				systemState:
 					workspace?.indexingStatus === "INDEXING"
-						? "INDEXING" // Force visual "Processing" state if DB says so
+						? "INDEXING"
 						: knowledge.length > 0
 							? "STABLE"
 							: "UNINITIALIZED",
@@ -477,5 +492,46 @@ export const workspaceRouter = router({
 				triggeredSync: triggeredCount,
 				status: triggeredCount > 0 ? "SYNCHRONIZING" : "STABLE",
 			};
+		}),
+
+	/**
+	 * Wipe all brand intelligence, knowledge nodes, and synthesized DNA.
+	 * DANGER: This is a destructive operation used for full system resets.
+	 */
+	resetBrandIntelligence: publicProcedure
+		.input(z.object({ workspaceId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+			if (!session) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+			// Verify ownership
+			const workspace = await prisma.workspace.findUnique({
+				where: { id: input.workspaceId },
+			});
+
+			if (!workspace || workspace.userId !== session.user.id) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Workspace not found",
+				});
+			}
+
+			// 1. Delete all knowledge nodes (Vector DB)
+			await prisma.brandKnowledge.deleteMany({
+				where: { workspace_id: input.workspaceId },
+			});
+
+			// 2. Reset Workspace fields
+			await prisma.workspace.update({
+				where: { id: input.workspaceId },
+				data: {
+					brandProfile: Prisma.DbNull,
+					brandSummary: Prisma.DbNull,
+					indexingStatus: "IDLE",
+				},
+			});
+
+			return { status: "RESET_COMPLETE" };
 		}),
 });

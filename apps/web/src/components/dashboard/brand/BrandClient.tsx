@@ -352,6 +352,26 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 		}),
 	);
 
+	const resetIntelligence = useMutation(
+		trpc.workspace.resetBrandIntelligence.mutationOptions({
+			onMutate: () => {
+				setStatusMessage("WIPING_COGNITIVE_NODES...");
+			},
+			onSuccess: () => {
+				queryClient.invalidateQueries(
+					trpc.workspace.getIntelligence.queryFilter({ workspaceId }),
+				);
+				queryClient.invalidateQueries(
+					trpc.workspace.getById.queryFilter({ id: workspaceId }),
+				);
+				setStatusMessage("SYSTEM_SLATE_CLEAN");
+			},
+			onError: () => {
+				setStatusMessage("RESET_FAULT_DETECTED");
+			},
+		}),
+	);
+
 	const brandProfile = (workspace?.brandProfile as any) || {};
 	const hasLogo = brandAssets && brandAssets.length > 0;
 	const isInitialized = hasLogo && localPrimary && localFont;
@@ -951,26 +971,46 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 														Nodes_Indexed
 													</span>
 												</div>
-												<button
-													onClick={() => syncArchive.mutate({ workspaceId })}
-													disabled={syncArchive.isPending || isPolling}
-													className="group relative mb-1 h-6 px-4 bg-neutral-100 dark:bg-neutral-900 hover:bg-[#FF4D00] dark:hover:bg-[#FF4D00] border border-neutral-200 dark:border-neutral-800 hover:border-[#FF4D00] text-neutral-900 dark:text-white hover:text-white font-mono text-[9px] uppercase tracking-[0.2em] font-bold rounded-sm transition-all flex items-center gap-3 disabled:opacity-50 disabled:hover:bg-neutral-100 disabled:hover:text-neutral-900 disabled:cursor-not-allowed overflow-hidden"
-												>
-													<div className="absolute inset-0 bg-[#FF4D00] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-													<div className="relative z-10 flex items-center gap-2">
-														{syncArchive.isPending || isPolling ? (
-															<SwissIcons.Spinner
-																className="animate-spin"
-																size={10}
-															/>
-														) : (
-															<div className="w-2 h-2 rounded-full border border-current opacity-50 group-hover:opacity-100" />
-														)}
-														<span>
-															{isPolling ? "SYNCING..." : "INITIALIZE_SYNC"}
-														</span>
-													</div>
-												</button>
+												<div className="flex gap-2 items-end">
+													<button
+														onClick={() => {
+															if (
+																confirm(
+																	"DANGER: This will wipe all synthesized brand knowledge. Proceed?",
+																)
+															) {
+																resetIntelligence.mutate({ workspaceId });
+															}
+														}}
+														className="group relative mb-1 h-6 px-4 bg-neutral-50 dark:bg-neutral-900 hover:bg-red-600 dark:hover:bg-red-600 border border-neutral-200 dark:border-neutral-800 hover:border-red-600 text-neutral-400 hover:text-white font-mono text-[9px] uppercase tracking-[0.2em] rounded-sm transition-all flex items-center gap-3 active:scale-95 overflow-hidden"
+													>
+														<div className="relative z-10 flex items-center gap-2">
+															<SwissIcons.Trash size={10} />
+															<span>RESET_KNOWLEDGE</span>
+														</div>
+													</button>
+
+													<button
+														onClick={() => syncArchive.mutate({ workspaceId })}
+														disabled={syncArchive.isPending || isPolling}
+														className="group relative mb-1 h-6 px-4 bg-neutral-100 dark:bg-neutral-900 hover:bg-[#FF4D00] dark:hover:bg-[#FF4D00] border border-neutral-200 dark:border-neutral-800 hover:border-[#FF4D00] text-neutral-900 dark:text-white hover:text-white font-mono text-[9px] uppercase tracking-[0.2em] font-bold rounded-sm transition-all flex items-center gap-3 disabled:opacity-50 disabled:hover:bg-neutral-100 disabled:hover:text-neutral-900 disabled:cursor-not-allowed overflow-hidden"
+													>
+														<div className="absolute inset-0 bg-[#FF4D00] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+														<div className="relative z-10 flex items-center gap-2">
+															{syncArchive.isPending || isPolling ? (
+																<SwissIcons.Spinner
+																	className="animate-spin"
+																	size={10}
+																/>
+															) : (
+																<div className="w-2 h-2 rounded-full border border-current opacity-50 group-hover:opacity-100" />
+															)}
+															<span>
+																{isPolling ? "SYNCING..." : "INITIALIZE_SYNC"}
+															</span>
+														</div>
+													</button>
+												</div>
 											</div>
 											<div className="h-1 w-full bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
 												<motion.div

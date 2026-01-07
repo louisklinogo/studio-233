@@ -5,6 +5,14 @@ import {
 	updateBrandMemoryTool,
 } from "../tools/brand";
 import { canvasTextToImageTool } from "../tools/canvas";
+import {
+	computerClickTool,
+	computerNavigateTool,
+	computerScreenshotTool,
+	computerScrollTool,
+	computerTypeTool,
+	computerWaitTool,
+} from "../tools/computer";
 import type { ToolDefinition } from "../tools/factory";
 import { delegateToAgentTool } from "../tools/orchestration";
 import { proposePlanTool } from "../tools/planning";
@@ -70,6 +78,12 @@ const TOOL_DEFINITIONS = {
 	browserType: browserTypeTool,
 	browserScroll: browserScrollTool,
 	browserWait: browserWaitTool,
+	computerNavigate: computerNavigateTool,
+	computerClick: computerClickTool,
+	computerType: computerTypeTool,
+	computerScroll: computerScrollTool,
+	computerScreenshot: computerScreenshotTool,
+	computerWait: computerWaitTool,
 	consultBrandGuidelines: consultBrandGuidelinesTool,
 	updateBrandMemory: updateBrandMemoryTool,
 } as const;

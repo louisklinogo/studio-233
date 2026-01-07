@@ -21,7 +21,7 @@ export function injectBrandContext(
 ): string {
 	if (!context) return basePrompt;
 
-	const { identity, knowledge, visualDna, assets } = context;
+	const { identity, knowledge, visualDna, assets, structuredDna } = context;
 
 	const protocol = `
 <IDENTITY_PROTOCOL>
@@ -32,6 +32,20 @@ export function injectBrandContext(
   <TYPOGRAPHY>
     ACTIVE_FONT: ${identity.fontFamily}
   </TYPOGRAPHY>
+  ${structuredDna?.vibe ? `<BRAND_VIBE>${structuredDna.vibe}</BRAND_VIBE>` : ""}
+  ${
+		structuredDna?.toneOfVoice
+			? `<TONE_OF_VOICE>${structuredDna.toneOfVoice}</TONE_OF_VOICE>`
+			: ""
+	}
+  ${
+		structuredDna?.layoutPrinciples && structuredDna.layoutPrinciples.length > 0
+			? `
+  <LAYOUT_PRINCIPLES>
+    ${structuredDna.layoutPrinciples.map((p) => `- ${p}`).join("\n    ")}
+  </LAYOUT_PRINCIPLES>`
+			: ""
+	}
   ${
 		knowledge.length > 0
 			? `

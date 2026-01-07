@@ -23,6 +23,10 @@ export const MODEL_CONFIG = {
 		model: "gemini-3-flash-preview",
 		temperature: 0.75,
 	},
+	computer: {
+		model: "gemini-2.5-computer-use-preview-10-2025",
+		temperature: 0.0, // Low temperature is critical for precise computer actions
+	},
 	general: {
 		model: "gemini-3-flash-preview",
 		temperature: 0.7,

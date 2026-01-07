@@ -414,41 +414,130 @@ export function BrandPanel({
 								exit={{ opacity: 0 }}
 								className="space-y-12 py-4"
 							>
-								<div className="space-y-2">
-									<div className="flex items-center gap-2 mb-4">
-										<div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-										<span className="font-sans text-[10px] uppercase tracking-widest text-neutral-400">
-											Cortex_Active
-										</span>
+								{/* System Status & Node Count */}
+								<div className="flex justify-between items-start">
+									<div className="space-y-2">
+										<div className="flex items-center gap-2 mb-2">
+											<div
+												className={cn(
+													"w-1.5 h-1.5 rounded-full",
+													intelligence?.systemState === "INDEXING"
+														? "bg-[#FF4D00] animate-pulse"
+														: "bg-emerald-500",
+												)}
+											/>
+											<span className="font-sans text-[10px] uppercase tracking-widest text-neutral-400">
+												{intelligence?.systemState || "IDLE"}
+											</span>
+										</div>
+										<div className="text-6xl font-black tracking-tighter text-neutral-900 dark:text-white leading-[0.8]">
+											{intelligence?.totalNodes || 0}
+										</div>
+										<div className="font-mono text-[9px] uppercase text-neutral-400">
+											Technical_Nodes_Indexed
+										</div>
 									</div>
-									<div className="text-6xl font-black tracking-tighter text-neutral-900 dark:text-white">
-										{intelligence?.totalNodes || 0}
-									</div>
-									<div className="font-mono text-[9px] uppercase text-neutral-400">
-										Technical_Nodes_Indexed
-									</div>
+
+									{intelligence?.deducedAesthetic && (
+										<div className="max-w-[180px] text-right space-y-1">
+											<span className="font-sans text-[9px] uppercase text-[#FF4D00] tracking-widest">
+												Aesthetic_DNA
+											</span>
+											<p className="font-sans text-[11px] font-medium leading-tight text-neutral-900 dark:text-white uppercase">
+												{intelligence.deducedAesthetic}
+											</p>
+										</div>
+									)}
 								</div>
 
+								{/* Semantic Insights Grid */}
+								{(intelligence?.brandProfile?.semanticDNA?.toneOfVoice ||
+									intelligence?.brandProfile?.visualStyle
+										?.layoutPrinciples) && (
+									<div className="grid grid-cols-1 gap-8 pt-4 border-t border-neutral-100 dark:border-white/5">
+										{intelligence.brandProfile?.semanticDNA?.toneOfVoice && (
+											<div className="space-y-2">
+												<span className="font-sans text-[10px] uppercase text-neutral-400 tracking-wider">
+													Tone_Of_Voice
+												</span>
+												<p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed italic">
+													"{intelligence.brandProfile.semanticDNA.toneOfVoice}"
+												</p>
+											</div>
+										)}
+
+										{intelligence.brandProfile?.visualStyle?.layoutPrinciples &&
+											intelligence.brandProfile.visualStyle.layoutPrinciples
+												.length > 0 && (
+												<div className="space-y-3">
+													<span className="font-sans text-[10px] uppercase text-neutral-400 tracking-wider">
+														Layout_Principles
+													</span>
+													<div className="flex flex-wrap gap-2">
+														{intelligence.brandProfile.visualStyle.layoutPrinciples.map(
+															(p: string, i: number) => (
+																<div
+																	key={i}
+																	className="px-2 py-1 bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 rounded-sm font-mono text-[9px] text-neutral-500 uppercase"
+																>
+																	{p}
+																</div>
+															),
+														)}
+													</div>
+												</div>
+											)}
+									</div>
+								)}
+
+								{/* Source Readout */}
 								<div className="space-y-4">
-									<span className="font-sans text-[10px] uppercase text-neutral-400 tracking-wider">
-										Source_Readout
-									</span>
+									<div className="flex justify-between items-center border-b border-neutral-100 dark:border-white/5 pb-2">
+										<span className="font-sans text-[10px] uppercase text-neutral-400 tracking-wider">
+											Index_Sources
+										</span>
+										<span className="font-mono text-[9px] text-neutral-400 tabular-nums">
+											{intelligence?.sources?.length || 0}
+										</span>
+									</div>
 									<div className="space-y-px">
 										{intelligence?.sources?.map((source: any, i: number) => (
 											<div
 												key={i}
-												className="flex justify-between py-3 border-b border-neutral-100 dark:border-white/5"
+												className="flex justify-between py-3 border-b border-neutral-100 dark:border-white/5 group"
 											>
 												<span className="font-mono text-[9px] uppercase text-neutral-600 dark:text-neutral-400 truncate max-w-[200px]">
 													{source.name}
 												</span>
-												<span className="font-mono text-[9px] text-[#FF4D00]">
+												<span className="font-mono text-[9px] text-[#FF4D00] opacity-40 group-hover:opacity-100">
 													[{source.nodeCount}]
 												</span>
 											</div>
 										))}
 									</div>
 								</div>
+
+								{/* Deduced Attributes Tag Cloud */}
+								{intelligence?.deducedAttributes &&
+									intelligence.deducedAttributes.length > 0 && (
+										<div className="space-y-4">
+											<span className="font-sans text-[10px] uppercase text-neutral-400 tracking-wider">
+												Geometric_Markers
+											</span>
+											<div className="flex flex-wrap gap-x-4 gap-y-2">
+												{intelligence.deducedAttributes.map(
+													(attr: string, i: number) => (
+														<span
+															key={i}
+															className="font-mono text-[10px] text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-default"
+														>
+															/{attr}
+														</span>
+													),
+												)}
+											</div>
+										</div>
+									)}
 							</motion.div>
 						)}
 					</AnimatePresence>

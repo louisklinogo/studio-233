@@ -14,11 +14,17 @@ export const consultBrandGuidelinesTool = createTool({
 			),
 		workspaceId: z
 			.string()
-			.describe("The workspace ID to look up guidelines for"),
+			.optional()
+			.describe("The workspace ID to look up guidelines for (optional)"),
 	}),
-	execute: async ({ context }) => {
+	execute: async ({ context, runtimeContext }) => {
+		const workspaceId = context.workspaceId || runtimeContext?.workspaceId;
+		if (!workspaceId) {
+			throw new Error("No workspaceId provided or found in context");
+		}
+
 		// Search DB using RAG service
-		const results = await retrievalService(context.workspaceId, context.query);
+		const results = await retrievalService(workspaceId, context.query);
 
 		if (results.length === 0) {
 			return {
@@ -53,9 +59,15 @@ export const updateBrandMemoryTool = createTool({
 			.describe("The category of the brand rule"),
 		workspaceId: z
 			.string()
-			.describe("The workspace ID to save the guideline for"),
+			.optional()
+			.describe("The workspace ID to save the guideline for (optional)"),
 	}),
 	execute: async ({ context, runtimeContext }) => {
+		const workspaceId = context.workspaceId || runtimeContext?.workspaceId;
+		if (!workspaceId) {
+			throw new Error("No workspaceId provided or found in context");
+		}
+
 		const inngest = (runtimeContext as any)?.inngest;
 
 		if (!inngest) {
@@ -66,7 +78,7 @@ export const updateBrandMemoryTool = createTool({
 		await inngest.send({
 			name: "brand.knowledge.text_added",
 			data: {
-				workspaceId: context.workspaceId,
+				workspaceId: workspaceId,
 				text: context.rule,
 				category: context.category,
 			},

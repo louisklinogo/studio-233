@@ -89,8 +89,11 @@ export async function resolveBrandContext(
 	workspaceId: string,
 	query: string,
 ): Promise<BrandContext> {
-	const [identity, knowledge, visualDna, brandAssets] = await Promise.all([
-		resolveIdentity(workspaceId),
+	const [workspace, knowledge, visualDna, brandAssets] = await Promise.all([
+		prisma.workspace.findUnique({
+			where: { id: workspaceId },
+			select: { brandProfile: true },
+		}),
 		resolveKnowledge(workspaceId, query),
 		resolveVisualDna(workspaceId),
 		prisma.asset.findMany({
@@ -98,6 +101,9 @@ export async function resolveBrandContext(
 			select: { name: true, url: true, type: true },
 		}),
 	]);
+
+	const profile = (workspace?.brandProfile as any) || {};
+	const identity = brandIdentitySchema.parse(profile);
 
 	return {
 		identity,
@@ -108,5 +114,11 @@ export async function resolveBrandContext(
 			url: a.url,
 			type: a.type,
 		})),
+		structuredDna: {
+			vibe: profile.visualStyle?.vibe,
+			toneOfVoice: profile.semanticDNA?.toneOfVoice,
+			layoutPrinciples: profile.visualStyle?.layoutPrinciples,
+			copywritingGuidelines: profile.semanticDNA?.copywritingGuidelines,
+		},
 	};
 }

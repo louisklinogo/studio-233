@@ -15,4 +15,10 @@ export interface BrandContext {
 	knowledge: string[]; // RAG semantic fragments
 	visualDna: string[]; // Vision analysis summaries
 	assets: BrandAsset[]; // Primary marks
+	structuredDna?: {
+		vibe?: string;
+		toneOfVoice?: string;
+		layoutPrinciples?: string[];
+		copywritingGuidelines?: string[];
+	};
 }

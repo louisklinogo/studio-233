@@ -92,6 +92,8 @@ Layout strategy: ${input.layout}
 Sections: ${sections.join(", ")}
 Color palette: ${colorPalette?.join(", ") ?? "designer's choice"}
 ${dimensionContext}
+Context:
+- Current Date: ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })} (Use this for any visible dates/timestamps in the design)
 
 Technical Requirements:
 ${formatSpecifics || "- Use semantic HTML5 and modern CSS."}

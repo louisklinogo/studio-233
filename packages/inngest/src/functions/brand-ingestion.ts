@@ -106,7 +106,12 @@ export const brandIngestion = inngest.createFunction(
 				});
 
 				// 4. Update Workspace Profile with extracted DNA
-				await updateWorkspaceBrandDNA(workspaceId, result.brandDNA);
+				await updateWorkspaceBrandDNA(
+					workspaceId,
+					result.brandDNA,
+					assetId,
+					filename,
+				);
 
 				return {
 					path: result.path,
