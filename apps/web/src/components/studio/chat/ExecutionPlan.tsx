@@ -18,6 +18,7 @@ import {
 import type { TaskStatus } from "@/components/ai-elements/task";
 import { TaskItem } from "@/components/ai-elements/task";
 import { SwissIcons } from "@/components/ui/SwissIcons";
+import { cn } from "@/lib/utils";
 
 export interface ExecutionStep {
 	id: string;

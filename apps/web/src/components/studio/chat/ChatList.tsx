@@ -130,7 +130,6 @@ const MessageResponseWithCitations: React.FC<{
 	text: string;
 	sources: any[];
 }> = ({ text, sources }) => {
-	// Pattern for [1], [2], etc.
 	const citationRegex = /\[(\d+)\]/g;
 	const parts = text.split(citationRegex);
 
@@ -143,21 +142,15 @@ const MessageResponseWithCitations: React.FC<{
 			<MessageResponse>
 				{parts
 					.map((part, i) => {
-						// Even indices are text, odd are captured numbers
 						if (i % 2 === 0) return part;
-
 						const citationNumber = part;
 						const index = Number.parseInt(citationNumber) - 1;
 						const source = sources[index];
-
-						// If no source found, return the original [n] text
 						return source ? "" : `[${citationNumber}]`;
 					})
 					.join("")}
 			</MessageResponse>
 
-			{/* Render Citation Pills below or interleaved if supported by Streamdown */}
-			{/* For now, we render them as a secondary row to satisfy type safety */}
 			<div className="flex flex-wrap gap-1 mt-1">
 				{parts.map((part, i) => {
 					if (i % 2 === 0) return null;
@@ -182,9 +175,9 @@ const MessageResponseWithCitations: React.FC<{
 										<InlineCitationCarouselContent>
 											<InlineCitationCarouselItem>
 												<InlineCitationSource
+													description={source.snippet || source.description}
 													title={source.title || source.url || source.href}
 													url={source.url || source.href}
-													description={source.snippet || source.description}
 												/>
 											</InlineCitationCarouselItem>
 										</InlineCitationCarouselContent>
@@ -233,14 +226,14 @@ export const ChatList: React.FC<ChatListProps> = ({
 				{messages.length === 0
 					? emptyState || (
 							<ConversationEmptyState
+								description="I can help you generate images, edit videos, and more. Just ask!"
 								icon={
 									<StudioLogo
-										variant="mark"
 										className="text-4xl text-muted-foreground/50"
+										variant="mark"
 									/>
 								}
 								title="Welcome to Studio+233"
-								description="I can help you generate images, edit videos, and more. Just ask!"
 							/>
 						)
 					: messages.map((message, index) => {
@@ -258,15 +251,15 @@ export const ChatList: React.FC<ChatListProps> = ({
 								message.role === "assistant" && (!isLastMessage || !isLoading);
 
 							return (
-								<div key={message.id} className="w-full">
+								<div className="w-full" key={message.id}>
 									{message.role === "assistant" && sourceParts.length > 0 && (
 										<Sources className="mb-2">
 											<SourcesTrigger count={sourceParts.length} />
 											<SourcesContent>
 												{sourceParts.map((part: any, sIndex) => (
 													<Source
-														key={`${message.id}-source-${sIndex}`}
 														href={part.url || part.href}
+														key={`${message.id}-source-${sIndex}`}
 														title={part.title || part.url || part.href}
 													>
 														<div className="flex flex-col gap-0.5">
@@ -285,11 +278,12 @@ export const ChatList: React.FC<ChatListProps> = ({
 										</Sources>
 									)}
 									<Message
-										from={message.role === "user" ? "user" : "assistant"}
 										className="max-w-full"
+										from={message.role === "user" ? "user" : "assistant"}
 									>
 										<MessageContent className="max-w-full break-words space-y-2">
 											{resolvedParts.map((part, pIndex) => {
+												// Direct access to part properties with type safety
 												if (part.type === "text") {
 													const text = cleanText(part.text);
 													if (!text) return null;
@@ -297,8 +291,8 @@ export const ChatList: React.FC<ChatListProps> = ({
 													return (
 														<MessageResponseWithCitations
 															key={`${message.id}-text-${pIndex}`}
-															text={text}
 															sources={sourceParts}
+															text={text}
 														/>
 													);
 												}
@@ -306,12 +300,12 @@ export const ChatList: React.FC<ChatListProps> = ({
 												if (part.type === "reasoning") {
 													return (
 														<Reasoning
-															key={`${message.id}-reasoning-${pIndex}`}
 															isStreaming={
 																isLoading &&
 																isLastMessage &&
 																pIndex === resolvedParts.length - 1
 															}
+															key={`${message.id}-reasoning-${pIndex}`}
 														>
 															<ReasoningTrigger title="System Logic" />
 															<ReasoningContent>{part.text}</ReasoningContent>
@@ -319,15 +313,19 @@ export const ChatList: React.FC<ChatListProps> = ({
 													);
 												}
 
-												// --- NEW: Plan Mapping ---
-												if (part.type === "tool-proposePlan") {
-													const planData =
-														(part as any).output?.plan ||
-														(part as any).input ||
-														part;
+												// Use normalized type for tool identification but maintain narrowing
+												const rawType = part.type;
+												const normalizedType = rawType.startsWith("tool-")
+													? `tool-${rawType.slice(5).replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase())}`
+													: rawType;
 
-													// Sophisticated Logic: Check if any following parts are active tools
-													// that match the plan steps.
+												if (
+													normalizedType === "tool-proposePlan" &&
+													isToolPart(part)
+												) {
+													const planData =
+														(part.output as any)?.plan || part.input || part;
+
 													const stepsWithStatus = (planData.steps || []).map(
 														(step: any) => {
 															const isActiveTool = resolvedParts.some(
@@ -360,20 +358,13 @@ export const ChatList: React.FC<ChatListProps> = ({
 
 													return (
 														<ExecutionPlan
-															key={`${message.id}-plan-${pIndex}`}
-															task={planData.task || "Operational Roadmap"}
+															approval={part.approval}
 															description={planData.description}
-															steps={stepsWithStatus}
 															isStreaming={isLoading && isLastMessage}
-															requiresApproval={planData.requiresApproval}
-															approval={(part as any).approval}
-															state={part.state}
+															key={`${message.id}-plan-${pIndex}`}
 															onConfirm={(approved) => {
-																if (
-																	onToolInteraction &&
-																	(part as any).toolCallId
-																) {
-																	onToolInteraction((part as any).toolCallId, {
+																if (onToolInteraction && part.toolCallId) {
+																	onToolInteraction(part.toolCallId, {
 																		confirmed: approved,
 																	});
 																}
@@ -389,30 +380,34 @@ export const ChatList: React.FC<ChatListProps> = ({
 																	input?.focus();
 																}
 															}}
+															requiresApproval={planData.requiresApproval}
+															state={part.state}
+															steps={stepsWithStatus}
+															task={planData.task || "Operational Roadmap"}
 														/>
 													);
 												}
 
 												if (isToolPart(part)) {
-													const toolPart = part as ToolUIPart<
-														Record<string, any>
-													> & { toolCallId?: string };
+													const toolPart = part;
 
-													// --- NEW: WebPreview for HTML Tools ---
 													if (
-														(part.type === "tool-htmlGenerator" ||
-															part.type === "tool-renderHtml") &&
-														part.state === "output-available"
+														(normalizedType === "tool-htmlGenerator" ||
+															normalizedType === "tool-renderHtml") &&
+														toolPart.state === "output-available"
 													) {
+														const output = toolPart.output as Record<
+															string,
+															any
+														>;
 														const htmlContent =
-															part.output?.html ||
-															part.output?.code ||
-															(typeof part.output === "string"
-																? part.output
+															output?.html ||
+															output?.code ||
+															(typeof toolPart.output === "string"
+																? toolPart.output
 																: "");
 
 														if (htmlContent) {
-															// Create a data URL for the iframe
 															const blob = new Blob([htmlContent], {
 																type: "text/html",
 															});
@@ -420,8 +415,8 @@ export const ChatList: React.FC<ChatListProps> = ({
 
 															return (
 																<div
-																	key={`${message.id}-preview-${pIndex}`}
 																	className="my-4 h-[400px] border rounded-lg overflow-hidden"
+																	key={`${message.id}-preview-${pIndex}`}
 																>
 																	<WebPreview defaultUrl={url}>
 																		<WebPreviewNavigation>
@@ -434,14 +429,14 @@ export const ChatList: React.FC<ChatListProps> = ({
 														}
 													}
 
-													if (part.type === "tool-askForAspectRatio") {
-														if (part.state === "output-available") {
+													if (normalizedType === "tool-askForAspectRatio") {
+														if (toolPart.state === "output-available") {
 															return (
 																<div
-																	key={`${message.id}-tool-${pIndex}`}
 																	className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-md text-sm text-neutral-500"
+																	key={`${message.id}-tool-${pIndex}`}
 																>
-																	Selected Aspect Ratio: {part.output}
+																	Selected Aspect Ratio: {toolPart.output}
 																</div>
 															);
 														}
@@ -449,7 +444,7 @@ export const ChatList: React.FC<ChatListProps> = ({
 														return (
 															<AspectRatioPicker
 																key={`${message.id}-tool-${pIndex}`}
-																message={part.input?.message}
+																message={toolPart.input?.message}
 																onSelect={(ratio) => {
 																	if (
 																		onToolInteraction &&
@@ -467,18 +462,21 @@ export const ChatList: React.FC<ChatListProps> = ({
 
 													return (
 														<Tool
+															defaultOpen={toolPart.state !== "input-streaming"}
 															key={`${message.id}-tool-${pIndex}`}
-															defaultOpen={part.state !== "input-streaming"}
 														>
-															<ToolHeader type={part.type} state={part.state} />
+															<ToolHeader
+																state={toolPart.state}
+																type={toolPart.type}
+															/>
 															<ToolContent>
-																{part.input !== undefined &&
-																part.input !== null ? (
-																	<ToolInput input={part.input} />
+																{toolPart.input !== undefined &&
+																toolPart.input !== null ? (
+																	<ToolInput input={toolPart.input} />
 																) : null}
 																<ToolOutput
-																	output={part.output}
-																	errorText={part.errorText}
+																	errorText={toolPart.errorText}
+																	output={toolPart.output}
 																/>
 															</ToolContent>
 														</Tool>
@@ -491,8 +489,8 @@ export const ChatList: React.FC<ChatListProps> = ({
 												<MessageAttachments>
 													{attachmentParts.map((part, aIndex) => (
 														<MessageAttachment
-															key={`${message.id}-attachment-${aIndex}`}
 															data={part}
+															key={`${message.id}-attachment-${aIndex}`}
 														/>
 													))}
 												</MessageAttachments>
@@ -502,18 +500,18 @@ export const ChatList: React.FC<ChatListProps> = ({
 										{showActions && (
 											<MessageActions>
 												{isLastMessage && onReload && (
-													<MessageAction onClick={onReload} label="Retry">
+													<MessageAction label="Retry" onClick={onReload}>
 														<SwissIcons.Refresh size={12} />
 													</MessageAction>
 												)}
 												<MessageAction
-													onClick={() => handleCopy(message.id, fullText)}
 													label="Copy"
+													onClick={() => handleCopy(message.id, fullText)}
 												>
 													{copiedId === message.id ? (
 														<SwissIcons.Check
-															size={12}
 															className="text-green-500"
+															size={12}
 														/>
 													) : (
 														<SwissIcons.Copy size={12} />
@@ -528,13 +526,13 @@ export const ChatList: React.FC<ChatListProps> = ({
 
 				{showStreamingStatus && (
 					<Message
-						key="streaming-status"
-						from="assistant"
 						className="max-w-full"
+						from="assistant"
+						key="streaming-status"
 					>
 						<MessageContent className="max-w-full break-words space-y-2">
 							<div className="flex items-center gap-3 px-4 py-3 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-sm">
-								<Loader size={14} className="text-[#FF4D00]" />
+								<Loader className="text-[#FF4D00]" size={14} />
 								<Shimmer className="font-mono text-[10px] tracking-[0.2em] uppercase text-neutral-500 dark:text-neutral-400">
 									SYSTEM_EXECUTING_WORKFLOW
 								</Shimmer>
