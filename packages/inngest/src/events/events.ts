@@ -8,6 +8,8 @@ export const visionArchiveRequestedEvent = "vision.archive.requested" as const;
 export const visionCleanupRequestedEvent = "vision.cleanup.requested" as const;
 export const brandIntelligenceSyncEvent =
 	"brand.intelligence.sync_requested" as const;
+export const brandKnowledgeTextAddedEvent =
+	"brand.knowledge.text_added" as const;
 
 export const brandKnowledgeClassificationSchema = z.enum([
 	"CORE_BRAND_MARK",
@@ -35,6 +37,17 @@ export const brandIntelligenceSyncSchema = z.object({
 });
 
 export type BrandIntelligenceSync = z.infer<typeof brandIntelligenceSyncSchema>;
+
+export const brandKnowledgeTextAddedSchema = z.object({
+	workspaceId: z.string(),
+	text: z.string(),
+	category: z.string().optional(),
+	metadata: z.record(z.string(), z.any()).optional(),
+});
+
+export type BrandKnowledgeTextAdded = z.infer<
+	typeof brandKnowledgeTextAddedSchema
+>;
 
 export const brandVisionSyncSchema = z.object({
 	workspaceId: z.string(),

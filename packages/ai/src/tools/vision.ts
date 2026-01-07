@@ -1,15 +1,9 @@
 import { list } from "@vercel/blob";
 import { z } from "zod";
-import {
-	htmlGeneratorInputSchema,
-	layoutDesignerInputSchema,
-} from "../schemas/layout";
+import { htmlGeneratorInputSchema } from "../schemas/layout";
 import { canvasToolOutputSchema } from "../schemas/tool-output";
 import type { backgroundRemovalWorkflow } from "../workflows/background-removal";
-import type {
-	htmlGeneratorWorkflow,
-	layoutDesignerWorkflow,
-} from "../workflows/layout";
+import type { htmlGeneratorWorkflow } from "../workflows/layout";
 import type { objectIsolationWorkflow } from "../workflows/object-isolation";
 import type { visionAnalysisWorkflow } from "../workflows/vision-analysis";
 import type {
@@ -382,16 +376,5 @@ export const htmlGeneratorTool = createTool({
 	execute: async ({ context }) => {
 		const { htmlGeneratorWorkflow } = await import("../workflows/layout");
 		return htmlGeneratorWorkflow.run(context as any);
-	},
-});
-
-export const layoutDesignerTool = createTool({
-	id: "layoutDesigner",
-	description:
-		"Create detailed layout plans with sections, KPIs, and testing checklist",
-	inputSchema: layoutDesignerInputSchema,
-	execute: async ({ context }) => {
-		const { layoutDesignerWorkflow } = await import("../workflows/layout");
-		return layoutDesignerWorkflow.run(context as any);
 	},
 });

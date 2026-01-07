@@ -35,37 +35,3 @@ export const htmlGeneratorOutputSchema = z.object({
 	components: z.array(z.string()),
 	rationale: z.string(),
 });
-
-export const layoutDesignerInputSchema = z.object({
-	projectType: z.enum([
-		"landing-page",
-		"email-campaign",
-		"presentation-deck",
-		"poster-design",
-		"flyer",
-		"social-media-graphic",
-		"dashboard-ui",
-	]),
-	goals: z.array(z.string()).min(1),
-	targetAudience: z.string().default("general"),
-	brandVoice: z.string().optional(),
-	platforms: z.array(z.string()).default(["web"]),
-});
-
-export const layoutDesignerOutputSchema = z.object({
-	composition: z.array(
-		z.object({
-			elementName: z
-				.string()
-				.describe("e.g., Headline, Hero Image, CTA, Disclaimer"),
-			role: z.string().describe("The strategic purpose of this element"),
-			visualPriority: z.enum(["primary", "secondary", "tertiary"]),
-			contentGuidelines: z.array(z.string()),
-			suggestedStyling: z
-				.string()
-				.describe("Typography or visual style recommendations"),
-		}),
-	),
-	strategyRationale: z.string(),
-	checklist: z.array(z.string()).describe("QA or design verification steps"),
-});

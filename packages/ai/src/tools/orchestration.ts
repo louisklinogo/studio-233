@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTool } from "./factory";
 
-const AGENT_IDS = ["vision", "motion", "insight", "batch"] as const;
+const AGENT_IDS = ["vision", "motion", "insight", "visual-scout"] as const;
 type AgentId = (typeof AGENT_IDS)[number];
 
 const agentAliasMap: Record<string, AgentId> = {
@@ -16,8 +16,11 @@ const agentAliasMap: Record<string, AgentId> = {
 	"insight-researcher": "insight",
 	research: "insight",
 	researcher: "insight",
-	batch: "batch",
-	"batch ops": "batch",
+	"visual-scout": "visual-scout",
+	"visual scout": "visual-scout",
+	browser: "visual-scout",
+	"agentic-browser": "visual-scout",
+	scout: "visual-scout",
 };
 
 const agentSchema = z

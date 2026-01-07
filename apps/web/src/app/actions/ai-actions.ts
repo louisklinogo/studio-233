@@ -12,7 +12,7 @@ const AGENT_LABELS: Record<AgentKey, string> = {
 	vision: "Vision Forge",
 	motion: "Motion Director",
 	insight: "Insight Researcher",
-	batch: "Batch Ops",
+	"visual-scout": "Visual Scout",
 };
 
 async function callAgent(
@@ -75,12 +75,12 @@ export const runInsightResearcher = (input: {
 		resourceId: input.resourceId,
 	});
 
-export const runBatchOps = (input: {
+export const runVisualScout = (input: {
 	brief: string;
 	threadId?: string;
 	resourceId?: string;
 }) =>
-	callAgent("batch", {
+	callAgent("visual-scout", {
 		prompt: input.brief,
 		threadId: input.threadId,
 		resourceId: input.resourceId,

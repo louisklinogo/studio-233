@@ -34,6 +34,8 @@ export const GEMINI_IMAGE_MODEL = "gemini-3-pro-image-preview";
 export const GEMINI_TEXT_MODEL = "gemini-3-pro-preview";
 export const GEMINI_PRO_MODEL = "gemini-3-pro-preview";
 export const GEMINI_FLASH_MODEL = "gemini-3-flash-preview";
+export const GEMINI_COMPUTER_USE_MODEL =
+	"gemini-2.5-computer-use-preview-10-2025";
 
 // Legacy alias for backward compatibility
 export const IMAGE_GEN_MODEL = GEMINI_IMAGE_MODEL;

@@ -2,6 +2,7 @@ import { EventSchemas, Inngest } from "inngest";
 import type {
 	BrandIntelligenceSync,
 	BrandKnowledgeIngested,
+	BrandKnowledgeTextAdded,
 	BrandVisionSync,
 	ProcessFashionItem,
 	VisionArchiveRequested,
@@ -12,6 +13,7 @@ import type {
 type EventMap = {
 	"studio.workflow.requested": { data: WorkflowRequested };
 	"brand.knowledge.ingested": { data: BrandKnowledgeIngested };
+	"brand.knowledge.text_added": { data: BrandKnowledgeTextAdded };
 	"brand.asset.vision_sync": { data: BrandVisionSync };
 	"brand.intelligence.sync_requested": { data: BrandIntelligenceSync };
 	"studio/process-fashion-item": { data: ProcessFashionItem };

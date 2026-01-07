@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type {
-	imageAnalyzerWorkflow,
 	moodboardWorkflow,
+	pixelDataExtractorWorkflow,
 	siteExtractorWorkflow,
 	webSearchWorkflow,
 } from "../workflows/research";
@@ -60,8 +60,8 @@ export const siteExtractorTool = createTool({
 	},
 });
 
-export const imageAnalyzerTool = createTool({
-	id: "imageAnalyzer",
+export const pixelDataExtractorTool = createTool({
+	id: "pixelDataExtractor",
 	description:
 		"Extract luminance, contrast, and dominant colors from inspiration imagery",
 	inputSchema: z.preprocess(
@@ -80,15 +80,114 @@ export const imageAnalyzerTool = createTool({
 		}),
 	),
 	execute: async ({ context }) => {
-		const { imageAnalyzerWorkflow } = await import("../workflows/research");
-		return imageAnalyzerWorkflow.run(context);
+		const { pixelDataExtractorWorkflow } = await import(
+			"../workflows/research"
+		);
+		return pixelDataExtractorWorkflow.run(context);
+	},
+});
+
+export const browserNavigateTool = createTool({
+	id: "browserNavigate",
+	description: "Navigate to a specific URL.",
+	inputSchema: z.object({
+		url: z.string().url().describe("The URL to visit"),
+	}),
+	execute: async ({ context, runtimeContext }) => {
+		const { browserAuditWorkflow } = await import("../workflows/research");
+		const sessionId = (runtimeContext as any)?.sessionId;
+		return browserAuditWorkflow.run({
+			...context,
+			task: "Navigate and capture",
+			action: "navigate",
+			sessionId,
+		} as any);
+	},
+});
+
+export const browserClickTool = createTool({
+	id: "browserClick",
+	description: "Click at specific normalized coordinates (0-1000).",
+	inputSchema: z.object({
+		x: z.number().min(0).max(1000).describe("X coordinate (0-1000)"),
+		y: z.number().min(0).max(1000).describe("Y coordinate (0-1000)"),
+	}),
+	execute: async ({ context, runtimeContext }) => {
+		const { browserAuditWorkflow } = await import("../workflows/research");
+		const sessionId = (runtimeContext as any)?.sessionId;
+		return browserAuditWorkflow.run({
+			...context,
+			task: "Click at coordinates",
+			action: "click",
+			sessionId,
+		} as any);
+	},
+});
+
+export const browserTypeTool = createTool({
+	id: "browserType",
+	description: "Type text at specific normalized coordinates (0-1000).",
+	inputSchema: z.object({
+		x: z.number().min(0).max(1000),
+		y: z.number().min(0).max(1000),
+		text: z.string().describe("The text to type"),
+		pressEnter: z.boolean().default(true),
+	}),
+	execute: async ({ context, runtimeContext }) => {
+		const { browserAuditWorkflow } = await import("../workflows/research");
+		const sessionId = (runtimeContext as any)?.sessionId;
+		return browserAuditWorkflow.run({
+			...context,
+			task: `Type text: ${context.text}`,
+			action: "type",
+			sessionId,
+		} as any);
+	},
+});
+
+export const browserScrollTool = createTool({
+	id: "browserScroll",
+	description: "Scroll the page in a specific direction.",
+	inputSchema: z.object({
+		direction: z.enum(["up", "down", "left", "right"]),
+		magnitude: z.number().optional().default(500),
+	}),
+	execute: async ({ context, runtimeContext }) => {
+		const { browserAuditWorkflow } = await import("../workflows/research");
+		const sessionId = (runtimeContext as any)?.sessionId;
+		return browserAuditWorkflow.run({
+			...context,
+			task: `Scroll ${context.direction}`,
+			action: "scroll",
+			sessionId,
+		} as any);
+	},
+});
+
+export const browserWaitTool = createTool({
+	id: "browserWait",
+	description: "Wait for a specific duration in seconds.",
+	inputSchema: z.object({
+		seconds: z.number().min(1).max(10).default(2),
+	}),
+	execute: async ({ context, runtimeContext }) => {
+		const { browserAuditWorkflow } = await import("../workflows/research");
+		const sessionId = (runtimeContext as any)?.sessionId;
+		return browserAuditWorkflow.run({
+			...context,
+			task: `Wait ${context.seconds}s`,
+			action: "wait",
+			sessionId,
+		} as any);
 	},
 });
 
 export const moodboardTool = createTool({
 	id: "moodboard",
+
 	description:
 		"Summarize research references into a structured creative direction",
+
 	inputSchema: z.preprocess(
 		(val: any) => {
 			if (!val || typeof val !== "object") return val;
@@ -96,18 +195,22 @@ export const moodboardTool = createTool({
 			const result = { ...val };
 
 			// Resiliency: Map 'title' or 'description' to 'goal' if missing
+
 			if (!result.goal) {
 				result.goal =
 					result.title || result.description || "Synthesize creative direction";
 			}
 
 			// Resiliency: Handle objects in references array
+
 			if (Array.isArray(result.references)) {
 				result.references = result.references.map((ref: any) => {
 					if (typeof ref === "object" && ref !== null) {
 						// Flatten object to string: "Title: Description" or just "Description"
+
 						return `${ref.title ? `${ref.title}: ` : ""}${ref.description || ref.text || ref.content || JSON.stringify(ref)}`;
 					}
+
 					return String(ref);
 				});
 			} else if (typeof result.references === "string") {
@@ -116,14 +219,19 @@ export const moodboardTool = createTool({
 
 			return result;
 		},
+
 		z.object({
 			references: z.array(z.string()).min(1),
+
 			goal: z.string().min(5),
+
 			format: z.enum(["markdown", "json"]).default("markdown"),
 		}),
 	),
+
 	execute: async ({ context }) => {
 		const { moodboardWorkflow } = await import("../workflows/research");
+
 		return moodboardWorkflow.run(context);
 	},
 });

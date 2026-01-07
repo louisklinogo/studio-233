@@ -1,15 +1,22 @@
 import { tool as createAiTool, type ToolExecutionOptions } from "ai";
 import { z } from "zod";
-import { batchJobPlannerTool } from "../tools/batch";
-import { consultBrandGuidelinesTool } from "../tools/brand";
+import {
+	consultBrandGuidelinesTool,
+	updateBrandMemoryTool,
+} from "../tools/brand";
 import { canvasTextToImageTool } from "../tools/canvas";
 import type { ToolDefinition } from "../tools/factory";
 import { delegateToAgentTool } from "../tools/orchestration";
 import { proposePlanTool } from "../tools/planning";
 import { renderHtmlTool } from "../tools/render-html";
 import {
-	imageAnalyzerTool,
+	browserClickTool,
+	browserNavigateTool,
+	browserScrollTool,
+	browserTypeTool,
+	browserWaitTool,
 	moodboardTool,
+	pixelDataExtractorTool,
 	siteExtractorTool,
 	webSearchTool,
 } from "../tools/research";
@@ -26,7 +33,6 @@ import {
 	htmlToCanvasTool,
 	imageReframeTool,
 	imageUpscaleTool,
-	layoutDesignerTool,
 	objectIsolationTool,
 	paletteExtractorTool,
 	storyboardTool,
@@ -51,17 +57,21 @@ const TOOL_DEFINITIONS = {
 	htmlToCanvas: htmlToCanvasTool,
 	renderHtml: renderHtmlTool,
 	htmlGenerator: htmlGeneratorTool,
-	layoutDesigner: layoutDesignerTool,
 	textToVideo: textToVideoTool,
 	videoStitch: videoStitchTool,
 	videoGif: videoGifTool,
 	captionOverlay: captionOverlayTool,
 	webSearch: webSearchTool,
 	siteExtractor: siteExtractorTool,
-	imageAnalyzer: imageAnalyzerTool,
+	pixelDataExtractor: pixelDataExtractorTool,
 	moodboard: moodboardTool,
-	batchPlanner: batchJobPlannerTool,
+	browserNavigate: browserNavigateTool,
+	browserClick: browserClickTool,
+	browserType: browserTypeTool,
+	browserScroll: browserScrollTool,
+	browserWait: browserWaitTool,
 	consultBrandGuidelines: consultBrandGuidelinesTool,
+	updateBrandMemory: updateBrandMemoryTool,
 } as const;
 
 // Re-export TOOL_DEFINITIONS for use in buildToolset
@@ -128,6 +138,8 @@ function wrapTool(
 					context: parsed.data,
 					runtimeContext: {
 						...flattenedContext,
+						workspaceId:
+							flattenedContext.workspaceId || injectedContext?.workspaceId,
 						toolCallId: toolCallOptions?.toolCallId,
 						messages: toolCallOptions?.messages,
 						abortSignal: toolCallOptions?.abortSignal,

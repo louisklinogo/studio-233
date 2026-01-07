@@ -1,12 +1,10 @@
 import type { AgentType } from "../model-config";
 import {
-	BATCH_OPS_PROMPT,
-	BREADTH_SCOUT_PROMPT,
-	DEEP_DIVE_ANALYST_PROMPT,
 	INSIGHT_RESEARCHER_PROMPT,
 	MOTION_DIRECTOR_PROMPT,
 	ORCHESTRATOR_PROMPT,
 	VISION_FORGE_PROMPT,
+	VISUAL_SCOUT_PROMPT,
 } from "../prompts";
 import type { ToolId } from "./tools";
 
@@ -15,7 +13,7 @@ export type AgentKey =
 	| "vision"
 	| "motion"
 	| "insight"
-	| "batch";
+	| "visual-scout";
 
 export type AgentDefinition = {
 	key: AgentKey;
@@ -47,8 +45,8 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 			"textToVideo",
 			"captionOverlay",
 			"htmlGenerator",
-			"layoutDesigner",
 			"consultBrandGuidelines",
+			"updateBrandMemory",
 		],
 	},
 	vision: {
@@ -69,8 +67,8 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 			"htmlToCanvas",
 			"renderHtml",
 			"htmlGenerator",
-			"layoutDesigner",
 			"consultBrandGuidelines",
+			"updateBrandMemory",
 		],
 	},
 	motion: {
@@ -85,14 +83,27 @@ export const AGENT_DEFINITIONS: Record<AgentKey, AgentDefinition> = {
 		name: "Insight Researcher",
 		prompt: INSIGHT_RESEARCHER_PROMPT,
 		model: "research",
-		tools: ["webSearch", "siteExtractor", "imageAnalyzer", "moodboard"],
+		tools: [
+			"webSearch",
+			"siteExtractor",
+			"pixelDataExtractor",
+			"moodboard",
+			"updateBrandMemory",
+		],
 	},
-	batch: {
-		key: "batch",
-		name: "Batch Ops",
-		prompt: BATCH_OPS_PROMPT,
-		model: "batch",
-		tools: ["batchPlanner"],
+	"visual-scout": {
+		key: "visual-scout",
+		name: "Visual Scout",
+		prompt: VISUAL_SCOUT_PROMPT,
+		model: "storyboard", // Using storyboard config for higher temperature/creativity
+		tools: [
+			"browserNavigate",
+			"browserClick",
+			"browserType",
+			"browserScroll",
+			"browserWait",
+			"pixelDataExtractor",
+		],
 	},
 };
 

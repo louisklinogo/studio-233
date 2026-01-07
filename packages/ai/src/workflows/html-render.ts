@@ -1,14 +1,21 @@
 import chromiumMin from "@sparticuz/chromium-min";
 import { type Browser, chromium, type Page } from "playwright-core";
 import sharp from "sharp";
+import { Steel } from "steel-sdk";
 import { z } from "zod";
 
+import { getEnv } from "../config";
 import { uploadImageBufferToBlob } from "../utils/blob-storage";
 import { logger } from "../utils/logger";
 
+const env = getEnv();
+const steel = env.steelApiKey
+	? new Steel({ steelAPIKey: env.steelApiKey })
+	: null;
+
 const MAX_HTML_LENGTH = 50_000;
 const MAX_CSS_LENGTH = 50_000;
-const RENDER_TIMEOUT_MS = 15_000;
+const RENDER_TIMEOUT_MS = 30_000;
 const RENDER_LOG_PREFIX = "html-render";
 
 const htmlRenderInputSchema = z.object({
@@ -31,20 +38,43 @@ export type HtmlRenderInput = z.infer<typeof htmlRenderInputSchema>;
 export type HtmlRenderResult = z.infer<typeof htmlRenderOutputSchema>;
 
 let browser: Browser | null = null;
+let currentSessionId: string | null = null;
 
 async function getBrowser() {
 	if (browser) return browser;
+
+	// Senior Architecture: Hybrid Browser Discovery
+	if (steel && env.steelApiKey) {
+		logger.info(`${RENDER_LOG_PREFIX}.connecting_cloud`, {
+			provider: "steel.dev",
+		});
+
+		const session = await steel.sessions.create({
+			dimensions: { width: 1280, height: 800 },
+			blockAds: true,
+		});
+
+		currentSessionId = session.id;
+		browser = await chromium.connectOverCDP(
+			`wss://connect.steel.dev?apiKey=${env.steelApiKey}&sessionId=${currentSessionId}`,
+		);
+		return browser;
+	}
 
 	const isProduction =
 		process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
 	if (isProduction) {
+		// Fallback to sparticuz (requires local binaries or hosted .br files)
+		const executablePath = await chromiumMin.executablePath();
+
 		browser = await chromium.launch({
 			args: chromiumMin.args,
-			executablePath: await chromiumMin.executablePath(),
+			executablePath,
 			headless: true,
 		});
 	} else {
+		// Dev mode: requires 'npx playwright install chromium'
 		browser = await chromium.launch({ headless: true });
 	}
 
@@ -85,19 +115,31 @@ export async function runHtmlRenderWorkflow(
 	const pageHtml = `data:text/html;base64,${Buffer.from(doc, "utf8").toString("base64")}`;
 
 	const browserInstance = await getBrowser();
-	const page: Page = await browserInstance.newPage({
-		viewport: { width, height },
-		deviceScaleFactor: scale,
-	});
+
+	// Ensure we use the correct context
+	const context =
+		browserInstance.contexts().length > 0
+			? browserInstance.contexts()[0]
+			: await browserInstance.newContext({
+					viewport: { width, height },
+					deviceScaleFactor: scale,
+				});
+
+	const page: Page =
+		context.pages().length > 0 ? context.pages()[0] : await context.newPage();
 
 	try {
 		const startedAt = Date.now();
-		// Block non-document requests to avoid external fetches.
-		await page.route("**/*", (route) => {
-			const type = route.request().resourceType();
-			if (type === "document") return route.continue();
-			return route.abort();
-		});
+
+		// Only set up routing if not connected over CDP (CDP sessions are fresh)
+		if (!currentSessionId) {
+			// Block non-document requests to avoid external fetches.
+			await page.route("**/*", (route) => {
+				const type = route.request().resourceType();
+				if (type === "document") return route.continue();
+				return route.abort();
+			});
+		}
 
 		await page.goto(pageHtml, {
 			waitUntil: "load",
@@ -127,7 +169,16 @@ export async function runHtmlRenderWorkflow(
 			bytes: screenshot.byteLength,
 		};
 	} finally {
+		// Close page but keep browser/session for next render if it's a singleton?
+		// Actually, serverless usually wants fresh runs.
 		await page.close();
+
+		if (currentSessionId && steel) {
+			await browserInstance.close();
+			await steel.sessions.release(currentSessionId);
+			browser = null;
+			currentSessionId = null;
+		}
 	}
 }
 

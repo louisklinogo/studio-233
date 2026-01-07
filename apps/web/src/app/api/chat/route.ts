@@ -472,7 +472,7 @@ export async function POST(req: Request) {
 					latestImageUrl,
 					latestImageUrls,
 					threadId: currentThreadId,
-					workspaceId,
+					workspaceId, // CRITICAL: This ensures it is in every tool runtimeContext
 					runtimeContext: {
 						runAgent: generateAgentResponse,
 						inngest,

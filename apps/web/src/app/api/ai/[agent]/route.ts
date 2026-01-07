@@ -11,7 +11,6 @@ const AGENT_MAP: Record<string, AgentKey> = {
 	vision: "vision",
 	motion: "motion",
 	insight: "insight",
-	batch: "batch",
 };
 
 type Payload = {

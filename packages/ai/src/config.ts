@@ -11,6 +11,7 @@ type Env = {
 	ffmpegPath?: string;
 	tavilyBaseUrl: string;
 	exaBaseUrl: string;
+	steelApiKey?: string;
 	blobHostname?: string;
 	kvRestApiUrl?: string;
 	kvRestApiToken?: string;
@@ -55,6 +56,7 @@ export function getEnv(): Env {
 		tavilyBaseUrl:
 			process.env.TAVILY_API_BASE_URL ?? "https://api.tavily.com/search",
 		exaBaseUrl: process.env.EXA_API_BASE_URL ?? "https://api.exa.ai/search",
+		steelApiKey: process.env.STEEL_API_KEY,
 		blobHostname: process.env.BLOB_HOSTNAME,
 		kvRestApiUrl: process.env.KV_REST_API_URL,
 		kvRestApiToken: process.env.KV_REST_API_TOKEN,

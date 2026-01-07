@@ -6,7 +6,7 @@ import { Document } from "llamaindex";
 import * as os from "os";
 import * as path from "path";
 
-import { MODEL_CONFIG } from "./model-config";
+import { GEMINI_PRO_MODEL, MODEL_CONFIG } from "./model-config";
 import { BrandDNA, BrandDNASchema } from "./schemas/brand-dna";
 import { logger } from "./utils/logger";
 
@@ -269,6 +269,100 @@ async function processWithGeminiVision(
 	}
 }
 
+async function processWithTextOnly(
+	options: MultimodalIngestionOptions,
+): Promise<MultimodalIngestionResult | null> {
+	const apiKey =
+		options.googleApiKey ||
+		process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+		process.env.GEMINI_API_KEY;
+	if (!apiKey) return null;
+
+	let filePath: string | null = null;
+	try {
+		filePath = await downloadFile(options.url, options.filename);
+
+		// Dynamic import to avoid strict dependency if not needed elsewhere
+		const { PDFReader } = await import("@llamaindex/readers/pdf");
+		const reader = new PDFReader();
+		const docs = await reader.loadData(filePath);
+		const fullText = docs.map((d) => d.text).join("\n\n");
+
+		if (fullText.length < 50) return null; // Too little text
+
+		const google = createGoogleGenerativeAI({ apiKey });
+		const model = google(GEMINI_PRO_MODEL);
+
+		const result = await generateText({
+			model,
+			messages: [
+				{
+					role: "system",
+					content:
+						"You are a Brand Strategist. Extract structured Brand DNA from the following text content of a brand document.",
+				},
+				{
+					role: "user",
+					content: `
+                        DOCUMENT TEXT:
+                        ${fullText.slice(0, 30000)} // Truncate to avoid context limits
+
+                        Analyze the text and extract:
+                        - Colors (look for hex codes or color names)
+                        - Fonts (look for typography sections)
+                        - Logos/Slogans
+                        - Visual Style descriptions
+                        - Tone of Voice
+
+                        Return ONLY a valid JSON object matching this schema:
+                        {
+                            "coreIdentity": { "colors": ["#hex"], "fonts": [{"family": "", "usage": ""}], "logos": [""], "slogans": [""] },
+                            "visualStyle": { "layoutPrinciples": [""], "imageryStyle": [""], "photographyGuidelines": [""], "vibe": "" },
+                            "semanticDNA": { "toneOfVoice": "", "copywritingGuidelines": [""] }
+                        }
+                    `,
+				},
+			],
+		});
+
+		const cleanedText = result.text.replace(/```json\n?|\n?```/g, "").trim();
+		const rawDna = JSON.parse(cleanedText);
+		const parsed = BrandDNASchema.safeParse(rawDna);
+
+		if (!parsed.success) {
+			logger.warn("rag.text_fallback_invalid_schema", {
+				error: parsed.error,
+			});
+			return null;
+		}
+
+		return {
+			brandDNA: parsed.data,
+			score: 0.6, // Text-only is decent but misses visual cues
+			path: "text-only-fallback" as any, // Cast to satisfy type or update type
+			metadata: {
+				charCount: fullText.length,
+			},
+		};
+	} catch (error) {
+		logger.error("rag.text_fallback_error", {
+			error: error instanceof Error ? error.message : String(error),
+			url: options.url,
+		});
+		return null;
+	} finally {
+		if (filePath) {
+			try {
+				const dir = path.dirname(filePath);
+				await fs.unlink(filePath);
+				await fs.rm(dir, { recursive: true, force: true });
+			} catch (e) {
+				// Ignore cleanup errors
+			}
+		}
+	}
+}
+
 export function calculateQualityScore(dna: BrandDNA): number {
 	let score = 0;
 	let totalFields = 0;
@@ -305,22 +399,27 @@ export async function multimodalIngestionService(
 	let bestResult: MultimodalIngestionResult | null = null;
 
 	// Step 1: Attempt LlamaParse (High Fidelity)
-	const llamaResult = await processWithLlamaParse(options);
-	if (llamaResult) {
-		const qualityScore = calculateQualityScore(llamaResult.brandDNA);
-		llamaResult.score = qualityScore;
-		bestResult = llamaResult;
+	if (options.llamaParseApiKey) {
+		const llamaResult = await processWithLlamaParse(options);
+		if (llamaResult) {
+			const qualityScore = calculateQualityScore(llamaResult.brandDNA);
+			llamaResult.score = qualityScore;
+			bestResult = llamaResult;
 
-		if (qualityScore >= 0.5) {
-			return llamaResult;
+			if (qualityScore >= 0.5) {
+				return llamaResult;
+			}
+			logger.info("rag.llamaparse_quality_low", {
+				score: qualityScore,
+				url: options.url,
+			});
 		}
-		logger.info("rag.llamaparse_quality_low", {
-			score: qualityScore,
-			url: options.url,
-		});
+	} else {
+		logger.info("rag.llamaparse_skipped_no_key");
 	}
 
 	// Step 2: Visual Fallback (Gemini Vision)
+	// Only run if LlamaParse failed or wasn't excellent
 	const geminiResult = await processWithGeminiVision(options);
 	if (geminiResult) {
 		const qualityScore = calculateQualityScore(geminiResult.brandDNA);
@@ -330,12 +429,28 @@ export async function multimodalIngestionService(
 			bestResult = geminiResult;
 		}
 
-		if (qualityScore >= 0.2) {
+		if (qualityScore >= 0.3) {
 			return geminiResult;
+		}
+	} else {
+		logger.info("rag.gemini_vision_failed_or_skipped");
+	}
+
+	// Step 3: Text Fallback (Pure PDF Parsing)
+	// Run if everything else failed
+	if (!bestResult || bestResult.score < 0.2) {
+		const textResult = await processWithTextOnly(options);
+		if (textResult) {
+			const qualityScore = calculateQualityScore(textResult.brandDNA);
+			textResult.score = qualityScore;
+
+			if (!bestResult || qualityScore > bestResult.score) {
+				bestResult = textResult;
+			}
 		}
 	}
 
-	// Step 3: Final fallback - return the best thing we found if it has ANY content
+	// Step 4: Final fallback - return the best thing we found if it has ANY content
 	if (bestResult && bestResult.score > 0) {
 		logger.warn("rag.ingestion_returning_low_quality_result", {
 			score: bestResult.score,
@@ -344,7 +459,14 @@ export async function multimodalIngestionService(
 		return bestResult;
 	}
 
+	// Logging to help user debug why
+	logger.error("rag.ingestion_failed_all_strategies", {
+		url: options.url,
+		hasLlamaKey: !!options.llamaParseApiKey,
+		hasGoogleKey: !!options.googleApiKey,
+	});
+
 	throw new Error(
-		"Multimodal ingestion failed: Unable to extract sufficient Brand DNA.",
+		"Multimodal ingestion failed: Unable to extract sufficient Brand DNA. Please check your API keys (LlamaCloud/Google) or ensure the document contains extractable brand text.",
 	);
 }

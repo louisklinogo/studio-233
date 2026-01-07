@@ -83,13 +83,18 @@ function buildMessages(options: AgentRunOptions): any[] {
 	throw new Error("Either prompt or messages are required");
 }
 
-function getModel(agentKey: AgentKey, customApiKey?: string) {
+function getModel(
+	agentKey: AgentKey,
+	customApiKey?: string,
+	injectedContext?: any,
+) {
 	const agent = AGENT_DEFINITIONS[agentKey];
 	const modelConfig = getModelConfig(agent.model);
 
 	// Create runtime context with recursive agent capability
 	const runtimeContext = {
 		runAgent: generateAgentResponse,
+		...injectedContext,
 	};
 
 	const key = customApiKey || env.googleApiKey;
@@ -317,7 +322,8 @@ export async function generateAgentResponse(
 		throw new Error(`Unknown agent key: ${agentKey}`);
 	}
 
-	const model = getModel(agentKey, options.googleApiKey);
+	const runtimeContext = (options.metadata?.context as any)?.runtimeContext;
+	const model = getModel(agentKey, options.googleApiKey, runtimeContext);
 	const rawMessages = buildMessages(options);
 	const messages = await hardenImageMessages(rawMessages);
 	const latestImageUrl =
@@ -491,7 +497,8 @@ export async function streamAgentResponse(
 		throw new Error(`Unknown agent key: ${agentKey}`);
 	}
 
-	const model = getModel(agentKey, options.googleApiKey);
+	const runtimeContext = (options.metadata?.context as any)?.runtimeContext;
+	const model = getModel(agentKey, options.googleApiKey, runtimeContext);
 	const rawMessages = buildMessages(options);
 	const messages = await hardenImageMessages(rawMessages);
 	const maxSteps = resolveStepLimit(agentKey, options.maxSteps);

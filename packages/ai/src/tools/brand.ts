@@ -36,3 +36,45 @@ export const consultBrandGuidelinesTool = createTool({
 		};
 	},
 });
+
+export const updateBrandMemoryTool = createTool({
+	id: "updateBrandMemory",
+	description:
+		"Save a design preference, brand rule, or visual constraint learned during the session. Use this when the user expresses a preference they want the AI to remember (e.g., 'I always prefer minimalist layouts').",
+	inputSchema: z.object({
+		rule: z
+			.string()
+			.describe(
+				"The specific rule or preference to remember (e.g., 'Never use rounded corners on buttons')",
+			),
+		category: z
+			.enum(["typography", "color", "layout", "motion", "tone", "general"])
+			.default("general")
+			.describe("The category of the brand rule"),
+		workspaceId: z
+			.string()
+			.describe("The workspace ID to save the guideline for"),
+	}),
+	execute: async ({ context, runtimeContext }) => {
+		const inngest = (runtimeContext as any)?.inngest;
+
+		if (!inngest) {
+			// Fallback: If Inngest is missing (e.g. testing), we can't background it safely without setup
+			throw new Error("Inngest client not available in runtime context");
+		}
+
+		await inngest.send({
+			name: "brand.knowledge.text_added",
+			data: {
+				workspaceId: context.workspaceId,
+				text: context.rule,
+				category: context.category,
+			},
+		});
+
+		return {
+			message: "Preference queued for brand memory indexing.",
+			status: "success",
+		};
+	},
+});

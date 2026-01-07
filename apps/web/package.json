@@ -92,7 +92,7 @@
 		"gif.js": "^0.2.0",
 		"gsap": "^3.12.7",
 		"idb": "^8.0.3",
-		"import-in-the-middle": "^2.0.1",
+		"import-in-the-middle": "2.0.0",
 		"inngest": "^3.45.1",
 		"input-otp": "^1.4.2",
 		"jotai": "^2.15.2",

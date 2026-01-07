@@ -1,13 +1,22 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
+import { type Browser, chromium } from "playwright-core";
 import sharp from "sharp";
+import { Steel } from "steel-sdk";
 import { z } from "zod";
 
 import { getEnv } from "../config";
 import { GEMINI_FLASH_MODEL } from "../model-config";
+import { uploadImageBufferToBlob } from "../utils/blob-storage";
+import { logger } from "../utils/logger";
 import { withDevTools } from "../utils/model";
 
 const env = getEnv();
+
+// Initialize Steel client
+const steel = env.steelApiKey
+	? new Steel({ steelAPIKey: env.steelApiKey })
+	: null;
 
 async function fetchJson(url: string) {
 	try {
@@ -193,22 +202,26 @@ export const siteExtractorWorkflow = {
 	run: runSiteExtractorWorkflow,
 };
 
-export const imageAnalyzerInputSchema = z.object({
+export const pixelDataExtractorInputSchema = z.object({
 	imageUrl: z.string().url(),
 });
 
-export const imageAnalyzerOutputSchema = z.object({
+export const pixelDataExtractorOutputSchema = z.object({
 	averageLuminance: z.number(),
 	contrast: z.number(),
 	dominant: z.array(z.string()),
 });
 
-export type ImageAnalyzerInput = z.infer<typeof imageAnalyzerInputSchema>;
-export type ImageAnalyzerResult = z.infer<typeof imageAnalyzerOutputSchema>;
+export type PixelDataExtractorInput = z.infer<
+	typeof pixelDataExtractorInputSchema
+>;
+export type PixelDataExtractorResult = z.infer<
+	typeof pixelDataExtractorOutputSchema
+>;
 
-export async function runImageAnalyzerWorkflow(
-	input: ImageAnalyzerInput,
-): Promise<ImageAnalyzerResult> {
+export async function runPixelDataExtractorWorkflow(
+	input: PixelDataExtractorInput,
+): Promise<PixelDataExtractorResult> {
 	const response = await fetch(input.imageUrl);
 	if (!response.ok) throw new Error("Unable to download image");
 	const buffer = Buffer.from(await response.arrayBuffer());
@@ -239,11 +252,11 @@ export async function runImageAnalyzerWorkflow(
 	};
 }
 
-export const imageAnalyzerWorkflow = {
-	id: "image-analyzer",
-	inputSchema: imageAnalyzerInputSchema,
-	outputSchema: imageAnalyzerOutputSchema,
-	run: runImageAnalyzerWorkflow,
+export const pixelDataExtractorWorkflow = {
+	id: "pixel-data-extractor",
+	inputSchema: pixelDataExtractorInputSchema,
+	outputSchema: pixelDataExtractorOutputSchema,
+	run: runPixelDataExtractorWorkflow,
 };
 
 export const moodboardInputSchema = z.object({
@@ -306,4 +319,204 @@ export const moodboardWorkflow = {
 	inputSchema: moodboardInputSchema,
 	outputSchema: moodboardOutputSchema,
 	run: runMoodboardWorkflow,
+};
+
+export const browserAuditInputSchema = z.object({
+	url: z.string().url(),
+	task: z.string().min(5),
+	maxWaitMs: z.number().optional().default(10000),
+});
+
+export const browserAuditOutputSchema = z.object({
+	analysis: z.string(),
+	screenshotUrl: z.string().url().optional(),
+	metadata: z.record(z.string(), z.any()),
+});
+
+export type BrowserAuditInput = z.infer<typeof browserAuditInputSchema> & {
+	action?: "navigate" | "click" | "type" | "scroll" | "wait";
+	x?: number;
+	y?: number;
+	text?: string;
+	pressEnter?: boolean;
+	direction?: "up" | "down" | "left" | "right";
+	magnitude?: number;
+	seconds?: number;
+	sessionId?: string; // Stateful session ID
+};
+
+export type BrowserAuditResult = z.infer<typeof browserAuditOutputSchema>;
+
+const VIEWPORT_WIDTH = 1280;
+const VIEWPORT_HEIGHT = 800;
+
+async function createSession() {
+	if (steel && env.steelApiKey) {
+		const session = await steel.sessions.create({
+			dimensions: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
+			solveCaptcha: true,
+			blockAds: true,
+		});
+		logger.info("research.browser.session_created", {
+			sessionId: session.id,
+			viewerUrl: session.sessionViewerUrl,
+		});
+		return session.id;
+	}
+	return null;
+}
+
+async function connectToSession(sessionId: string | null) {
+	if (sessionId && steel && env.steelApiKey) {
+		return await chromium.connectOverCDP(
+			`wss://connect.steel.dev?apiKey=${env.steelApiKey}&sessionId=${sessionId}`,
+		);
+	}
+
+	// Local fallback for dev/production without Steel
+	if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+		const { default: chromiumMin } = await import("@sparticuz/chromium-min");
+		const executablePath = await chromiumMin.executablePath();
+		return await chromium.launch({
+			executablePath,
+			args: chromiumMin.args,
+			headless: true,
+		});
+	}
+
+	return await chromium.launch({ headless: true });
+}
+
+export async function runBrowserAuditWorkflow(
+	input: BrowserAuditInput,
+): Promise<BrowserAuditResult> {
+	const { url, task, maxWaitMs, action = "navigate" } = input;
+
+	const denormalize = (val: number, max: number) =>
+		Math.round((val / 1000) * max);
+
+	let browser: Browser | null = null;
+	// 1. Resolve Session ID (Stateful)
+	let sessionId = input.sessionId || null;
+
+	try {
+		// If no session provided and we are in a mode that supports it, create one.
+		// Note: Local/Puppeteer fallback doesn't really support persistent IDs easily
+		// in this stateless lambda architecture without an external store,
+		// but Steel does via the API.
+		if (!sessionId && steel) {
+			sessionId = await createSession();
+		}
+
+		// 2. Connect
+		browser = await connectToSession(sessionId);
+
+		// Use existing context if connecting over CDP, otherwise create new
+		const context =
+			browser.contexts().length > 0
+				? browser.contexts()[0]
+				: await browser.newContext({
+						viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
+						userAgent:
+							"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Studio233/Agent",
+					});
+
+		const page =
+			context.pages().length > 0 ? context.pages()[0] : await context.newPage();
+
+		// 3. Execute Action
+		if (action === "navigate" && url) {
+			await page.goto(url, {
+				waitUntil: "networkidle",
+				timeout: maxWaitMs || 15000,
+			});
+		} else if (
+			action === "click" &&
+			input.x !== undefined &&
+			input.y !== undefined
+		) {
+			await page.mouse.click(
+				denormalize(input.x, VIEWPORT_WIDTH),
+				denormalize(input.y, VIEWPORT_HEIGHT),
+			);
+		} else if (
+			action === "type" &&
+			input.x !== undefined &&
+			input.y !== undefined &&
+			input.text
+		) {
+			const tx = denormalize(input.x, VIEWPORT_WIDTH);
+			const ty = denormalize(input.y, VIEWPORT_HEIGHT);
+			await page.mouse.click(tx, ty);
+			await page.keyboard.type(input.text);
+			if (input.pressEnter) await page.keyboard.press("Enter");
+		} else if (action === "scroll") {
+			const mag = input.magnitude || 500;
+			if (input.direction === "down") await page.mouse.wheel(0, mag);
+			else if (input.direction === "up") await page.mouse.wheel(0, -mag);
+			else if (input.direction === "right") await page.mouse.wheel(mag, 0);
+			else if (input.direction === "left") await page.mouse.wheel(-mag, 0);
+		} else if (action === "wait") {
+			await new Promise((r) => setTimeout(r, (input.seconds || 2) * 1000));
+		}
+
+		// 4. Capture State
+		const currentUrl = page.url();
+		const pageTitle = await page.title();
+		const innerText = await page.evaluate(() =>
+			document.body.innerText.slice(0, 10000),
+		);
+		const screenshot = await page.screenshot({ type: "png", fullPage: false });
+
+		// 5. Analysis via LLM
+		const google = createGoogleGenerativeAI({ apiKey: env.googleApiKey! });
+		const model = withDevTools(google(GEMINI_FLASH_MODEL));
+
+		const { text: analysis } = await generateText({
+			model,
+			prompt:
+				`You are a design auditor. Current site: ${currentUrl} ("${pageTitle}").
+			Action performed: ${action} ${task || ""}.
+			
+			PAGE CONTENT:
+			${innerText}
+			
+			Identify key visual elements, motifs, or data found after this step.`.trim(),
+		});
+
+		const screenshotUrl = await uploadImageBufferToBlob(screenshot, {
+			contentType: "image/png",
+			prefix: "research/audit",
+		});
+
+		// 6. Return Result with Session ID for Persistence
+		return {
+			analysis,
+			screenshotUrl,
+			metadata: {
+				title: pageTitle,
+				url: currentUrl,
+				action,
+				sessionId, // IMPORTANT: Return this so the agent can save it
+				auditedAt: new Date().toISOString(),
+			},
+		};
+	} finally {
+		// IMPORTANT: Do NOT close the browser/session if we are in Steel mode.
+		// We want it to persist for the next step.
+		// Only close if it's a local fallback or if explicitly requested (TODO: add close action)
+		if (browser && !steel) {
+			await browser.close();
+		} else if (browser && steel) {
+			// For Steel, we just disconnect the CDP client, but leave the session running.
+			await browser.close();
+		}
+	}
+}
+
+export const browserAuditWorkflow = {
+	id: "browser-audit",
+	inputSchema: browserAuditInputSchema,
+	outputSchema: browserAuditOutputSchema,
+	run: runBrowserAuditWorkflow,
 };

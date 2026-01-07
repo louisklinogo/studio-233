@@ -3,12 +3,10 @@ import { generateObject, generateText } from "ai";
 import { z } from "zod";
 
 import { getEnv } from "../config";
-import { GEMINI_PRO_MODEL, GEMINI_TEXT_MODEL } from "../model-config";
+import { GEMINI_TEXT_MODEL } from "../model-config";
 import {
 	htmlGeneratorInputSchema,
 	htmlGeneratorOutputSchema,
-	layoutDesignerInputSchema,
-	layoutDesignerOutputSchema,
 } from "../schemas/layout";
 import { logger } from "../utils/logger";
 import { withDevTools } from "../utils/model";
@@ -148,43 +146,4 @@ export const htmlGeneratorWorkflow = {
 	inputSchema: htmlGeneratorInputSchema,
 	outputSchema: htmlGeneratorOutputSchema,
 	run: runHtmlGeneratorWorkflow,
-};
-
-export type LayoutDesignerInput = z.infer<typeof layoutDesignerInputSchema>;
-export type LayoutDesignerResult = z.infer<typeof layoutDesignerOutputSchema>;
-
-export async function runLayoutDesignerWorkflow(
-	input: LayoutDesignerInput,
-): Promise<LayoutDesignerResult> {
-	const key = env.googleApiKey;
-	if (!key) throw new Error("Google API key required for layout design");
-
-	const google = createGoogleGenerativeAI({ apiKey: key });
-	const model = withDevTools(google(GEMINI_PRO_MODEL));
-
-	const prompt = `You are a Lead Brand Strategist and Art Director. Create a high-level design strategy and hierarchical layout plan for a ${input.projectType}.
-
-Goals: ${input.goals.join(", ")}
-Target Audience: ${input.targetAudience}
-${input.brandVoice ? `Brand Voice: ${input.brandVoice}` : ""}
-Platforms: ${input.platforms.join(", ")}
-
-Your task is to define the 'Composition' of this design. Break it down into logical elements (e.g., Headline, Hero Image, Call to Action, Secondary Info) and assign them a visual priority (primary, secondary, tertiary). For each element, provide specific content guidelines and suggested styling (typography, scale, or weight).
-
-Respond with a strictly structured JSON object following the schema.`;
-
-	const result = await generateObject({
-		model,
-		schema: layoutDesignerOutputSchema,
-		prompt,
-	});
-
-	return layoutDesignerOutputSchema.parse(result.object);
-}
-
-export const layoutDesignerWorkflow = {
-	id: "layout-designer",
-	inputSchema: layoutDesignerInputSchema,
-	outputSchema: layoutDesignerOutputSchema,
-	run: runLayoutDesignerWorkflow,
 };

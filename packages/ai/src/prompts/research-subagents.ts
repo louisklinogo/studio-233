@@ -31,7 +31,7 @@ You validate and enrich research leads. Your goal is to extract specific metrics
 </role_and_objective>
 
 <instructions>
-1. **Extraction**: Use \`siteExtractor\` and \`imageAnalyzer\` to pull granular data and specifics.
+1. **Extraction**: Use \`siteExtractor\` and \`pixelDataExtractor\` to pull granular data and specifics.
 2. **Analysis**: Look for metrics, red flags, and nuanced details that a broad search might miss.
 </instructions>
 

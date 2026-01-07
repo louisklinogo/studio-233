@@ -1,12 +1,60 @@
 import {
 	brandIngestionService,
+	brandTextIngestionService,
 	initLlamaIndex,
 	multimodalIngestionService,
 	updateWorkspaceBrandDNA,
 } from "@studio233/rag";
 import { inngest } from "../client";
-import { brandKnowledgeIngestedEvent } from "../events";
+import {
+	brandKnowledgeIngestedEvent,
+	brandKnowledgeTextAddedEvent,
+} from "../events";
 import { logger } from "../utils/logger";
+
+export const brandKnowledgeTextIngestion = inngest.createFunction(
+	{
+		id: "brand-knowledge-text-ingestion",
+		name: "Brand Knowledge Text Ingestion",
+	},
+	{ event: brandKnowledgeTextAddedEvent },
+	async ({ event, step }) => {
+		const { workspaceId, text, category, metadata } = event.data;
+		const dbUrl = process.env.DATABASE_URL;
+		const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+		if (!dbUrl) throw new Error("DATABASE_URL is missing");
+		if (!googleApiKey)
+			throw new Error("GOOGLE_GENERATIVE_AI_API_KEY is missing");
+
+		await step.run("index-text", async () => {
+			initLlamaIndex(googleApiKey);
+
+			return await brandTextIngestionService({
+				text,
+				workspaceId,
+				assetId: `learned_${Date.now()}`,
+				filename: "learned_preference.txt",
+				dbUrl,
+				metadata: {
+					...metadata,
+					category,
+					source: "agent_learning",
+				},
+			});
+		});
+
+		// Trigger synthesis to update global brand profile
+		await step.run("trigger-synthesis", async () => {
+			await inngest.send({
+				name: "brand.intelligence.sync_requested",
+				data: { workspaceId },
+			});
+		});
+
+		return { status: "completed", workspaceId };
+	},
+);
 
 export const brandIngestion = inngest.createFunction(
 	{
