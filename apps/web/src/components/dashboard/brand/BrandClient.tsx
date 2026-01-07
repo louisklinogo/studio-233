@@ -372,6 +372,29 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 		}),
 	);
 
+	const getAuthUrl = useMutation(
+		trpc.workspace.getBrowserAuthUrl.mutationOptions({
+			onMutate: () => setStatusMessage("OPENING_SECURE_AUTH_LINK..."),
+			onSuccess: (data) => {
+				window.open(data.sessionViewerUrl, "_blank", "width=1400,height=900");
+				setStatusMessage("AUTH_SESSION_ACTIVE");
+			},
+			onError: () => setStatusMessage("AUTH_SESSION_FAULT"),
+		}),
+	);
+
+	const confirmAuth = useMutation(
+		trpc.workspace.confirmBrowserAuth.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries(
+					trpc.workspace.getById.queryFilter({ id: workspaceId }),
+				);
+				setStatusMessage("BROWSER_PERSISTENCE_LOCKED");
+			},
+			onError: () => setStatusMessage("PERSISTENCE_FAULT"),
+		}),
+	);
+
 	const brandProfile = (workspace?.brandProfile as any) || {};
 	const hasLogo = brandAssets && brandAssets.length > 0;
 	const isInitialized = hasLogo && localPrimary && localFont;
@@ -1081,6 +1104,95 @@ export function BrandClient({ workspaceId }: BrandClientProps) {
 													</span>
 												</div>
 											)}
+										</div>
+									</div>
+								</div>
+
+								{/* Browser Identity & Persistence Hub */}
+								<div className="p-10 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] rounded-sm relative overflow-hidden group">
+									<div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+										<SwissIcons.Brand size={120} />
+									</div>
+
+									<div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+										<div className="lg:col-span-7 space-y-6">
+											<div className="flex items-center gap-3">
+												<div className="w-2 h-2 bg-[#FF4D00] rounded-sm" />
+												<span className="font-mono text-[10px] tracking-[0.4em] text-neutral-400 uppercase">
+													BROWSER_IDENTITY_ANCHOR
+												</span>
+											</div>
+											<h3 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white uppercase">
+												Persistent Auth Context
+											</h3>
+											<p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-md">
+												Initialize a persistent browser profile to bypass login
+												walls on design-heavy platforms (Pinterest, Behance,
+												Prada). Once authenticated, your AI agents will operate
+												with your credentials.
+											</p>
+
+											<div className="flex items-center gap-4">
+												{workspace?.browserContextId ? (
+													<div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-sm">
+														<div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+														<span className="font-mono text-[9px] text-emerald-500 uppercase tracking-widest font-bold">
+															CONTEXT_LOCKED:{" "}
+															{workspace.browserContextId.slice(0, 12)}
+														</span>
+													</div>
+												) : (
+													<div className="flex items-center gap-3 px-4 py-2 bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-neutral-800 rounded-sm">
+														<div className="w-1.5 h-1.5 bg-neutral-400 rounded-full" />
+														<span className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest">
+															IDENTITY_PENDING
+														</span>
+													</div>
+												)}
+											</div>
+										</div>
+
+										<div className="lg:col-span-5 flex flex-col gap-3">
+											<button
+												onClick={() => getAuthUrl.mutate({ workspaceId })}
+												disabled={getAuthUrl.isPending}
+												className="h-12 w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-mono text-[10px] font-black uppercase tracking-[0.2em] rounded-sm transition-all hover:bg-[#FF4D00] dark:hover:bg-[#FF4D00] hover:text-white flex items-center justify-center gap-4 group/btn"
+											>
+												{getAuthUrl.isPending ? (
+													<SwissIcons.Spinner
+														className="animate-spin"
+														size={14}
+													/>
+												) : (
+													<SwissIcons.Link
+														size={14}
+														className="group-hover/btn:rotate-45 transition-transform"
+													/>
+												)}
+												INITIALIZE_AUTH_SESSION
+											</button>
+
+											<button
+												onClick={() =>
+													confirmAuth.mutate({
+														workspaceId,
+														contextId: `ctx_${workspaceId}`,
+													})
+												}
+												disabled={
+													confirmAuth.isPending ||
+													!statusMessage?.includes("SESSION_ACTIVE")
+												}
+												className={cn(
+													"h-12 w-full border font-mono text-[10px] font-bold uppercase tracking-[0.2em] rounded-sm transition-all flex items-center justify-center gap-4",
+													statusMessage?.includes("SESSION_ACTIVE")
+														? "border-[#FF4D00] text-[#FF4D00] hover:bg-[#FF4D00] hover:text-white"
+														: "border-neutral-200 dark:border-neutral-800 text-neutral-400 opacity-50 cursor-not-allowed",
+												)}
+											>
+												<SwissIcons.Check size={14} />
+												CONFIRM_PERSISTENCE
+											</button>
 										</div>
 									</div>
 								</div>

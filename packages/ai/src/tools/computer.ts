@@ -24,19 +24,28 @@ async function getSteelClient(runtimeContext?: any) {
 }
 
 async function ensureSession(steel: Steel, runtimeContext?: any) {
-	if (runtimeContext?.sessionId) {
-		return runtimeContext.sessionId;
+	// If we already have an active session ID in this turn, reuse it to avoid creating 10 browsers
+	if (runtimeContext?._activeSessionId) {
+		return runtimeContext._activeSessionId;
 	}
 
-	// Create a new session if none exists in context
+	// Create a new session
+	// If runtimeContext.sessionId exists, it's a persistent Context ID (e.g. ctx_workspaceId)
 	const session = await steel.sessions.create({
 		dimensions: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
 		solveCaptcha: true,
 		blockAds: true,
+		profileId: runtimeContext?.sessionId || undefined,
 	});
+
+	// Store the session ID in the runtime context for subsequent tool calls in this turn
+	if (runtimeContext) {
+		runtimeContext._activeSessionId = session.id;
+	}
 
 	logger.info("computer.tool.session_created", {
 		sessionId: session.id,
+		contextId: runtimeContext?.sessionId,
 		viewerUrl: session.sessionViewerUrl,
 	});
 

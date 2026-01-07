@@ -271,8 +271,17 @@ export async function POST(req: Request) {
 		const queryStr = getMessageText(userMessageContent);
 
 		let brandContext;
+		let browserContextId: string | undefined;
 		if (workspaceId) {
-			brandContext = await resolveBrandContext(workspaceId, queryStr);
+			const [bCtx, ws] = await Promise.all([
+				resolveBrandContext(workspaceId, queryStr),
+				db.workspace.findUnique({
+					where: { id: workspaceId },
+					select: { browserContextId: true },
+				}),
+			]);
+			brandContext = bCtx;
+			browserContextId = ws?.browserContextId ?? undefined;
 		}
 
 		let currentThreadId = threadId;
@@ -473,9 +482,11 @@ export async function POST(req: Request) {
 					latestImageUrls,
 					threadId: currentThreadId,
 					workspaceId, // CRITICAL: This ensures it is in every tool runtimeContext
+					sessionId: browserContextId, // Support for persistent browser sessions
 					runtimeContext: {
 						runAgent: generateAgentResponse,
 						inngest,
+						sessionId: browserContextId,
 					},
 				},
 			},

@@ -2,6 +2,7 @@ import { getSessionWithRetry } from "@studio233/auth/lib/session";
 import { Prisma, prisma } from "@studio233/db";
 import { inngest } from "@studio233/inngest";
 import { TRPCError } from "@trpc/server";
+import { Steel } from "steel-sdk";
 import { z } from "zod";
 import { publicProcedure, router } from "../init";
 
@@ -533,5 +534,58 @@ export const workspaceRouter = router({
 			});
 
 			return { status: "RESET_COMPLETE" };
+		}),
+
+	/**
+	 * Create an interactive browser session for the user to authenticate (log in)
+	 * to platforms like Pinterest or Instagram.
+	 */
+	getBrowserAuthUrl: publicProcedure
+		.input(z.object({ workspaceId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+			if (!session) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+			const steelApiKey = process.env.STEEL_API_KEY;
+			if (!steelApiKey)
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Steel API key not configured",
+				});
+
+			const steel = new Steel({ steelAPIKey: steelApiKey });
+
+			// Use the workspace ID as the persistent Profile ID
+			const steelSession = await steel.sessions.create({
+				profileId: `ctx_${input.workspaceId}`,
+				useProxy: true,
+				blockAds: true,
+				dimensions: { width: 1280, height: 800 },
+			});
+
+			return {
+				sessionViewerUrl: steelSession.sessionViewerUrl,
+				sessionId: steelSession.id,
+				contextId: `ctx_${input.workspaceId}`,
+			};
+		}),
+
+	/**
+	 * Confirm that the user has completed authentication and save the context ID.
+	 */
+	confirmBrowserAuth: publicProcedure
+		.input(z.object({ workspaceId: z.string(), contextId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const headers = new Headers(ctx.req?.headers);
+			const session = await getSessionWithRetry(headers);
+			if (!session) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+			await prisma.workspace.update({
+				where: { id: input.workspaceId },
+				data: { browserContextId: input.contextId },
+			});
+
+			return { status: "AUTH_PERSISTED", contextId: input.contextId };
 		}),
 });

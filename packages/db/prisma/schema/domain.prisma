@@ -9,9 +9,10 @@ model Workspace {
   projects       Project[]
   assets         Asset[]
   brandKnowledge BrandKnowledge[]
-  brandProfile   Json?            @db.Json
-  brandSummary   Json?            @db.Json
-  indexingStatus IndexingStatus   @default(IDLE)
+  brandProfile     Json?            @db.Json
+  brandSummary     Json?            @db.Json
+  browserContextId String?
+  indexingStatus   IndexingStatus   @default(IDLE)
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, slug])
