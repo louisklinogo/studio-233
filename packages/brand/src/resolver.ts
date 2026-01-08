@@ -92,7 +92,7 @@ export async function resolveBrandContext(
 	const [workspace, knowledge, visualDna, brandAssets] = await Promise.all([
 		prisma.workspace.findUnique({
 			where: { id: workspaceId },
-			select: { brandProfile: true },
+			select: { brandProfile: true, name: true },
 		}),
 		resolveKnowledge(workspaceId, query),
 		resolveVisualDna(workspaceId),
@@ -107,6 +107,7 @@ export async function resolveBrandContext(
 
 	return {
 		identity,
+		name: workspace?.name || "Standard",
 		knowledge,
 		visualDna,
 		assets: brandAssets.map((a) => ({

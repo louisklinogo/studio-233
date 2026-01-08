@@ -12,6 +12,7 @@ export interface BrandAsset {
 
 export interface BrandContext {
 	identity: BrandIdentity;
+	name: string;
 	knowledge: string[]; // RAG semantic fragments
 	visualDna: string[]; // Vision analysis summaries
 	assets: BrandAsset[]; // Primary marks

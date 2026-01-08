@@ -21,15 +21,16 @@ export function injectBrandContext(
 ): string {
 	if (!context) return basePrompt;
 
-	const { identity, knowledge, visualDna, assets, structuredDna } = context;
+	const { identity, knowledge, visualDna, assets, structuredDna, name } =
+		context;
 
 	const protocol = `
-<IDENTITY_PROTOCOL>
-  <CORE_PALETTE>
-    PRIMARY: ${identity.primaryColor}
-    ACCENT: ${identity.accentColor}
-  </CORE_PALETTE>
-  <TYPOGRAPHY>
+	 <IDENTITY_PROTOCOL>
+	   <BRAND_TARGET>${name}</BRAND_TARGET>
+	   <CORE_PALETTE>
+	     PRIMARY: ${identity.primaryColor}
+	     ACCENT: ${identity.accentColor}
+	   </CORE_PALETTE>  <TYPOGRAPHY>
     ACTIVE_FONT: ${identity.fontFamily}
   </TYPOGRAPHY>
   ${structuredDna?.vibe ? `<BRAND_VIBE>${structuredDna.vibe}</BRAND_VIBE>` : ""}

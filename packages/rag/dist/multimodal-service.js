@@ -4,18 +4,55 @@ import { generateText } from "ai";
 import * as fs from "fs/promises";
 import * as os from "os";
 import * as path from "path";
+import { brandTextIngestionService } from "./ingestion";
 import { GEMINI_PRO_MODEL, MODEL_CONFIG } from "./model-config";
 import { BrandDNASchema } from "./schemas/brand-dna";
 import { logger } from "./utils/logger";
-export async function updateWorkspaceBrandDNA(workspaceId, dna) {
+export async function updateWorkspaceBrandDNA(
+	workspaceId,
+	dna,
+	assetId,
+	filename,
+) {
+	// 1. Update the structured Profile
 	await prisma.workspace.update({
 		where: { id: workspaceId },
 		data: {
 			brandProfile: dna,
 			brandSummary: dna.visualStyle.vibe,
-			updatedAt: new Date(), // Fix: Explicitly set updatedAt
+			updatedAt: new Date(),
 		},
 	});
+	// 2. BACKFILL: Create Semantic Anchors in Vector DB
+	// This ensures the UI and RAG can "find" the brand soul
+	const dbUrl = process.env.DATABASE_URL;
+	if (dbUrl) {
+		const anchorText = `
+			ASSET_SOURCE: ${filename || "Brand_Document"}
+			SEMANTIC_CLASS: SYNTHESIZED_DNA
+			
+			VISUAL_DEDUCTION:
+			- Aesthetic DNA: ${dna.visualStyle.vibe}
+			- Form & Geometry: ${dna.visualStyle.layoutPrinciples.join(", ")}
+			- Signal Palette: ${dna.coreIdentity.colors.join(", ")}
+			
+			REASONING_FRAGMENT:
+			The brand soul is defined by "${dna.visualStyle.vibe}". 
+			The tone of voice is consistently ${dna.semanticDNA.toneOfVoice}.
+			Key copywriting guidelines include: ${dna.semanticDNA.copywritingGuidelines.slice(0, 3).join("; ")}.
+		`.trim();
+		await brandTextIngestionService({
+			text: anchorText,
+			workspaceId,
+			assetId: assetId || "synthesized_dna",
+			filename: filename || "brand_dna_summary.txt",
+			dbUrl,
+			metadata: {
+				source: "Deep_Scan_Synthesis",
+				type: "visual_dna",
+			},
+		}).catch((err) => logger.error("rag.backfill_failed", { error: err }));
+	}
 }
 async function downloadFile(url, filename) {
 	if (!url || !filename) {
@@ -54,7 +91,7 @@ async function downloadFile(url, filename) {
 	await fs.writeFile(filePath, buffer);
 	return filePath;
 }
-export async function pdfToImages(filePath, maxPages = 5) {
+export async function pdfToImages(filePath, maxPages = 50) {
 	const images = [];
 	try {
 		const { pdf } = await import("pdf-to-img");
@@ -84,13 +121,13 @@ async function processWithLlamaParse(options) {
 		vendorMultimodalApiKey: options.googleApiKey,
 		preset: "agentic_plus",
 		parsingInstruction: `
-            Extract Brand DNA from this document. 
+            Extract Brand DNA from this document using a Deep Scan methodology. 
             Focus on:
-            - Colors (hex codes)
-            - Fonts (family and usage)
-            - Logos and slogans
-            - Visual style (layout principles, imagery style, photography guidelines, vibe)
-            - Semantic DNA (tone of voice, copywriting guidelines)
+            - Colors: ALL specific hex codes mentioned.
+            - Fonts: Complete typography stack (Primary, Secondary, UI).
+            - Visual Style: Deep layout principles (Grid, spacing), Imagery styles, and the core Aesthetic Vibe.
+            - Semantic DNA: Detailed Tone of Voice and specific Copywriting guidelines.
+            
             Return as a structured JSON object matching this schema:
             {
                 "coreIdentity": { "colors": ["#hex"], "fonts": [{"family": "", "usage": ""}], "logos": [""], "slogans": [""] },
@@ -113,10 +150,11 @@ async function processWithLlamaParse(options) {
 		}
 		return {
 			brandDNA: parsed.data,
-			score: 0.9,
+			score: 0.95,
 			path: "llama-parse",
 			metadata: {
 				pageCount: jsonResults.length,
+				strategy: "deep-scan-llama",
 			},
 		};
 	} catch (error) {
@@ -133,63 +171,83 @@ async function processWithGeminiVision(options) {
 	let filePath = null;
 	try {
 		filePath = await downloadFile(options.url, options.filename);
-		const images = await pdfToImages(filePath);
+		const images = await pdfToImages(filePath, 50);
 		if (images.length === 0) return null;
 		const google = createGoogleGenerativeAI({ apiKey });
 		const model = google(options.visionModel || MODEL_CONFIG.vision.model);
-		const result = await generateText({
-			model,
-			temperature: MODEL_CONFIG.vision.temperature,
-			messages: [
-				{
-					role: "user",
-					content: [
-						{
-							type: "text",
-							text: `
-                                Analyze these pages from a brand document and extract the Brand DNA.
-                                Focus on:
-                                - Colors (hex codes)
-                                - Fonts (family and usage)
-                                - Logos and slogans
-                                - Visual style (layout principles, imagery style, photography guidelines, vibe)
-                                - Semantic DNA (tone of voice, copywriting guidelines)
-                                Return ONLY a valid JSON object matching this schema:
-                                {
-                                    "coreIdentity": { "colors": ["#hex"], "fonts": [{"family": "", "usage": ""}], "logos": [""], "slogans": [""] },
-                                    "visualStyle": { "layoutPrinciples": [""], "imageryStyle": [""], "photographyGuidelines": [""], "vibe": "" },
-                                    "semanticDNA": { "toneOfVoice": "", "copywritingGuidelines": [""] }
-                                }
-                            `,
-						},
-						...images.map((img) => ({
-							type: "image",
-							image: img,
-						})),
-					],
-				},
-			],
-		});
-		const cleanedText = result.text.replace(/```json\n?|\n?```/g, "").trim();
-		const rawDna = JSON.parse(cleanedText);
-		const parsed = BrandDNASchema.safeParse(rawDna);
+		// DEEP SCAN: Perform targeted extraction across three domains
+		const [identityRes, visualRes, semanticRes] = await Promise.all([
+			// Pass 1: Core Identity (Colors, Fonts, Logos)
+			generateText({
+				model,
+				messages: [
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: 'Extract Core Identity: Colors (hex), Fonts (family/usage), Logos, and Slogans. Return ONLY valid JSON: { "colors": [], "fonts": [], "logos": [], "slogans": [] }',
+							},
+							...images.map((img) => ({ type: "image", image: img })),
+						],
+					},
+				],
+			}),
+			// Pass 2: Visual Style (Layout, Vibe, Imagery)
+			generateText({
+				model,
+				messages: [
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: 'Extract Visual Style: Layout principles, Imagery style, Photography guidelines, and the overall Vibe. Return ONLY valid JSON: { "layoutPrinciples": [], "imageryStyle": [], "photographyGuidelines": [], "vibe": "" }',
+							},
+							...images.map((img) => ({ type: "image", image: img })),
+						],
+					},
+				],
+			}),
+			// Pass 3: Semantic DNA (Tone, Voice)
+			generateText({
+				model,
+				messages: [
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: 'Extract Semantic DNA: Tone of voice and Copywriting guidelines. Return ONLY valid JSON: { "toneOfVoice": "", "copywritingGuidelines": [] }',
+							},
+							...images.map((img) => ({ type: "image", image: img })),
+						],
+					},
+				],
+			}),
+		]);
+		const clean = (txt) =>
+			JSON.parse(txt.replace(/```json\n?|\n?```/g, "").trim());
+		const combinedDNA = {
+			coreIdentity: clean(identityRes.text),
+			visualStyle: clean(visualRes.text),
+			semanticDNA: clean(semanticRes.text),
+		};
+		const parsed = BrandDNASchema.safeParse(combinedDNA);
 		if (!parsed.success) {
-			logger.warn("rag.gemini_vision_invalid_schema", {
+			logger.warn("rag.gemini_vision_deep_scan_invalid", {
 				error: parsed.error,
-				rawDna,
 			});
 			return null;
 		}
 		return {
 			brandDNA: parsed.data,
-			score: 0.75, // Good but potentially less structural than LlamaParse
+			score: 0.95, // High confidence due to multi-pass depth
 			path: "gemini-vision",
-			metadata: {
-				pageCount: images.length,
-			},
+			metadata: { pageCount: images.length, strategy: "deep-scan-50" },
 		};
 	} catch (error) {
-		logger.error("rag.gemini_vision_fallback_error", {
+		logger.error("rag.gemini_vision_deep_scan_error", {
 			error: error instanceof Error ? error.message : String(error),
 			url: options.url,
 		});
@@ -201,10 +259,7 @@ async function processWithGeminiVision(options) {
 				await fs.unlink(filePath);
 				await fs.rm(dir, { recursive: true, force: true });
 			} catch (e) {
-				logger.error("rag.cleanup_temp_files_failed", {
-					error: e instanceof Error ? e.message : String(e),
-					filePath,
-				});
+				// Cleanup error
 			}
 		}
 	}

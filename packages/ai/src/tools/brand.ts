@@ -1,3 +1,4 @@
+import { prisma } from "@studio233/db";
 import { retrievalService } from "@studio233/rag";
 import { z } from "zod";
 import { createTool } from "./factory";
@@ -9,8 +10,9 @@ export const consultBrandGuidelinesTool = createTool({
 	inputSchema: z.object({
 		query: z
 			.string()
+			.optional()
 			.describe(
-				"The specific brand-related question or rule to look up (e.g., 'visual style for posters')",
+				"The specific brand-related question or rule to look up (e.g., 'visual style for posters'). Omit for a general brand overview.",
 			),
 		workspaceId: z
 			.string()
@@ -23,7 +25,27 @@ export const consultBrandGuidelinesTool = createTool({
 			throw new Error("No workspaceId provided or found in context");
 		}
 
-		// Search DB using RAG service
+		// 1. If no specific query is provided, return the synthesized brand summary
+		if (!context.query) {
+			const workspace = await prisma.workspace.findUnique({
+				where: { id: workspaceId },
+				select: { brandSummary: true, name: true },
+			});
+
+			if (!workspace?.brandSummary) {
+				return {
+					message: `No synthesized guidelines found for ${workspace?.name || "this workspace"}. Please upload a brand document first.`,
+					data: [],
+				};
+			}
+
+			return {
+				message: `General brand guidelines for ${workspace.name}:`,
+				summary: workspace.brandSummary,
+			};
+		}
+
+		// 2. Search DB using RAG service for specific queries
 		const results = await retrievalService(workspaceId, context.query);
 
 		if (results.length === 0) {
